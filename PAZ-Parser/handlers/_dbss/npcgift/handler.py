@@ -6,7 +6,7 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.loc import is_loc_loaded
-from _common.html import e, icon_cell, table
+from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.icon_index import IconKind, icon_path
 from _common.lang import load_handler_strings
 from .parser import (
@@ -21,6 +21,17 @@ _LANG_DIR = Path(__file__).parent / "lang"
 
 class _NpcGiftOffsetHandler(PreviewHandler):
     """Shared handler for npcgiftoffset.dbss and npcgiftdataoffset.dbss, identical layout."""
+
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
+        return [
+            Column(cols.get("npcId", "NPC ID"), "num", sort_key="npc_id"),
+            Column(cols.get("dataOffset", "Data Offset"), "num", sort_key="data_offset"),
+            Column(cols.get("dataSize", "Data Size"), "num", sort_key="data_size"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
 
     def get_records(
         self,
@@ -39,12 +50,6 @@ class _NpcGiftOffsetHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} offset records"
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("npcId", "NPC ID"), "num", ""),
-            (cols.get("dataOffset", "Data Offset"), "num", ""),
-            (cols.get("dataSize", "Data Size"), "num", ""),
-        ]
         rows = [
             [
                 e(r["npc_id"]),
@@ -53,7 +58,7 @@ class _NpcGiftOffsetHandler(PreviewHandler):
             ]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)
 
 
 class NpcGiftOffsetHandler(_NpcGiftOffsetHandler):
@@ -65,6 +70,20 @@ class NpcGiftDataOffsetHandler(_NpcGiftOffsetHandler):
 
 
 class NpcGiftHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("giftColumns", {})
+        return [
+            Column(cols.get("npcId", "NPC ID"), "num", sort_key="npc_id"),
+            Column(cols.get("npcName", "NPC Name"), sort_key="npc_name"),
+            Column(cols.get("itemId", "Item ID"), "num", sort_key="item_id"),
+            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
+            Column(cols.get("itemName", "Item Name"), sort_key="item_name"),
+            Column(cols.get("amity", "Amity"), "num", sort_key="amity"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -95,15 +114,6 @@ class NpcGiftHandler(PreviewHandler):
         meta = f"{len(records):,} gift rows"
         if loc:
             meta += f" · {with_npc_name:,} NPC names · {with_item_name:,} item names"
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("giftColumns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("npcId", "NPC ID"), "num", ""),
-            (cols.get("npcName", "NPC Name"), "", ""),
-            (cols.get("itemId", "Item ID"), "num", ""),
-            (cols.get("icon", "Icon"), "", ""),
-            (cols.get("itemName", "Item Name"), "", ""),
-            (cols.get("amity", "Amity"), "num", ""),
-        ]
 
         rows = [
             [
@@ -116,10 +126,22 @@ class NpcGiftHandler(PreviewHandler):
             ]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)
 
 
 class NpcGiftDataHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("dataColumns", {})
+        return [
+            Column(cols.get("npcId", "NPC ID"), "num", sort_key="npc_id"),
+            Column(cols.get("npcName", "NPC Name"), sort_key="npc_name"),
+            Column(cols.get("unknownParam", "Unknown Param"), "num", sort_key="unknown_param"),
+            Column(cols.get("dialogue", "Dialogue"), sort_key="dialogue"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -142,13 +164,6 @@ class NpcGiftDataHandler(PreviewHandler):
         meta = f"{len(records):,} NPC dialogue records"
         if loc:
             meta += f" · {with_loc:,} with LOC type 54 text"
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("dataColumns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("npcId", "NPC ID"), "num", ""),
-            (cols.get("npcName", "NPC Name"), "", ""),
-            (cols.get("unknownParam", "Unknown Param"), "num", ""),
-            (cols.get("dialogue", "Dialogue"), "", ""),
-        ]
 
         rows = [
             [
@@ -159,4 +174,4 @@ class NpcGiftDataHandler(PreviewHandler):
             ]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)

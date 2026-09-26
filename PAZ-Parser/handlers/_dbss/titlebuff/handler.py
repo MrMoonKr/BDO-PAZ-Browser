@@ -7,7 +7,7 @@ from bdo_preview import PreviewHandler
 
 from _common.loc import strip_pa_tags
 from _common.binary import parse_offset_table
-from _common.html import e, table
+from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
 from .parser import extract_titlebuff_records, find_title_effects_en
 
@@ -16,6 +16,16 @@ _LANG_DIR = Path(__file__).parent / "lang"
 
 
 class TitleBuffListOffsetHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
+        return [
+            Column(cols.get("buffId", "Buff ID"), "num", sort_key="buff_id"),
+            Column(cols.get("offset", "Offset"), "num", sort_key="offset"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -37,19 +47,26 @@ class TitleBuffListOffsetHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} entries"
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("buffId", "Buff ID"), "num", ""),
-            (cols.get("offset", "Offset"), "num", ""),
-        ]
         rows = [
             [e(r["buff_id"]), e(f"0x{r['offset']:08X}")]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)
 
 
 class TitleBuffListHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("level", "Level"), "num", sort_key="level"),
+            Column(cols.get("requiredTitles", "Required Titles"), "num", sort_key="required_titles"),
+            Column(cols.get("text", "Text"), sort_key="text"),
+            Column(cols.get("offset", "Offset"), "num", sort_key="offset"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def companions(self, entry: PazEntry) -> list[str]:
         folder = entry.internal_path.rsplit("/", 1)[0]
         return [f"{folder}/titlebufflistoffset.dbss"]
@@ -92,13 +109,6 @@ class TitleBuffListHandler(PreviewHandler):
 
         has_text = any(r["text"] for r in records)
         meta = f"{len(records):,} buff blocks decoded" + ("  ·  effects from loc" if has_text else "")
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("level", "Level"), "num", ""),
-            (cols.get("requiredTitles", "Required Titles"), "num", ""),
-            (cols.get("text", "Text"), "", ""),
-            (cols.get("offset", "Offset"), "num", ""),
-        ]
 
         rows: list[list] = []
         for r in slice_:
@@ -109,4 +119,4 @@ class TitleBuffListHandler(PreviewHandler):
                 e(f"0x{r['offset']:08X}"),
             ])
 
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)

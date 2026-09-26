@@ -12,12 +12,15 @@ class LocStats:
     misses: int | None = None
 
 
+# Module globals that hold everything init_loc() parses.
+LOC_STATE_NAMES = ("_LOC_INDEX", "_LOC_PREFIX", "_LOC_ALL")
+
+
 def reset_loc() -> None:
     import _common.loc as loc
 
-    loc._LOC_INDEX = None
-    loc._LOC_PREFIX = None
-    loc._LOC_ALL = None
+    for name in LOC_STATE_NAMES:
+        setattr(loc, name, None)
 
 
 @contextmanager

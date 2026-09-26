@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import e, error, table
+from _common.html import Column, e, error, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.zodiacsign.loc import resolve_loc_type7
 from _common.zodiacsign.parser import parse_zodiacsign_records
@@ -24,6 +24,23 @@ def _truncate(text: str, max_len: int = 100) -> str:
 
 
 class ZodiacSignHandler(PreviewHandler):
+    def _columns(self, loc_ok: bool) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        traits_label = (
+            cols.get("traitsEn", "Traits (EN)") if loc_ok else cols.get("traitsKr", "Traits (KR)")
+        )
+        return [
+            Column(cols.get("id", "ID"), "num", sort_key="zodiac_id"),
+            Column(cols.get("name", "Name"), sort_key="name"),
+            Column(cols.get("stars", "Stars"), "num", sort_key="float_count"),
+            Column(cols.get("pairs", "Pairs"), "num", sort_key="pairs_count"),
+            Column(cols.get("constellation", "Constellation"), sort_key="constellation_name"),
+            Column(traits_label, sort_key="trait"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns(loc_ok=True))
+
     def get_records(
         self,
         data: bytes,
@@ -48,6 +65,7 @@ class ZodiacSignHandler(PreviewHandler):
                 "constellation_name": rec["constellation_name"],
                 "trait_text":        rec["trait_text"],
                 "en_trait":          loc_traits.get(zid, ""),
+                "trait":             loc_traits.get(zid) or rec["trait_text"],
             })
 
         return result
@@ -62,19 +80,6 @@ class ZodiacSignHandler(PreviewHandler):
         slice_ = records[start : start + page_size]
 
         loc_ok = any(r["en_trait"] for r in records)
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("id", "ID"), "num", ""),
-            (cols.get("name", "Name"), "", ""),
-            (cols.get("stars", "Stars"), "num", ""),
-            (cols.get("pairs", "Pairs"), "num", ""),
-            (cols.get("constellation", "Constellation"), "", ""),
-            (
-                cols.get("traitsEn" if loc_ok else "traitsKr", "Traits (EN)" if loc_ok else "Traits (KR)"),
-                "",
-                "",
-            ),
-        ]
 
         meta = f"{len(records):,} zodiac signs"
         rows: list[list] = []
@@ -92,10 +97,20 @@ class ZodiacSignHandler(PreviewHandler):
                 e(trait_display),
             ])
 
-        return table(meta, headers, rows)
+        return table(meta, self._columns(loc_ok), rows)
 
 
 class ZodiacSignOffsetHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
+        return [
+            Column(cols.get("zodiacId", "Zodiac ID"), "num", sort_key="zodiac_id"),
+            Column(cols.get("dataOffset", "Data Offset"), "num", sort_key="data_offset"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -117,19 +132,28 @@ class ZodiacSignOffsetHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} offset records"
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("zodiacId", "Zodiac ID"), "num", ""),
-            (cols.get("dataOffset", "Data Offset"), "num", ""),
-        ]
         rows = [
             [e(r["zodiac_id"]), e(f"0x{r['data_offset']:08X}")]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)
 
 
 class ZodiacSignOrderHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("orderColumns", {})
+        return [
+            Column(cols.get("row", "Row"), "num", sort_key="row"),
+            Column(cols.get("personality", "Personality"), "num", sort_key="personality_type"),
+            Column(cols.get("zodiac", "Zodiac"), sort_key="zodiac_name"),
+            Column(cols.get("variant", "Variant"), "num", sort_key="variant"),
+            Column(cols.get("triggers", "Triggers"), "num", sort_key="trigger_count"),
+            Column(cols.get("sequence", "Sequence"), sort_key="sequence"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def companions(self, entry: PazEntry) -> list[str]:
         folder = entry.internal_path.rsplit("/", 1)[0]
         return [f"{folder}/zodiacsignorderoffset.dbss"]
@@ -177,7 +201,6 @@ class ZodiacSignOrderHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} order records"
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("orderColumns", {})
         rows = [
             [
                 e(r["row"]),
@@ -189,19 +212,20 @@ class ZodiacSignOrderHandler(PreviewHandler):
             ]
             for r in slice_
         ]
-        # Add "Row" column that was present in the original render()
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("row", "Row"), "num", ""),
-            (cols.get("personality", "Personality"), "num", ""),
-            (cols.get("zodiac", "Zodiac"), "", ""),
-            (cols.get("variant", "Variant"), "num", ""),
-            (cols.get("triggers", "Triggers"), "num", ""),
-            (cols.get("sequence", "Sequence"), "", ""),
-        ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)
 
 
 class ZodiacSignOrderOffsetHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("orderOffsetColumns", {})
+        return [
+            Column(cols.get("personalityType", "Personality Type"), "num", sort_key="personality_type"),
+            Column(cols.get("dataOffset", "Data Offset"), "num", sort_key="data_offset"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -223,14 +247,9 @@ class ZodiacSignOrderOffsetHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} offset records"
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("orderOffsetColumns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("personalityType", "Personality Type"), "num", ""),
-            (cols.get("dataOffset", "Data Offset"), "num", ""),
-        ]
         rows = [
             [e(r["personality_type"]), e(f"0x{r['data_offset']:08X}")]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)
 

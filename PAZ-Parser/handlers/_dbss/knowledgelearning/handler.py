@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import e, table
+from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
 from .parser import (
     parse_knowledgelearning_offset_records,
@@ -17,6 +17,17 @@ _LANG_DIR = Path(__file__).parent / "lang"
 
 
 class KnowledgeLearningOffsetHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
+        return [
+            Column(cols.get("idxId", "Idx ID"), "num", sort_key="idx_id"),
+            Column(cols.get("kind", "Kind"), "num", sort_key="kind"),
+            Column(cols.get("dbssOffset", "DBSS Offset"), "num", sort_key="offset"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -38,20 +49,26 @@ class KnowledgeLearningOffsetHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} offset records"
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("idxId", "Idx ID"), "num", ""),
-            (cols.get("kind", "Kind"), "num", ""),
-            (cols.get("dbssOffset", "DBSS Offset"), "num", ""),
-        ]
         rows = [
             [e(r["idx_id"]), e(r["kind"]), e(f"0x{r['offset']:08X}")]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)
 
 
 class KnowledgeLearningHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("knowledgeId", "Knowledge ID"), "num", sort_key="knowledge_id"),
+            Column(cols.get("kind", "Kind"), "num", sort_key="kind"),
+            Column(cols.get("knowledgeName", "Knowledge Name"), sort_key="knowledge_name"),
+            Column(cols.get("offset", "Offset"), "num", sort_key="offset"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def companions(self, entry: PazEntry) -> list[str]:
         folder = entry.internal_path.rsplit("/", 1)[0]
         return [f"{folder}/knowledgelearningoffset.dbss"]
@@ -91,13 +108,6 @@ class KnowledgeLearningHandler(PreviewHandler):
             f"{len(records):,} records"
             f" · {with_knowledge_name:,} knowledge names"
         )
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("knowledgeId", "Knowledge ID"), "num", ""),
-            (cols.get("kind", "Kind"), "num", ""),
-            (cols.get("knowledgeName", "Knowledge Name"), "", ""),
-            (cols.get("offset", "Offset"), "num", ""),
-        ]
 
         rows = [
             [
@@ -108,4 +118,4 @@ class KnowledgeLearningHandler(PreviewHandler):
             ]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)

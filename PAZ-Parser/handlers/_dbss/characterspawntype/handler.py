@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from pathlib import Path
 
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
+from table_sort import TableSort, sort_order_by_values
 
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
-from _common.html import e, table
+from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
 from .parser import (
     parse_characterspawntype_records,
@@ -14,6 +16,8 @@ from .parser import (
 )
 
 _NUM_FLAGS = 44
+# Flag columns sort by a virtual field, read from the record's flag list.
+_FLAG_FIELD_PREFIX = "flag_"
 _LANG_DIR = Path(__file__).parent / "lang"
 
 _FLAG_NAMES: dict[int, str] = {
@@ -40,10 +44,14 @@ def _lookup_name(entity_id: int) -> str:
     return ""
 
 
-def _flag_header(idx: int) -> tuple[str, str, str]:
+def _flag_field(idx: int) -> str:
+    return f"{_FLAG_FIELD_PREFIX}{idx:02d}"
+
+
+def _flag_column(idx: int) -> Column:
     name = _FLAG_NAMES.get(idx, "")
     extra = f'title="{name}"' if name else ""
-    return (f"f{idx:02d}", "num", extra)
+    return Column(f"f{idx:02d}", "num", extra, sort_key=_flag_field(idx))
 
 
 def _entity_id_cell(entity_id: int) -> str:
@@ -51,6 +59,17 @@ def _entity_id_cell(entity_id: int) -> str:
 
 
 class CharacterSpawnTypeOffsetHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
+        return [
+            Column(cols.get("idLow16", "ID Low16"), "num", sort_key="id_low16"),
+            Column(cols.get("byteOffset", "Byte Offset"), "num", sort_key="offset"),
+            Column(cols.get("size", "Size"), "num", sort_key="size"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -68,20 +87,40 @@ class CharacterSpawnTypeOffsetHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} offset records"
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("idLow16", "ID Low16"), "num", ""),
-            (cols.get("byteOffset", "Byte Offset"), "num", ""),
-            (cols.get("size", "Size"), "num", ""),
-        ]
         rows = [
             [e(r["id_low16"]), e(f"0x{r['offset']:08X}"), e(r["size"])]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)
 
 
 class CharacterSpawnTypeHandler(PreviewHandler):
+    def _columns(self, active_flags: Iterable[int], has_loc: bool) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        columns = [Column(cols.get("entityId", "entity_id"), "num", sort_key="entity_id")]
+        if has_loc:
+            columns.append(Column(cols.get("nameEn", "Name (EN)"), sort_key="name_en"))
+        columns.extend(_flag_column(i) for i in active_flags)
+        return columns
+
+    def sortable_fields(self) -> frozenset[str]:
+        # Every flag and the name, so a saved sort survives either being hidden.
+        return sort_keys(self._columns(range(_NUM_FLAGS), has_loc=True))
+
+    def _build_sort_order(
+        self,
+        data: bytes,
+        entry: PazEntry,
+        companions: dict[str, bytes],
+        sort: TableSort,
+    ) -> list[int]:
+        if not sort.field.startswith(_FLAG_FIELD_PREFIX):
+            return super()._build_sort_order(data, entry, companions, sort)
+
+        flag = int(sort.field.removeprefix(_FLAG_FIELD_PREFIX))
+        records = self._all_records(data, entry, companions)
+        return sort_order_by_values([r["flags"][flag] for r in records], sort.descending)
+
     def get_records(
         self,
         data: bytes,
@@ -108,14 +147,6 @@ class CharacterSpawnTypeHandler(PreviewHandler):
         active = [i for i in range(_NUM_FLAGS) if any(r["flags"][i] for r in records)]
         has_loc = is_loc_loaded()
 
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("entityId", "entity_id"), "num", "")
-        ]
-        if has_loc:
-            headers.append((cols.get("nameEn", "Name (EN)"), "", ""))
-        headers.extend(_flag_header(i) for i in active)
-
         start = page * page_size
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} records · {len(active)} active flag columns"
@@ -129,4 +160,4 @@ class CharacterSpawnTypeHandler(PreviewHandler):
                 row.append("1" if r["flags"][i] else "")
             rows.append(row)
 
-        return table(meta, headers, rows)
+        return table(meta, self._columns(active, has_loc), rows)

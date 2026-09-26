@@ -6,7 +6,7 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.binary import u16, u32
-from _common.html import e, table
+from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
 
 
@@ -32,6 +32,17 @@ def _parse_value(data: bytes, offset: int, type_name: str) -> int:
 
 
 class NpcGiftEtcBssHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("field", "Field"), sort_key="field"),
+            Column(cols.get("value", "Value"), "num", sort_key="value"),
+            Column(cols.get("notes", "Notes"), sort_key="notes"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -61,16 +72,9 @@ class NpcGiftEtcBssHandler(PreviewHandler):
     ) -> str:
         start = page * page_size
         slice_ = records[start : start + page_size]
-        strings = load_handler_strings(self.lang, _LANG_DIR)
-        cols = strings.get("columns", {})
-        notes = strings.get("notes", {})
-        headers = [
-            (cols.get("field", "Field"), "", ""),
-            (cols.get("value", "Value"), "num", ""),
-            (cols.get("notes", "Notes"), "", ""),
-        ]
+        notes = load_handler_strings(self.lang, _LANG_DIR).get("notes", {})
         rows = [
             [e(r["field"]), e(r["value"]), e(notes.get(r["notes"], r["notes"]))]
             for r in slice_
         ]
-        return table(f"{len(records):,} config fields", headers, rows)
+        return table(f"{len(records):,} config fields", self._columns(), rows)

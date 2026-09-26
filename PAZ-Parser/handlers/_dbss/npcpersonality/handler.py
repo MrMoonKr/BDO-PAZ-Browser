@@ -6,7 +6,7 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.loc import loc_lookup
-from _common.html import e, table
+from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
 from .parser import parse_npcpersonality_records, parse_npcpersonalityoffset_records
 
@@ -25,6 +25,16 @@ def _group_str(group_id: int, item_count: int) -> str:
 
 
 class NpcPersonalityOffsetHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
+        return [
+            Column(cols.get("personalityId", "Personality ID"), "num", sort_key="personality_id"),
+            Column(cols.get("dataOffset", "Data Offset"), "num", sort_key="data_offset"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -46,19 +56,32 @@ class NpcPersonalityOffsetHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} offset records"
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("personalityId", "Personality ID"), "num", ""),
-            (cols.get("dataOffset", "Data Offset"), "num", ""),
-        ]
         rows = [
             [e(r["personality_id"]), e(f"0x{r['data_offset']:08X}")]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)
 
 
 class NpcPersonalityHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("row", "Row"), "num", sort_key="row"),
+            Column(cols.get("id", "ID"), "num", sort_key="personality_id"),
+            Column(cols.get("groupA", "Group A (ID ×cnt)"), "num", sort_key="group_a_id"),
+            Column(cols.get("groupB", "Group B (ID ×cnt)"), "num", sort_key="group_b_id"),
+            Column(cols.get("groupC", "Group C (ID ×cnt)"), "num", sort_key="group_c_id"),
+            Column(cols.get("intMin", "Int Min"), "num", sort_key="interest_min"),
+            Column(cols.get("intMax", "Int Max"), "num", sort_key="interest_max_excl"),
+            Column(cols.get("favMin", "Fav Min"), "num", sort_key="favor_min"),
+            Column(cols.get("favMax", "Fav Max"), "num", sort_key="favor_max_excl"),
+            Column(cols.get("horoscope", "Horoscope"), sort_key="personality_type"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -94,19 +117,6 @@ class NpcPersonalityHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} personality records"
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("row", "Row"), "num", ""),
-            (cols.get("id", "ID"), "num", ""),
-            (cols.get("groupA", "Group A (ID ×cnt)"), "num", ""),
-            (cols.get("groupB", "Group B (ID ×cnt)"), "num", ""),
-            (cols.get("groupC", "Group C (ID ×cnt)"), "num", ""),
-            (cols.get("intMin", "Int Min"), "num", ""),
-            (cols.get("intMax", "Int Max"), "num", ""),
-            (cols.get("favMin", "Fav Min"), "num", ""),
-            (cols.get("favMax", "Fav Max"), "num", ""),
-            (cols.get("horoscope", "Horoscope"), "", ""),
-        ]
         rows = [
             [
                 e(r["row"]),
@@ -122,4 +132,4 @@ class NpcPersonalityHandler(PreviewHandler):
             ]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)

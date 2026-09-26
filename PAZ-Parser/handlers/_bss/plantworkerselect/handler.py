@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import e, table
+from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 from _bss.plantworker.parser import parse_plantworker_records
@@ -34,6 +34,19 @@ def _plantworker_index(companions: dict[str, bytes]) -> dict[int, dict]:
 
 
 class PlantWorkerSelectBssHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("selectionId", "Selection ID"), "num", sort_key="selection_id"),
+            Column(cols.get("selectionName", "Selection Name"), sort_key="selection_name"),
+            Column(cols.get("workerId", "Worker ID"), "num", sort_key="worker_id"),
+            Column(cols.get("workerName", "Worker Name"), sort_key="worker_name"),
+            Column(cols.get("hireCost", "Hire Cost"), "num", sort_key="hire_cost"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def companions(self, entry: PazEntry) -> list[str]:
         folder = entry.internal_path.rsplit("/", 1)[0]
         return [f"{folder}/plantworker.bss"]
@@ -81,15 +94,6 @@ class PlantWorkerSelectBssHandler(PreviewHandler):
         if named:
             meta += f" · {named:,} with LOC names"
 
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("selectionId", "Selection ID"), "num", ""),
-            (cols.get("selectionName", "Selection Name"), "", ""),
-            (cols.get("workerId", "Worker ID"), "num", ""),
-            (cols.get("workerName", "Worker Name"), "", ""),
-            (cols.get("hireCost", "Hire Cost"), "num", ""),
-        ]
-
         rows = [
             [
                 e(record["selection_id"]),
@@ -101,4 +105,4 @@ class PlantWorkerSelectBssHandler(PreviewHandler):
             for record in slice_
         ]
 
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)

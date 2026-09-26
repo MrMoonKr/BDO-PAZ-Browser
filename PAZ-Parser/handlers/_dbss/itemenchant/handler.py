@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import e, icon_cell, table
+from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 from .parser import (
@@ -31,6 +31,17 @@ def _item_name(item_id: int) -> str:
 
 
 class ItemEnchantOffsetHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
+        return [
+            Column(cols.get("itemId", "Item ID"), "num", sort_key="item_id"),
+            Column(cols.get("dataOffset", "Data Offset"), "num", sort_key="data_offset"),
+            Column(cols.get("dataSize", "Data Size"), "num", sort_key="data_size"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -48,13 +59,6 @@ class ItemEnchantOffsetHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} offset records"
-
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("itemId", "Item ID"), "num", ""),
-            (cols.get("dataOffset", "Data Offset"), "num", ""),
-            (cols.get("dataSize", "Data Size"), "num", ""),
-        ]
         rows = [
             [
                 e(record["item_id"]),
@@ -63,10 +67,22 @@ class ItemEnchantOffsetHandler(PreviewHandler):
             ]
             for record in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)
 
 
 class ItemEnchantHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("itemId", "Item ID"), "num", sort_key="item_id"),
+            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
+            Column(cols.get("item", "Item"), sort_key="item_name"),
+            Column(cols.get("effectTag", "Effect Tag"), sort_key="effect_tag"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def companions(self, entry: PazEntry) -> list[str]:
         folder = entry.internal_path.rsplit("/", 1)[0]
         if folder == entry.internal_path:
@@ -104,13 +120,6 @@ class ItemEnchantHandler(PreviewHandler):
         if with_icon:
             meta += f" · {with_icon:,} icon paths"
 
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("itemId", "Item ID"), "num", ""),
-            (cols.get("icon", "Icon"), "", ""),
-            (cols.get("item", "Item"), "", ""),
-            (cols.get("effectTag", "Effect Tag"), "", ""),
-        ]
         rows = [
             [
                 e(record["item_id"]),
@@ -120,4 +129,4 @@ class ItemEnchantHandler(PreviewHandler):
             ]
             for record in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)

@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import e, table
+from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 from _common.quest.quest import quest_title
@@ -26,6 +26,18 @@ def _group_name_en(group_id: int) -> str:
 
 
 class QuestGroupDbssHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("groupId", "Group ID"), "num", sort_key="group_id"),
+            Column(cols.get("name", "Name"), sort_key="name"),
+            Column(cols.get("quests", "Quests"), "num", sort_key="quest_count"),
+            Column(cols.get("questTitles", "Quest Titles")),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -67,13 +79,6 @@ class QuestGroupDbssHandler(PreviewHandler):
         slice_ = records[start:start + page_size]
         total_links = sum(r["quest_count"] for r in records)
         meta = f"{len(records):,} quest groups · {total_links:,} quest links"
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("groupId", "Group ID"), "num", ""),
-            (cols.get("name", "Name"), "", ""),
-            (cols.get("quests", "Quests"), "num", ""),
-            (cols.get("questTitles", "Quest Titles"), "", ""),
-        ]
         rows = [
             [
                 e(r["group_id"]),
@@ -83,4 +88,4 @@ class QuestGroupDbssHandler(PreviewHandler):
             ]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)

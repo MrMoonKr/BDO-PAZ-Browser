@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import e, icon_cell, table
+from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 from .parser import parse_plantworker_records
@@ -21,6 +21,22 @@ def _worker_name(worker_id: int) -> str:
 
 
 class PlantWorkerBssHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("workerId", "Worker ID"), "num", sort_key="worker_id"),
+            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
+            Column(cols.get("name", "Name"), sort_key="name"),
+            Column(cols.get("nextWorkerId", "Next Tier"), "num", sort_key="next_worker_id"),
+            Column(cols.get("moveSpeed", "Move"), "num", sort_key="move_speed"),
+            Column(cols.get("stamina", "Stamina"), "num", sort_key="stamina"),
+            Column(cols.get("luck", "Luck"), "num", sort_key="luck"),
+            Column(cols.get("baseWorkSpeed", "Work Speed"), "num", sort_key="base_work_speed"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -31,6 +47,8 @@ class PlantWorkerBssHandler(PreviewHandler):
         for record in parse_plantworker_records(data):
             row = dict(record)
             row["name"] = _worker_name(record["worker_id"])
+            # 0 means the last tier. None renders a dash and sorts last.
+            row["next_worker_id"] = record["next_worker_id"] or None
             records.append(row)
         return records
 
@@ -47,18 +65,6 @@ class PlantWorkerBssHandler(PreviewHandler):
         if named:
             meta += f" · {named:,} with LOC names"
 
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("workerId", "Worker ID"), "num", ""),
-            (cols.get("icon", "Icon"), "", ""),
-            (cols.get("name", "Name"), "", ""),
-            (cols.get("nextWorkerId", "Next Tier"), "num", ""),
-            (cols.get("moveSpeed", "Move"), "num", ""),
-            (cols.get("stamina", "Stamina"), "num", ""),
-            (cols.get("luck", "Luck"), "num", ""),
-            (cols.get("baseWorkSpeed", "Work Speed"), "num", ""),
-        ]
-
         rows = [
             [
                 e(record["worker_id"]),
@@ -73,4 +79,4 @@ class PlantWorkerBssHandler(PreviewHandler):
             for record in slice_
         ]
 
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)

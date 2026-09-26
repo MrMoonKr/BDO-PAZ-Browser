@@ -1,13 +1,15 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from pathlib import Path
 
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
+from table_sort import TableSort, sort_order_by_values
 
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 
-from _common.html import e, icon_cell, table
+from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.lang import load_handler_strings
 from .parser import QuestIndex, build_quest_index, parse_quest_record
 
@@ -34,10 +36,57 @@ def _quest_loc_texts(quest_chain_id: int, quest_id: int) -> list[str]:
     return texts
 
 
+def _title(loc_texts: list[str]) -> str:
+    return loc_texts[0] if loc_texts else ""
+
+
+def _objective(loc_texts: list[str]) -> str:
+    return loc_texts[3] if len(loc_texts) > 3 else ""
+
+
 class QuestDbssHandler(PreviewHandler):
+
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("displayId", "Display ID"), "num", sort_key="packed_quest_id"),
+            Column(cols.get("chainId", "Chain ID"), "num", sort_key="quest_chain_id"),
+            Column(cols.get("questId", "Quest ID"), "num", sort_key="quest_id"),
+            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
+            Column(cols.get("titleName", "Title / Name"), sort_key="title"),
+            Column(cols.get("condition", "Condition"), sort_key="condition_script"),
+            Column(cols.get("action", "Action"), sort_key="action_script"),
+            Column(cols.get("objective", "Objective"), sort_key="objective"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
 
     def _get_index(self, data: bytes) -> QuestIndex:
         return self._data_cache(data, "index", lambda: build_quest_index(data))
+
+    def _record_at(self, data: bytes, index: QuestIndex, row: int) -> dict | None:
+        """Parse one index row, or None when its fixed strings do not parse."""
+        canonical_id = index.canonical_quest_ids[row] if row < len(index.canonical_quest_ids) else 0
+        start = index.record_starts[row]
+        if start is None:
+            return self._partial_record(row, index, canonical_id)
+
+        parsed = parse_quest_record(data, row, start, index.record_ends[row], canonical_id)
+        if parsed is None:
+            return None
+
+        record = dict(parsed)
+        loc_texts = _quest_loc_texts(record["quest_chain_id"], record["quest_id"])
+        record["loc_texts_en"] = loc_texts
+        record["title"] = _title(loc_texts)
+        record["objective"] = _objective(loc_texts) or record["objective_text_kr"]
+        return record
+
+    def _records_at(self, data: bytes, rows: Iterable[int]) -> list[dict]:
+        index = self._get_index(data)
+        records = (self._record_at(data, index, row) for row in rows)
+        return [record for record in records if record is not None]
 
     def get_record_count(
         self,
@@ -53,50 +102,7 @@ class QuestDbssHandler(PreviewHandler):
         entry: PazEntry,
         companions: dict[str, bytes],
     ) -> list[dict]:
-        records = []
-        index = self._get_index(data)
-        for row, start in enumerate(index.record_starts):
-            canonical_id = index.canonical_quest_ids[row] if row < len(index.canonical_quest_ids) else 0
-            if start is None:
-                records.append(self._partial_record(row, index, canonical_id))
-                continue
-
-            record = parse_quest_record(data, row, start, index.record_ends[row], canonical_id)
-            if record is not None:
-                record["loc_texts_en"] = _quest_loc_texts(record["quest_chain_id"], record["quest_id"])
-                records.append(dict(record))
-        return records
-
-    def _records_for_page(
-        self,
-        data: bytes,
-        page: int,
-        page_size: int,
-    ) -> list[dict]:
-        index = self._get_index(data)
-        start_row = page * page_size
-        end_row = min(len(index.record_starts), start_row + page_size)
-        records: list[dict] = []
-
-        for row in range(start_row, end_row):
-            canonical_id = index.canonical_quest_ids[row] if row < len(index.canonical_quest_ids) else 0
-            start = index.record_starts[row]
-            if start is None:
-                records.append(self._partial_record(row, index, canonical_id))
-                continue
-
-            record = parse_quest_record(
-                data,
-                row,
-                start,
-                index.record_ends[row],
-                canonical_id,
-            )
-            if record is not None:
-                record["loc_texts_en"] = _quest_loc_texts(record["quest_chain_id"], record["quest_id"])
-                records.append(dict(record))
-
-        return records
+        return self._records_at(data, range(len(self._get_index(data).record_starts)))
 
     def render_data_page(
         self,
@@ -107,7 +113,39 @@ class QuestDbssHandler(PreviewHandler):
         page_size: int,
     ) -> str:
         total = len(self._get_index(data).record_starts)
-        return self._render_table(self._records_for_page(data, page, page_size), total)
+        start_row = page * page_size
+        rows = range(start_row, min(total, start_row + page_size))
+        return self._render_table(self._records_at(data, rows), total)
+
+    def _build_sort_order(
+        self,
+        data: bytes,
+        entry: PazEntry,
+        companions: dict[str, bytes],
+        sort: TableSort,
+    ) -> list[int]:
+        # Keeps one value per row rather than caching every parsed record
+        # (scripts run to thousands of characters) through get_records().
+        index = self._get_index(data)
+        values: list[object] = []
+        for row in range(len(index.record_starts)):
+            record = self._record_at(data, index, row)
+            values.append(None if record is None else record.get(sort.field))
+        return sort_order_by_values(values, sort.descending)
+
+    def render_sorted_page(
+        self,
+        data: bytes,
+        entry: PazEntry,
+        companions: dict[str, bytes],
+        page: int,
+        page_size: int,
+        sort: TableSort,
+    ) -> str:
+        order = self.sorted_order(data, entry, companions, sort)
+        start = page * page_size
+        rows = order[start : start + page_size]
+        return self._render_table(self._records_at(data, rows), len(order))
 
     def search_records(
         self,
@@ -122,23 +160,8 @@ class QuestDbssHandler(PreviewHandler):
 
         matches: list[int] = []
         index = self._get_index(data)
-        for row, start in enumerate(index.record_starts):
-            canonical_id = index.canonical_quest_ids[row] if row < len(index.canonical_quest_ids) else 0
-            if start is None:
-                record = self._partial_record(row, index, canonical_id)
-                if q in "\t".join(str(value).lower() for value in record.values()):
-                    matches.append(row)
-                continue
-
-            record = parse_quest_record(
-                data,
-                row,
-                start,
-                index.record_ends[row],
-                canonical_id,
-            )
-            if record:
-                record["loc_texts_en"] = _quest_loc_texts(record["quest_chain_id"], record["quest_id"])
+        for row in range(len(index.record_starts)):
+            record = self._record_at(data, index, row)
             if record and q in "\t".join(str(value).lower() for value in record.values()):
                 matches.append(row)
 
@@ -169,6 +192,8 @@ class QuestDbssHandler(PreviewHandler):
             "objective_text_kr": "",
             "icon_path": index.icon_paths[row] if row < len(index.icon_paths) else "",
             "loc_texts_en": loc_texts,
+            "title": _title(loc_texts),
+            "objective": _objective(loc_texts),
             "parse_status": "Icon-only",
         }
 
@@ -177,13 +202,10 @@ class QuestDbssHandler(PreviewHandler):
         with_loc = 0
 
         for record in records:
-            loc_texts = record.get("loc_texts_en", [])
-            if loc_texts:
+            if record.get("loc_texts_en"):
                 with_loc += 1
-            title = loc_texts[0] if loc_texts else ""
-            objective = loc_texts[3] if len(loc_texts) > 3 else ""
-            if not objective:
-                objective = record["objective_text_kr"]
+            title = record["title"]
+            objective = record["objective"]
 
             rows.append([
                 e(record["packed_quest_id"]),
@@ -203,15 +225,4 @@ class QuestDbssHandler(PreviewHandler):
         if icon_only:
             meta += f" · {icon_only:,} icon-only on this page"
 
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("displayId", "Display ID"), "num", ""),
-            (cols.get("chainId", "Chain ID"), "num", ""),
-            (cols.get("questId", "Quest ID"), "num", ""),
-            (cols.get("icon", "Icon"), "", ""),
-            (cols.get("titleName", "Title / Name"), "", ""),
-            (cols.get("condition", "Condition"), "", ""),
-            (cols.get("action", "Action"), "", ""),
-            (cols.get("objective", "Objective"), "", ""),
-        ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)

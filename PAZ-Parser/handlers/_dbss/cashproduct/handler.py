@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import e, icon_cell, table
+from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.icon_index import IconKind, icon_path
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
@@ -24,7 +24,7 @@ _LOC_TYPE_ITEM = 0
 _EMPTY = "-"
 
 
-def _item_name(item_id: int) -> str:
+def _item_name(item_id: int | None) -> str:
     if not item_id or not is_loc_loaded():
         return ""
 
@@ -32,6 +32,17 @@ def _item_name(item_id: int) -> str:
 
 
 class CashProductOffsetHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
+        return [
+            Column(cols.get("productId", "Product ID"), "num", sort_key="product_id"),
+            Column(cols.get("dataOffset", "Data Offset"), "num", sort_key="data_offset"),
+            Column(cols.get("dataSize", "Data Size"), "num", sort_key="data_size"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -49,13 +60,6 @@ class CashProductOffsetHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} offset records"
-
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("productId", "Product ID"), "num", ""),
-            (cols.get("dataOffset", "Data Offset"), "num", ""),
-            (cols.get("dataSize", "Data Size"), "num", ""),
-        ]
         rows = [
             [
                 e(record["product_id"]),
@@ -64,10 +68,21 @@ class CashProductOffsetHandler(PreviewHandler):
             ]
             for record in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)
 
 
 class CashProductHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("itemId", "Item ID"), "num", sort_key="item_id"),
+            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
+            Column(cols.get("item", "Item"), sort_key="item_name"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def companions(self, entry: PazEntry) -> list[str]:
         folder = entry.internal_path.rsplit("/", 1)[0]
         if folder == entry.internal_path:
@@ -86,7 +101,8 @@ class CashProductHandler(PreviewHandler):
 
         records = parse_cashproduct_records(data, offset_raw)
         for record in records:
-            item_id = record["item_id"]
+            # 0 means no linked item. None renders a dash and sorts last.
+            item_id = record["item_id"] = record["item_id"] or None
             # The item's own icon, not the shop tile the product stores.
             record["icon_path"] = icon_path(IconKind.ITEM, item_id) if item_id else ""
             # LOC already answers in the user's language; the block's Korean
@@ -105,13 +121,6 @@ class CashProductHandler(PreviewHandler):
         slice_ = records[start : start + page_size]
         linked = sum(1 for record in records if record["item_id"])
         meta = f"{len(records):,} cash products · {linked:,} linked items"
-
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("itemId", "Item ID"), "num", ""),
-            (cols.get("icon", "Icon"), "", ""),
-            (cols.get("item", "Item"), "", ""),
-        ]
         rows = [
             [
                 e(record["item_id"] or _EMPTY),
@@ -120,4 +129,4 @@ class CashProductHandler(PreviewHandler):
             ]
             for record in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)

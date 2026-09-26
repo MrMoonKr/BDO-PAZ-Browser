@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import e, icon_cell, table
+from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.icon_index import IconKind, icon_path
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded
@@ -17,6 +17,22 @@ _LANG_DIR = Path(__file__).parent / "lang"
 
 
 class NewQuestBssHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("group", "Group"), "num", sort_key="group"),
+            Column(cols.get("mainId", "Main ID"), "num", sort_key="quest_chain_id"),
+            Column(cols.get("subId", "Sub ID"), "num", sort_key="quest_id"),
+            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
+            Column(cols.get("title", "Title"), sort_key="title"),
+            Column(cols.get("sequenceA", "Sequence A"), "num", sort_key="sequence_a"),
+            Column(cols.get("sequenceB", "Sequence B"), "num", sort_key="sequence_b"),
+            Column(cols.get("sequenceC", "Sequence C"), "num", sort_key="sequence_c"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -52,17 +68,6 @@ class NewQuestBssHandler(PreviewHandler):
         if with_titles:
             meta += f" · {with_titles:,} with LOC titles"
 
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("group", "Group"), "num", ""),
-            (cols.get("mainId", "Main ID"), "num", ""),
-            (cols.get("subId", "Sub ID"), "num", ""),
-            (cols.get("icon", "Icon"), "", ""),
-            (cols.get("title", "Title"), "", ""),
-            (cols.get("sequenceA", "Sequence A"), "num", ""),
-            (cols.get("sequenceB", "Sequence B"), "num", ""),
-            (cols.get("sequenceC", "Sequence C"), "num", ""),
-        ]
         rows = [
             [
                 e(record["group"]),
@@ -77,4 +82,4 @@ class NewQuestBssHandler(PreviewHandler):
             for record in slice_
         ]
 
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)

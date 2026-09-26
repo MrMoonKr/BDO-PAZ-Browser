@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import e, icon_cell, table
+from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 from .parser import parse_petaction_records, parse_petactionoffset_records
@@ -15,6 +15,17 @@ _LANG_DIR = Path(__file__).parent / "lang"
 
 
 class PetActionOffsetHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
+        return [
+            Column(cols.get("actionId", "Action ID"), "num", sort_key="action_id"),
+            Column(cols.get("recordOffset", "Record Offset"), "num", sort_key="record_offset"),
+            Column(cols.get("recordSize", "Record Size"), "num", sort_key="record_size"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -32,12 +43,6 @@ class PetActionOffsetHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} pet action offset records"
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("actionId", "Action ID"), "num", ""),
-            (cols.get("recordOffset", "Record Offset"), "num", ""),
-            (cols.get("recordSize", "Record Size"), "num", ""),
-        ]
         rows = [
             [
                 e(r["action_id"]),
@@ -46,10 +51,22 @@ class PetActionOffsetHandler(PreviewHandler):
             ]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)
 
 
 class PetActionHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("actionId", "Action ID"), "num", sort_key="action_id"),
+            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
+            Column(cols.get("actionName", "Action Name"), sort_key="action_name"),
+            Column(cols.get("group", "Group"), "num", sort_key="action_group"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def companions(self, entry: PazEntry) -> list[str]:
         folder = entry.internal_path.rsplit("/", 1)[0]
         return [
@@ -90,13 +107,6 @@ class PetActionHandler(PreviewHandler):
         with_loc = sum(1 for r in records if r["action_name"] != r["icon_action_name"])
         if with_loc:
             meta += f" · {with_loc:,} with LOC type 19 names"
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("actionId", "Action ID"), "num", ""),
-            (cols.get("icon", "Icon"), "", ""),
-            (cols.get("actionName", "Action Name"), "", ""),
-            (cols.get("group", "Group"), "num", ""),
-        ]
         rows = [
             [
                 e(r["action_id"]),
@@ -106,4 +116,4 @@ class PetActionHandler(PreviewHandler):
             ]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)

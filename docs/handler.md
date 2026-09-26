@@ -236,6 +236,34 @@ Columns without a `sort_key`, and plain `(label, css_class, extra_attrs)`
 tuples, render as normal headers you cannot click. A handler that declares no
 fields shows no sortable headers at all.
 
+Picking the field behind a column:
+
+- **Derived cells get their own field.** When a cell is built at render time (a
+  LOC name with a Korean fallback, a label from a lookup table, an icon path
+  resolved from an ID), compute it once in `get_records()`, store it on the
+  record and render from that field. The sort and the cell then agree, and the
+  logic lives in one place. `title.dbss` stores `title`, `requirement`,
+  `category` and `is_special` this way.
+- **Columns that come and go stay declared.** A LOC name column that only
+  renders with LOC loaded, or flag columns that only render when a flag is set
+  somewhere, still belong in `sortable_fields()`. Otherwise a saved sort on
+  them is dropped the first time the file opens without them. Build the list
+  with a parameter (`_columns(has_loc)`) and declare the full set:
+  `sort_keys(self._columns(has_loc=True))`.
+- **Fields that are not on the record** (one entry of a list, say) can still
+  sort: override `_build_sort_order`, pull the values yourself and pass them to
+  `table_sort.sort_order_by_values`. `characterspawntype.dbss` sorts its
+  `flag_NN` columns this way from each record's `flags` list, so it does not
+  add 44 keys to every one of its 24,017 records.
+- **Leave list columns unsortable** (quest titles, page titles, value lists).
+  They would sort by their string form, which is rarely useful.
+- **Store "none" as `None`, not `0`.** When a field uses `0` for "no linked
+  item" or "no next tier" and the cell shows a dash, set it to `None` in
+  `get_records()` (`record["item_id"] = record["item_id"] or None`). A `0`
+  would sort first ascending even though the cell looks empty; `None` sorts
+  last both ways and exports as an empty CSV cell. Keep the parser returning
+  the raw `0` and convert only in the handler.
+
 Ordering rules (`table_sort.py`):
 
 - Numbers sort before text, and text ignores case. Anything else (lists,
@@ -281,6 +309,11 @@ each page renders in a few milliseconds. If a table renders its own HTML instead
 `table()`, emit its headers with `header_cell(column)` so they carry the
 `sortable` class and `data-sort-key`.
 
+`handlers/_dbss/quest/handler.py` does the same over its record index. Its
+records carry scripts thousands of characters long, so `_build_sort_order`
+parses one row at a time and keeps only the sorted field. Every column sorts in
+about 0.65 s on the 19,481-quest fixture, on top of the index built on open.
+
 ---
 
 ## Unit Tests
@@ -297,7 +330,7 @@ PAZ-Parser/
 │   ├── framework.py          # public re-export for test helpers
 │   ├── specs.py              # CountTest, PosTest, TargetTest, SchemaTest, RangeTest
 │   ├── models.py             # HandlerCase, HandlerResult
-│   ├── runner.py             # run_case()
+│   ├── runner.py             # run_case(), load_case()
 │   ├── fixtures.py           # auto-fetches test inputs
 │   └── fixtures/             # gitignored cached binaries
 └── handlers/
@@ -341,7 +374,7 @@ Available specs:
 | `PosTest` | Checks a record at a specific zero-based position. |
 | `TargetTest` | Finds records by column value and checks one or more expected rows. |
 | `SchemaTest` | Checks required keys exist on every row. |
-| `RangeTest` | Checks every value in one column is within a min/max range. |
+| `RangeTest` | Checks every value in one column is within a min/max range. `None` (an empty cell) is skipped. |
 
 Expected dictionaries use subset matching. Tests only check declared keys, so adding
 new fields to a handler does not break existing tests.
@@ -349,6 +382,13 @@ new fields to a handler does not break existing tests.
 If `get_records()` returns raw snake_case fields but the test should assert the
 user-facing table contract, add a `record_mapper` to `HandlerCase`. The mapper
 receives one raw record and returns the normalized dictionary used by test specs.
+
+`tests/test_handler_sort.py` needs no per-handler code. It collects every
+`HandlerCase` in the handler-local test modules, renders page 1 and checks that
+each `data-sort-key` header is in `sortable_fields()`, then sorts by every
+declared field in both directions. A handler that renders no sortable headers,
+or crashes while rendering or sorting, fails there. Parsed LOC is kept per
+fixture and restored between cases, so the whole sweep takes about 25 s.
 
 Fixtures are input files required by tests. Do not commit extracted game files.
 `PAZ-Parser/tests/fixtures/` is gitignored except for `.gitkeep`. Missing fixtures

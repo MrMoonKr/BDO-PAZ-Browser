@@ -6,7 +6,7 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.equipskill_roll import flatten_roll_rows, read_skill_loc_ids
-from _common.html import e, table
+from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 from .parser import (
@@ -30,6 +30,18 @@ def _skill_name(loc_id: int) -> str:
 
 
 class FairyEquipSkillAcquireOffsetHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
+        return [
+            Column(cols.get("acquireTypeId", "Acquire Type ID"), "num", sort_key="acquire_type_id"),
+            Column(cols.get("dataOffset", "Data Offset"), "num", sort_key="data_offset"),
+            Column(cols.get("dataSize", "Data Size"), "num", sort_key="data_size"),
+            Column(cols.get("recordStart", "Record Start"), "num", sort_key="record_start"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -46,13 +58,6 @@ class FairyEquipSkillAcquireOffsetHandler(PreviewHandler):
     ) -> str:
         start = page * page_size
         slice_ = records[start : start + page_size]
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("acquireTypeId", "Acquire Type ID"), "num", ""),
-            (cols.get("dataOffset", "Data Offset"), "num", ""),
-            (cols.get("dataSize", "Data Size"), "num", ""),
-            (cols.get("recordStart", "Record Start"), "num", ""),
-        ]
         rows = [
             [
                 e(r["acquire_type_id"]),
@@ -62,10 +67,23 @@ class FairyEquipSkillAcquireOffsetHandler(PreviewHandler):
             ]
             for r in slice_
         ]
-        return table(f"{len(records):,} fairy roll offset records", headers, rows)
+        return table(f"{len(records):,} fairy roll offset records", self._columns(), rows)
 
 
 class FairyEquipSkillAcquireHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("fairyGrade", "Fairy Grade"), sort_key="fairy_grade"),
+            Column(cols.get("equipSkillId", "Skill ID"), "num", sort_key="equip_skill_id"),
+            Column(cols.get("skillName", "Skill Name"), sort_key="skill_name"),
+            Column(cols.get("chance", "Chance"), "num", sort_key="chance_pct"),
+            Column(cols.get("weight", "Weight"), "num", sort_key="weight"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def companions(self, entry: PazEntry) -> list[str]:
         folder = entry.internal_path.rsplit("/", 1)[0]
         return [f"{folder}/{_OFFSET_FILE}", f"{folder}/{_CATALOG_FILE}"]
@@ -104,14 +122,6 @@ class FairyEquipSkillAcquireHandler(PreviewHandler):
         grades = len({r["acquire_type_id"] for r in records})
         meta = f"{len(records):,} roll entries across {grades} fairy grades"
 
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("fairyGrade", "Fairy Grade"), "", ""),
-            (cols.get("equipSkillId", "Skill ID"), "num", ""),
-            (cols.get("skillName", "Skill Name"), "", ""),
-            (cols.get("chance", "Chance"), "num", ""),
-            (cols.get("weight", "Weight"), "num", ""),
-        ]
         rows = [
             [
                 e(r["grade_name"] or r["acquire_type_id"]),
@@ -122,4 +132,4 @@ class FairyEquipSkillAcquireHandler(PreviewHandler):
             ]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)

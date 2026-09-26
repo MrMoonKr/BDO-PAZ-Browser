@@ -215,7 +215,7 @@ The string table is a flat pool, not grouped records. Skill records choose any s
 | Effect Type | num  | `effect_type`, right-aligned               |
 | Target      | num  | `effect_target`, right-aligned             |
 | Effect A    | num  | `effect_value_a`, right-aligned            |
-| Effect B    | num  | `effect_value_b`, right-aligned when nonzero |
+| Effect B    | num  | `effect_value_b`; dash when zero, stored as `None` so it sorts last |
 
 ---
 

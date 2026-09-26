@@ -115,7 +115,7 @@ icon_path = icon_paths[icon_index]
 | Worker ID  | num  | `worker_id`                               |
 | Icon       | text | Render `icon_path` with icon-cell preview |
 | Name       | text | Prefer LOC type `6`; fall back to blank   |
-| Next Tier  | num  | `next_worker_id`, blank when zero         |
+| Next Tier  | num  | `next_worker_id`; dash when zero, stored as `None` so it sorts last         |
 | Move       | num  | `move_speed`                              |
 | Stamina    | num  | `stamina`                                 |
 | Luck       | num  | `luck`                                    |

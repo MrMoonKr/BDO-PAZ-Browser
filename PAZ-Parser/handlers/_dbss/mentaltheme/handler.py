@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import e, table
+from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
 from .parser import parse_mentaltheme_records, parse_mentalthemeoffset_records
 
@@ -31,6 +31,17 @@ def _reward_2(
 
 
 class MentalThemeOffsetHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
+        return [
+            Column(cols.get("themeId", "Theme ID"), "num", sort_key="theme_id"),
+            Column(cols.get("payloadOffset", "Payload Offset"), "num", sort_key="payload_offset"),
+            Column(cols.get("payloadSize", "Payload Size"), "num", sort_key="payload_size"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -56,12 +67,6 @@ class MentalThemeOffsetHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} offset records"
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("themeId", "Theme ID"), "num", ""),
-            (cols.get("payloadOffset", "Payload Offset"), "num", ""),
-            (cols.get("payloadSize", "Payload Size"), "num", ""),
-        ]
         rows = [
             [
                 e(r["theme_id"]),
@@ -70,10 +75,26 @@ class MentalThemeOffsetHandler(PreviewHandler):
             ]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)
 
 
 class MentalThemeHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("themeId", "Theme ID"), "num", sort_key="theme_id"),
+            Column(cols.get("name", "Name"), sort_key="name"),
+            Column(cols.get("parentId", "Parent ID"), "num", sort_key="parent_id"),
+            Column(cols.get("parentName", "Parent Name"), sort_key="parent_name"),
+            Column(cols.get("energyReward1", "Energy Reward 1"), sort_key="energy_reward_1_amount"),
+            Column(cols.get("energyReward2", "Energy Reward 2"), sort_key="energy_reward_2_amount"),
+            Column(cols.get("entries", "Entries"), "num", sort_key="entry_count"),
+            Column(cols.get("childrenGroups", "Children Groups"), "num", sort_key="child_count"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def companions(self, entry: PazEntry) -> list[str]:
         folder = entry.internal_path.rsplit("/", 1)[0]
         return [f"{folder}/mentalthemeoffset.dbss"]
@@ -136,17 +157,6 @@ class MentalThemeHandler(PreviewHandler):
             f"{len(records):,} mentaltheme records"
             f" · {with_theme_name:,} theme names · {with_parent_name:,} parent names"
         )
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("themeId", "Theme ID"), "num", ""),
-            (cols.get("name", "Name"), "", ""),
-            (cols.get("parentId", "Parent ID"), "num", ""),
-            (cols.get("parentName", "Parent Name"), "", ""),
-            (cols.get("energyReward1", "Energy Reward 1"), "", ""),
-            (cols.get("energyReward2", "Energy Reward 2"), "", ""),
-            (cols.get("entries", "Entries"), "num", ""),
-            (cols.get("childrenGroups", "Children Groups"), "num", ""),
-        ]
 
         rows = [
             [
@@ -161,4 +171,4 @@ class MentalThemeHandler(PreviewHandler):
             ]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)

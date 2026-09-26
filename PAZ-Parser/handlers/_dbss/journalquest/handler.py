@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import e, table
+from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 from .parser import parse_journalquest_offset_records, parse_journalquest_records
@@ -29,6 +29,18 @@ def _join_limited(values: list[str], max_items: int = 6) -> str:
 
 
 class JournalQuestOffsetHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
+        return [
+            Column(cols.get("group", "Group"), "num", sort_key="group_id"),
+            Column(cols.get("entry", "Entry"), "num", sort_key="entry_no"),
+            Column(cols.get("offset", "Offset"), "num", sort_key="byte_offset"),
+            Column(cols.get("size", "Size"), "num", sort_key="byte_size"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -47,13 +59,6 @@ class JournalQuestOffsetHandler(PreviewHandler):
         slice_ = records[start : start + page_size]
         groups = len({r["group_id"] for r in records})
         meta = f"{len(records):,} entries · {groups:,} groups"
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("group", "Group"), "num", ""),
-            (cols.get("entry", "Entry"), "num", ""),
-            (cols.get("offset", "Offset"), "num", ""),
-            (cols.get("size", "Size"), "num", ""),
-        ]
         rows = [
             [
                 e(r["group_id"]),
@@ -63,10 +68,29 @@ class JournalQuestOffsetHandler(PreviewHandler):
             ]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)
 
 
 class JournalQuestDbssHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("group", "Group"), "num", sort_key="group_id"),
+            Column(cols.get("entry", "Entry"), "num", sort_key="entry_no"),
+            Column(cols.get("journalCategoryId", "Journal Category ID"), "num", sort_key="journal_cat_id"),
+            Column(cols.get("title", "Title"), sort_key="journal_title_text"),
+            Column(cols.get("subtitle", "Subtitle"), sort_key="subtitle_text"),
+            Column(cols.get("volume", "Volume"), sort_key="page_vol_title_text"),
+            Column(cols.get("pageTitles", "Page Titles")),
+            Column(cols.get("unlockCondition", "Unlock Condition"), sort_key="unlock_condition_text"),
+            Column(cols.get("pages", "Pages"), "num", sort_key="page_count"),
+            Column(cols.get("combineModel", "Combine Model"), sort_key="combine_model"),
+            Column(cols.get("staticModel", "Static Model"), sort_key="static_model"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def companions(self, entry: PazEntry) -> list[str]:
         folder = entry.internal_path.rsplit("/", 1)[0]
         return [f"{folder}/journalquestoffset.dbss"]
@@ -120,20 +144,6 @@ class JournalQuestDbssHandler(PreviewHandler):
         pages = sum(r["page_count"] for r in records)
         groups = len({r["group_id"] for r in records})
         meta = f"{len(records):,} journal entries · {groups:,} groups · {pages:,} pages"
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("group", "Group"), "num", ""),
-            (cols.get("entry", "Entry"), "num", ""),
-            (cols.get("journalCategoryId", "Journal Category ID"), "num", ""),
-            (cols.get("title", "Title"), "", ""),
-            (cols.get("subtitle", "Subtitle"), "", ""),
-            (cols.get("volume", "Volume"), "", ""),
-            (cols.get("pageTitles", "Page Titles"), "", ""),
-            (cols.get("unlockCondition", "Unlock Condition"), "", ""),
-            (cols.get("pages", "Pages"), "num", ""),
-            (cols.get("combineModel", "Combine Model"), "", ""),
-            (cols.get("staticModel", "Static Model"), "", ""),
-        ]
         rows = [
             [
                 e(r["group_id"]),
@@ -150,4 +160,4 @@ class JournalQuestDbssHandler(PreviewHandler):
             ]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)

@@ -6,7 +6,7 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
-from _common.html import e, error, icon_cell, table
+from _common.html import Column, e, error, icon_cell, sort_keys, table
 from _common.icon_index import IconKind, icon_path
 from _common.lang import load_handler_strings
 from .parser import (
@@ -18,6 +18,17 @@ _LANG_DIR = Path(__file__).parent / "lang"
 
 
 class CharacterStaticOffsetHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
+        return [
+            Column(cols.get("idLow16", "ID Low16"), "num", sort_key="id_low16"),
+            Column(cols.get("byteOffset", "Byte Offset"), "num", sort_key="offset"),
+            Column(cols.get("size", "Size"), "num", sort_key="size"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -35,20 +46,34 @@ class CharacterStaticOffsetHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} offset records"
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("idLow16", "ID Low16"), "num", ""),
-            (cols.get("byteOffset", "Byte Offset"), "num", ""),
-            (cols.get("size", "Size"), "num", ""),
-        ]
         rows = [
             [e(r["id_low16"]), e(f"0x{r['offset']:08X}"), e(r["size"])]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)
 
 
 class CharacterStaticHandler(PreviewHandler):
+    def _columns(self, has_loc: bool) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        columns = [
+            Column(cols.get("characterId", "Character ID"), "num", sort_key="character_id"),
+            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
+        ]
+        if has_loc:
+            columns.append(Column(cols.get("nameEn", "Name (EN)"), sort_key="name_en"))
+        columns += [
+            Column(cols.get("script", "Script"), sort_key="script"),
+            Column(cols.get("knowledgeId", "Knowledge ID"), "num", sort_key="knowledge_id"),
+            Column(cols.get("payloadSize", "Payload Size"), "num", sort_key="payload_size"),
+            Column(cols.get("unknownType", "Unknown Type"), "num", sort_key="unknown_type"),
+        ]
+        return columns
+
+    def sortable_fields(self) -> frozenset[str]:
+        # Includes the name, so a saved sort survives LOC not being loaded.
+        return sort_keys(self._columns(has_loc=True))
+
     def companions(self, entry: PazEntry) -> list[str]:
         folder = entry.internal_path.rsplit("/", 1)[0]
         return [
@@ -79,6 +104,7 @@ class CharacterStaticHandler(PreviewHandler):
             result.append(
                 {
                     "character_id": r["character_id"],
+                    "icon_path": icon_path(IconKind.CHARACTER, r["character_id"]),
                     "name_en": name,
                     "script": r["script"],
                     "knowledge_id": r["knowledge_id"],
@@ -99,30 +125,15 @@ class CharacterStaticHandler(PreviewHandler):
 
         has_loc = is_loc_loaded()
 
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("characterId", "Character ID"), "num", ""),
-            (cols.get("icon", "Icon"), "", ""),
-        ]
-        if has_loc:
-            headers.append((cols.get("nameEn", "Name (EN)"), "", ""))
-        headers += [
-            (cols.get("script", "Script"), "", ""),
-            (cols.get("knowledgeId", "Knowledge ID"), "num", ""),
-            (cols.get("payloadSize", "Payload Size"), "num", ""),
-            (cols.get("unknownType", "Unknown Type"), "num", ""),
-        ]
-
         start = page * page_size
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} records"
 
         rows: list[list[str]] = []
         for r in slice_:
-            path = icon_path(IconKind.CHARACTER, r["character_id"])
             row: list[str] = [
                 e(r["character_id"]),
-                icon_cell(path) if path else "-",
+                icon_cell(r["icon_path"]) if r["icon_path"] else "-",
             ]
             if has_loc:
                 row.append(e(r["name_en"]))
@@ -132,4 +143,4 @@ class CharacterStaticHandler(PreviewHandler):
             row.append(e(r["unknown_type"]))
             rows.append(row)
 
-        return table(meta, headers, rows)
+        return table(meta, self._columns(has_loc), rows)

@@ -151,7 +151,7 @@ start at `New_Icon/` and take the prefix `ui_texture/icon/`.
 
 | Column  | Type | Notes                                                        |
 | ------- | ---- | ------------------------------------------------------------ |
-| Item ID | num  | Linked `item_id`; `-` when absent                            |
+| Item ID | num  | Linked `item_id`; dash when absent, stored as `None` so it sorts last                            |
 | Icon    | text | The item's own icon, resolved from `item_id`, not the tile   |
 | Item    | text | LOC name in the user's language; falls back to Korean `name` |
 

@@ -9,7 +9,7 @@ from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 
 from _common.binary import parse_offset_table
-from _common.html import color_cell, e, table
+from _common.html import Column, color_cell, e, sort_keys, table
 from .parser import extract_title_records
 
 
@@ -35,6 +35,21 @@ def _title_cell(title: str, css_color: str) -> str:
 
 
 class TitleDbssHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("titleId", "Title ID"), "num", sort_key="title_id"),
+            Column(cols.get("category", "Category"), sort_key="category"),
+            Column(cols.get("titleColor", "Title Color"), sort_key="title_color_argb"),
+            Column(cols.get("title", "Title"), sort_key="title"),
+            Column(cols.get("titleRequirements", "Title Requirements"), sort_key="requirement"),
+            Column(cols.get("special", "Special"), sort_key="is_special"),
+            Column(cols.get("effect", "Effect"), sort_key="title_effect_name"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def companions(self, entry: PazEntry) -> list[str]:
         folder = entry.internal_path.rsplit("/", 1)[0]
         return [f"{folder}/titleoffset.dbss"]
@@ -52,12 +67,17 @@ class TitleDbssHandler(PreviewHandler):
         offset_map = parse_offset_table(offset_raw)
         records = extract_title_records(data, offset_map)
 
+        has_loc = is_loc_loaded()
         result: list[dict] = []
         for rec in records:
             row: dict = dict(rec)
-            if is_loc_loaded():
+            if has_loc:
                 row["en_name"] = loc_lookup(1, rec["title_id"])
                 row["en_req"] = strip_pa_tags(loc_lookup(1, rec["title_id"], 0, 0, 1))
+            row["category"] = _category_label(rec["category_id"])
+            row["title"] = strip_pa_tags(row.get("en_name") or rec["title_text_ko"])
+            row["requirement"] = strip_pa_tags(row.get("en_req") or rec["requirement_text_ko"])
+            row["is_special"] = bool(rec["title_color_argb"] or rec["header_field_meaning"] != "style")
             result.append(row)
 
         return result
@@ -68,17 +88,6 @@ class TitleDbssHandler(PreviewHandler):
         page: int,
         page_size: int,
     ) -> str:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("titleId",           "Title ID"),           "num", ""),
-            (cols.get("category",          "Category"),           "",    ""),
-            (cols.get("titleColor",        "Title Color"),        "",    ""),
-            (cols.get("title",             "Title"),              "",    ""),
-            (cols.get("titleRequirements", "Title Requirements"), "",    ""),
-            (cols.get("special",           "Special"),            "",    ""),
-            (cols.get("effect",            "Effect"),             "",    ""),
-        ]
-
         start = page * page_size
         slice_ = records[start : start + page_size]
 
@@ -86,18 +95,15 @@ class TitleDbssHandler(PreviewHandler):
         for record in slice_:
             title_color = record["title_color_argb"]
             title_color_hex = title_color[4:] if title_color.startswith("0xFF") else ""
-            title = strip_pa_tags(record.get("en_name") or record["title_text_ko"])
-            requirement = strip_pa_tags(record.get("en_req") or record["requirement_text_ko"])
-            is_special = bool(title_color or record["header_field_meaning"] != "style")
 
             rows.append([
                 e(record["title_id"]),
-                e(_category_label(record["category_id"])),
+                e(record["category"]),
                 color_cell([title_color_hex]) if title_color_hex else "-",
-                _title_cell(title, record["title_color_css"]),
-                e(requirement),
-                e("True" if is_special else "False"),
+                _title_cell(record["title"], record["title_color_css"]),
+                e(record["requirement"]),
+                e("True" if record["is_special"] else "False"),
                 e(record["title_effect_name"] or "-"),
             ])
 
-        return table(f"{len(records):,} titles decoded", headers, rows)
+        return table(f"{len(records):,} titles decoded", self._columns(), rows)

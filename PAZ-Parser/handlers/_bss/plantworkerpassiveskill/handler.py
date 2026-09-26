@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import e, icon_cell, table
+from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 from .parser import parse_plantworkerpassiveskill_records
@@ -22,6 +22,23 @@ def _loc_skill_text(skill_id: int, field_id: int) -> str:
 
 
 class PlantWorkerPassiveSkillBssHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("skillId", "Skill ID"), "num", sort_key="skill_id"),
+            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
+            Column(cols.get("name", "Name"), sort_key="display_name"),
+            Column(cols.get("description", "Description"), sort_key="display_description"),
+            Column(cols.get("weight", "Weight"), "num", sort_key="acquisition_weight"),
+            Column(cols.get("effectType", "Effect Type"), "num", sort_key="effect_type"),
+            Column(cols.get("target", "Target"), "num", sort_key="effect_target"),
+            Column(cols.get("effectA", "Effect A"), "num", sort_key="effect_value_a"),
+            Column(cols.get("effectB", "Effect B"), "num", sort_key="effect_value_b"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -37,6 +54,8 @@ class PlantWorkerPassiveSkillBssHandler(PreviewHandler):
             row["display_description"] = (
                 _loc_skill_text(row["skill_id"], 1) or row["inline_description"]
             )
+            # 0 means the skill has no second value. None renders a dash and sorts last.
+            row["effect_value_b"] = row["effect_value_b"] or None
             records.append(row)
         return records
 
@@ -59,19 +78,6 @@ class PlantWorkerPassiveSkillBssHandler(PreviewHandler):
         if localized:
             meta += f" · {localized:,} with LOC text"
 
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("skillId", "Skill ID"), "num", ""),
-            (cols.get("icon", "Icon"), "", ""),
-            (cols.get("name", "Name"), "", ""),
-            (cols.get("description", "Description"), "", ""),
-            (cols.get("weight", "Weight"), "num", ""),
-            (cols.get("effectType", "Effect Type"), "num", ""),
-            (cols.get("target", "Target"), "num", ""),
-            (cols.get("effectA", "Effect A"), "num", ""),
-            (cols.get("effectB", "Effect B"), "num", ""),
-        ]
-
         rows = [
             [
                 e(record["skill_id"]),
@@ -87,4 +93,4 @@ class PlantWorkerPassiveSkillBssHandler(PreviewHandler):
             for record in slice_
         ]
 
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)

@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import e, icon_cell, table
+from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.icon_index import IconKind, icon_path
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
@@ -23,6 +23,19 @@ def _skill_name(loc_id: int) -> str:
 
 
 class PetEquipSkillBssHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("equipSkillId", "Equip Skill ID"), "num", sort_key="equip_skill_id"),
+            Column(cols.get("skillName", "Skill Name"), sort_key="skill_name"),
+            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
+            Column(cols.get("skillType", "Skill Type"), "num", sort_key="skill_type"),
+            Column(cols.get("section", "Section"), sort_key="section"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -52,15 +65,6 @@ class PetEquipSkillBssHandler(PreviewHandler):
         if localized:
             meta += f" · {localized:,} LOC names"
 
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("equipSkillId", "Equip Skill ID"), "num", ""),
-            (cols.get("skillName", "Skill Name"), "", ""),
-            (cols.get("icon", "Icon"), "", ""),
-            (cols.get("skillType", "Skill Type"), "num", ""),
-            (cols.get("section", "Section"), "", ""),
-        ]
-
         rows = [
             [
                 e(record["equip_skill_id"]),
@@ -72,4 +76,4 @@ class PetEquipSkillBssHandler(PreviewHandler):
             for record in slice_
         ]
 
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)

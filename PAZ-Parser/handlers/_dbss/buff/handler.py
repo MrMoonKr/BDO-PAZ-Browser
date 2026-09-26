@@ -151,6 +151,8 @@ class BuffHandler(PreviewHandler):
             record["title"] = extract_title(raw)
             record["description"] = strip_pa_tags(raw).strip()
             record["duration"] = format_duration(record["duration_ms"])
+            # 0 means no duration. None renders a dash and sorts last.
+            record["duration_ms"] = record["duration_ms"] or None
         return records
 
     def render_records_page(

@@ -67,7 +67,7 @@ CASE = HandlerCase(
             expected={
                 "record": 6,
                 "group_id": 7,
-                "sub_key": 0,
+                "sub_key": None,
                 "value_a": 300,
                 "value_b": 350,
             },
@@ -78,7 +78,7 @@ CASE = HandlerCase(
             value=4,
             expected={
                 "record": 3,
-                "sub_key": 0,
+                "sub_key": None,
                 "value_a": 100,
                 "value_b": 300,
             },

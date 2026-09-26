@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import e, table
+from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 from .parser import parse_exploration_records
@@ -19,6 +19,20 @@ def _knowledge_text(knowledge_id: int, str_id4: int) -> str:
 
 
 class ExplorationBssHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("knowledgeId", "Knowledge ID"), "num", sort_key="knowledge_id"),
+            Column(cols.get("knowledgeName", "Knowledge Name"), sort_key="knowledge_name"),
+            Column(cols.get("groupId", "Group ID"), "num", sort_key="group_id"),
+            Column(cols.get("enabled", "Enabled"), "num", sort_key="enabled"),
+            Column(cols.get("anchorId", "Anchor ID"), "num", sort_key="anchor_id_a"),
+            Column(cols.get("radius", "Radius"), "num", sort_key="radius"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -51,16 +65,6 @@ class ExplorationBssHandler(PreviewHandler):
         if with_names:
             meta += f" · {with_names:,} LOC names"
 
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("knowledgeId", "Knowledge ID"), "num", ""),
-            (cols.get("knowledgeName", "Knowledge Name"), "", ""),
-            (cols.get("groupId", "Group ID"), "num", ""),
-            (cols.get("enabled", "Enabled"), "num", ""),
-            (cols.get("anchorId", "Anchor ID"), "num", ""),
-            (cols.get("radius", "Radius"), "num", ""),
-        ]
-
         rows = [
             [
                 e(record["knowledge_id"]),
@@ -73,4 +77,4 @@ class ExplorationBssHandler(PreviewHandler):
             for record in slice_
         ]
 
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)

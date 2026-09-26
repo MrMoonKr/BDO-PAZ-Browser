@@ -84,6 +84,9 @@ class RangeTest:
     def check(self, records: list[dict]) -> str:
         for pos, record in enumerate(records):
             value = record.get(self.col)
+            # None is an empty cell (a 0 ID shown as a dash), not out of range.
+            if value is None:
+                continue
             if value < self.min_val or value > self.max_val:
                 raise AssertionError(
                     f"RangeTest records[{pos}].{self.col}={value!r} outside "

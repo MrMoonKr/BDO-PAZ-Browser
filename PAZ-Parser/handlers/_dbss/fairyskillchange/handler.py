@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import e, table
+from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
 from .parser import (
     parse_fairyskillchange_records,
@@ -17,6 +17,16 @@ _LANG_DIR = Path(__file__).parent / "lang"
 
 
 class FairySkillChangeHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("level", "Level"), "num", sort_key="level"),
+            Column(cols.get("orbCost", "Theiah's Orbs"), "num", sort_key="orb_cost"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -34,18 +44,24 @@ class FairySkillChangeHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
 
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("level", "Level"), "num", ""),
-            (cols.get("orbCost", "Theiah's Orbs"), "num", ""),
-        ]
-
         rows = [[e(record["level"]), e(record["orb_cost"])] for record in slice_]
 
-        return table(f"{len(records):,} fairy level records", headers, rows)
+        return table(f"{len(records):,} fairy level records", self._columns(), rows)
 
 
 class FairySkillChangeOffsetHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
+        return [
+            Column(cols.get("level", "Level"), "num", sort_key="level"),
+            Column(cols.get("dataOffset", "Data Offset"), "num", sort_key="data_offset"),
+            Column(cols.get("dataSize", "Data Size"), "num", sort_key="data_size"),
+            Column(cols.get("recordStart", "Record Start"), "num", sort_key="record_start"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -63,14 +79,6 @@ class FairySkillChangeOffsetHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
 
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("level", "Level"), "num", ""),
-            (cols.get("dataOffset", "Data Offset"), "num", ""),
-            (cols.get("dataSize", "Data Size"), "num", ""),
-            (cols.get("recordStart", "Record Start"), "num", ""),
-        ]
-
         rows = [
             [
                 e(record["level"]),
@@ -81,4 +89,4 @@ class FairySkillChangeOffsetHandler(PreviewHandler):
             for record in slice_
         ]
 
-        return table(f"{len(records):,} fairy level offset records", headers, rows)
+        return table(f"{len(records):,} fairy level offset records", self._columns(), rows)

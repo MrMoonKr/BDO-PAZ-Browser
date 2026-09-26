@@ -61,7 +61,7 @@ CASE = HandlerCase(
                 "effect_type": 0,
                 "effect_target": 0,
                 "effect_value_a": 60000,
-                "effect_value_b": 0,
+                "effect_value_b": None,
             },
         ),
         TargetTest(
@@ -76,7 +76,7 @@ CASE = HandlerCase(
                 "effect_type_copy": 6,
                 "effect_target": 5004,
                 "effect_value_a": 3,
-                "effect_value_b": 0,
+                "effect_value_b": None,
             },
         ),
         TargetTest(
@@ -102,7 +102,7 @@ CASE = HandlerCase(
                 "apply_mode": 0,
                 "effect_target": 0,
                 "effect_value_a": 70000,
-                "effect_value_b": 0,
+                "effect_value_b": None,
                 "extra_zero_a": 0,
                 "extra_effect_value_a": 2000000,
                 "extra_effect_value_b": 1,

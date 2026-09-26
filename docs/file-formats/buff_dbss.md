@@ -189,7 +189,7 @@ of the buffs that use each value.
 | Description | text | LOC `str_type=5`, `str_id1=buff_id`; falls back to the inline Korean description, `<null>` counts as empty |
 | Level       | num  | `buff_level`                                                        |
 | Effect Type | num  | `effect_type`                                                       |
-| Duration    | text | `duration_ms` formatted as h/min/s; dash when `0`                   |
+| Duration    | text | `duration_ms` formatted as h/min/s; dash when `0`, stored as `None` so it sorts last                   |
 | Param 1     | num  | `param_1`                                                           |
 | Param 2     | num  | `param_2`                                                           |
 | Param 3     | num  | `param_3`                                                           |

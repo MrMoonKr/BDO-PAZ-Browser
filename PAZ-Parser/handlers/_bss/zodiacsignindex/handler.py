@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import e, table
+from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.zodiacsign.loc import resolve_loc_type7
 from _common.zodiacsign.parser import parse_zodiacsign_records
@@ -16,6 +16,16 @@ _LANG_DIR = Path(__file__).parent / "lang"
 
 
 class ZodiacSignIndexHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("zodiacId", "Zodiac ID"), "num", sort_key="zodiac_id"),
+            Column(cols.get("name", "Name"), sort_key="name"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def companions(self, entry: PazEntry) -> list[str]:
         folder = entry.internal_path.rsplit("/", 1)[0]
         if folder == entry.internal_path:
@@ -57,13 +67,8 @@ class ZodiacSignIndexHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} zodiac index entries"
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("zodiacId", "Zodiac ID"), "num", ""),
-            (cols.get("name", "Name"), "", ""),
-        ]
         rows = [
             [e(r["zodiac_id"]), e(r["name"])]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)

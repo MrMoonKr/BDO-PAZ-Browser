@@ -1,19 +1,54 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
 from time import perf_counter
 
 from bdo_models import PazEntry
-from bdo_preview import get_handler
+from bdo_preview import PreviewHandler, get_handler
 
 from .fixtures import ensure_fixtures
-from .loc_counter import null_loc_counter, patch_loc_counter, reset_loc
+from .loc_counter import LOC_STATE_NAMES, null_loc_counter, patch_loc_counter, reset_loc
 from .models import HandlerCase, HandlerResult
 
 
-def run_case(case: HandlerCase) -> HandlerResult:
-    fixture_paths = ensure_fixtures(case)
+@dataclass(frozen=True)
+class LoadedCase:
+    """A case's handler with its fixture bytes, ready to call."""
+
+    handler: PreviewHandler
+    entry: PazEntry
+    data: bytes
+    companions: dict[str, bytes]
+
+
+# Parsed LOC state per fixture path. Parsing takes seconds, and cases with
+# and without LOC interleave, so a case restores the parsed state instead.
+_parsed_loc: dict[Path, tuple[object, ...]] = {}
+
+
+def _load_loc(path: Path | None) -> None:
+    """Load the LOC fixture at `path`, or clear LOC when `path` is None."""
+    import _common.loc as loc
+
     reset_loc()
+    if path is None:
+        return
+
+    state = _parsed_loc.get(path)
+    if state is None:
+        loc.init_loc(path.read_bytes())
+        _parsed_loc[path] = tuple(getattr(loc, name) for name in LOC_STATE_NAMES)
+        return
+
+    for name, value in zip(LOC_STATE_NAMES, state):
+        setattr(loc, name, value)
+
+
+def load_case(case: HandlerCase) -> LoadedCase:
+    """Fetch the case's fixtures, load its LOC (or clear it) and resolve its handler."""
+    fixture_paths = ensure_fixtures(case)
+    _load_loc(None if case.loc_file is None else fixture_paths[str(case.loc_file)])
 
     data = fixture_paths[str(case.data_file)].read_bytes()
     companions = {
@@ -21,27 +56,27 @@ def run_case(case: HandlerCase) -> HandlerResult:
         for basename, relative_path in case.companion_files.items()
     }
 
-    if case.loc_file is not None:
-        from _common.loc import init_loc
+    entry = PazEntry(
+        archive_name="",
+        internal_path=case.internal_path,
+        offset=0,
+        compressed_size=0,
+        uncompressed_size=0,
+        compression_type=0,
+        encryption_type=0,
+    )
+    suffix = Path(case.internal_path).suffix
+    handler = get_handler(Path(case.internal_path).name, suffix)
+    return LoadedCase(handler, entry, data, companions)
 
-        init_loc(fixture_paths[str(case.loc_file)].read_bytes())
+
+def run_case(case: HandlerCase) -> HandlerResult:
+    loaded = load_case(case)
 
     loc_counter = patch_loc_counter() if case.uses_loc else null_loc_counter()
     with loc_counter as loc_stats:
-        entry = PazEntry(
-            archive_name="",
-            internal_path=case.internal_path,
-            offset=0,
-            compressed_size=0,
-            uncompressed_size=0,
-            compression_type=0,
-            encryption_type=0,
-        )
-        suffix = Path(case.internal_path).suffix
-        handler = get_handler(Path(case.internal_path).name, suffix)
-
         start = perf_counter()
-        records = handler.get_records(data, entry, companions)
+        records = loaded.handler.get_records(loaded.data, loaded.entry, loaded.companions)
         elapsed_ms = (perf_counter() - start) * 1000
 
     if case.record_mapper is not None:

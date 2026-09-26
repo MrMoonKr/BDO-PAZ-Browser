@@ -116,7 +116,7 @@ The table splits cleanly in two. Groups 1–2 carry two entries each, keyed by
 | Column   | Type | Notes                                   |
 | -------- | ---- | --------------------------------------- |
 | Group ID | num  | `group_id`                              |
-| Sub Key  | num  | `sub_key`; `—` when zero                |
+| Sub Key  | num  | `sub_key`; dash when zero, stored as `None` so it sorts last                |
 | Value A  | num  | `value_a`                               |
 | Value B  | num  | `value_b`                               |
 

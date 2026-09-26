@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import e, error, table
+from _common.html import Column, e, error, sort_keys, table
 from _common.lang import load_handler_strings
 from .parser import (
     parse_mentalcard_offset_records,
@@ -17,6 +17,16 @@ _LANG_DIR = Path(__file__).parent / "lang"
 
 
 class MentalCardOffsetHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
+        return [
+            Column(cols.get("internalId", "Internal ID"), "num", sort_key="internal_id"),
+            Column(cols.get("dbssOffset", "DBSS Offset"), "num", sort_key="dbss_offset"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -38,19 +48,26 @@ class MentalCardOffsetHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} offset records"
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("internalId", "Internal ID"), "num", ""),
-            (cols.get("dbssOffset", "DBSS Offset"), "num", ""),
-        ]
         rows = [
             [e(r["internal_id"]), e(f"0x{r['dbss_offset']:08X}")]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)
 
 
 class MentalCardHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("knowledgeId", "Knowledge ID"), "num", sort_key="entry_id"),
+            Column(cols.get("knowledgeName", "Knowledge Name"), sort_key="entry_name"),
+            Column(cols.get("categoryId", "Category ID"), "num", sort_key="node_id"),
+            Column(cols.get("categoryName", "Category Name"), sort_key="node_name"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def companions(self, entry: PazEntry) -> list[str]:
         folder = entry.internal_path.rsplit("/", 1)[0]
         return [f"{folder}/mentalcardoffset.dbss"]
@@ -91,13 +108,6 @@ class MentalCardHandler(PreviewHandler):
             f"{len(records):,} mentalcard records"
             f" · {with_entry_name:,} entry names · {with_node_name:,} node names"
         )
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("knowledgeId", "Knowledge ID"), "num", ""),
-            (cols.get("knowledgeName", "Knowledge Name"), "", ""),
-            (cols.get("categoryId", "Category ID"), "num", ""),
-            (cols.get("categoryName", "Category Name"), "", ""),
-        ]
 
         rows = [
             [
@@ -108,4 +118,4 @@ class MentalCardHandler(PreviewHandler):
             ]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)

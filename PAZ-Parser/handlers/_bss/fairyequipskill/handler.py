@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import e, icon_cell, table
+from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.icon_index import IconKind, icon_path
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
@@ -27,6 +27,20 @@ def _loc_text(loc_id: int, id4: int) -> str:
 
 
 class FairyEquipSkillBssHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("equipSkillId", "Equip Skill ID"), "num", sort_key="equip_skill_id"),
+            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
+            Column(cols.get("skillName", "Skill Name"), sort_key="skill_name"),
+            Column(cols.get("description", "Description"), sort_key="skill_description"),
+            Column(cols.get("skillType", "Skill Type"), "num", sort_key="skill_type"),
+            Column(cols.get("locId", "Loc ID"), "num", sort_key="loc_id"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -58,16 +72,6 @@ class FairyEquipSkillBssHandler(PreviewHandler):
         if localized:
             meta += f" · {localized:,} LOC names"
 
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("equipSkillId", "Equip Skill ID"), "num", ""),
-            (cols.get("icon", "Icon"), "", ""),
-            (cols.get("skillName", "Skill Name"), "", ""),
-            (cols.get("description", "Description"), "", ""),
-            (cols.get("skillType", "Skill Type"), "num", ""),
-            (cols.get("locId", "Loc ID"), "num", ""),
-        ]
-
         rows = [
             [
                 e(record["equip_skill_id"]),
@@ -80,4 +84,4 @@ class FairyEquipSkillBssHandler(PreviewHandler):
             for record in slice_
         ]
 
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)

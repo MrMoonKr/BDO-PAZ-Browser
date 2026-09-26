@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import e, table
+from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 from .parser import parse_planttown_records
@@ -22,6 +22,16 @@ def _node_name(node_id: int) -> str:
 
 
 class PlantTownBssHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("nodeId", "Node ID"), "num", sort_key="node_id"),
+            Column(cols.get("nodeName", "Node Name"), sort_key="node_name"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -50,12 +60,6 @@ class PlantTownBssHandler(PreviewHandler):
         if named:
             meta += f" · {named:,} LOC names"
 
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("nodeId", "Node ID"), "num", ""),
-            (cols.get("nodeName", "Node Name"), "", ""),
-        ]
-
         rows = [
             [
                 e(record["node_id"]),
@@ -64,4 +68,4 @@ class PlantTownBssHandler(PreviewHandler):
             for record in slice_
         ]
 
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)

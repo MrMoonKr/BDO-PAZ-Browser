@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import e, table
+from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 from .parser import parse_employeename_records, parse_employeenameoffset_records
@@ -15,6 +15,17 @@ _LANG_DIR = Path(__file__).parent / "lang"
 
 
 class EmployeeNameOffsetHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
+        return [
+            Column(cols.get("employeeNameId", "Employee Name ID"), "num", sort_key="employee_name_id"),
+            Column(cols.get("dataOffset", "Data Offset"), "num", sort_key="data_offset"),
+            Column(cols.get("dataSize", "Data Size"), "num", sort_key="data_size"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -32,12 +43,6 @@ class EmployeeNameOffsetHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} offset records"
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("employeeNameId", "Employee Name ID"), "num", ""),
-            (cols.get("dataOffset", "Data Offset"), "num", ""),
-            (cols.get("dataSize", "Data Size"), "num", ""),
-        ]
         rows = [
             [
                 e(r["employee_name_id"]),
@@ -46,10 +51,20 @@ class EmployeeNameOffsetHandler(PreviewHandler):
             ]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)
 
 
 class EmployeeNameHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("employeeNameId", "Employee Name ID"), "num", sort_key="employee_name_id"),
+            Column(cols.get("name", "Name"), sort_key="name"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def companions(self, entry: PazEntry) -> list[str]:
         folder = entry.internal_path.rsplit("/", 1)[0]
         return [f"{folder}/employeenameoffset.dbss"]
@@ -72,6 +87,7 @@ class EmployeeNameHandler(PreviewHandler):
                 row["name_en"] = strip_pa_tags(
                     loc_lookup(71, record["employee_name_id"], 0, 12)
                 )
+            row["name"] = row.get("name_en") or record["name_ko"]
             result.append(row)
 
         return result
@@ -85,16 +101,11 @@ class EmployeeNameHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} employee names"
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("employeeNameId", "Employee Name ID"), "num", ""),
-            (cols.get("name", "Name"), "", ""),
-        ]
         rows = [
             [
                 e(r["employee_name_id"]),
-                e(r.get("name_en") or r["name_ko"]),
+                e(r["name"]),
             ]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)

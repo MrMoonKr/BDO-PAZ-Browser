@@ -6,7 +6,7 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.fairy import upgrade_step_label
-from _common.html import e, icon_cell, table
+from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.icon_index import IconKind, icon_path
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
@@ -29,6 +29,22 @@ def _item_name(item_id: int) -> str:
 
 
 class FairyUpgradeRateBssHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("step", "Step"), "num", sort_key="step"),
+            Column(cols.get("upgrade", "Upgrade"), sort_key="upgrade"),
+            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
+            Column(cols.get("item", "Item"), sort_key="item_name"),
+            Column(cols.get("itemId", "Item ID"), "num", sort_key="item_id"),
+            Column(cols.get("chancePerItem", "Chance / Item"), "num", sort_key="chance_pct"),
+            Column(cols.get("ratePpm", "Rate (ppm)"), "num", sort_key="rate_ppm"),
+            Column(cols.get("itemsForMax", "Items for Max"), "num", sort_key="items_for_max"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -62,18 +78,6 @@ class FairyUpgradeRateBssHandler(PreviewHandler):
         if localized:
             meta += f" · {localized:,} LOC names"
 
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("step", "Step"), "num", ""),
-            (cols.get("upgrade", "Upgrade"), "", ""),
-            (cols.get("icon", "Icon"), "", ""),
-            (cols.get("item", "Item"), "", ""),
-            (cols.get("itemId", "Item ID"), "num", ""),
-            (cols.get("chancePerItem", "Chance / Item"), "num", ""),
-            (cols.get("ratePpm", "Rate (ppm)"), "num", ""),
-            (cols.get("itemsForMax", "Items for Max"), "num", ""),
-        ]
-
         rows = [
             [
                 e(record["step"]),
@@ -88,4 +92,4 @@ class FairyUpgradeRateBssHandler(PreviewHandler):
             for record in slice_
         ]
 
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)
