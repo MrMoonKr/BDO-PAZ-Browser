@@ -10,22 +10,31 @@ export const treeMethods = {
     const seq = ++this._searchSeq;
     this._inSearch = false;
     this._clearExtractSelection();
-    const searchEl = document.getElementById("search");
-    const contentSearchBtn = document.getElementById("btn-content-search");
-    searchEl.value = "";
+    document.getElementById("search").value = "";
     const tree = document.getElementById("tree");
     tree.innerHTML = "";
     tree.appendChild(this._buildTreeLoadingNode());
-    await this._nextPaint();
-    const children = await window.pywebview.api.get_children("");
-    if (seq === this._searchSeq) {
+    try {
+      await this._nextPaint();
+      const children = await window.pywebview.api.get_children("");
+      if (seq !== this._searchSeq) return;
       tree.innerHTML = "";
       for (const item of children) {
         tree.appendChild(this._buildNode(item));
       }
+    } catch (err) {
+      console.error("Loading the tree root failed", err);
+      if (seq !== this._searchSeq) return;
+      tree.innerHTML = "";
+      this.setStatus({ key: "status.error", args: { message: String(err?.message ?? err) } });
+    } finally {
+      this._setSearchEnabled(true);
     }
-    searchEl.disabled = false;
-    contentSearchBtn.disabled = false;
+  },
+
+  _setSearchEnabled(isEnabled) {
+    document.getElementById("search").disabled = !isEnabled;
+    document.getElementById("btn-content-search").disabled = !isEnabled;
   },
 
   _buildTreeLoadingNode() {
