@@ -8,6 +8,7 @@ from pathlib import Path
 import webview
 
 from .bdo_api_helpers import _DISK_VIRTUAL_PREFIX, _norm
+from .bdo_config import load_table_sort, save_table_sort, table_sort_file_key
 from bdo_models import PazEntry
 from paz.bdo_payload_cache import cached_read_entry_payload
 from paz.bdo_payload_reader import can_range_read, read_entry_range
@@ -21,6 +22,7 @@ from bdo_preview import (
     TextHandler,
     get_handler,
 )
+from table_sort import TableSort
 
 _hex_handler = HexHandler()
 _HEX_BYTES_PER_PAGE = HEX_ROWS_PER_PAGE * 16
@@ -147,6 +149,7 @@ class PreviewMixin:
         self._cached_handler = None
         self._cached_entry = entry
         self._cached_companions = companions
+        self._cached_sort = None
 
         hex_total_pages = HexHandler.page_count(data)
         start = self._ts()
@@ -179,8 +182,11 @@ class PreviewMixin:
                 record_count = handler.get_record_count(data, entry, companions)
                 self._te(profile, "backend.lazy_count_ms", start)
                 parsed_total_pages = max(1, (record_count + PARSED_RECORDS_PER_PAGE - 1) // PARSED_RECORDS_PER_PAGE)
+                self._cached_sort = load_table_sort(
+                    table_sort_file_key(internal_path), handler.sortable_fields()
+                )
                 start = self._ts()
-                html = handler.render_data_page(data, entry, companions, 0, PARSED_RECORDS_PER_PAGE)
+                html = self._render_parsed_page(0)
                 self._te(profile, "backend.lazy_page_render_ms", start)
             except Exception as ex:
                 html = f'<div class="error">Parse error: {_html_mod.escape(str(ex))}</div>'
@@ -201,6 +207,7 @@ class PreviewMixin:
             "hex_total_pages": hex_total_pages,
             "parsed_total_pages": parsed_total_pages,
             "hex_paging": "full-buffer",
+            "sort": self._cached_sort.to_dict() if self._cached_sort else None,
         }
         if self._profile:
             response["profile"] = profile
@@ -220,6 +227,7 @@ class PreviewMixin:
         self._cached_handler = None
         self._cached_entry = entry
         self._cached_companions = {}
+        self._cached_sort = None
 
         try:
             stream_url = self.stream_url(entry.internal_path)
@@ -259,6 +267,7 @@ class PreviewMixin:
         self._cached_handler = None
         self._cached_entry = entry
         self._cached_companions = {}
+        self._cached_sort = None
 
         hex_html = _hex_handler.render_bytes(page_bytes, 0)
         return {
@@ -408,21 +417,40 @@ class PreviewMixin:
                 return {"error": str(ex)}
         return {"hex_html": _hex_handler.render_page(data, page)}
 
-    def get_parsed_page(self, path: str, page: int) -> dict:
+    def _render_parsed_page(self, page: int) -> str:
+        """Render one page of the cached parsed table under the active sort."""
+        handler = self._cached_handler
+        if handler is None or self._cached_data is None or self._cached_entry is None:
+            raise RuntimeError("No parsed data cached")
+
+        args = (self._cached_data, self._cached_entry, self._cached_companions)
+        if self._cached_sort is None:
+            return handler.render_data_page(*args, page, PARSED_RECORDS_PER_PAGE)
+        return handler.render_sorted_page(*args, page, PARSED_RECORDS_PER_PAGE, self._cached_sort)
+
+    def get_parsed_page(self, path: str, page: int, sort_field: str = "", sort_dir: str = "") -> dict:
+        """Render a parsed page. An empty `sort_field` shows file order.
+
+        A sort is remembered per file name in the user config, so the file
+        reopens with it.
+        """
         import html as _html_mod
         norm = _norm(path)
         if self._cached_path != norm or self._cached_handler is None:
             return {"error": "Page data not cached, reload the file first"}
         if self._cached_data is None or self._cached_entry is None:
             return {"error": "Page data not cached, reload the file first"}
+
+        sort: TableSort | None = None
+        if sort_field:
+            sort = TableSort.parse(sort_field, sort_dir)
+            if sort is None or sort.field not in self._cached_handler.sortable_fields():
+                return {"error": f"Cannot sort by {sort_field!r} {sort_dir!r}"}
+            save_table_sort(table_sort_file_key(norm), sort)
+        self._cached_sort = sort
+
         try:
-            html = self._cached_handler.render_data_page(
-                self._cached_data,
-                self._cached_entry,
-                self._cached_companions,
-                page,
-                PARSED_RECORDS_PER_PAGE,
-            )
+            html = self._render_parsed_page(page)
         except Exception as ex:
             html = f'<div class="error">Render error: {_html_mod.escape(str(ex))}</div>'
         return {"html": html}
@@ -441,6 +469,8 @@ class PreviewMixin:
         ):
             import csv
             import io
+            # File order on purpose: it is the cheapest to produce and ignores
+            # the active table sort, which would only add a reorder pass.
             records = self._cached_handler.get_records(
                 self._cached_data,
                 self._cached_entry,

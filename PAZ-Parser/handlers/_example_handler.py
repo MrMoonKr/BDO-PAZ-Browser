@@ -18,12 +18,14 @@
 # from pathlib import Path
 # from bdo_models import PazEntry
 # from bdo_preview import PreviewHandler, register_handler
-# from _common.html import e, table
+# from _common.html import Column, e, sort_keys, table
 #
 #
-# _HEADERS = [
-#     ("ID",   "num", ""),
-#     ("Name", "",    ""),
+# # sort_key names the record field a column sorts by (raw value, not the
+# # rendered text). Leave it out for columns that should not be sortable.
+# _COLUMNS = [
+#     Column("ID",    "num", sort_key="id"),
+#     Column("Value", "num", sort_key="value"),
 # ]
 #
 #
@@ -33,6 +35,10 @@
 # lazy caching, paging, search, and CSV export automatically.
 #
 # class MyHandler(PreviewHandler):
+#
+#     def sortable_fields(self) -> frozenset[str]:
+#         # Opts the table into server-side sorting by these record fields.
+#         return sort_keys(_COLUMNS)
 #
 #     def companions(self, entry: PazEntry) -> list[str]:
 #         # Return internal PAZ paths of files needed alongside the main file.
@@ -60,7 +66,7 @@
 #         start  = page * page_size
 #         slice_ = records[start : start + page_size]
 #         rows   = [[e(r["id"]), e(r["value"])] for r in slice_]
-#         return table(f"{len(records):,} records", _HEADERS, rows)
+#         return table(f"{len(records):,} records", _COLUMNS, rows)
 #
 #
 # register_handler("myfile.myext", MyHandler())   # by filename

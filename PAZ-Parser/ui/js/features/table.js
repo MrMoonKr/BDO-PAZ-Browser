@@ -3,10 +3,35 @@
 import { t } from "../core/i18n.js";
 
 export const tableMethods = {
+  // Parsed tables sort on the server over every record, not just the page on
+  // screen. Only headers the handler gave a sort key are clickable.
   _initTableSort(container) {
-    container.querySelectorAll(".data-table th.sortable").forEach((th, colIdx) => {
-      th.addEventListener("click", () => this._sortTable(th, colIdx));
+    container.querySelectorAll("th.sortable[data-sort-key]").forEach((th) => {
+      const field = th.dataset.sortKey;
+      const isActive = this._parsedSort?.field === field;
+      th.classList.toggle("sort-asc", isActive && this._parsedSort.dir === "asc");
+      th.classList.toggle("sort-desc", isActive && this._parsedSort.dir === "desc");
+      th.addEventListener("click", () => this._sortParsedTable(th, field));
     });
+  },
+
+  // A new column starts ascending; the active column flips. Either way the
+  // view returns to page 1. The header shows a spinner until the sorted page
+  // replaces the table.
+  async _sortParsedTable(th, field) {
+    // CSS already blocks header clicks while busy; this covers keyboard or
+    // scripted clicks too, so heavy sorts never stack up.
+    if (document.getElementById("preview-content").classList.contains("parsed-busy")) return;
+    const isFlip = this._parsedSort?.field === field && this._parsedSort.dir === "asc";
+    const sort = { field, dir: isFlip ? "desc" : "asc" };
+
+    th.classList.add("sort-pending");
+    const isLoaded = await this._gotoParsedPage(0, sort);
+    // On success the table was re-rendered; on failure clear the spinner.
+    th.classList.remove("sort-pending");
+    // Match positions belong to the previous order. Off-tab, switching back
+    // resets the search anyway.
+    if (isLoaded && this._activeTab === "parsed") this._resetTabSearch();
   },
 
   _initTableIcons(container) {
@@ -70,34 +95,6 @@ export const tableMethods = {
     } else {
       cell.prepend(img);
     }
-  },
-
-  _sortTable(th, colIdx) {
-    const table = th.closest("table");
-    const tbody = table.querySelector("tbody");
-    const rows = [...tbody.querySelectorAll("tr")];
-    const asc = th.dataset.sortDir !== "asc";
-
-    th.closest("thead")
-      .querySelectorAll("th")
-      .forEach((h) => {
-        delete h.dataset.sortDir;
-        h.classList.remove("sort-asc", "sort-desc");
-      });
-    th.dataset.sortDir = asc ? "asc" : "desc";
-    th.classList.toggle("sort-asc", asc);
-    th.classList.toggle("sort-desc", !asc);
-
-    rows.sort((a, b) => {
-      const av = a.cells[colIdx]?.textContent ?? "";
-      const bv = b.cells[colIdx]?.textContent ?? "";
-      const na = parseFloat(av.replace(/[^0-9.-]/g, ""));
-      const nb = parseFloat(bv.replace(/[^0-9.-]/g, ""));
-      if (!isNaN(na) && !isNaN(nb)) return asc ? na - nb : nb - na;
-      return asc ? av.localeCompare(bv) : bv.localeCompare(av);
-    });
-
-    rows.forEach((r) => tbody.appendChild(r));
   },
 
   _setupPreviewTableSelection() {

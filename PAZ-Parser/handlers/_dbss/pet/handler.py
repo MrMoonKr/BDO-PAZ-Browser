@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import e, icon_cell, table
+from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 from .parser import (
@@ -20,6 +20,17 @@ _LANG_DIR = Path(__file__).parent / "lang"
 
 
 class PetOffsetHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
+        return [
+            Column(cols.get("petId", "Pet ID"), "num", sort_key="pet_id"),
+            Column(cols.get("dataOffset", "Data Offset"), "num", sort_key="data_offset"),
+            Column(cols.get("dataSize", "Data Size"), "num", sort_key="data_size"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -37,12 +48,6 @@ class PetOffsetHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} pet offset records"
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("petId", "Pet ID"), "num", ""),
-            (cols.get("dataOffset", "Data Offset"), "num", ""),
-            (cols.get("dataSize", "Data Size"), "num", ""),
-        ]
         rows = [
             [
                 e(f"0x{r['pet_id']:04X} ({r['pet_id']})"),
@@ -51,10 +56,24 @@ class PetOffsetHandler(PreviewHandler):
             ]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)
 
 
 class PetGradeHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("gradeColumns", {})
+        return [
+            Column(cols.get("key", "Key"), "num", sort_key="key"),
+            Column(cols.get("species", "Species"), "num", sort_key="species"),
+            Column(cols.get("variant", "Variant"), "num", sort_key="variant"),
+            Column(cols.get("grade", "Grade"), sort_key="grade"),
+            Column(cols.get("dataOffset", "Data Offset"), "num", sort_key="data_offset"),
+            Column(cols.get("dataSize", "Data Size"), "num", sort_key="data_size"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def companions(self, entry: PazEntry) -> list[str]:
         folder = entry.internal_path.rsplit("/", 1)[0]
         return [f"{folder}/petgradeoffset.dbss"]
@@ -85,15 +104,6 @@ class PetGradeHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} pet grade records"
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("gradeColumns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("key", "Key"), "num", ""),
-            (cols.get("species", "Species"), "num", ""),
-            (cols.get("variant", "Variant"), "num", ""),
-            (cols.get("grade", "Grade"), "", ""),
-            (cols.get("dataOffset", "Data Offset"), "num", ""),
-            (cols.get("dataSize", "Data Size"), "num", ""),
-        ]
         rows = [
             [
                 e(f"0x{r['key']:04X} ({r['key']})"),
@@ -105,10 +115,23 @@ class PetGradeHandler(PreviewHandler):
             ]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)
 
 
 class PetGradeOffsetHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("gradeOffsetColumns", {})
+        return [
+            Column(cols.get("key", "Key"), "num", sort_key="key"),
+            Column(cols.get("species", "Species"), "num", sort_key="species"),
+            Column(cols.get("variant", "Variant"), "num", sort_key="variant"),
+            Column(cols.get("dataOffset", "Data Offset"), "num", sort_key="data_offset"),
+            Column(cols.get("dataSize", "Data Size"), "num", sort_key="data_size"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -126,14 +149,6 @@ class PetGradeOffsetHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} pet grade offset records"
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("gradeOffsetColumns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("key", "Key"), "num", ""),
-            (cols.get("species", "Species"), "num", ""),
-            (cols.get("variant", "Variant"), "num", ""),
-            (cols.get("dataOffset", "Data Offset"), "num", ""),
-            (cols.get("dataSize", "Data Size"), "num", ""),
-        ]
         rows = [
             [
                 e(f"0x{r['key']:04X} ({r['key']})"),
@@ -144,10 +159,28 @@ class PetGradeOffsetHandler(PreviewHandler):
             ]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)
 
 
 class PetDbssHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("petId", "Pet ID"), "num", sort_key="pet_id"),
+            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
+            Column(cols.get("name", "Name"), sort_key="display_name"),
+            Column(cols.get("species", "Species ID"), "num", sort_key="species"),
+            Column(cols.get("tier", "Tier"), "num", sort_key="tier"),
+            Column(cols.get("skillSlots", "Skill Slots"), "num", sort_key="equip_skill_slots"),
+            Column(cols.get("maxLevel", "Max Level"), "num", sort_key="max_level"),
+            Column(cols.get("acquireType", "Acquire Type"), "num", sort_key="acquire_type_id"),
+            Column(cols.get("equipSkillId", "Equip Skill ID"), "num", sort_key="equip_skill_id"),
+            Column(cols.get("grade", "Grade"), sort_key="grade"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def companions(self, entry: PazEntry) -> list[str]:
         folder = entry.internal_path.rsplit("/", 1)[0]
         return [
@@ -193,19 +226,6 @@ class PetDbssHandler(PreviewHandler):
         meta = f"{len(records):,} pets · {species_count:,} species"
         if with_grade:
             meta += f" · {with_grade:,} with grade metadata"
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("petId", "Pet ID"), "num", ""),
-            (cols.get("icon", "Icon"), "", ""),
-            (cols.get("name", "Name"), "", ""),
-            (cols.get("species", "Species ID"), "num", ""),
-            (cols.get("tier", "Tier"), "num", ""),
-            (cols.get("skillSlots", "Skill Slots"), "num", ""),
-            (cols.get("maxLevel", "Max Level"), "num", ""),
-            (cols.get("acquireType", "Acquire Type"), "num", ""),
-            (cols.get("equipSkillId", "Equip Skill ID"), "num", ""),
-            (cols.get("grade", "Grade"), "", ""),
-        ]
         rows = [
             [
                 e(r["pet_id"]),
@@ -221,4 +241,4 @@ class PetDbssHandler(PreviewHandler):
             ]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)

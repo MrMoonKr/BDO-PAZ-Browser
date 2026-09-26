@@ -51,17 +51,51 @@ export const previewPagingMethods = {
     this._setPageBar(this._buildPageBar("hex", page, this._hexTotalPages));
   },
 
-  async _gotoParsedPage(page) {
-    const result = await window.pywebview.api.get_parsed_page(this._selectedPath, page);
-    if (result.error) return;
-    this._parsedPage = page;
-    this._parsedHtml = result.html;
+  // Returns true when the page was shown. `sort` defaults to the active one,
+  // so paging keeps the current order. While the request runs the table is
+  // marked busy (see .parsed-busy in 11-data-tables.css); a response that a
+  // newer page request or `_cancelParsedPageRequest` has overtaken is dropped.
+  async _gotoParsedPage(page, sort = this._parsedSort) {
+    const seq = ++this._parsedPageSeq;
     const content = document.getElementById("preview-content");
-    content.innerHTML = result.html;
-    this._scrollPreviewToTop();
-    this._initTableSort(content);
-    this._initTableIcons(content);
-    this._setPageBar(this._buildPageBar("parsed", page, this._parsedTotalPages));
+    this._setParsedBusy(true);
+
+    try {
+      const result = await window.pywebview.api.get_parsed_page(
+        this._selectedPath, page, sort?.field ?? "", sort?.dir ?? "",
+      );
+      if (seq !== this._parsedPageSeq) return false;
+      if (result.error) {
+        this.setStatus({ key: "status.pageError", args: { message: result.error } });
+        return false;
+      }
+      this._parsedSort = sort;
+      this._parsedPage = page;
+      this._parsedHtml = result.html;
+      // Switched to the hex tab meanwhile: keep the page for when they return.
+      if (this._activeTab !== "parsed") return true;
+      content.innerHTML = result.html;
+      this._scrollPreviewToTop();
+      this._initTableSort(content);
+      this._initTableIcons(content);
+      this._setPageBar(this._buildPageBar("parsed", page, this._parsedTotalPages));
+      return true;
+    } finally {
+      if (seq === this._parsedPageSeq) this._setParsedBusy(false);
+    }
+  },
+
+  _setParsedBusy(isBusy) {
+    const content = document.getElementById("preview-content");
+    content.classList.toggle("parsed-busy", isBusy);
+    content.toggleAttribute("aria-busy", isBusy);
+  },
+
+  // Drops any parsed page request still in flight, e.g. when another file
+  // opens or plugins reload.
+  _cancelParsedPageRequest() {
+    this._parsedPageSeq++;
+    this._setParsedBusy(false);
   },
 
   showError(msg) {

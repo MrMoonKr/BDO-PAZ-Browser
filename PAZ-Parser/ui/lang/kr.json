@@ -77,6 +77,7 @@
     "pluginsReloaded": "플러그인을 다시 불러왔습니다.",
     "found": "\"{query}\"와 일치하는 파일 {cap}개 발견",
     "copiedRow": "선택한 행을 복사했습니다.",
-    "searchError": "검색 오류: {message}"
+    "searchError": "검색 오류: {message}",
+    "pageError": "페이지를 불러올 수 없습니다: {message}"
   }
 }

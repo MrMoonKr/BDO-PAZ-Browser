@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import html as _html
 import sys
+from collections.abc import Sequence
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -9,7 +10,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler, register_handler
 from _common.binary import u8, u16, u32
+from _common.html import Column, header_cell, sort_keys
 from _common.loc import decompress_loc
+from table_sort import TableSort, sort_order_by_values
 
 
 _TYPE_NAMES = {
@@ -39,6 +42,26 @@ _TYPE_NAMES = {
 }
 
 _LocRecordMeta = tuple[int, int, int, int, int, int, int, int]
+
+_COLUMNS = [
+    Column("Id1", sort_key="str_id1"),
+    Column("Id2", sort_key="str_id2"),
+    Column("Id3", sort_key="str_id3"),
+    Column("Id4", sort_key="str_id4"),
+    Column("Type (number)", sort_key="str_type"),
+    Column("Type (text)", sort_key="str_type_text"),
+    Column("Text", sort_key="text"),
+]
+_HEADER_CELLS = "".join(header_cell(column) for column in _COLUMNS)
+
+# Record fields that sort straight from the index tuple, by tuple position.
+_META_FIELD_POSITIONS = {
+    "str_type": 1,
+    "str_id1": 2,
+    "str_id2": 3,
+    "str_id3": 4,
+    "str_id4": 5,
+}
 
 
 def _parse_all_loc_records(raw: bytes) -> list[tuple[int, int, int, int, int, int, str]]:
@@ -127,7 +150,26 @@ class _LocIndex:
     def page(self, page: int, page_size: int) -> list[dict]:
         start = page * page_size
         end = min(start + page_size, len(self.records))
-        return [self.record_dict(index) for index in range(start, end)]
+        return self.records_at(range(start, end))
+
+    def records_at(self, indices: Sequence[int]) -> list[dict]:
+        return [self.record_dict(index) for index in indices]
+
+    def sort_values(self, field: str) -> list[object]:
+        """One raw value per record for `field`, read from the index without
+        building record dicts."""
+        position = _META_FIELD_POSITIONS.get(field)
+        if position is not None:
+            return [meta[position] for meta in self.records]
+        if field == "str_type_text":
+            return [_TYPE_NAMES.get(meta[1], "Unknown") for meta in self.records]
+        if field == "text" and self.data is not None:
+            data = self.data
+            return [
+                data[meta[6]:meta[7]].decode("utf-16-le", errors="replace")
+                for meta in self.records
+            ]
+        raise ValueError(f"LOC records cannot be sorted by {field!r}")
 
     def search(self, query: str) -> list[int]:
         if self.data is None:
@@ -153,6 +195,34 @@ class LocHandler(PreviewHandler):
 
     def get_record_count(self, data: bytes, entry: PazEntry, companions: dict[str, bytes]) -> int:
         return len(self._index(data).records)
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(_COLUMNS)
+
+    def _build_sort_order(
+        self,
+        data: bytes,
+        entry: PazEntry,
+        companions: dict[str, bytes],
+        sort: TableSort,
+    ) -> list[int]:
+        return sort_order_by_values(self._index(data).sort_values(sort.field), sort.descending)
+
+    def render_sorted_page(
+        self,
+        data: bytes,
+        entry: PazEntry,
+        companions: dict[str, bytes],
+        page: int,
+        page_size: int,
+        sort: TableSort,
+    ) -> str:
+        # Decode only the rows on this page; the order itself is an index array.
+        index = self._index(data)
+        order = self.sorted_order(data, entry, companions, sort)
+        start = page * page_size
+        records = index.records_at(order[start:start + page_size])
+        return self._render_page(records, page, page_size, len(index.records))
 
     def render_data_page(
         self,
@@ -206,15 +276,7 @@ class LocHandler(PreviewHandler):
   </div>
   <table class="loc-table">
     <thead>
-      <tr>
-        <th>Id1</th>
-        <th>Id2</th>
-        <th>Id3</th>
-        <th>Id4</th>
-        <th>Type (number)</th>
-        <th>Type (text)</th>
-        <th>Text</th>
-      </tr>
+      <tr>{_HEADER_CELLS}</tr>
     </thead>
     <tbody>
       {rows_html}

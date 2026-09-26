@@ -77,6 +77,7 @@
     "pluginsReloaded": "Plugins rechargés.",
     "found": "Trouvé {cap}fichiers correspondant à \"{query}\"",
     "copiedRow": "Ligne sélectionnée copiée.",
-    "searchError": "Erreur de recherche : {message}"
+    "searchError": "Erreur de recherche : {message}",
+    "pageError": "Impossible de charger la page : {message}"
   }
 }

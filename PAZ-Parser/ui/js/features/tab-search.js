@@ -157,7 +157,7 @@ export const tabSearchMethods = {
       this._highlightHexOffset(pos);
     } else {
       const page = Math.floor(pos / PARSED_PER_PAGE);
-      if (page !== this._parsedPage) await this._gotoParsedPage(page);
+      if (page !== this._parsedPage && !(await this._gotoParsedPage(page))) return;
       this._highlightParsedRow(pos % PARSED_PER_PAGE);
     }
   },

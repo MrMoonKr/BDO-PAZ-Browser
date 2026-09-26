@@ -6,7 +6,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import e, icon_cell, table
+from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 from _common.pabr_offset import parse_pabr_offset_rows
@@ -72,6 +72,17 @@ def _raw_description(buff_id: int, description_kr: str) -> str:
 
 
 class BuffOffsetHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
+        return [
+            Column(cols.get("buffId", "Buff ID"), "num", sort_key="buff_id"),
+            Column(cols.get("dataOffset", "Data Offset"), "num", sort_key="offset"),
+            Column(cols.get("size", "Size"), "num", sort_key="size"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def get_records(
         self,
         data: bytes,
@@ -92,21 +103,34 @@ class BuffOffsetHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} offset records"
-
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("buffId", "Buff ID"), "num", ""),
-            (cols.get("dataOffset", "Data Offset"), "num", ""),
-            (cols.get("size", "Size"), "num", ""),
-        ]
         rows = [
             [e(r["buff_id"]), e(f"0x{r['offset']:08X}"), e(r["size"])]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)
 
 
 class BuffHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("buffId", "Buff ID"), "num", sort_key="buff_id"),
+            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
+            Column(cols.get("title", "Title"), sort_key="title"),
+            Column(cols.get("name", "Internal Name"), sort_key="name"),
+            Column(cols.get("description", "Description"), sort_key="description"),
+            Column(cols.get("level", "Level"), "num", sort_key="level"),
+            Column(cols.get("effectType", "Effect Type"), "num", sort_key="effect_type"),
+            Column(cols.get("duration", "Duration"), "num", sort_key="duration_ms"),
+            *(
+                Column(cols.get(f"param{index}", f"Param {index}"), "num", sort_key=f"param_{index}")
+                for index in range(1, _SHOWN_PARAMS + 1)
+            ),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
     def companions(self, entry: PazEntry) -> list[str]:
         folder = entry.internal_path.rsplit("/", 1)[0]
         return [f"{folder}/{_OFFSET_FILE}"]
@@ -138,23 +162,6 @@ class BuffHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} buffs"
-
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
-        headers: list[tuple[str, str, str]] = [
-            (cols.get("buffId", "Buff ID"), "num", ""),
-            (cols.get("icon", "Icon"), "", ""),
-            (cols.get("title", "Title"), "", ""),
-            (cols.get("name", "Internal Name"), "", ""),
-            (cols.get("description", "Description"), "", ""),
-            (cols.get("level", "Level"), "num", ""),
-            (cols.get("effectType", "Effect Type"), "num", ""),
-            (cols.get("duration", "Duration"), "num", ""),
-        ]
-        headers += [
-            (cols.get(f"param{index}", f"Param {index}"), "num", "")
-            for index in range(1, _SHOWN_PARAMS + 1)
-        ]
-
         rows = [
             [
                 e(r["buff_id"]),
@@ -169,4 +176,4 @@ class BuffHandler(PreviewHandler):
             ]
             for r in slice_
         ]
-        return table(meta, headers, rows)
+        return table(meta, self._columns(), rows)

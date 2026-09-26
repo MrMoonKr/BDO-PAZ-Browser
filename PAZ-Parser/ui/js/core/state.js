@@ -16,4 +16,8 @@ export const app = {
   _hexTotalPages: 1,
   _parsedPage: 0,
   _parsedTotalPages: 1,
+  // Active parsed-table sort, {field, dir}, or null for file order.
+  _parsedSort: null,
+  // Bumped per parsed page request so late responses can be dropped.
+  _parsedPageSeq: 0,
 };

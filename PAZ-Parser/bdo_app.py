@@ -9,7 +9,8 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 import webview
 
-from api.bdo_api import Api, _load_config, _norm
+from api.bdo_api import Api, _norm
+from api.bdo_config import load_config
 from paz.bdo_cache import load_cache, read_meta_version, save_cache
 from bdo_models import PazEntry
 from paz.bdo_paz_extract import extract_entry, find_single_meta_file, parse_meta_file
@@ -95,7 +96,7 @@ def _launch_gui(profile: bool = False) -> None:
 
 
 def _resolve_paz_root(paz_folder: str | None) -> Path | None:
-    folder = paz_folder or _load_config().get("last_folder")
+    folder = paz_folder or load_config().get("last_folder")
     if not folder:
         print("Error: use --paz-folder or open a folder in the GUI first.", file=sys.stderr)
         return None

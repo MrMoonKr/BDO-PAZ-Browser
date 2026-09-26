@@ -10,34 +10,17 @@ from typing import Any
 
 import webview
 
-_CONFIG_FILE = Path(__file__).parent.parent / "paz_config.json"
-
-
-def _load_config() -> dict:
-    try:
-        return json.loads(_CONFIG_FILE.read_text()) if _CONFIG_FILE.exists() else {}
-    except Exception:
-        return {}
-
-
-def _save_config(updates: dict) -> None:
-    cfg = _load_config()
-    cfg.update(updates)
-    try:
-        _CONFIG_FILE.write_text(json.dumps(cfg, indent=2))
-    except Exception:
-        pass
-
-
-from .bdo_api_helpers import _DISK_VIRTUAL_PREFIX, _ICON_MAP, _file_icon, _norm  # noqa: E402
-from .bdo_api_preview import PreviewMixin  # noqa: E402
-from .bdo_api_search import SearchMixin  # noqa: E402
-from paz.bdo_cache import load_cache, read_meta_version, save_cache  # noqa: E402
-from paz.bdo_icon_cache import load_icon_cache, save_icon_cache  # noqa: E402
-from bdo_models import PazEntry  # noqa: E402
-from paz.bdo_paz_extract import extract_entry, find_single_meta_file, parse_meta_file  # noqa: E402
-from paz.bdo_payload_cache import cached_read_entry_payload, clear_payload_cache  # noqa: E402
-from bdo_preview import StreamPreviewHandler, get_handler, set_handler_lang  # noqa: E402
+from .bdo_config import load_config, save_config
+from .bdo_api_helpers import _DISK_VIRTUAL_PREFIX, _ICON_MAP, _file_icon, _norm
+from .bdo_api_preview import PreviewMixin
+from .bdo_api_search import SearchMixin
+from paz.bdo_cache import load_cache, read_meta_version, save_cache
+from paz.bdo_icon_cache import load_icon_cache, save_icon_cache
+from bdo_models import PazEntry
+from paz.bdo_paz_extract import extract_entry, find_single_meta_file, parse_meta_file
+from paz.bdo_payload_cache import cached_read_entry_payload, clear_payload_cache
+from bdo_preview import StreamPreviewHandler, get_handler, set_handler_lang
+from table_sort import TableSort
 
 _COMPANION_POOL = ThreadPoolExecutor(max_workers=4, thread_name_prefix="companion")
 
@@ -92,11 +75,12 @@ class Api(PreviewMixin, SearchMixin):
         self._cached_handler = None
         self._cached_entry: PazEntry | None = None
         self._cached_companions: dict[str, bytes] = {}
+        self._cached_sort: TableSort | None = None
         self._global_search_cancel: threading.Event = threading.Event()
 
     def set_window(self, window: webview.Window) -> None:
         self._window = window
-        set_handler_lang(_load_config().get("language", "en"))
+        set_handler_lang(load_config().get("language", "en"))
 
     # ── Internal helpers ──────────────────────────────────────────────────────
 
@@ -129,12 +113,12 @@ class Api(PreviewMixin, SearchMixin):
         if not result:
             return {"ok": False}
         self._paz_root = Path(result[0])
-        _save_config({"last_folder": str(self._paz_root)})
+        save_config({"last_folder": str(self._paz_root)})
         threading.Thread(target=self._load_entries, daemon=True).start()
         return {"ok": True, "path": str(self._paz_root)}
 
     def get_last_folder(self) -> dict:
-        path = _load_config().get("last_folder")
+        path = load_config().get("last_folder")
         if path and Path(path).is_dir():
             return {"path": path}
         return {}
@@ -159,7 +143,7 @@ class Api(PreviewMixin, SearchMixin):
     # ── Settings ──────────────────────────────────────────────────────────────
 
     def get_settings(self) -> dict:
-        cfg = _load_config()
+        cfg = load_config()
         return {
             "paz_path": cfg.get("last_folder", ""),
             "language": cfg.get("language", "en"),
@@ -169,9 +153,9 @@ class Api(PreviewMixin, SearchMixin):
     def save_settings(self, paz_path: str, language: str, table_row_height: int | None = None) -> dict:
         if language not in _VALID_LANGUAGES:
             return {"ok": False, "error": f"Invalid language: {language}"}
-        old_cfg = _load_config()
+        old_cfg = load_config()
         row_height = _table_row_height(table_row_height)
-        _save_config({
+        save_config({
             "last_folder": paz_path,
             "language": language,
             "table_row_height": row_height,
@@ -337,7 +321,7 @@ class Api(PreviewMixin, SearchMixin):
     def _load_disk_companions(self) -> None:
         if not self._paz_root:
             return
-        language = _load_config().get("language", "en")
+        language = load_config().get("language", "en")
         rel = _LOC_LANG_MAP.get(language)
         if rel is not None:
             path = self._paz_root.parent.joinpath(*rel)
@@ -605,7 +589,7 @@ class Api(PreviewMixin, SearchMixin):
     def reload_plugins(self) -> None:
         import bdo_preview
         bdo_preview.reload_plugins(Path(__file__).parent.parent / "handlers")
-        self._reload_loc(_load_config().get("language", "en"))
+        self._reload_loc(load_config().get("language", "en"))
         self._push_js("app.onPluginsReloaded()")
 
     # ── Status ────────────────────────────────────────────────────────────────

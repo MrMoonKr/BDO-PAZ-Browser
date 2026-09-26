@@ -1,15 +1,18 @@
 from __future__ import annotations
 
 import base64
+from array import array
 import html as _html
 import importlib.util
 import io
 import re as _re
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from pathlib import Path
 import sys
 
 from bdo_models import PazEntry
+from table_sort import TableSort, sort_order
 
 _TEXT_LIMIT = 512 * 1024   # bytes shown in text view
 
@@ -57,11 +60,15 @@ class PreviewHandler(ABC):
         """
         return True
 
+    def _all_records(self, data: bytes, entry: PazEntry, companions: dict[str, bytes]) -> list[dict]:
+        """Return get_records() for this data, parsed once and cached."""
+        return self._data_cache(
+            data, "_records", lambda: self.get_records(data, entry, companions)
+        )
+
     def get_record_count(self, data: bytes, entry: PazEntry, companions: dict[str, bytes]) -> int:
         """Return record count. Uses _data_cache to avoid re-parsing on every call."""
-        return len(self._data_cache(
-            data, "_records", lambda: self.get_records(data, entry, companions)
-        ))
+        return len(self._all_records(data, entry, companions))
 
     def render_data_page(
         self,
@@ -72,10 +79,64 @@ class PreviewHandler(ABC):
         page_size: int,
     ) -> str:
         """Render a parsed page from cached records. Override for true streaming/lazy parsing."""
-        records = self._data_cache(
-            data, "_records", lambda: self.get_records(data, entry, companions)
-        )
+        return self.render_records_page(self._all_records(data, entry, companions), page, page_size)
+
+    def sortable_fields(self) -> frozenset[str]:
+        """Record fields the parsed table can be sorted by.
+
+        Empty by default, which renders non-sortable headers. Handlers opt in
+        by giving their columns a ``sort_key`` (``_common.html.Column``) and
+        returning ``sort_keys(columns)`` here.
+        """
+        return frozenset()
+
+    def render_sorted_page(
+        self,
+        data: bytes,
+        entry: PazEntry,
+        companions: dict[str, bytes],
+        page: int,
+        page_size: int,
+        sort: TableSort,
+    ) -> str:
+        """Render one page of the full record list sorted by `sort`.
+
+        Handlers with their own page-at-a-time index override this together
+        with `_build_sort_order`, so sorting never materialises every record.
+        """
+        views: dict[TableSort, list[dict]] = self._data_cache(data, "_sorted_records", dict)
+        records = views.get(sort)
+        if records is None:
+            all_records = self._all_records(data, entry, companions)
+            records = [all_records[index] for index in self.sorted_order(data, entry, companions, sort)]
+            views[sort] = records
         return self.render_records_page(records, page, page_size)
+
+    def sorted_order(
+        self,
+        data: bytes,
+        entry: PazEntry,
+        companions: dict[str, bytes],
+        sort: TableSort,
+    ) -> Sequence[int]:
+        """File-order record indices in the order `sort` displays them, cached per sort."""
+        orders: dict[TableSort, array] = self._data_cache(data, "_sort_orders", dict)
+        order = orders.get(sort)
+        if order is None:
+            # array("I") holds 4 bytes per row instead of a list of int objects.
+            order = array("I", self._build_sort_order(data, entry, companions, sort))
+            orders[sort] = order
+        return order
+
+    def _build_sort_order(
+        self,
+        data: bytes,
+        entry: PazEntry,
+        companions: dict[str, bytes],
+        sort: TableSort,
+    ) -> list[int]:
+        """Compute the sort order from get_records(). Override to sort an index instead."""
+        return sort_order(self._all_records(data, entry, companions), sort.field, sort.descending)
 
     def search_records(
         self,
@@ -86,9 +147,7 @@ class PreviewHandler(ABC):
     ) -> list[int]:
         """Return matching record indices. Uses _data_cache to avoid re-parsing."""
         q = query.lower()
-        records = self._data_cache(
-            data, "_records", lambda: self.get_records(data, entry, companions)
-        )
+        records = self._all_records(data, entry, companions)
         return [
             i for i, rec in enumerate(records)
             if any(q in str(value).lower() for value in rec.values())

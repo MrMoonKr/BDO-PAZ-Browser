@@ -78,6 +78,7 @@
     "pluginsReloaded": "Plugins reloaded.",
     "found": "Found {cap}files matching \"{query}\"",
     "copiedRow": "Copied selected row.",
-    "searchError": "Search error: {message}"
+    "searchError": "Search error: {message}",
+    "pageError": "Could not load page: {message}"
   }
 }

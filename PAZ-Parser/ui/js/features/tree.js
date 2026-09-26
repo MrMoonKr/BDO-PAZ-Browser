@@ -144,6 +144,8 @@ export const treeMethods = {
     this._hexTotalPages = 1;
     this._parsedPage = 0;
     this._parsedTotalPages = 1;
+    this._parsedSort = null;
+    this._cancelParsedPageRequest();
     this._isAltView = false;
     this._tabLabels = null;
 
@@ -173,6 +175,7 @@ export const treeMethods = {
       this._activeTab = "hex";
       this._hexTotalPages = result.hex_total_pages ?? 1;
       this._parsedTotalPages = result.parsed_total_pages ?? 1;
+      this._parsedSort = result.sort ?? null;
       this._isAltView = !!result.tab_labels;
       this._tabLabels = result.tab_labels || null;
 
@@ -243,6 +246,8 @@ export const treeMethods = {
     });
     const content = document.getElementById("preview-content");
     if (tab === "hex") {
+      // A parsed request may still finish; it only updates state off-tab.
+      this._setParsedBusy(false);
       content.innerHTML = this._hexHtml;
       this._setPageBar(this._hexTotalPages > 1 ? this._buildPageBar("hex", this._hexPage, this._hexTotalPages) : null);
       if (this._isAltView) {

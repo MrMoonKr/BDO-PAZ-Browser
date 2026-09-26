@@ -85,6 +85,7 @@ export const extractionMethods = {
   },
 
   async _refreshParsedView() {
+    this._cancelParsedPageRequest();
     const result = await window.pywebview.api.load_entry(this._selectedPath);
     if (result.error && !result.hex_html) return;
 
@@ -94,6 +95,7 @@ export const extractionMethods = {
     this._hexTotalPages = result.hex_total_pages ?? 1;
     this._parsedPage = 0;
     this._parsedTotalPages = result.parsed_total_pages ?? 1;
+    this._parsedSort = result.sort ?? null;
 
     const tabs = document.getElementById("preview-tabs");
     tabs.hidden = !result.has_parsed;

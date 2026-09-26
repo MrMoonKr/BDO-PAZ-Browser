@@ -7,6 +7,7 @@ from pathlib import Path
 
 from .bdo_api_helpers import _DISK_VIRTUAL_PREFIX, _file_icon, _norm
 from paz.bdo_payload_reader import read_entry_payload
+from table_sort import positions_in_order
 
 
 def _build_needles(query: str, mode: str) -> list[bytes] | None:
@@ -59,12 +60,12 @@ class SearchMixin:
                 return {"error": "No parsed data cached, reload the file"}
             if self._cached_data is None or self._cached_entry is None or self._cached_handler is None:
                 return {"error": "No parsed data cached, reload the file"}
-            indices = self._cached_handler.search_records(
-                self._cached_data,
-                self._cached_entry,
-                self._cached_companions,
-                query,
-            )
+            args = (self._cached_data, self._cached_entry, self._cached_companions)
+            indices = self._cached_handler.search_records(*args, query)
+            if self._cached_sort is not None:
+                # The UI pages through the sorted view, so report positions in it.
+                order = self._cached_handler.sorted_order(*args, self._cached_sort)
+                indices = positions_in_order(order, indices)
             return {"record_indices": indices, "total": len(indices)}
 
         # hex tab, search raw bytes

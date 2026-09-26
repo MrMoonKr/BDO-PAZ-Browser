@@ -12,7 +12,7 @@ const PROFILED_METHODS = [
   "_gotoHexPage",
   "_gotoParsedPage",
   "_initTableSort",
-  "_sortTable",
+  "_sortParsedTable",
   "_doTabSearch",
   "_jumpToMatch",
   "_highlightHexOffset",

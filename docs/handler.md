@@ -157,6 +157,7 @@ All parsed-view handlers must implement `get_records()` and `render_records_page
 
 - `get_records()` parses the binary and returns all records as plain dicts (no HTML). The base class caches the result per data object using `_data_cache`, so paging, tab search, and CSV export all reuse the same parse without re-reading the file.
 - `render_records_page()` converts one page of records into an HTML fragment.
+- `sortable_fields()` opts the table into sorting, see [Sortable Columns](#sortable-columns).
 
 ```python
 # handlers/_example/myfile/handler.py
@@ -165,16 +166,19 @@ from __future__ import annotations
 
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
-from _common.html import e, table
+from _common.html import Column, e, sort_keys, table
 
 
-_HEADERS = [
-    ("ID",   "num", ""),
-    ("Name", "",    ""),
+_COLUMNS = [
+    Column("ID",   "num", sort_key="id"),
+    Column("Name",        sort_key="name"),
 ]
 
 
 class MyFileHandler(PreviewHandler):
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(_COLUMNS)
+
     def companions(self, entry: PazEntry) -> list[str]:
         folder = entry.internal_path.rsplit("/", 1)[0]
         return [f"{folder}/myindex.dbss"]
@@ -197,8 +201,85 @@ class MyFileHandler(PreviewHandler):
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} records"
         rows = [[e(r["id"]), e(r["name"])] for r in slice_]
-        return table(meta, _HEADERS, rows)
+        return table(meta, _COLUMNS, rows)
 ```
+
+### Sortable Columns
+
+Parsed tables are paged, so the server sorts the full record list and then
+renders the requested page. The browser never sorts the rows on screen.
+
+A handler opts in with two pieces:
+
+1. Give each sortable `Column` a `sort_key`: the record field (from
+   `get_records()`) the column sorts by. Use the raw value, not the rendered
+   text: `duration_ms`, not the `1h 30m` string; `offset`, not `0x0000ABCD`.
+2. Return `sort_keys(columns)` from `sortable_fields()`. The API rejects any
+   field not in this set.
+
+When the column labels come from the handler's `lang/*.json`, build the list in
+a `_columns()` method and use it in both places:
+
+```python
+def _columns(self) -> list[Column]:
+    cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+    return [
+        Column(cols.get("buffId", "Buff ID"), "num", sort_key="buff_id"),
+        Column(cols.get("icon", "Icon"), sort_key="icon_path"),
+    ]
+
+def sortable_fields(self) -> frozenset[str]:
+    return sort_keys(self._columns())
+```
+
+Columns without a `sort_key`, and plain `(label, css_class, extra_attrs)`
+tuples, render as normal headers you cannot click. A handler that declares no
+fields shows no sortable headers at all.
+
+Ordering rules (`table_sort.py`):
+
+- Numbers sort before text, and text ignores case. Anything else (lists,
+  tuples) sorts by its string form.
+- Empty values (`None`, blank strings, empty lists, NaN) go last in both
+  directions.
+- The sort is stable, so equal values keep their file order.
+
+Clicking a new column sorts it ascending. Clicking the active column flips the
+direction. Both jump to page 1, and paging keeps the sort. While the sorted
+page loads, the clicked header shows a spinner, the rows fade (after 120 ms, so
+fast sorts do not flicker) and headers ignore further clicks. This needs no
+handler code. Each file's sort is
+saved in `paz_config.json` under `table_sort`, keyed by file name and storing
+the field key (`{"buff.dbss": {"field": "duration_ms", "dir": "desc"}}`). The
+file reopens sorted. If the handler no longer declares that field, the entry is
+dropped and the file opens unsorted.
+
+The sorted order is cached per field and direction for each loaded file, as a
+compact `array("I")` of record indices. Tab search reports its matches as
+positions in the sorted view. CSV export ignores the sort and writes
+`get_records()` in file order, the cheapest path.
+
+Ordering rules have fast paths for all-integer and all-text columns, which
+matter at a million rows. Mixed columns fall back to a slower per-row key.
+
+#### Sorting a Page-at-a-Time Handler
+
+By default a sort goes through `get_records()`, which materialises every
+record. That is fine for tens of thousands of rows. A handler that overrides
+`render_data_page()` to avoid a full parse should override two more methods,
+so sorting reads its index instead:
+
+- `_build_sort_order(data, entry, companions, sort)` returns the record
+  indices in sorted order. Pull one raw value per record from the index and
+  pass them to `table_sort.sort_order_by_values(values, sort.descending)`.
+- `render_sorted_page(data, entry, companions, page, page_size, sort)` slices
+  `self.sorted_order(...)` for the page and builds only those records.
+
+`handlers/loc_handler.py` is the reference: 1.38 million strings, where a
+numeric column sorts in about 0.25 s and the text column in about 1.3 s, then
+each page renders in a few milliseconds. If a table renders its own HTML instead of
+`table()`, emit its headers with `header_cell(column)` so they carry the
+`sortable` class and `data-sort-key`.
 
 ---
 
@@ -856,13 +937,14 @@ Raise only for actual programming errors.
 5. Implement one or more `PreviewHandler` classes with `get_records()` and `render_records_page()`.
 6. `get_records()` must return plain dicts, no HTML. Include any LOC-lookup strings here so tab search can find them. Use `self.lang` for language-aware display strings.
 7. `render_records_page()` slices `records[page * page_size : ...]` and returns an HTML fragment.
-8. Paging and search are lazy by default. For formats with a heavy internal structure, use `_data_cache()` to build the index once and override `render_data_page()` to parse only the requested page.
-9. Register by exact filename or extension.
-10. Escape all file-derived output (`e()` helper or `html.escape()`).
-11. Use `companions()` for related files.
-12. Add a handler-local `test_handler.py` with at least count and representative row tests.
-13. Keep raw hex switching in the frontend, not the handler.
-14. Move reusable logic to `_common/` when another format needs it.
+8. Give sortable columns a `sort_key` and return `sort_keys(columns)` from `sortable_fields()` (see [Sortable Columns](#sortable-columns)).
+9. Paging and search are lazy by default. For formats with a heavy internal structure, use `_data_cache()` to build the index once and override `render_data_page()` to parse only the requested page.
+10. Register by exact filename or extension.
+11. Escape all file-derived output (`e()` helper or `html.escape()`).
+12. Use `companions()` for related files.
+13. Add a handler-local `test_handler.py` with at least count and representative row tests.
+14. Keep raw hex switching in the frontend, not the handler.
+15. Move reusable logic to `_common/` when another format needs it.
 
 > **Tip:** Press **Ctrl+R** in the GUI to reload all handlers without restarting the app. Changes to any file under `handlers/`, including private packages like `_dbss/`, take effect immediately. If a file is open on the Parsed tab, the preview re-renders automatically.
 
