@@ -284,7 +284,9 @@ dropped and the file opens unsorted.
 
 The sorted order is cached per field and direction for each loaded file, as a
 compact `array("I")` of record indices. Tab search reports its matches as
-positions in the sorted view. CSV export ignores the sort and writes
+positions in the sorted view. Changing the sort re-runs an active search
+without leaving page 1: the first match is highlighted when it is on that page,
+otherwise the counter shows the total and Enter jumps to it. CSV export ignores the sort and writes
 `get_records()` in file order, the cheapest path.
 
 Ordering rules have fast paths for all-integer and all-text columns, which

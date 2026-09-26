@@ -101,7 +101,16 @@ export const tabSearchMethods = {
     _timer = setTimeout(() => this._doTabSearch(), 300);
   },
 
-  async _doTabSearch() {
+  // Re-runs the active query after the parsed order changes (a sort), because
+  // match positions are positions in the sorted view. Stays on the page the
+  // sort loaded: the first match is highlighted only when it is on screen,
+  // otherwise Enter jumps to it.
+  refreshTabSearch() {
+    clearTimeout(_timer);
+    return this._doTabSearch({ shouldJump: false });
+  },
+
+  async _doTabSearch({ shouldJump = true } = {}) {
     const query = document.getElementById("tab-search-input").value.trim();
     const seq = ++_seq;
 
@@ -120,17 +129,17 @@ export const tabSearchMethods = {
     if (seq !== _seq) return;
 
     const resultStart = performance.now();
-    if (result.error || result.offsets?.length === 0 || result.record_indices?.length === 0) {
-      _matches = result.error ? [] : (result.offsets ?? result.record_indices ?? []);
-      _matchIndex = _matches.length > 0 ? 0 : -1;
-    } else {
-      _matches = result.offsets ?? result.record_indices ?? [];
-      _matchIndex = _matches.length > 0 ? 0 : -1;
-    }
+    _matches = result.error ? [] : (result.offsets ?? result.record_indices ?? []);
+    const isFirstOnScreen = _matches.length > 0 && this._isParsedMatchOnScreen(_matches[0]);
+    _matchIndex = _matches.length > 0 && (shouldJump || isFirstOnScreen) ? 0 : -1;
 
     this._updateSearchCounter();
     window.appProfile?.record("_doTabSearch.process_results", performance.now() - resultStart);
     if (_matchIndex >= 0) await this._jumpToMatch(_matchIndex);
+  },
+
+  _isParsedMatchOnScreen(pos) {
+    return this._activeTab === "parsed" && Math.floor(pos / PARSED_PER_PAGE) === this._parsedPage;
   },
 
   tabSearchNext() {
@@ -142,7 +151,8 @@ export const tabSearchMethods = {
 
   tabSearchPrev() {
     if (_matches.length === 0) return;
-    _matchIndex = (_matchIndex - 1 + _matches.length) % _matches.length;
+    // From "no current match" (-1) as well as from the first, wrap to the last.
+    _matchIndex = _matchIndex <= 0 ? _matches.length - 1 : _matchIndex - 1;
     this._updateSearchCounter();
     this._jumpToMatch(_matchIndex);
   },
@@ -211,6 +221,8 @@ export const tabSearchMethods = {
     const query = document.getElementById("tab-search-input")?.value.trim();
     if (_matches.length === 0) {
       el.textContent = query ? "No matches" : "";
+    } else if (_matchIndex < 0) {
+      el.textContent = `${_matches.length} matches`;
     } else {
       el.textContent = `${_matchIndex + 1} of ${_matches.length}`;
     }

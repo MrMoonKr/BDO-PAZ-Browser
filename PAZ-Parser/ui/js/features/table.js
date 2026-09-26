@@ -25,13 +25,17 @@ export const tableMethods = {
     const isFlip = this._parsedSort?.field === field && this._parsedSort.dir === "asc";
     const sort = { field, dir: isFlip ? "desc" : "asc" };
 
+    // Match positions belong to the previous order. Dropping them now also
+    // discards a search still in flight, so its results cannot land on the
+    // new order.
+    this._resetTabSearch();
     th.classList.add("sort-pending");
-    const isLoaded = await this._gotoParsedPage(0, sort);
+    await this._gotoParsedPage(0, sort);
     // On success the table was re-rendered; on failure clear the spinner.
     th.classList.remove("sort-pending");
-    // Match positions belong to the previous order. Off-tab, switching back
-    // resets the search anyway.
-    if (isLoaded && this._activeTab === "parsed") this._resetTabSearch();
+    // Search again in whatever order the server now holds, even if this page
+    // failed. Off-tab, switching back resets the search anyway.
+    if (this._activeTab === "parsed") await this.refreshTabSearch();
   },
 
   _initTableIcons(container) {
