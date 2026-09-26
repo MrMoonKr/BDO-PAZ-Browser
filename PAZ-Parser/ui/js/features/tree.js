@@ -3,22 +3,26 @@
 import { t } from "../core/i18n.js";
 
 export const treeMethods = {
+  // Also runs when the filter box is cleared, so it must not disable the
+  // search input: that would blur it and drop keystrokes. It shares
+  // _searchSeq with _doSearch so a filter typed during the reload wins.
   async _loadTreeRoot() {
+    const seq = ++this._searchSeq;
     this._inSearch = false;
     this._clearExtractSelection();
     const searchEl = document.getElementById("search");
     const contentSearchBtn = document.getElementById("btn-content-search");
     searchEl.value = "";
-    searchEl.disabled = true;
-    contentSearchBtn.disabled = true;
     const tree = document.getElementById("tree");
     tree.innerHTML = "";
     tree.appendChild(this._buildTreeLoadingNode());
     await this._nextPaint();
     const children = await window.pywebview.api.get_children("");
-    tree.innerHTML = "";
-    for (const item of children) {
-      tree.appendChild(this._buildNode(item));
+    if (seq === this._searchSeq) {
+      tree.innerHTML = "";
+      for (const item of children) {
+        tree.appendChild(this._buildNode(item));
+      }
     }
     searchEl.disabled = false;
     contentSearchBtn.disabled = false;
