@@ -3,6 +3,8 @@
 export const app = {
   _selectedPath: null,
   _currentFolderPath: null,
+  // Set once the backend has loaded a folder; a cancelled re-open restores it.
+  _isFolderLoaded: false,
   _extractPaths: new Set(),
   _searchTimer: null,
   _searchSeq: 0,

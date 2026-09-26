@@ -44,7 +44,10 @@ export const treeMethods = {
     return loading;
   },
 
+  // Folder loads only. Search stays off until onFolderLoaded rebuilds the
+  // tree, so it cannot query the previous folder's entries meanwhile.
   _showTreeLoading() {
+    this._setSearchEnabled(false);
     const tree = document.getElementById("tree");
     tree.innerHTML = "";
     tree.appendChild(this._buildTreeLoadingNode());
