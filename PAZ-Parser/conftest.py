@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import replace
 import os
 import sys
+import time
 from pathlib import Path
 from typing import Any
 
@@ -84,6 +85,9 @@ class _CleanPlugin:
         self._failures: list[str] = []
         self._passed = 0
         self._failed = 0
+        # Registered in pytest_configure, just before the session starts.
+        # pytest's own start time is private and was renamed in pytest 9.
+        self._start = time.perf_counter()
         config.option.verbose = -1
 
     def pytest_runtest_logreport(self, report: pytest.TestReport) -> None:
@@ -97,9 +101,7 @@ class _CleanPlugin:
 
     @pytest.hookimpl(tryfirst=True)
     def pytest_terminal_summary(self, terminalreporter: Any, exitstatus: int) -> None:
-        import time
-
-        elapsed = int(time.time() - terminalreporter._sessionstarttime)
+        elapsed = int(time.perf_counter() - self._start)
         duration = f"{elapsed // 3600:02d}:{(elapsed % 3600) // 60:02d}:{elapsed % 60:02d}"
 
         for nodeid in self._failures:
