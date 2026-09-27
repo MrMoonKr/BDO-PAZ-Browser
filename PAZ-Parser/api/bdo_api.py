@@ -252,7 +252,8 @@ class Api(PreviewMixin, SearchMixin):
             ),
             IconKind.QUEST: (
                 f"{binary}/quest.dbss",
-                None,
+                # Not an offset table: it gives the record order the walk needs.
+                f"{binary}/allquestlist.bss",
                 build_quest_icon_index,
             ),
             IconKind.CHARACTER: (

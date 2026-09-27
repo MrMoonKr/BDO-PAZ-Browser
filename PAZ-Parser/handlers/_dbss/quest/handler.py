@@ -11,10 +11,13 @@ from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 
 from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.lang import load_handler_strings
+from _bss.allquestlist.parser import parse_allquestlist_records
+from .model import FamilyStat
 from .parser import QuestIndex, build_quest_index, parse_quest_record
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
+_ORDER_FILE = "allquestlist.bss"
 
 
 def _truncate(text: str, max_len: int = 140) -> str:
@@ -44,6 +47,19 @@ def _objective(loc_texts: list[str]) -> str:
     return loc_texts[3] if len(loc_texts) > 3 else ""
 
 
+def _family_stat_text(stats: list[FamilyStat]) -> str:
+    """`AP +1, Weight +50 LT`; a stat with an unknown field shows its label alone."""
+    parts: list[str] = []
+    for stat in stats:
+        value = stat["value"]
+        if value is None:
+            parts.append(stat["label"])
+            continue
+        unit = " LT" if stat["label"] == "Weight" else ""
+        parts.append(f"{stat['label']} {value:+g}{unit}")
+    return ", ".join(parts)
+
+
 class QuestDbssHandler(PreviewHandler):
 
     def _columns(self) -> list[Column]:
@@ -52,41 +68,45 @@ class QuestDbssHandler(PreviewHandler):
             Column(cols.get("displayId", "Display ID"), "num", sort_key="packed_quest_id"),
             Column(cols.get("chainId", "Chain ID"), "num", sort_key="quest_chain_id"),
             Column(cols.get("questId", "Quest ID"), "num", sort_key="quest_id"),
+            Column(cols.get("category", "Category"), "num", sort_key="quest_category"),
             Column(cols.get("icon", "Icon"), sort_key="icon_path"),
             Column(cols.get("titleName", "Title / Name"), sort_key="title"),
             Column(cols.get("condition", "Condition"), sort_key="condition_script"),
             Column(cols.get("action", "Action"), sort_key="action_script"),
             Column(cols.get("objective", "Objective"), sort_key="objective"),
+            Column(cols.get("familyStat", "Family Stat"), sort_key="family_stat_text"),
         ]
 
     def sortable_fields(self) -> frozenset[str]:
         return sort_keys(self._columns())
 
-    def _get_index(self, data: bytes) -> QuestIndex:
-        return self._data_cache(data, "index", lambda: build_quest_index(data))
+    def companions(self, entry: PazEntry) -> list[str]:
+        folder = entry.internal_path.rsplit("/", 1)[0]
+        return [f"{folder}/{_ORDER_FILE}"]
 
-    def _record_at(self, data: bytes, index: QuestIndex, row: int) -> dict | None:
-        """Parse one index row, or None when its fixed strings do not parse."""
-        canonical_id = index.canonical_quest_ids[row] if row < len(index.canonical_quest_ids) else 0
-        start = index.record_starts[row]
-        if start is None:
-            return self._partial_record(row, index, canonical_id)
+    def _get_index(self, data: bytes, companions: dict[str, bytes]) -> QuestIndex:
+        def build() -> QuestIndex:
+            order_raw = companions.get(_ORDER_FILE)
+            if order_raw is None:
+                raise ValueError(f"{_ORDER_FILE} companion not found; it gives the record order.")
+            ids = [record["packed_quest_id"] for record in parse_allquestlist_records(order_raw)]
+            return build_quest_index(data, ids)
 
-        parsed = parse_quest_record(data, row, start, index.record_ends[row], canonical_id)
-        if parsed is None:
-            return None
+        return self._data_cache(data, "index", build)
 
-        record = dict(parsed)
+    def _record_at(self, data: bytes, index: QuestIndex, row: int) -> dict:
+        record = dict(parse_quest_record(data, index, row))
         loc_texts = _quest_loc_texts(record["quest_chain_id"], record["quest_id"])
         record["loc_texts_en"] = loc_texts
         record["title"] = _title(loc_texts)
         record["objective"] = _objective(loc_texts) or record["objective_text_kr"]
+        # Empty sorts last and exports as an empty cell.
+        record["family_stat_text"] = _family_stat_text(record["family_stats"]) or None
         return record
 
-    def _records_at(self, data: bytes, rows: Iterable[int]) -> list[dict]:
-        index = self._get_index(data)
-        records = (self._record_at(data, index, row) for row in rows)
-        return [record for record in records if record is not None]
+    def _records_at(self, data: bytes, companions: dict[str, bytes], rows: Iterable[int]) -> list[dict]:
+        index = self._get_index(data, companions)
+        return [self._record_at(data, index, row) for row in rows]
 
     def get_record_count(
         self,
@@ -94,7 +114,7 @@ class QuestDbssHandler(PreviewHandler):
         entry: PazEntry,
         companions: dict[str, bytes],
     ) -> int:
-        return len(self._get_index(data).record_starts)
+        return len(self._get_index(data, companions))
 
     def get_records(
         self,
@@ -102,7 +122,7 @@ class QuestDbssHandler(PreviewHandler):
         entry: PazEntry,
         companions: dict[str, bytes],
     ) -> list[dict]:
-        return self._records_at(data, range(len(self._get_index(data).record_starts)))
+        return self._records_at(data, companions, range(len(self._get_index(data, companions))))
 
     def render_data_page(
         self,
@@ -112,10 +132,10 @@ class QuestDbssHandler(PreviewHandler):
         page: int,
         page_size: int,
     ) -> str:
-        total = len(self._get_index(data).record_starts)
+        total = len(self._get_index(data, companions))
         start_row = page * page_size
         rows = range(start_row, min(total, start_row + page_size))
-        return self._render_table(self._records_at(data, rows), total)
+        return self._render_table(self._records_at(data, companions, rows), total)
 
     def _build_sort_order(
         self,
@@ -126,11 +146,8 @@ class QuestDbssHandler(PreviewHandler):
     ) -> list[int]:
         # Keeps one value per row rather than caching every parsed record
         # (scripts run to thousands of characters) through get_records().
-        index = self._get_index(data)
-        values: list[object] = []
-        for row in range(len(index.record_starts)):
-            record = self._record_at(data, index, row)
-            values.append(None if record is None else record.get(sort.field))
+        index = self._get_index(data, companions)
+        values = [self._record_at(data, index, row).get(sort.field) for row in range(len(index))]
         return sort_order_by_values(values, sort.descending)
 
     def render_sorted_page(
@@ -145,7 +162,7 @@ class QuestDbssHandler(PreviewHandler):
         order = self.sorted_order(data, entry, companions, sort)
         start = page * page_size
         rows = order[start : start + page_size]
-        return self._render_table(self._records_at(data, rows), len(order))
+        return self._render_table(self._records_at(data, companions, rows), len(order))
 
     def search_records(
         self,
@@ -159,10 +176,10 @@ class QuestDbssHandler(PreviewHandler):
             return []
 
         matches: list[int] = []
-        index = self._get_index(data)
-        for row in range(len(index.record_starts)):
+        index = self._get_index(data, companions)
+        for row in range(len(index)):
             record = self._record_at(data, index, row)
-            if record and q in "\t".join(str(value).lower() for value in record.values()):
+            if q in "\t".join(str(value).lower() for value in record.values()):
                 matches.append(row)
 
         return matches
@@ -174,28 +191,6 @@ class QuestDbssHandler(PreviewHandler):
         page_size: int,
     ) -> str:
         return self._render_table(records[page * page_size : page * page_size + page_size], len(records))
-
-    def _partial_record(self, row: int, index: QuestIndex, canonical_id: int = 0) -> dict:
-        cid = canonical_id or 0
-        chain_id = cid & 0xFFFF
-        quest_id  = cid >> 16
-        loc_texts = _quest_loc_texts(chain_id, quest_id) if cid else []
-        return {
-            "row": row,
-            "offset": "",
-            "size": "",
-            "packed_quest_id": cid or "",
-            "quest_chain_id": chain_id or "",
-            "quest_id": quest_id or "",
-            "condition_script": "",
-            "action_script": "",
-            "objective_text_kr": "",
-            "icon_path": index.icon_paths[row] if row < len(index.icon_paths) else "",
-            "loc_texts_en": loc_texts,
-            "title": _title(loc_texts),
-            "objective": _objective(loc_texts),
-            "parse_status": "Icon-only",
-        }
 
     def _render_table(self, records: list[dict], total: int) -> str:
         rows: list[list] = []
@@ -211,18 +206,17 @@ class QuestDbssHandler(PreviewHandler):
                 e(record["packed_quest_id"]),
                 e(record["quest_chain_id"]),
                 e(record["quest_id"]),
+                e(record["quest_category"]),
                 icon_cell(record["icon_path"]),
                 e(_truncate(title) if title else "-"),
                 e(_truncate(record["condition_script"])),
                 e(_truncate(record["action_script"])),
                 e(_truncate(objective) if objective else "-"),
+                e(record["family_stat_text"] or "-"),
             ])
 
         meta = f"{total:,} quests"
         if with_loc:
             meta += f" · {with_loc:,} with LOC type 18 text"
-        icon_only = sum(1 for record in records if record.get("parse_status") == "Icon-only")
-        if icon_only:
-            meta += f" · {icon_only:,} icon-only on this page"
 
         return table(meta, self._columns(), rows)

@@ -1,59 +1,54 @@
+"""`journalquest.dbss`: adventure journal books, located through `journalquestoffset.dbss`.
+
+Each book record is self-describing:
+
+    u32 journal_key | u32 book_key | u8 flag_08
+    | journal_name | journal_description | book_name | unlock_requirement
+    | bookshelf_scene | book_model
+    | u32 page_count | u32[page_count] page_quest_ids | u32 reserved_end
+
+Strings are a u64 code-unit count followed by the text with no terminator: the
+first four are UTF-16LE, the two model names ASCII. Page quest IDs pack
+`(quest_id << 16) | quest_chain_id`. Full layout in
+docs/file-formats/journalquest_dbss.md.
+"""
+
 from __future__ import annotations
 
-import re
+import struct
 
-from _common.binary import u8, u32, u32_hi, u32_lo
-
-
-_ASCII_RE = re.compile(rb"[ -~]{4,}")
-_COMBINE_RE = re.compile(rb"Combine_[ -~]+")
-_STATIC_RE = re.compile(rb"Adventure_Bookshelf[ -~]+")
+from _common.binary import u32, u32_hi, u32_lo
 
 
-def _read_ascii(data: bytes, offset: int) -> tuple[str, int]:
-    end = offset
-    while end < len(data) and 32 <= data[end] <= 126:
-        end += 1
-    return data[offset:end].decode("ascii", errors="replace"), end
+_HEADER = struct.Struct("<IIB")
+_U64 = struct.Struct("<Q")
+_U32 = struct.Struct("<I")
 
 
-def _clean_text(text: str, remove_marker: bool) -> str:
-    result = text.replace("\\n", " ").strip()
-    while result and ord(result[-1]) < 32:
-        result = result[:-1].rstrip()
-    if remove_marker and result and ord(result[-1]) < 128:
-        result = result[:-1].rstrip()
-    return result
+class _Reader:
+    """Sequential reader over one book record; raises when a field runs past it."""
 
+    def __init__(self, block: bytes, row: int) -> None:
+        self._block, self._row, self.pos = block, row, 0
 
-def _find_aligned_nul(data: bytes, start: int, limit: int) -> int:
-    for offset in range(start, limit - 1):
-        if (offset - start) % 2 == 0 and data[offset:offset + 2] == b"\x00\x00":
-            return offset
-    return -1
+    def _take(self, size: int) -> bytes:
+        end = self.pos + size
+        if end > len(self._block):
+            raise ValueError(f"journalquest record {self._row} runs past its size at +0x{self.pos:X}")
+        raw = self._block[self.pos:end]
+        self.pos = end
+        return raw
 
+    def unpack(self, fmt: struct.Struct) -> tuple:
+        return fmt.unpack(self._take(fmt.size))
 
-def _parse_text_fields(block: bytes, limit: int) -> list[str]:
-    fields: list[str] = []
-    offset = 17
+    def text(self, *, wide: bool) -> str:
+        (length,) = self.unpack(_U64)
+        raw = self._take(length * (2 if wide else 1))
+        return raw.decode("utf-16-le" if wide else "ascii", errors="replace")
 
-    while offset < limit - 1 and len(fields) < 4:
-        end = _find_aligned_nul(block, offset, limit)
-        if end < 0:
-            break
-
-        raw = block[offset:end]
-        if raw:
-            text = raw.decode("utf-16le", errors="replace")
-            fields.append(_clean_text(text, remove_marker=len(fields) < 3))
-
-        offset = end + 2
-        while offset < limit and block[offset] == 0:
-            offset += 1
-
-    while len(fields) < 4:
-        fields.append("")
-    return fields
+    def at_end(self) -> bool:
+        return self.pos == len(self._block)
 
 
 def parse_journalquest_offset_records(data: bytes) -> list[dict]:
@@ -88,87 +83,63 @@ def parse_journalquest_offset_records(data: bytes) -> list[dict]:
     return records
 
 
-def _find_model_offsets(block: bytes) -> tuple[int, int]:
-    combine_match = _COMBINE_RE.search(block)
-    static_start = combine_match.end() if combine_match is not None else 0
-    static_match = _STATIC_RE.search(block, static_start)
-    if combine_match is None or static_match is None:
-        ascii_matches = list(_ASCII_RE.finditer(block))
-        if len(ascii_matches) >= 2:
-            return ascii_matches[0].start(), ascii_matches[1].start()
-        raise ValueError("journalquest record model strings not found")
-    return combine_match.start(), static_match.start()
+def _page_ref(packed: int) -> dict:
+    return {
+        "raw_ref": packed,
+        "journal_cat_id": u32_lo(packed),
+        "page_no": u32_hi(packed),
+    }
 
 
-def _parse_page_refs(block: bytes, page_count_offset: int) -> tuple[int, int, list[dict]]:
-    page_count = u32(block, page_count_offset)
-    refs: list[dict] = []
-    offset = page_count_offset + 4
+def _parse_book(block: bytes, row: int, offset_record: dict) -> dict:
+    reader = _Reader(block, row)
+    group_id, entry_no, flag_08 = reader.unpack(_HEADER)
+    journal_title = reader.text(wide=True)
+    subtitle = reader.text(wide=True)
+    page_vol_title = reader.text(wide=True)
+    unlock_condition = reader.text(wide=True)
+    combine_model = reader.text(wide=False)
+    static_model = reader.text(wide=False)
+    (page_count,) = reader.unpack(_U32)
+    packed_ids = reader.unpack(struct.Struct(f"<{page_count}I"))
+    (terminal,) = reader.unpack(_U32)
+    if not reader.at_end():
+        raise ValueError(f"journalquest record {row} has bytes after its page list")
 
-    for index in range(page_count):
-        raw_ref = u32(block, offset + index * 4)
-        hi = u32_hi(raw_ref)
-        lo = u32_lo(raw_ref)
-
-        if hi <= 512 and lo > 512:
-            page_no = hi
-            journal_cat_id = lo
-            encoding = "page_index_cat_id"
-        else:
-            journal_cat_id = hi
-            page_no = lo + 1
-            encoding = "cat_id_page_index"
-
-        refs.append({
-            "raw_ref": raw_ref,
-            "journal_cat_id": journal_cat_id,
-            "page_no": page_no,
-            "encoding": encoding,
-        })
-
-    return page_count, u32(block, offset + page_count * 4), refs
+    pages = [_page_ref(packed) for packed in packed_ids]
+    return {
+        "row": row,
+        "offset": offset_record["byte_offset"],
+        "size": offset_record["byte_size"],
+        "group_id": group_id,
+        "entry_no": entry_no,
+        "flag_08": flag_08,
+        # Every page of a book belongs to one quest chain.
+        "journal_cat_id": pages[0]["journal_cat_id"] if pages else 0,
+        "journal_title": journal_title,
+        "subtitle": subtitle,
+        "page_vol_title": page_vol_title,
+        "unlock_condition": unlock_condition,
+        "page_count": page_count,
+        "page_refs": pages,
+        "page_refs_text": ", ".join(f"{p['journal_cat_id']}:{p['page_no']}" for p in pages),
+        "combine_model": combine_model,
+        "static_model": static_model,
+        "terminal": terminal,
+    }
 
 
 def parse_journalquest_records(data: bytes, offset_data: bytes) -> list[dict]:
-    offset_records = parse_journalquest_offset_records(offset_data)
+    """One book per offset row, in offset-file order.
+
+    Raises ValueError on the first record whose fields do not end exactly at
+    its indexed size: the layout has changed and later fields would be misread.
+    """
     records: list[dict] = []
-
-    for row, offset_record in enumerate(offset_records):
+    for row, offset_record in enumerate(parse_journalquest_offset_records(offset_data)):
         byte_offset = offset_record["byte_offset"]
-        byte_size = offset_record["byte_size"]
-        block = data[byte_offset:byte_offset + byte_size]
-        if len(block) != byte_size:
+        block = data[byte_offset:byte_offset + offset_record["byte_size"]]
+        if len(block) != offset_record["byte_size"]:
             raise ValueError(f"journalquest record {row} exceeds file size")
-        if len(block) < 21:
-            raise ValueError(f"journalquest record {row} is too small")
-
-        combine_offset, static_offset = _find_model_offsets(block)
-        text_fields = _parse_text_fields(block, combine_offset)
-        combine_model, _ = _read_ascii(block, combine_offset)
-        static_model, static_end = _read_ascii(block, static_offset)
-        page_count, terminal, pages = _parse_page_refs(block, static_end)
-        journal_cat_id = pages[0]["journal_cat_id"] if pages else 0
-
-        records.append({
-            "row": row,
-            "offset": byte_offset,
-            "size": byte_size,
-            "group_id": u32(block, 0),
-            "entry_no": u32(block, 4),
-            "unknown_08": u32(block, 8),
-            "unknown_0c": u32(block, 12),
-            "unknown_10": u8(block, 16),
-            "journal_cat_id": journal_cat_id,
-            "journal_title": text_fields[0],
-            "subtitle": text_fields[1],
-            "page_vol_title": text_fields[2],
-            "unlock_condition": text_fields[3],
-            "page_count": page_count,
-            "page_refs": pages,
-            "page_refs_text": ", ".join(f"{p['journal_cat_id']}:{p['page_no']}" for p in pages),
-            "combine_model": combine_model,
-            "static_model": static_model,
-            "terminal": terminal,
-        })
-
+        records.append(_parse_book(block, row, offset_record))
     return records

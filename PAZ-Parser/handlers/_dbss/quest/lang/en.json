@@ -3,10 +3,12 @@
     "displayId": "Display ID",
     "chainId": "Chain ID",
     "questId": "Quest ID",
+    "category": "Category",
     "icon": "Icon",
     "titleName": "Title / Name",
     "condition": "Condition",
     "action": "Action",
-    "objective": "Objective"
+    "objective": "Objective",
+    "familyStat": "Family Stat"
   }
 }

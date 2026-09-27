@@ -34,7 +34,7 @@ icon: Icon/Quest/Hadum08.dds
 
 | File                  | Required | Role                                                                 |
 | --------------------- | -------- | -------------------------------------------------------------------- |
-| `allquestlist.bss`    | Optional | Packed quest ID of every record, in record order                     |
+| `allquestlist.bss`    | Required | Packed quest ID of every record, in record order; the walk needs it  |
 | `languagedata_en.loc` | Optional | English quest strings; raw `quest.dbss` stores Korean objective text |
 | `questgroup.dbss`     | Optional | Quest chain/group metadata; links group names to child quest IDs     |
 | `journalquest.dbss`   | Optional | Adventure-journal books whose pages are quest IDs of this file       |
@@ -55,7 +55,7 @@ All multi-byte values are little-endian.
 
 Records are stored back to back with no offset table and no padding. Record 0 starts at `+0x04`; every later record starts immediately after the previous record's 13-byte trailer. Record `i` belongs to packed quest ID `allquestlist[i]`.
 
-A sequential walk (read the strings, find the packed ID of `allquestlist[i]` right after the objective, then the ID echo and trailer) consumes every byte of the file: `18,988` of `18,988` current records and `19,599` of `19,599` fixture records, with the last record ending exactly at end of file. Record sizes range from `538` to `10,145` bytes (current file). The first three fixture records start at `0x00000004`, `0x000005F8` and `0x00000936`.
+A sequential walk (read the strings, find the packed ID of `allquestlist[i]` right after the objective, then the ID echo and trailer) consumes every byte of the file: `18,988` of `18,988` current records and `19,599` of `19,599` fixture records, with the last record ending exactly at end of file. Record sizes, from the lead to the end of the trailer, range from `512` to `9,464` bytes (current file) and `512` to `8,818` (fixture). The first three fixture records start at `0x00000004`, `0x000005F8` and `0x00000936`.
 
 ---
 
@@ -90,7 +90,7 @@ Strings are a u64 character count (equivalently a u32 count plus a u32 zero) fol
 | `Q+0x15`   | u32           | reward_entry_count | `0` to `12`; number of 178-byte reward entries                                     |
 | `Q+0x19`   | u8[178 × n]   | reward_entries     | Entry `k` holds a Family-stat union at `Q+0x80 + 178 × k`                          |
 | varies     | u8[]          | unknown_payload    | Rich text (PAColor markup), more length-prefixed Korean strings, numeric config    |
-| varies     | u64 + ascii[n] | icon_path         | Quest icon path such as `Icon/Quest/Hadum08.dds`; one per record in 18,867 records, none in 121 |
+| varies     | u64 + ascii[n] | icon_path         | Quest icon path such as `Icon/Quest/Hadum08.dds`; ends 16 or 8 bytes before the echo. 18,985 of 18,988 records have one; see Notes |
 | varies     | u8[16]        | unknown_post_icon  | 16 bytes in 18,655 records, 8 in 211                                               |
 | varies     | u32           | packed_quest_id_echo | Repeats `packed_quest_id`                                                        |
 | varies     | u8[13]        | trailer            | Most common: `00 × 9, 01 00 00 00` (5,075) and all zero (2,882); record ends here  |
@@ -212,8 +212,10 @@ titles/objectives.
 ## Notes
 
 - Current file: `34,970,852` bytes, `18,988` records. Fixture: `36,525,439` bytes, `19,599` records.
-- Parsed preview is implemented as a lazy handler because the table has nearly twenty thousand variable-length records.
-- The preview still anchors rows on icon paths and on the `기;` text pattern. On the fixture it anchors `19,481` icon rows, extracts `16,977` IDs and decodes `7,850` script rows; on the current file it finds only `8,085` script rows and `16,377` IDs. A sequential walk in `allquestlist.bss` order covers every record.
+- Parsed preview is a lazy handler: the walk builds a small index on open and each page parses only its own rows.
+- The parser walks the records in `allquestlist.bss` order, so that file is a required companion (it also fills the icon index builder's companion slot). For each record it reads the two scripts, finds the record's own packed ID after them (the objective string must end at the `quest_category` right before it), then takes the next occurrence of that ID as the echo; the next record must parse right after the 13-byte trailer, or end the file. The walk takes about 0.35 s on either file and reads every script: 18,988 of 18,988 current records, 19,599 of 19,599 fixture records. The earlier scan anchored rows on icon paths and on the `기;` pattern and decoded only 8,085 script rows of the current file.
+- The icon path is read through its u64 prefix, not a pattern match. That recovers paths the old `Icon/[A-Za-z0-9_./ -]+` pattern cut short or missed: `Icon/Quest/O'dylilta_820115.dds`, `UI_Artwork/IC_01245.dds`, and `New_Icon/03_ETC/...`, which the pattern read as `Icon/03_ETC/...`. Three records store no icon at all: `69183`, `69175` and `8456145`. The old scan-based icon index had given them, and about a hundred other quests (mostly O'dyllita and Sherekhan ones), a neighbouring record's icon or a truncated path.
+- The Family Stat column lists the non-`16` unions of the counted reward entries (skipped when `block_kind` is `0`). On both files that is 104 entries: the 98 real Family stats plus six type `12`/`13` entries in the chain `1627` test quests, shown by type number only.
 - `(file_size - 4) / count` is not integral, confirming variable-length records.
 - There is no step/canonical record split: `lead_a`/`lead_b` are not quest IDs, and the record's own ID is `packed_quest_id` in the fixed block.
 - Some decoded rows have no direct LOC type 18 title (27 of 18,988 current IDs). In those cases the scripts may still reference localized display quests through `clearquest(chain,id)`.

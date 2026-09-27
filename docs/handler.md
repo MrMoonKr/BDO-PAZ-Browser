@@ -311,10 +311,11 @@ each page renders in a few milliseconds. If a table renders its own HTML instead
 `table()`, emit its headers with `header_cell(column)` so they carry the
 `sortable` class and `data-sort-key`.
 
-`handlers/_dbss/quest/handler.py` does the same over its record index. Its
-records carry scripts thousands of characters long, so `_build_sort_order`
+`handlers/_dbss/quest/handler.py` does the same over its record index.
+Its records carry scripts thousands of characters long, so `_build_sort_order`
 parses one row at a time and keeps only the sorted field. Every column sorts in
-about 0.65 s on the 19,481-quest fixture, on top of the index built on open.
+about 0.5 s on the 19,599-quest fixture, on top of the 0.35 s walk that builds
+the index on open.
 
 ---
 

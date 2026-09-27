@@ -42,6 +42,7 @@ CASE = HandlerCase(
             required_keys=[
                 "group_id",
                 "entry_no",
+                "flag_08",
                 "journal_cat_id",
                 "journal_title",
                 "page_vol_title",
@@ -57,7 +58,11 @@ CASE = HandlerCase(
             expected={
                 "group_id": 1,
                 "entry_no": 1,
+                "flag_08": 0,
                 "journal_cat_id": 748,
+                "journal_title": "이고르 바탈리의 모험일지",
+                "page_refs_text": "748:1, 748:2, 748:3",
+                "terminal": 0,
                 "journal_title_text": "Igor Bartali's Adventures",
                 "subtitle_text": "Logs of Velia's Chief Igor Bartali's youthful past",
                 "page_vol_title_text": "Igor Bartali's Adventures - Volume 1",
@@ -66,7 +71,8 @@ CASE = HandlerCase(
                     "Hey There Big Fellow!, Irresistible Lure, "
                     "The Divine Entity inside the Cave"
                 ),
-                "combine_model": "Combine_Etc_Adventure_Bookshelf01\"",
+                # Read through its u64 length; the old scan kept the next length's low byte.
+                "combine_model": "Combine_Etc_Adventure_Bookshelf01",
                 "static_model": "Adventure_Bookshelf_Static_book_00",
             },
         ),
@@ -81,6 +87,8 @@ CASE = HandlerCase(
                 "page_vol_title_text": "Deve's Encyclopedia - Volume 1\nThe Altinovan on all things random!",
             },
         ),
+        # Every book of journal 7 sets flag_08.
+        TargetTest(col="group_id", value=7, expected={"flag_08": 1}),
     ],
 )
 
