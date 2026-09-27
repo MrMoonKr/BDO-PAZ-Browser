@@ -2,14 +2,14 @@
 
 ## Purpose
 
-Quest lookup list. The file is a compact `PABR` table of canonical/display packed quest identifiers that line up with LOC quest title keys and share the same packed ID scheme used by `quest.dbss`.
+Quest order list. The file is a compact `PABR` table of packed quest IDs, one per `quest.dbss` record and in the same physical order as the records in `quest.dbss`. The IDs line up with LOC quest title keys and use the packed ID scheme of `quest.dbss`.
 
 Example:
 
 ```text
-slot 0 -> packed_quest_id 1050655 -> chain 2079, quest 16
-slot 1 -> packed_quest_id 463223 -> chain 4471, quest 7
-slot 2 -> packed_quest_id 6751209 -> chain 1001, quest 103
+slot 0 -> packed_quest_id 795132 -> chain 8700, quest 12 -> quest.dbss record 0
+slot 1 -> packed_quest_id 138172 -> chain 7100, quest 2  -> quest.dbss record 1
+slot 2 -> packed_quest_id 196891 -> chain 283, quest 3   -> quest.dbss record 2
 ```
 
 ## Graph
@@ -23,12 +23,13 @@ slot 2 -> packed_quest_id 6751209 -> chain 1001, quest 103
 
 ### Connections
 
-- [quest.dbss](quest_dbss.md) - quest definition table with the same declared count and packed quest ID form; current parser extracts `canonical_link` IDs that resolve strongly into this list
+- [quest.dbss](quest_dbss.md) - quest definition table; entry `i` of this list is the packed quest ID of the `i`-th physical record in `quest.dbss`
 - [questgroup.dbss](questgroup_dbss.md) - confirms packed quest IDs are `(quest_id << 16) | quest_chain_id`
 - [acceptquest.bss](acceptquest_bss.md) - contains the same quest ID set in acceptance-related order with two side fields
 - [completequest.bss](completequest_bss.md) - contains the same quest ID set in completion-related order with two side fields
 - [mainquest.bss](mainquest_bss.md) - groups a subset of quest IDs into main-quest UI sequences
 - [newquest.bss](newquest_bss.md) - groups quest IDs into new-quest UI sequences
+- [journalquest.dbss](journalquest_dbss.md) - adventure-journal pages are packed quest IDs from this list
 - [languagedata_en.loc](languagedata_loc.md) - English quest text keyed by LOC type 18 with `str_id1=quest_chain_id` and `str_id2=quest_id`
 
 ---
@@ -37,7 +38,7 @@ slot 2 -> packed_quest_id 6751209 -> chain 1001, quest 103
 
 | File                  | Required | Role                                                                 |
 | --------------------- | -------- | -------------------------------------------------------------------- |
-| `quest.dbss`          | Optional | Provides quest record payloads that use the same packed ID scheme    |
+| `quest.dbss`          | Optional | Quest records, stored in the same order as this list                 |
 | `acceptquest.bss`     | Optional | Provides the same quest ID set in acceptance-related order            |
 | `completequest.bss`   | Optional | Provides the same quest ID set in completion-related order            |
 | `mainquest.bss`       | Optional | Provides main-quest UI sequence groups for a subset of quest IDs      |
@@ -55,7 +56,7 @@ All multi-byte values are little-endian.
 | Offset  | Type  | Field | Notes                                           |
 | ------- | ----- | ----- | ----------------------------------------------- |
 | `+0x00` | u8[4] | magic | `PABR` (ASCII)                                  |
-| `+0x04` | u32   | count | Number of entries; observed `19599`             |
+| `+0x04` | u32   | count | Number of entries; `18,988` current, `19,599` fixture |
 
 ### Entry (4 bytes, repeated `count` times)
 
@@ -70,7 +71,7 @@ Follows the last entry.
 | Offset  | Type | Field          | Notes                                                              |
 | ------- | ---- | -------------- | ------------------------------------------------------------------ |
 | `+0x00` | u32  | reserved_a     | Observed `0`                                                       |
-| `+0x04` | u32  | end_of_entries | Byte offset immediately after entries; observed `0x13244`          |
+| `+0x04` | u32  | end_of_entries | Byte offset immediately after entries, `8 + count × 4`             |
 | `+0x08` | u32  | reserved_b     | Observed `0`                                                       |
 
 ---
@@ -94,12 +95,16 @@ quest_id       = packed_quest_id >> 16
 
 ## Reference Rows
 
-| Slot | Packed Quest ID | Chain ID | Quest ID | Example LOC Title                         |
-| ---- | --------------- | -------- | -------- | ----------------------------------------- |
-| 0    | `1050655`       | `2079`   | `16`     | `[Elvia Weekly] Gigagord`                 |
-| 1    | `463223`        | `4471`   | `7`      | LOC type 18 title when available          |
-| 2    | `6751209`       | `1001`   | `103`    | LOC type 18 title when available          |
-| 19598 | `181218`       | `50146`  | `2`      | LOC type 18 title when available          |
+Current client data (`files/allquestlist.bss`):
+
+| Slot  | Packed Quest ID | Chain ID | Quest ID | LOC Title (type 18, `id4=0`)                                     |
+| ----- | --------------- | -------- | -------- | ---------------------------------------------------------------- |
+| 0     | `795132`        | `8700`   | `12`     | `[Storybook] Tale of the Mudang Wraith`                          |
+| 1     | `138172`        | `7100`   | `2`      | `[Processing] The Beauty of Planks`                              |
+| 2     | `196891`        | `283`    | `3`      | `Exalted Character III`                                          |
+| 18987 | `181218`        | `50146`  | `2`      | `A Whole New Experience Presented by Fughar! (Black Spirit Pass)` |
+
+The older fixture starts with `1050655` (chain `2079`, quest `16`, `[Elvia Weekly] Gigagord`) and also ends with `181218`.
 
 ---
 
@@ -116,10 +121,10 @@ quest_id       = packed_quest_id >> 16
 
 ## Notes
 
-- Observed decompressed size is `78,416` bytes.
-- File size matches `8 + (19599 * 4) + 12`.
-- Trailer `end_of_entries` is `78,404` decimal (`0x13244`), equal to `8 + count * 4`.
-- `count` matches the observed `quest.dbss` record count documented for the same client data.
+- Current file: `75,972` bytes, `18,988` entries, `end_of_entries = 75,960`. Fixture: `78,416` bytes, `19,599` entries, `end_of_entries = 78,404` (`0x13244`). Both match `8 + count × 4 + 12`.
+- `count` equals the `quest.dbss` header count in both versions, and all entries are distinct.
+- Physical order: walking `quest.dbss` sequentially, record `i` carries packed quest ID `entry[i]` at the start of its fixed block (after its objective text) and again in its trailing echo. The walk succeeds for all `18,988` current and `19,599` fixture records, so this list is the record-order index for `quest.dbss` (as stated by [bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor)). See [quest_dbss.md](quest_dbss.md) for the record layout.
+- The list is not a byte offset table; it stores IDs only, so record offsets still have to be found by walking `quest.dbss`.
 - The entry encoding matches the packed quest ID relationship documented in `questgroup.dbss`.
-- The list is not a byte offset table. It is a canonical display ID list: current `quest.dbss` parsing extracts `16,977` non-zero `canonical_link` IDs, with `16,976` present in this file.
-- In the observed LOC cache, `19,455` of `19,599` entries have a matching LOC type `18`, `str_id4=0` title row keyed by `(quest_chain_id, quest_id)`.
+- All 827 adventure-journal page quests from `journalquest.dbss` are in the current list.
+- LOC coverage: `18,961` of `18,988` current entries (fixture: `19,455` of `19,599`) have a LOC type `18`, `str_id4=0` title row keyed by `(quest_chain_id, quest_id)`.

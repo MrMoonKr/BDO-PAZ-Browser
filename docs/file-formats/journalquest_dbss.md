@@ -2,21 +2,20 @@
 
 ## Purpose
 
-Journal quest (adventure log) category and entry data. Defines the 12 journal log categories shown in the in-game Adventure Log UI (e.g., "Igor Batali's Adventure Log", "Shakatu Merchant Collection Log"), their volumes/entries, and per-entry metadata: journal category name, subtitle, page volume title, unlock condition (rich text with PAColor markup), 3D bookshelf scene references, and page references.
+Adventure Log (bookshelf) data. Defines the journal groups shown in the in-game Adventure Log UI (e.g., "Igor Bartali's Adventures", "Shakatu Merchants' Archive"), the books (volumes) inside each group, and per-book metadata: Korean journal name, journal description, book name and unlock requirement, two bookshelf asset names, and the ordered list of quests that make up the book's pages.
+
+Field names `journal_key`, `book_key` and the "book" terminology follow the notes of [bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor); every field below was re-verified against our extracted files.
 
 Example:
 
 ```text
-Group 1, Igor Batali's Adventure Log (cat_id=748)
-  Entry 1 / Volume 1: unlock = "[Calpheon] territory main quest OR
-      [Special Growth] Fughar's Memorandum Ch. 6 completion, Lv. 51"
-  Pages: 3 (LOC type=18, id1=748, id2=1..3)
+Journal 1 / Book 1, Igor Bartali's Adventures Vol. I
+  unlock (LOC 63, id4=2) = "Reach Lv. 51, complete [Calpheon] main ..."
+  pages: 3 packed quest IDs 66284, 131820, 197356 (chain 748, quests 1..3)
     "Hey There Big Fellow!" | "Irresistible Lure" | "The Divine Entity inside the Cave"
 
-Group 2, Shakatu Merchant Collection Log (cat_id=30006)
-  Entry 1: unlock = ...
-  Pages: 4 (LOC type=18, id1=30006, id2=1..4)
-    "Accidental First Encounter" | "We Meet Again, Friend!" | ...
+Journal 8 / Book 1, Olvia Academy Journal / Emma Bartali's Journal
+  pages: 13 packed quest IDs (chain 2326, quests 1..13)
 ```
 
 ## Graph
@@ -31,8 +30,10 @@ Group 2, Shakatu Merchant Collection Log (cat_id=30006)
 
 ### Connections
 
-- [journalquestoffset.dbss](journalquestoffset_dbss.md), index mapping `(group_id, entry_no)` to `(byte_offset, byte_size)` in this file
-- [languagedata_en.loc](languagedata_loc.md), journal page titles (`id4=0`) and story text (`id4=1`) via LOC `str_type=18`, `str_id1=journal_cat_id`, `str_id2=page_no`
+- [journalquestoffset.dbss](journalquestoffset_dbss.md), index mapping `(journal_key, book_key)` to `(byte_offset, byte_size)` in this file
+- [quest.dbss](quest_dbss.md), every page is a packed quest ID with its own `quest.dbss` record; page records carry the permanent Family-stat reward
+- [allquestlist.bss](allquestlist_bss.md), all page quest IDs are present in this list
+- [languagedata_en.loc](languagedata_loc.md), journal and book text via LOC `str_type=63`; page quest text via LOC `str_type=18` keyed by the page's packed quest ID
 
 ---
 
@@ -40,8 +41,9 @@ Group 2, Shakatu Merchant Collection Log (cat_id=30006)
 
 | File                         | Required | Role                                                                        |
 | ---------------------------- | -------- | --------------------------------------------------------------------------- |
-| `journalquestoffset.dbss`    | Required | Provides `(group_id, entry_no) → (byte_offset, byte_size)` record lookup   |
-| `languagedata_en.loc`        | Optional | English journal metadata via LOC type=63; page titles and story text via LOC type=18 |
+| `journalquestoffset.dbss`    | Required | Provides `(journal_key, book_key) → (byte_offset, byte_size)` record lookup |
+| `quest.dbss`                 | Optional | Quest record for each page (conditions, objective, rewards)                 |
+| `languagedata_en.loc`        | Optional | English journal/book text via LOC type=63; page quest text via LOC type=18  |
 
 All multi-byte values are little-endian.
 
@@ -49,201 +51,140 @@ All multi-byte values are little-endian.
 
 ## File Layout
 
-### Main File Header (8 bytes)
+### Main File Header (4 bytes)
 
 | Offset  | Type | Field         | Notes                                          |
 | ------- | ---- | ------------- | ---------------------------------------------- |
-| `+0x00` | u32  | group_count   | Total number of journal groups; observed `12`  |
-| `+0x04` | u32  | unknown_1     | Observed `15`; meaning not confirmed           |
+| `+0x00` | u32  | group_count   | Number of journal groups; observed `12`        |
 
-Records are not stored contiguously with a built-in index. Use `journalquestoffset.dbss` to locate each record.
+### Group Block (variable length, repeated `group_count` times)
 
-### Offset File Header (4 bytes)
+| Field        | Type                | Notes                                                              |
+| ------------ | ------------------- | ------------------------------------------------------------------ |
+| `book_count` | u32                 | Number of book records in this group; equals the offset-file count |
+| books        | book_count × Book   | Variable-length book records (see Record Structure)                |
 
-| Offset  | Type | Field         | Notes                                          |
-| ------- | ---- | ------------- | ---------------------------------------------- |
-| `+0x00` | u32  | group_count   | Number of journal groups; matches main file    |
-
-Immediately followed by a logical stream of group index blocks (see below). The stream is stored in 120-byte physical chunks but should be parsed as a flat sequence of `u32` values.
-
-### Offset File Group Block (variable length, repeated `group_count` times)
-
-| Field          | Type              | Notes                                           |
-| -------------- | ----------------- | ----------------------------------------------- |
-| `group_id`     | u32               | Journal group number (1–12; ordering may differ from numeric order) |
-| `entry_count`  | u32               | Number of entries in this group                 |
-| entries        | entry_count × Entry | See below                                    |
-
-### Offset File Entry Record (12 bytes)
-
-| Offset  | Type | Field         | Notes                                             |
-| ------- | ---- | ------------- | ------------------------------------------------- |
-| `+0x00` | u32  | entry_no      | Entry number within the group (1-based)           |
-| `+0x04` | u32  | byte_offset   | Byte offset of the record in the main file        |
-| `+0x08` | u32  | byte_size     | Byte size of the record in the main file          |
+The value previously documented as header `unknown_1` (`15` at `+0x04`) is the `book_count` of the first group (journal 1 has 15 books). The 4-byte header, the 12 `book_count` words and the 112 indexed records tile the file exactly, with no gaps or overlaps (verified on both the current `46,620`-byte file and the `46,476`-byte fixture). Groups are stored physically in offset-file order; inside group 6 the offset-file order of books differs from their physical order (see [journalquestoffset.dbss](journalquestoffset_dbss.md)).
 
 ---
 
 ## Record Structure
 
-Records are variable length. Each record is accessed via the offset file.
+### Book Record (variable length)
 
-### Record Header (variable, ~17 bytes before text)
+Strings are length-prefixed: a u64 character count followed by that many UTF-16LE (or single-byte ASCII) code units, with no terminator.
 
-| Offset  | Type | Field         | Notes                                                                  |
-| ------- | ---- | ------------- | ---------------------------------------------------------------------- |
-| `+0x00` | u32  | group_id      | Journal group number                                                   |
-| `+0x04` | u32  | entry_no      | Entry number within group (1-based)                                    |
-| `+0x08` | u32  | unknown_08    | Varies per group; `0x00000d00`, `0x00000c00`, `0x00001401`, etc.       |
-| `+0x0C` | u32  | unknown_0c    | Observed `0x00000000`                                                  |
-| `+0x10` | u8   | unknown_10    | Observed `0x00`                                                        |
+| Offset  | Type                  | Field                  | Notes                                                                                      |
+| ------- | --------------------- | ---------------------- | ------------------------------------------------------------------------------------------ |
+| `+0x00` | u32                   | journal_key            | Journal group key; equals the containing group in 112 of 112 records                       |
+| `+0x04` | u32                   | book_key               | Book key within the group; equals the offset-file key in 112 of 112 records                |
+| `+0x08` | u8                    | flag_08                | Boolean; `1` in 36 records (all books of journals 7, 10 and 12, plus journal 6 book 8)      |
+| `+0x09` | u64 + utf16le[n]      | journal_name_kr        | Korean journal name; identical for every book in a group except journal 6                  |
+| varies  | u64 + utf16le[n]      | journal_description_kr | Korean journal description                                                                 |
+| varies  | u64 + utf16le[n]      | book_name_kr           | Korean book (volume) name; may contain a `\n` and a second line                            |
+| varies  | u64 + utf16le[n]      | unlock_requirement_kr  | Korean unlock text with `<PAColor0x........>` markup; empty (`n=0`) in 51 of 112 books      |
+| varies  | u64 + ascii[n]        | bookshelf_scene        | E.g. `Combine_Etc_Adventure_Bookshelf01`; 31 distinct values                               |
+| varies  | u64 + ascii[n]        | book_model             | `Adventure_Bookshelf_Static_book_00` to `_06`                                              |
+| varies  | u32                   | page_count             | Number of page quest IDs                                                                   |
+| varies  | u32[page_count]       | page_quest_ids         | Packed quest IDs `(quest_id << 16) \| quest_chain_id`                                      |
+| varies  | u32                   | reserved_end           | `0` in 112 of 112 records; the record ends exactly here                                   |
 
-### Text Fields (variable, starts at +0x11, odd byte offset)
+The previously documented `unknown_08` (`0x00000d00` etc.) was `flag_08` plus the low bytes of the first string length. The "trailing `"` in `combine_model`" was the low byte of the next string's u64 length (`0x22` = 34 characters); it is not part of the stored value.
 
-Beginning immediately at byte `+0x11` (odd-aligned), a sequence of null-terminated UTF-16LE strings separated by U+0000 terminators. Observed string fields in order:
+### Page Quest IDs
 
-| Field             | Encoding     | Notes                                                                   |
-| ----------------- | ------------ | ----------------------------------------------------------------------- |
-| `journal_title`   | utf16le + NUL | Journal category name (e.g., "이고르 바탈리의 모험일지 ")             |
-| `subtitle`        | utf16le + NUL | One-line description of the journal category                            |
-| `page_vol_title`  | utf16le + NUL | Volume/page title (e.g., "이고르 바탈리의 모험일지 1권")              |
-| `unlock_condition`| utf16le + NUL | Rich text unlock requirement; may contain `<PAColor0xRRGGBBAA>` / `<PAOldColor>` markup |
+Every page is a single packed quest ID `(quest_id << 16) | quest_chain_id`, the same scheme as [quest.dbss](quest_dbss.md) and [allquestlist.bss](allquestlist_bss.md). There is only one encoding: the old "Type A / Type B" split does not occur in either file version (all 827 current pages decode with `lo16 = quest_chain_id`). All pages of one book belong to a single quest chain (112 of 112 books), and 110 books start at `quest_id = 1`.
 
-Additional null separators (U+0000 pairs) may appear between fields. Exact field count per record is determined by the value at `unknown_08` (not yet confirmed).
-
-### Model ID Fields (variable, ASCII NUL-terminated)
-
-Two ASCII NUL-terminated strings appear near the tail of each record, separated by zero-padding:
-
-| Field           | Example                                   | Notes                                             |
-| --------------- | ----------------------------------------- | ------------------------------------------------- |
-| `combine_model` | `Combine_Etc_Adventure_Bookshelf01"`      | Scene (combine/cutscene) asset ID for the bookshelf UI animation; trailing `"` is part of the stored string |
-| `static_model`  | `Adventure_Bookshelf_Static_book_003`     | Static 3D mesh asset ID; suffix `001`–`005` varies per group |
-
-### Page Reference Block (variable, at record tail)
-
-N page reference `u32` values linking this entry to its journal pages via LOC type=18. Encoding varies by group type:
-
-**Type A**, `(journal_cat_id << 16) | page_index` (groups 1, 4, 7, 11, 12):
-
-| Field          | Notes                                                                                  |
-| -------------- | -------------------------------------------------------------------------------------- |
-| page_ref × N   | Each u32: hi16 = `journal_cat_id`, lo16 = page index (0-based)                        |
-| `page_count`   | u32; count of page refs; follows the N values                                          |
-| terminal       | u16 = `0x0000` (2 extra bytes; record size is not a multiple of 4 for these groups)   |
-
-**Type B**, `(page_index << 16) | journal_cat_id` (groups 2, 3, 5, 6, 8, 9, 10):
-
-| Field          | Notes                                                                                  |
-| -------------- | -------------------------------------------------------------------------------------- |
-| `page_count`   | u32; precedes the N values                                                             |
-| page_ref × N   | Each u32: hi16 = page index (1-based), lo16 = `journal_cat_id`                        |
-| terminal       | u32 = `0x00000000`                                                                     |
+Current file totals: 112 books, 827 pages, 827 distinct page quest IDs, all present in `allquestlist.bss`, all with a LOC type 18 `id4=0` title.
 
 ---
 
 ## Journal Group Table
 
-Observed groups (12 total, offset-file order):
+Current client data (`files/journalquest.dbss`), offset-file order:
 
-| Group ID | Entries | Journal Cat ID | Sample Page Titles (EN)                                                  |
-| -------: | ------: | -------------: | ------------------------------------------------------------------------ |
-|        1 |      15 |            748 | Hey There Big Fellow! / Irresistible Lure / The Divine Entity in the Cave |
-|        2 |      11 |          30006 | Accidental First Encounter / We Meet Again, Friend! / Hard to Get But Easy to Spend |
-|        3 |      10 |            897 | Boss: Calamity 1 Golden Pig King / Oduksini / Apex Changui …             |
-|        4 |       1 |           2302 | At Port Epheria / In Calpheon / In Glish / At Heidel Castle …            |
-|        5 |      13 |            790 | (LOC type=18, id1=790)                                                   |
-|        6 |       7 |          11103 | (LOC type=18, id1=11103)                                                 |
-|        7 |      15 |           8700 | (LOC type=18, id1=8700)                                                  |
-|        8 |       1 |            896 | (empty/placeholder; no body text)                                        |
-|        9 |      10 |            834 | (LOC type=18, id1=834)                                                   |
-|       11 |       9 |           8721 | (LOC type=18, id1=8721)                                                  |
-|       12 |      13 |           8542 | (LOC type=18, id1=8542)                                                  |
-|       10 |       7 |           9131 | (LOC type=18, id1=9131)                                                  |
+| Journal Key | Books | Pages | English Journal Name (LOC 63, `id4=0`) | `flag_08` set | Books with unlock text |
+| ----------: | ----: | ----: | -------------------------------------- | ------------: | ---------------------: |
+|           1 |    15 |    71 | Igor Bartali's Adventures              |             0 |                     15 |
+|           2 |    11 |    51 | Shakatu Merchants' Archive             |             0 |                     11 |
+|           3 |    10 |   105 | Storybook - Morning Bosses             |             0 |                      0 |
+|           4 |     1 |    17 | Justin Bartali's Adventures            |             0 |                      1 |
+|           5 |    13 |    66 | Crow Merchants' Records                |             0 |                     13 |
+|           6 |     7 |    44 | Event Logs                             |             1 |                      4 |
+|           7 |    15 |   180 | Storybook - Donghae                    |            15 |                      0 |
+|           8 |     1 |    13 | Olvia Academy Journal                  |             0 |                      0 |
+|           9 |    10 |    53 | Old Moon Logs                          |             0 |                     10 |
+|          11 |     9 |    45 | The Eyes of Adventure                  |             0 |                      0 |
+|          12 |    13 |   138 | Storybook - Hwanghae                   |            13 |                      0 |
+|          10 |     7 |    44 | Outer Edania                           |             7 |                      7 |
 
-Note: Groups are stored in the offset file in the order shown above (group 10 appears last).
+The older fixture (`PAZ-Parser/tests/fixtures/journalquest.dbss`, 815 pages) has the same books, except journal 8 was a one-page placeholder (chain 896) instead of the 13-page Olvia Academy Journal.
 
 ---
 
 ## Localization
 
-Journal category metadata is in LOC `str_type=63`:
+Journal and book text is in LOC `str_type=63`. The LOC key's second u32 packs `str_id2`/`str_id3` (low 24 bits) and `str_id4` (high byte), so this is the same as "low 24 bits select the book, high byte selects the field":
 
-| LOC Field  | Value                       | Notes                                              |
-| ---------- | --------------------------- | -------------------------------------------------- |
-| `str_type` | `63`                        |                                                    |
-| `str_id1`  | `group_id`                  | Journal group number                              |
-| `str_id2`  | `entry_no`                  | Entry number within the group                     |
-| `str_id4`  | `0` = category title, `1` = subtitle, `2` = unlock condition, `3` = volume title | Some groups have no `id4=2` unlock text |
+| LOC Field  | Value                                                                    | Notes                                         |
+| ---------- | ------------------------------------------------------------------------ | --------------------------------------------- |
+| `str_type` | `63`                                                                     |                                               |
+| `str_id1`  | `journal_key`                                                            |                                               |
+| `str_id2`  | `book_key`                                                               | `str_id3` is always `0`                       |
+| `str_id4`  | `0` = journal name, `1` = journal description, `2` = unlock requirement, `3` = book name |                               |
 
-Journal page titles and story text are in LOC `str_type=18`:
+Checked against all 112 books: `id4=0`, `1` and `3` exist for every book; `id4=2` exists for exactly the 61 books whose Korean `unlock_requirement_kr` is non-empty. The English journal name for every book is LOC 63 `id4=0`.
 
-| LOC Field  | Value                       | Notes                                              |
-| ---------- | --------------------------- | -------------------------------------------------- |
-| `str_type` | `18`                        |                                                    |
-| `str_id1`  | `journal_cat_id`            | From the page reference u32 (hi16 or lo16)         |
-| `str_id2`  | page number (1-based)       | Corresponds to (page_ref lo16 or hi16) + offset    |
-| `str_id4`  | `0` = page title, `1` = story text |                                             |
+LOC type 63 also holds rows the file does not reference: `str_id2=0` rows for journal keys 1 to 13 (older journal names such as "Rulupee's Travels" under key 2) and a journal key 13 ("Inner Edania", books 1 to 7) that has no record in either file version.
 
-The inline `journal_title` / `subtitle` / `page_vol_title` fields in each record are Korean. English equivalents are in LOC type=63 for most entries. English page titles and story text are in LOC type=18.
+Page text is LOC `str_type=18` keyed by the page's packed quest ID, like any quest:
+
+| LOC Field  | Value                              | Notes                                         |
+| ---------- | ---------------------------------- | --------------------------------------------- |
+| `str_type` | `18`                               |                                               |
+| `str_id1`  | `page_quest_id & 0xFFFF`           | Quest chain ID                                |
+| `str_id2`  | `page_quest_id >> 16`              | Quest ID within the chain; no off-by-one      |
+| `str_id4`  | `0` = title, `1` = story text      | See [quest.dbss](quest_dbss.md) for `2`/`3`   |
 
 ---
 
 ## Suggested UI Layout
 
-| Column              | Type | Notes                                                           |
-| ------------------- | ---- | --------------------------------------------------------------- |
-| Group               | num  | `group_id`                                                      |
-| Entry               | num  | `entry_no`                                                      |
-| Journal Category ID | num  | `journal_cat_id` from page ref u32                              |
-| Title               | text | LOC type=63 `id4=0`, falling back to inline Korean `journal_title` |
-| Subtitle            | text | LOC type=63 `id4=1`, falling back to inline Korean `subtitle`     |
-| Volume              | text | LOC type=63 `id4=3`, falling back to inline Korean `page_vol_title` |
-| Page Titles         | text | English LOC type=18 page titles resolved from page references    |
-| Unlock Condition    | text | LOC type=63 `id4=2`, falling back to inline Korean `unlock_condition` with PAColor markup stripped |
-| Pages               | num  | `page_count`                                                    |
-| Combine Model       | text | `combine_model` (ASCII scene asset ID)                          |
-| Static Model        | text | `static_model` (ASCII mesh asset ID)                            |
+| Column              | Type | Notes                                                                 |
+| ------------------- | ---- | --------------------------------------------------------------------- |
+| Journal             | num  | `journal_key`                                                         |
+| Book                | num  | `book_key`                                                            |
+| Journal Name        | text | LOC type=63 `id4=0`, falling back to `journal_name_kr`                |
+| Description         | text | LOC type=63 `id4=1`, falling back to `journal_description_kr`         |
+| Book Name           | text | LOC type=63 `id4=3`, falling back to `book_name_kr`                   |
+| Unlock Requirement  | text | LOC type=63 `id4=2`, falling back to `unlock_requirement_kr` with PAColor markup stripped |
+| Pages               | num  | `page_count`                                                          |
+| Page Titles         | text | LOC type=18 `id4=0` for each page quest ID                            |
+| Bookshelf Scene     | text | `bookshelf_scene`                                                     |
+| Book Model          | text | `book_model`                                                          |
 
 ---
 
 ## Notes
 
-- `journalquestoffset.dbss` has a 4-byte header (`count`) followed by data stored in 120-byte physical chunks; the logical structure (group_id, entry_count, entry triples) spans chunk boundaries and must be parsed as a flat `u32` stream.
-- The main file has an 8-byte header; all records are accessed via the offset file. There is no inline offset table in the main file.
-- Text fields start at odd byte offset `+0x0011` within each record. This is unusual for UTF-16LE and is an inherent quirk of the 9-byte prefix at `+0x0008`.
-- Group 8 (1 entry, size=136) has no body text and appears to be a placeholder; the record consists almost entirely of zero bytes followed by model IDs and a single page reference.
-- Group IDs in the offset file are not stored in numeric order: group 10 appears as the 12th (last) group in the offset file stream.
-- Two page-reference encoding schemes exist (Type A and Type B); which a group uses appears to depend on the journal category and is not determined by a documented flag. Both encodings carry the same `(journal_cat_id, page_index)` pair.
-- The `combine_model` ASCII string includes a trailing `"` character as part of the stored value (e.g., `Combine_Etc_Adventure_Bookshelf01"`). This is not a parsing artifact.
-- Unlock condition text uses BDO's inline rich-text markup: `<PAColor0xAARRGGBB>` to set color, `<PAOldColor>` to reset, and backtick-delimited quest names.
-- `(main_file_size - 8) / group_count` is not integral; records are variable length.
-- PAColor tag format in this file uses `0x` followed by 8 hex digits (AARRGGBB order), e.g. `<PAColor0xFFf3d900>`.
+- All records are located through `journalquestoffset.dbss`; the book records are self-describing (length-prefixed strings, counted page list), so the file can also be walked sequentially using the per-group `book_count` words.
+- Strings are length-prefixed, so the odd byte offset of the first string (`+0x09`, after two u32 and one u8) has no alignment meaning.
+- Unlock text uses BDO rich-text markup: `<PAColor0xAARRGGBB>` to set color (e.g. `<PAColor0xFFf3d900>`), `<PAOldColor>` to reset, and backtick-delimited quest names.
+- Journal 6 ("Event Logs") is the only group whose Korean journal name differs between books (two variants: event logs and 10th anniversary event logs).
+- Each page quest has a `quest.dbss` record whose `quest_category` is `11`; that value occurs on no other quest. Page records hold the journal's permanent Family-stat rewards (see [quest.dbss](quest_dbss.md)).
 
 ---
 
 ## Open Questions
 
-### `unknown_08` Field
+### `flag_08` Meaning
 
-The u32 at `+0x0008` in each record takes values such as `0x00000d00`, `0x00000c00`, `0x00001401`, `0x00000000` (empty entry). Its structure may encode two sub-fields (u8 flags at byte[8] and u8 count at byte[9]), but the meaning of either sub-field is not confirmed. It does not directly encode the title char count or entry count.
+The byte at `+0x08` is `1` for every book of journals 7 ("Storybook - Donghae"), 10 ("Outer Edania") and 12 ("Storybook - Hwanghae") and for journal 6 book 8, and `0` elsewhere, including the other storybook journal 3. bdo-data-extractor also leaves it unnamed. Its effect (UI style, story mode, reward handling) needs an in-game comparison.
 
-### Text Field Count and Boundary
+### Offset-Index Order vs Display Order
 
-The exact number of null-terminated UTF-16LE fields per record is not fully characterized. At least four fields are observed (title, subtitle, volume title, unlock condition), but some records may contain more. The field count may be encoded in `unknown_08`.
+In journal 6 the offset file lists books as 1, 2, 10, 7, 8, 11, 12 while the data file stores them as 1, 10, 2, 7, 8, 11, 12. bdo-data-extractor states that the index order is the UI order; this has not been checked in game.
 
-### Odd-Aligned Text Start
+### Unreferenced LOC Type 63 Rows
 
-Text begins at byte `+0x0011` (odd byte offset) within each record, caused by the 9-byte block at `+0x0008..+0x0010`. The reason for a 9-byte block rather than an 8- or 12-byte block is not known.
-
-### Page Index Base
-
-Type A groups use lo16=0,1,2,… for page index (0-based), but LOC id2 appears to start at 1. Whether lo16=0 maps to LOC id2=1 (off-by-one) or lo16=0 is an unused/header page is not confirmed.
-
-### English Journal Category Names
-
-The inline `journal_title` field is Korean. A dedicated LOC type or table for English journal category names (as opposed to page titles) has not been identified.
-
-### Main File `unknown_1` Header Field
-
-The second u32 in the main file header (`+0x04`) is `15` in the observed data. Its role is unknown (possibly the maximum entry count across all groups, or an unrelated config value).
+LOC 63 has `str_id2=0` rows for journal keys 1 to 13 with names that do not match the current journals (key 2 is "Rulupee's Travels" in LOC but "Shakatu Merchants' Archive" in the file), and a journal 13 ("Inner Edania", 7 books) with no record. Whether these are leftovers, a region-specific journal or content not yet shipped in this client is unknown.

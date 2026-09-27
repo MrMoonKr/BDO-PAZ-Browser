@@ -28,7 +28,7 @@ str_type: 71, str_id1: 47, str_id3: 12 →  "Guile"
 - [npcgift.dbss](npcgift_dbss.md), NPC gift dialogue (str_type=54)
 - [mentalcard.dbss](mentalcard_dbss.md), knowledge entries (str_type=34) and categories (str_type=9)
 - [titlebufflist.dbss](titlebufflist_dbss.md), title effects tooltip (str_type=37)
-- [journalquest.dbss](journalquest_dbss.md), journal quest adventure log metadata (str_type=63, str_id1=group_id) and page titles/story text (str_type=18, str_id1=journal_cat_id)
+- [journalquest.dbss](journalquest_dbss.md), journal quest adventure log metadata (str_type=63, str_id1=journal_key, str_id2=book_key) and page titles/story text (str_type=18, keyed by each page's packed quest ID)
 - [petaction.dbss](petaction_dbss.md), pet action labels (str_type=19, str_id1=action_id)
 - [employeename.dbss](employeename_dbss.md), employee names (str_type=71, str_id1=employee_name_id, str_id3=12)
 - [plantworkerselect.bss](plantworkerselect_bss.md), town/node selection names (str_type=17, str_id1=selection_id)
@@ -36,6 +36,8 @@ str_type: 71, str_id1: 47, str_id3: 12 →  "Guile"
 - [petequipskill.bss](petequipskill_bss.md), pet passive skill names and descriptions (str_type=10, str_id1=loc_id)
 - [fairyequipskill.bss](fairyequipskill_bss.md), fairy passive skill names and descriptions (str_type=10, str_id1=loc_id)
 - [buff.dbss](buff_dbss.md), buff descriptions (str_type=5, str_id1=buff_id)
+- [mentaltheme.dbss](mentaltheme_dbss.md), knowledge category names (str_type=9, str_id1=theme_id)
+- [characterstatic.dbss](characterstatic_dbss.md), character names (str_type=6, str_id1=character_id)
 
 ---
 
@@ -45,7 +47,7 @@ The file is **zlib-compressed**:
 
 | Offset | Type | Description                     |
 | ------ | ---- | ------------------------------- |
-| +0x00  | u32  | Header / uncompressed size hint |
+| +0x00  | u32  | Exact size of the decompressed record stream (`227,667,486` bytes in the current English file) |
 | +0x04  | ...  | zlib-compressed record stream   |
 
 Decompress with: `zlib.decompress(raw[4:])`
@@ -63,26 +65,32 @@ Each record in the decompressed stream:
 | +0x0E  | u8          | str_id3  | ID part 3, tertiary component of the compound ID                           |
 | +0x0F  | u8          | str_id4  | ID part 4, selects sub-field within the record (e.g. name vs requirement)  |
 | +0x10  | UTF-16LE[]  | text     | String data (`str_size` UTF-16 code units)                                 |
-| ...    | UTF-16LE[2] | padding  | Always 2 extra UTF-16 code units (4 bytes), typically `0x0000 0x0000`      |
+| ...    | u32         | terminator | Always `0` (all 1,421,290 records in the current English file)           |
 
 Next record starts at: `+0x10 + str_size * 2 + 4`
+
+The four bytes at `+0x0C` can also be read as one u32 selector, as
+[bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor) does (their
+`key1`): the high byte is `str_id4`, the field or column, and the low 24 bits
+are `str_id2 | str_id3 << 16`. Their `key0` is `str_type` and their `id` is
+`str_id1`. The current English file holds 1,421,290 strings in 116 types.
 
 ## Important Types
 
 | str_type | Meaning                                                                                    |
 | -------- | ------------------------------------------------------------------------------------------ |
-| 0        | General strings                                                                            |
+| 0        | Item text, `str_id1` = item ID; see Type 0 below                                           |
 | 1        | Title names + requirements                                                                 |
-| 2        | Skill names                                                                                |
+| 2        | Skill command text, `str_id1` = skill number; `str_id4=0` name, `1` and `2` key-binding combos |
 | 4        | Territory names                                                                            |
 | 5        | Buff descriptions, `str_id1` = `buff.dbss` buff_id; see Type 5 below                       |
-| 6        | NPC names                                                                                  |
+| 6        | Character names (NPCs, monsters, gathering nodes, objects, houses), `str_id1` = character ID; `str_id4=1` is a secondary label such as `<Open>` |
 | 7        | Zodiac sign data, `str_id1` = zodiac_id (1–12), `str_id4` selects sub-field                |
 | 8        | Mount skill names                                                                          |
-| 9        | Knowledge category (group) names, `str_id1` = node_id                                      |
-| 10       | Skill names and descriptions, including pet and fairy passives; see Type 10 below          |
+| 9        | Knowledge category (theme) names, `str_id1` = `mentaltheme.dbss` theme_id                  |
+| 10       | Skill names and descriptions, `str_id1` = skill number; see Type 10 below                  |
 | 11       | City names, with some node names mixed in                                                  |
-| 12       | Region/area names such as O'dyllita, Mountain of Eternal Winter, Valencia                  |
+| 12       | Territory names, `str_id1` = territory 0 to 13; `str_id4=0` nation or realm, `1` territory; see Type 12 below |
 | 15       | Emote/pose/placeable interaction names                                                     |
 | 16       | House/facility type names                                                                  |
 | 17       | Town/node names, `str_id1` = selection_id from `plantworkerselect.bss`                     |
@@ -94,15 +102,36 @@ Next record starts at: `+0x10 + str_size * 2 + 4`
 | 23       | NPC dialogue lines, `str_id1` = dialogue ID, `str_id4` = line index                        |
 | 25       | Quest chain/group names, `str_id1` = chain/group ID (matches `questgroup.dbss` group_id)   |
 | 29       | Town/node names, `str_id1` = node_id from `planttown.bss`; `str_id4` selects sub-field     |
-| 34       | Knowledge entry names, `str_id1` = knowledge_id / entry_id                                 |
-| 37/38    | Other systems                                                                              |
+| 34       | Knowledge card text, `str_id1` = `mentalcard.dbss` card_id; see Type 34 below              |
+| 37       | UI string sheets, `str_id1` = 32-bit hash-like key; see Type 37 below                      |
+| 38       | Other systems                                                                              |
 | 39       | Audio voice lines                                                                          |
 | 54       | NPC gift/confession response dialogue, `str_id1` = NPC ID                                  |
-| 63       | Journal quest adventure log metadata, `str_id1` = group_id, `str_id2` = entry_no           |
+| 44       | Central Market categories, `str_id1` = main category; see Type 44 below                    |
+| 52       | Item-set bonus text, `str_id1` = `skillpiece.dbss` key; see Type 52 below                  |
+| 63       | Journal quest adventure log metadata, `str_id1` = journal_key, `str_id2` = book_key         |
 | 71       | Employee names, `str_id1` = `employeename.dbss` employee_name_id, `str_id3` = 12           |
+| 113      | Lightstone combination names with their effects (`"[Imperial Chef]
+Cooking Mastery +30"`), `str_id1` 1 to 182 |
+| 115      | Monster Zone Info categories (`"Elvia Realm"`, `"Region Quests"`), `str_id1` 1 to 8        |
+| 116      | Monster Zone Info zone names (`"Sherekhan Necropolis (Day)"`), 113 IDs from 0 to 119       |
+| 117      | Monster Zone Info tags, `str_id4=0` tag (`"#LotsOfMobs"`), `1` tag description             |
+| 121      | Crystal transfusion groups, `str_id1` = group, `str_id2` = maximum count; see Type 121 below |
+| 123      | Workshop and house use names (`"Refinery"`, `"Worker's Lodging"`), `str_id1` 0 to 35       |
 
 The parsed preview labels confirmed and useful provisional types. Unconfirmed
 types are shown as `Unknown`.
+
+### Type 0, item text
+
+Type 0 holds 294,351 rows over 73,947 item IDs, four fields per item.
+
+| str_id4 | Meaning           | Example                                                         |
+| ------- | ----------------- | --------------------------------------------------------------- |
+| 0       | Item name         | `"[Event] Golden Gilded Coin"`                                  |
+| 1       | Description       | `"You'll be able to use an awakening weapon. ..."`              |
+| 2       | Use confirmation  | `"The item will disappear and you will gain 5 Crystal Inventory slots ..."`; `<null>` on most items |
+| 3       | Exchange text     | `"<Trent>\n- Exchange 100: 30,000 Silver"`; non-null on 110 items |
 
 ### Type 1 sub-fields (`str_id4`)
 
@@ -143,10 +172,21 @@ label.
 
 ### Type 10, skill names and descriptions
 
-Type 10 holds 84,442 rows over 28,644 IDs, each a name with a description.
+Type 10 holds 86,679 rows over 29,393 IDs, each a name with a description.
+`str_id1` is the skill number (`skillNo`). `skill.dbss` and `skilltype.dbss`
+key their records with a u32 `skillNo << 16 | skillLevel` (the offset index
+row stores it as u16 level, u16 skillNo), and 28,316 of the 29,393 type 10 IDs
+are skill numbers there. The Korean `skilltype.dbss` names match the English
+text: skill `62480` is `칼페온 - 가공 경험치 획득량 +20%` and type 10 `62480` is
+`"Calpheon - Processing EXP +20%"`; skill `47059` is `[칭호] 제일 큰 흑새치를 낚은`
+and type 10 is `"[Title] The Biggest Black Marlin"`. Type 10 has no level
+dimension: every row has `str_id2 = str_id3 = 0`, so all ranks of one
+`skillNo` share one name. 2,002 skill numbers have no type 10 row, and 1,077
+type 10 IDs (for example `16626` to `16635`) have no skill record.
+
 `petequipskill.bss` and `fairyequipskill.bss` resolve their pet and fairy
-passive skills here through their `loc_id`. The same table also covers other
-skill-like entries: class skills (`"Flow: Water Slice"`, described as
+passive skills here through their `loc_id`, which is therefore a skill number.
+The same table covers every skill-like entry: class skills (`"Flow: Water Slice"`, described as
 `"Preceding Skill: [Soaring Kick I] ..."`), pet and fairy skills
 (`"Inexhaustible Well V"`), consumables (`"[Scroll] Blessing (60 min)"`), title
 effects (`"[Title] The Magnus"`) and placeable furniture
@@ -154,7 +194,7 @@ effects (`"[Title] The Magnus"`) and placeable furniture
 
 | Field     | Value                                |
 | --------- | ------------------------------------ |
-| `str_id1` | Skill `loc_id`                       |
+| `str_id1` | Skill number (`skillNo`)             |
 | `str_id2` | Observed `0`                         |
 | `str_id3` | Observed `0`                         |
 | `str_id4` | Sub-field selector (see table below) |
@@ -163,7 +203,7 @@ effects (`"[Title] The Magnus"`) and placeable furniture
 | ------- | ----------- | ----------------------------------------------------- |
 | 0       | Name        | `"Inexhaustible Well V"`                              |
 | 1       | Description | `"Auto-use Purified Water/Star Anise Tea during ..."` |
-| 2       | Placeholder | Always the literal text `<null>`                      |
+| 2       | Placeholder | The literal text `<null>` on 27,961 of 27,972 rows    |
 
 When an entry has no real description, `str_id4=1` repeats the name.
 
@@ -171,6 +211,20 @@ When an entry has no real description, `str_id4=1` repeats the name.
 10 row at all, and where both exist the text usually disagrees: buff 47694 is
 `생활 숙련도 +100 (120분)` (Life Skill Mastery +100) while type 10 47694 is
 `"[Scroll] Blessing (60 min)"`. Buff text lives in type 5.
+
+### Type 12, territories
+
+Type 12 has 14 IDs, each with a nation or realm name and a territory name.
+This is a different key space from type 4, whose IDs 0 to 11 are territory
+display names such as `"Balenos Territory"`.
+
+| str_id1 | str_id4=0            | str_id4=1       |
+| ------- | -------------------- | --------------- |
+| 0       | Republic of Calpheon | Balenos         |
+| 1       | Republic of Calpheon | Serendia        |
+| 4       | Kingdom of Valencia  | Valencia        |
+| 12      | Alyaelli             | Outer Edania    |
+| 13      | Alyaelli             | Inner Edania    |
 
 ### Type 17, town/node names (`plantworkerselect.bss`)
 
@@ -211,13 +265,15 @@ Type 18 is shared by regular quests and journal quest (adventure log) pages. The
 | 1       | Summary / description |
 | 2       | NPC / speaker name    |
 | 3       | Objective text        |
+| 4 to 6  | Dialogue text, about 29,700 rows each                     |
+| 7 to 9  | Rare extra lines (103, 28 and 93 rows)                    |
 
 #### Journal quest adventure log pages (`journalquest.dbss`)
 
 | Field     | Value                                                           |
 | --------- | --------------------------------------------------------------- |
-| `str_id1` | `journal_cat_id`, from the page reference u32 in the entry tail |
-| `str_id2` | Page number (1-based)                                           |
+| `str_id1` | `page_quest_id & 0xFFFF` (quest chain ID of the page)           |
+| `str_id2` | `page_quest_id >> 16` (quest ID, no offset)                     |
 | `str_id4` | Sub-field selector (see table below; confirmed)                 |
 
 | str_id4 | Meaning    | Example                             |
@@ -385,14 +441,70 @@ Observed English examples:
 | 601     | Calpheon               | This is a city. |
 | 1       | Velia                  | This is a city. |
 
+### Type 34, knowledge card text (`mentalcard.dbss`)
+
+Type 34 holds 37,529 rows over 12,751 IDs. `str_id1` is the `mentalcard.dbss`
+`card_id`; 12,485 of the 12,502 cards have a name row.
+
+| str_id4 | Meaning          | Rows   | Example                                                         |
+| ------- | ---------------- | ------ | --------------------------------------------------------------- |
+| 0       | Card name        | 12,751 | `"Rainbow Fox"`                                                 |
+| 1       | Description      | 12,751 | `"A gigantic squid native to Margoria Sea. ..."`                |
+| 2       | Acquisition text | 12,027 | `"Can be obtained through [Interaction]"`                       |
+
+The three fields are the English forms of the card's inline Korean name,
+description and acquisition strings.
+
+### Type 37, UI string sheets
+
+Type 37 holds 54,094 UI strings. `str_id1` is a 32-bit hash-like key (68,470
+to 4,294,947,966), not a table ID, and `str_id4` is always `0`. `str_id2`
+(`0` to `7`) and `str_id3` (`0` or `1`) group the strings: `str_id2=1` holds
+general UI labels (`"Hire"`, `"Booking Status (Server Time)"`), `str_id2=0`
+and `str_id2=3` hold dialogue-like lines (`"Good! You didn't forget how to
+hold a gun!"`), and `str_id3=1, str_id2=5` holds embedded video URLs.
+`titlebufflist.dbss` uses this type for its tooltip text.
+
+### Type 44, Central Market categories
+
+Type 44 has 18 main categories (`str_id1` `1` to `85` in steps of 5) and 421
+rows.
+
+| Selector                         | Meaning                          | Example (category 55)          |
+| -------------------------------- | -------------------------------- | ------------------------------ |
+| `str_id2=0, str_id3=0`           | Main category name               | `"Pearl Item"`                 |
+| `str_id2=n, str_id3=0`           | Sub-category `n`                 | `str_id2=7` `"Mount"`          |
+| `str_id2=0, str_id3=n`           | Filter option `n`                | `str_id3=9` `"Kunoichi"`       |
+
+The filter options depend on the category: enhancement levels `+ 0` to
+`PEN (V)` for weapons, armor and life tools, `+ 0` to `+ 10` for mounts, ships
+and wagons, `+ 0` to `DEC (X)` for accessories, grades for Alchemy Stones, crystal kinds for Magic
+Crystals, class names for Pearl Items and colours for Dyes. Materials, Enhancement,
+Consumables, Furniture and Lightstones have none.
+
+### Type 52, item-set bonus text (`skillpiece.dbss`)
+
+Type 52 holds 448 rows over 93 IDs. `str_id1` is the `skillpiece.dbss`
+record key (87 of the 93 IDs; 89 are also skill numbers in `skill.dbss`).
+`str_id2` is the tier's `apply` value and `str_id4` selects the string:
+
+| str_id4 | Meaning                   | Example                          |
+| ------- | ------------------------- | -------------------------------- |
+| 0       | Bonus description         | `"Skill EXP +10%"`               |
+| 1       | Piece-count label         | `"2 Parts"`                      |
+| 2       | Set group title           | `"Agris Set Effect"`             |
+
+The selector split follows the notes of
+[bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor).
+
 ### Type 63, journal quest metadata (`journalquest.dbss`)
 
-Type 63 stores localized Adventure Log / journal metadata keyed by the journal group and entry number.
+Type 63 stores localized Adventure Log / journal metadata keyed by the journal key and book key.
 
 | Field     | Value                                |
 | --------- | ------------------------------------ |
-| `str_id1` | `group_id` from `journalquest.dbss`  |
-| `str_id2` | `entry_no` within the journal group  |
+| `str_id1` | `journal_key` from `journalquest.dbss` |
+| `str_id2` | `book_key` within the journal        |
 | `str_id3` | Observed `0`                         |
 | `str_id4` | Sub-field selector (see table below) |
 
@@ -403,7 +515,7 @@ Type 63 stores localized Adventure Log / journal metadata keyed by the journal g
 | 2       | Unlock condition | `"Reach Lv. 57, accept and complete ..."`                               |
 | 3       | Volume title     | `"Deve's Encyclopedia - Volume 1\nThe Altinovan on all things random!"` |
 
-Some journal groups do not have unlock-condition rows (`str_id4=2`), and placeholder group 8 may have no type 63 rows.
+In the current client, `str_id4=0`, `1` and `3` exist for all 112 books and `str_id4=2` exists for exactly the 61 books with a non-empty Korean unlock requirement. Rows with `str_id2=0` and a journal key `13` exist without matching `journalquest.dbss` records.
 
 ### Type 71, employee names (`employeename.dbss`)
 
@@ -425,6 +537,14 @@ Observed English examples:
 | 34               | Pilgrave  |
 | 47               | Guile     |
 | 60               | Tails     |
+
+### Type 121, crystal transfusion groups
+
+Type 121 has 44 rows over 43 group IDs (1 to 103). `str_id2` looks like the
+group's equip limit: `1` for `"Primordial"`, `"Ancient Spirit"` and `"Edania"`, `2` for
+most groups (`"Viper"`, `"Max HP"`), `4` for `"Ultimate Hoom"`, `6` for
+`"Dawn"`, and `1000` for `"No Group"`, `"Hoom"`, `"Macalod"` and `"Gervish"`.
+Group `26` (`"Dim Magic"`) has rows at both `2` and `6`.
 
 ## Suggested UI Layout
 
@@ -456,14 +576,31 @@ Observed English examples:
 
 ## Open Questions
 
-### Type 10 key namespace
-
-Pet and fairy passives confirm that `str_id1` is a skill `loc_id`, but class
-skills (`"Flow: Water Slice"`), scrolls and title effects share the same ID
-space. Which table owns the full range, possibly `skilltype.dbss` once its keys
-are decoded, is not known.
-
 ### Type 20 group owner
 
 Which table owns the `str_id1` group IDs of the knowledge learned messages is
-not known.
+not known. The groups are not `mentaltheme.dbss` themes or `knowledgelearning.dbss`
+sources: groups `1` to `7`, `51`, `52`, `101`, `102` and `151` each hold four to
+six unrelated tips (group `1` mixes `[Lani]`, `[Uno]` and `[River and Ocean Fish]`),
+while groups `11` to `15`, `16` to `20` and `300` to `302` repeat one message
+(`Olivia`, `Elixir of Old Memory`, `Study: Farmer Drunk on the Scent of Grapes`)
+with different lore text. That pattern suggests quest or dialogue scripts pick
+the message by group and index.
+
+### Type 37 sheet names
+
+bdo-data-extractor names the type 37 groups as compiled UI string sheets
+(`GAME`, `RESOURCE`, `ACTIONCHART` and others). Our data shows the `str_id2` and
+`str_id3` grouping but no sheet names, so which value is which sheet is not
+confirmed.
+
+### Type 121 limit value
+
+`str_id2` fits a per-group equip limit (Viper `2`, unlimited groups `1000`).
+In game, the transfusion window should allow two Viper crystals (group `16`)
+and four Ultimate Hoom crystals (group `35`) if this is right.
+
+### Type 123 key
+
+bdo-data-extractor keys type 123 by the client's `eHouseIconType` enum. No
+file we decode uses that enum yet, so the key is not confirmed.

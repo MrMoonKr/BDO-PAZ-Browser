@@ -60,7 +60,7 @@ All multi-byte values are little-endian.
 | Offset  | Type | Field   | Notes                                                |
 | ------- | ---- | ------- | ---------------------------------------------------- |
 | `+0x00` | u32  | count   | Record count; observed 169,965, matching the companion |
-| `+0x04` | —    | blocks  | Variable-length blocks, contiguous, in key order      |
+| `+0x04` | ...  | blocks  | Variable-length blocks, contiguous, in key order      |
 
 Blocks are addressed only through the companion. The first block starts at byte
 `4`, and the last block ends exactly at end of file (203,540,909 bytes observed),
@@ -74,8 +74,8 @@ so the block stream is gap-free.
 | ------- | ----- | ------ | -------------------------------- |
 | `+0x00` | u8[4] | magic  | `PABR` (ASCII)                   |
 | `+0x04` | u32   | count  | Number of rows; observed 169,965 |
-| `+0x08` | —     | rows   | `count` × 12-byte rows           |
-| end-12  | —     | trailer | 12-byte file trailer            |
+| `+0x08` | ...   | rows   | `count` × 12-byte rows           |
+| end-12  | ...   | trailer | 12-byte file trailer            |
 
 ### Row (12 bytes)
 
@@ -134,12 +134,58 @@ fields that are not yet decoded.
 | Offset  | Type | Field    | Notes                                    |
 | ------- | ---- | -------- | ---------------------------------------- |
 | `+0x00` | u32  | item_id      | Repeats the item ID from the key                             |
-| `+0x04` | —    | unknown      | Numeric fields                                               |
+| `+0x04` | u8   | item_type    | Tooltip class (`EItemType`), see below                       |
+| `+0x05` | u8   | category     | Item classification                                          |
+| `+0x06` | u8   | grade        | `0` to `5`                                                   |
+| `+0x07` | ...  | unknown      | Numeric fields                                               |
+| `+0x3F` | i32  | weight       | Divide by 10,000 for LT                                      |
+| `+0x43` | ...  | unknown      | Numeric fields                                               |
+| `+0x6E` | i64  | buy_price    |                                                              |
+| `+0x76` | i64  | sell_price   |                                                              |
+| `+0x7E` | ...  | unknown      | Numeric fields                                               |
 | `+0xAA` | u16  | character_id | Character the item places or summons; `0` when none. See below |
-| `+0xAC` | u16  | unknown_ac   | `0` on all 3,960 object links; across base items `0` (61,650), `1` (4,786), `2` (2,165), `5` (1,052), `10` (218) |
-| `+0xAE` | —    | unknown      | Numeric fields up to the first string                        |
-| varies  | —    | strings      | One or two length-prefixed ASCII strings                     |
-| varies  | —    | unknown  | Remaining enchant data                   |
+| `+0xAC` | u8   | dye_parts    | `0` on all 3,960 object links; across base items `0` (61,650), `1` (4,786), `2` (2,165), `5` (1,052), `10` (218) |
+| `+0xAD` | u8   | unknown_ad   | `0` in 69,875 base items                                     |
+| `+0xAE` | ...  | unknown      | Numeric fields                                               |
+| `+0xCC` | u32  | skill_key_1  | Skill a consumable casts; see bdo-data-extractor below       |
+| `+0xD0` | u32  | skill_key_2  | Second skill, used by composite meals                        |
+| `+0xD4` | ...  | unknown      | Numeric fields up to the first string                        |
+
+Checked on Balacs Lunchbox (`9359`): `item_type` 2, `grade` 3, `weight`
+1,000 (0.1 LT), `buy_price` 38,775, `sell_price` 1,551, and a non-zero
+`skill_key_1`.
+
+The fixed part of this layout, and the names of `item_type`, `category`,
+`grade`, `dye_parts` and the skill keys, come from
+[bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor/blob/HEAD/FORMATS.md),
+which decodes the whole header from `+0x00` to `+0xD4` (class mask, stack
+size, market category, durability and more). The offsets above were checked
+against this file; the names `category` and `dye_parts` were not. Its
+`dyeable` flag at `+0xA8` does not line up cleanly with `dye_parts`: 2,017
+items have dye parts with `dyeable` at `0`, and 16 store `3` there.
+
+#### `item_type`
+
+`EItemType`, which selects the tooltip label. Names from bdo-data-extractor;
+the counts are base items here.
+
+| Value | Name         | Tooltip label       | Base items |
+| ----: | ------------ | ------------------- | ---------: |
+| 0     | Normal       | General             | 6,243      |
+| 1     | Equip        | Equipment           | 29,763     |
+| 2     | Skill        | Consumable          | 13,245     |
+| 3     | Tent         | Holding Tool        | 279        |
+| 4     | Installation | Installable Object  | 3,597      |
+| 5     | Jewel        | Socket Item         | 565        |
+| 6     | CannonBall   | Cannonball          | 22         |
+| 7     | Mapae        | License             | 246        |
+| 8     | Material     | Crafting Material   | 1,630      |
+| 10    | ContentsEvent | Special Items      | 13,272     |
+
+Values 11 to 20 also occur (1,092 items) and are unnamed. Every one of the
+3,597 `Installation` items and the 279 `Tent` items names a placed character.
+| varies  | ...  | strings      | One or two length-prefixed ASCII strings                     |
+| varies  | ...  | unknown  | Remaining enchant data                   |
 
 ### Placed or summoned character
 
@@ -247,11 +293,11 @@ only approach that covers items whose icon is named after a 3D asset
 
 ### Enchant Data Fields
 
-Apart from `character_id`, the numeric fields before the icon string and the
-remainder after it are undecoded. They plausibly carry enchant chance, cost, and stat progression per
-level, since the file is keyed by enchant level, but no field has been
-confirmed. Decoding them is a much larger job than the icon mapping and was not
-attempted.
+Only the header fields listed in Block Structure are checked here. The rest
+of the header, and everything after the icon string, are not decoded in this
+doc. bdo-data-extractor maps most of the header and part of the post-icon
+block (market flags, enhancement group and type); those would need checking
+against this file before they are documented here.
 
 ### Items Without a Record
 

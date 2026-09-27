@@ -64,6 +64,8 @@ All multi-byte values are little-endian.
 
 Each payload is preceded by a 2-byte `theme_id` lead in the main stream. The offset file points two bytes later, to a payload that begins with the same `theme_id` again.
 
+`name_len` is an `i64` code-unit count, the same string prefix used by `mentalcard.dbss`. The field was earlier read as a u16 followed by six reserved zero bytes; bytes `+0x04..+0x09` are zero on all 931 records, so both reads give the same length. The `i64` reading matches the notes of [bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor), which call `theme_id` and `parent_id` `themeKey` and `parentTheme`.
+
 ---
 
 ## Record Structure
@@ -73,9 +75,7 @@ Each payload is preceded by a 2-byte `theme_id` lead in the main stream. The off
 | Offset        | Type             | Name            | Description                                                |
 | ------------- | ---------------- | --------------- | ---------------------------------------------------------- |
 | `+0x00`       | u16              | theme_id        | Knowledge group/category ID; matches offset row            |
-| `+0x02`       | u16              | name_len        | Number of UTF-16LE code units in `name_ko`                 |
-| `+0x04`       | u32              | reserved_0      | Always observed as `0`                                     |
-| `+0x08`       | u16              | reserved_1      | Always observed as `0`                                     |
+| `+0x02`       | i64              | name_len        | Number of UTF-16LE code units in `name_ko`                 |
 | `+0x0A`       | utf16le[]        | name_ko         | Inline Korean theme name, `name_len * 2` bytes             |
 | after name    | Theme Stats      | stats           | Parent and energy reward thresholds                        |
 | after stats   | u32[]            | entries         | Direct knowledge entry IDs                                 |
@@ -116,8 +116,8 @@ Sample records confirmed from `mentaltheme.dbss`, `mentalthemeoffset.dbss`, `men
 
 | Theme ID | LOC Name              | Parent  | Energy Reward 1 | Energy Reward 2  | Entry Count |
 | -------- | --------------------- | ------- | --------------- | ---------------- | ----------- |
-| `10001`  | Ecology               | `0`     | `—`             | `+0 at 10 entries` | `0`       |
-| `10030`  | Ecology of Calpheon   | `10001` | `—`             | `+0 at 10 entries` | `0`       |
+| `10001`  | Ecology               | `0`     | `-`             | `+0 at 10 entries` | `0`       |
+| `10030`  | Ecology of Calpheon   | `10001` | `-`             | `+0 at 10 entries` | `0`       |
 | `10319`  | Refugee Camp          | `10030` | `+1 at 5 entries` | `+2 at 13 entries` | `14`     |
 | `10318`  | Quarry                | `10030` | `+1 at 6 entries` | `+2 at 15 entries` | `15`     |
 | `15000`  | Fish Species          | `10001` | `+2 at 3 entries` | `+2 at 13 entries` | `3`      |
@@ -133,7 +133,7 @@ Sample records confirmed from `mentaltheme.dbss`, `mentalthemeoffset.dbss`, `men
 | Parent ID       | num  | Link to parent theme                                      |
 | Parent Name     | text | LOC `str_type=9` for `parent_id`                          |
 | Energy Reward 1 | text | Render as `+{increase_wp} at {need_count} entries`        |
-| Energy Reward 2 | text | Render as `—` when it duplicates reward 1; otherwise `+{increase_wp_2} at {need_count_2} entries` |
+| Energy Reward 2 | text | Render as `-` when it duplicates reward 1; otherwise `+{increase_wp_2} at {need_count_2} entries` |
 | Entries         | num  | `entry_count`                                             |
 | Children Groups | num  | `child_count`                                             |
 
@@ -141,9 +141,12 @@ Sample records confirmed from `mentaltheme.dbss`, `mentalthemeoffset.dbss`, `men
 
 ## Notes
 
-- `mentaltheme.dbss` and `mentalthemeoffset.dbss` both start with count `902`.
+- `mentaltheme.dbss` and `mentalthemeoffset.dbss` both start with the same count: `931` in the current client, `902` in the test fixture.
+- `mentalthemeoffset.dbss` has no `PABR` magic and no trailer; it ends exactly at `4 + count * 10`.
+- `parent_id` links form a tree: 11 roots (`parent_id = 0`, e.g. `1` People, `5001` Topography, `10001` Ecology, `10399` None), maximum depth 3, no cycles, and every parent exists. The 920 non-root themes each appear exactly once in their parent's `child_ids`.
+- The direct `entries` of all themes together list each of the 12,502 cards once, and each listed card's u16 `theme_id` in `mentalcard.dbss` names the theme that lists it.
+- All 931 themes have an LOC `str_type=9` name; LOC has 12 more type 9 IDs that match no theme.
 - `mentalthemeoffset.dbss` uses 10-byte rows, unlike the 12-byte offset records used by `mentalcardoffset.dbss` and `knowledgelearningoffset.dbss`.
-- Direct `entries` match `mentalcard.dbss` memberships and LOC `str_type=34` names.
 - `child_ids` are stored in binary/UI order.
 - The DBSS files should be treated as the source of truth for this format.
 
@@ -153,4 +156,4 @@ Sample records confirmed from `mentaltheme.dbss`, `mentalthemeoffset.dbss`, `men
 
 ### Unknown Stats Tail
 
-The 5 bytes at stats offsets `+0x0E..+0x12` look like `unknown_flag: u8` plus `unknown_value: u32`; values may be UI/display metadata, but this is not confirmed.
+The 5 bytes at stats offsets `+0x0E..+0x12` look like `unknown_flag: u8` plus `unknown_value: u32`. `unknown_flag` is `1` on 232 themes (94 of them under Trade). `unknown_value` is `0` on 898 themes; the other 33 all have `unknown_flag = 1` and carry unique consecutive values `2501` to `2533` in theme ID order (`10101` to `10601`, ecology groups of Serendia, Calpheon and neighbours), which looks like a sort or unlock index. Neither meaning is confirmed.

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Index file for `journalquest.dbss`. Maps each `(group_id, entry_no)` pair to a `(byte_offset, byte_size)` location within the main file. Must be parsed before reading any individual journal entry.
+Index file for `journalquest.dbss`. Maps each `(journal_key, book_key)` pair to a `(byte_offset, byte_size)` location within the main file. Field names follow [bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor), re-verified against our files.
 
 ## Graph
 
@@ -23,7 +23,7 @@ Index file for `journalquest.dbss`. Maps each `(group_id, entry_no)` pair to a `
 
 | File                  | Required | Role                                          |
 | --------------------- | -------- | --------------------------------------------- |
-| `journalquest.dbss`   | Required | Contains the actual journal entry records     |
+| `journalquest.dbss`   | Required | Contains the actual book records              |
 
 All multi-byte values are little-endian.
 
@@ -33,46 +33,54 @@ All multi-byte values are little-endian.
 
 ### Header (4 bytes)
 
-| Offset  | Type | Field       | Notes                                |
-| ------- | ---- | ----------- | ------------------------------------ |
+| Offset  | Type | Field       | Notes                                   |
+| ------- | ---- | ----------- | --------------------------------------- |
 | `+0x00` | u32  | group_count | Number of journal groups; observed `12` |
 
 ### Data Stream
 
-Immediately after the header, a flat `u32` stream encodes all group index blocks. The stream is physically stored in 120-byte chunks (i.e., `(file_size - 4) / 12 == 120`), but the logical structure spans chunk boundaries and must be read as a continuous sequence of `u32` values.
-
-Parse the stream as follows:
+Immediately after the header, `group_count` variable-length group blocks follow back to back:
 
 ```
 for i in range(group_count):
-    group_id     = read_u32()
-    entry_count  = read_u32()
-    for j in range(entry_count):
-        entry_no    = read_u32()
+    journal_key = read_u32()
+    book_count  = read_u32()
+    for j in range(book_count):
+        book_key    = read_u32()
         byte_offset = read_u32()
         byte_size   = read_u32()
 ```
 
-### Group Block (logical, variable length)
+### Group Block (variable length)
 
-| Field          | Type              | Notes                                                         |
-| -------------- | ----------------- | ------------------------------------------------------------- |
-| `group_id`     | u32               | Journal group identifier (1–12; not in numeric order in file) |
-| `entry_count`  | u32               | Number of entries in this group                               |
-| entries        | entry_count × 12B | Entry records follow immediately                              |
+| Field          | Type               | Notes                                                        |
+| -------------- | ------------------ | ------------------------------------------------------------ |
+| `journal_key`  | u32                | Journal group key (1 to 12; not in numeric order in file)    |
+| `book_count`   | u32                | Number of books; equals the `book_count` word in the data file |
+| books          | book_count × 12B   | Book index entries follow immediately                        |
 
-### Entry Record (12 bytes)
+### Book Index Entry (12 bytes)
 
-| Offset  | Type | Field         | Notes                                             |
-| ------- | ---- | ------------- | ------------------------------------------------- |
-| `+0x00` | u32  | entry_no      | Entry number within the group (1-based)           |
-| `+0x04` | u32  | byte_offset   | Byte offset of the record in `journalquest.dbss`  |
-| `+0x08` | u32  | byte_size     | Byte size of the record in `journalquest.dbss`    |
+| Offset  | Type | Field         | Notes                                                   |
+| ------- | ---- | ------------- | ------------------------------------------------------- |
+| `+0x00` | u32  | book_key      | Book key within the group; usually 1-based and contiguous, but journal 6 uses 1, 2, 10, 7, 8, 11, 12 |
+| `+0x04` | u32  | byte_offset   | Absolute byte offset of the record in `journalquest.dbss` |
+| `+0x08` | u32  | byte_size     | Exact byte size of the record                           |
 
 ---
 
 ## Notes
 
-- File size: `4 + group_count × 120` bytes (120-byte chunks align only by coincidence with 12 groups; the 120-byte chunks are a physical storage artifact, not meaningful blocks).
-- Groups are stored in the order: 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 10, group 10 appears last.
-- Byte offsets are absolute offsets into `journalquest.dbss` starting from byte 0.
+- File size is `4 + 8 × group_count + 12 × total_books`: `4 + 96 + 1,344 = 1,444` bytes for 12 groups and 112 books. The earlier reading of "120-byte physical chunks" was a coincidence (`1,440 = 12 × 120`); there is no chunking.
+- Groups are stored in the order 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 10 (journal 10 last). This is also the physical group order in `journalquest.dbss`.
+- `byte_offset` values are absolute offsets into `journalquest.dbss`. Every `byte_size` is exact: each record ends precisely on its `reserved_end` word, and the indexed records plus the 4-byte header and one 4-byte `book_count` per group tile the data file with no gaps (112 of 112 records, current file and fixture).
+- Within a group, index order equals physical order except in journal 6, where books 2 and 10 are swapped physically.
+- The current file and the older fixture are both `1,444` bytes with the same keys; only offsets and sizes differ.
+
+---
+
+## Open Questions
+
+### Index Order as Display Order
+
+[bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor) states that the book index order is the UI order, independent of file order. The only case where the two differ is journal 6 ("Event Logs"); whether the bookshelf shows book 10 second, as the index says, needs an in-game check.
