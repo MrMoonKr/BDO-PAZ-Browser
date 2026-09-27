@@ -7,7 +7,9 @@
     "contribution": "Contribution",
     "manager": "Manager",
     "representative": "Representative",
-    "radius": "Radius"
+    "radius": "Radius",
+    "knowledge": "Knowledge",
+    "knowledgeEntries": "Knowledge Entries"
   },
   "values": {
     "main": "Main",

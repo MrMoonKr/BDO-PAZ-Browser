@@ -1,0 +1,11 @@
+{
+  "columns": {
+    "characterId": "Character ID",
+    "name": "Name (EN)",
+    "kind": "Kind",
+    "nameKr": "Name (KR)",
+    "role": "Role",
+    "knowledgeId": "Knowledge ID",
+    "script": "Script"
+  }
+}

@@ -79,6 +79,7 @@ class CharacterStaticHandler(PreviewHandler):
             Column(cols.get("knowledgeId", "Knowledge ID"), "num", sort_key="knowledge_id"),
             Column(cols.get("npcKind", "NPC Kind"), "num", sort_key="npc_kind"),
             Column(cols.get("classType", "Class Type"), "num", sort_key="class_type"),
+            Column(cols.get("model", "Model"), sort_key="model_path"),
             Column(cols.get("payloadSize", "Payload Size"), "num", sort_key="payload_size"),
         ]
         return columns
@@ -121,6 +122,7 @@ class CharacterStaticHandler(PreviewHandler):
                 "npc_kind": r["npc_kind"],
                 # 101 means "not a player character"; None sorts last.
                 "class_type": None if r["class_type"] == NO_CLASS_TYPE else r["class_type"],
+                "model_path": r["model_path"],
                 "payload_size": r["payload_size"],
             }
             for r in raw_records
@@ -154,6 +156,7 @@ class CharacterStaticHandler(PreviewHandler):
             row.append(_optional(r["knowledge_id"]))
             row.append(e(r["npc_kind"]))
             row.append(_optional(r["class_type"]))
+            row.append(e(r["model_path"] or "-"))
             row.append(e(r["payload_size"]))
             rows.append(row)
 

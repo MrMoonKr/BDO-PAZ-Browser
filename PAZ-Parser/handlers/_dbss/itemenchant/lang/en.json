@@ -3,7 +3,8 @@
     "itemId": "Item ID",
     "icon": "Icon",
     "item": "Item",
-    "characterId": "Character ID",
+    "objectId": "Object ID",
+    "object": "Object",
     "effectTag": "Effect Tag"
   },
   "offsetColumns": {

@@ -11,6 +11,7 @@ from .fairyfeedenchantfailcount.handler import (
 from .fairyupgraderate.handler import FairyUpgradeRateBssHandler
 from .newquest.handler import NewQuestBssHandler
 from .npcgiftetc.handler import NpcGiftEtcBssHandler
+from .npcsimply.handler import NpcSimplyBssHandler
 from .petequipskill.handler import PetEquipSkillBssHandler
 from .plantworker.handler import PlantWorkerBssHandler
 from .plantworkerpassiveskill.handler import PlantWorkerPassiveSkillBssHandler
@@ -31,6 +32,7 @@ def register_bss_handlers() -> None:
     register_handler("fairyupgraderate.bss", FairyUpgradeRateBssHandler())
     register_handler("newquest.bss", NewQuestBssHandler())
     register_handler("npcgiftetc.bss", NpcGiftEtcBssHandler())
+    register_handler("npcsimply.bss", NpcSimplyBssHandler())
     register_handler("petequipskill.bss", PetEquipSkillBssHandler())
     register_handler("plantworker.bss", PlantWorkerBssHandler())
     register_handler(

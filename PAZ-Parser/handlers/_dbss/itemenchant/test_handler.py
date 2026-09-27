@@ -44,6 +44,7 @@ CASE = HandlerCase(
                 "block_size",
                 "item_name",
                 "character_id",
+                "character_name",
             ],
         ),
         CountTest(expected=169_965),
@@ -64,12 +65,17 @@ CASE = HandlerCase(
                 "effect_tag": "",
                 "block_size": 870,
                 "character_id": 17026,
+                "character_name": "King Clam Wall Ornament",
             },
         ),
         TargetTest(
             col="item_id",
             value=_EVENT_FENCE,
-            expected={"key_variant": 0, "character_id": _EVENT_FENCE_CHARACTER},
+            expected={
+                "key_variant": 0,
+                "character_id": _EVENT_FENCE_CHARACTER,
+                "character_name": "[Event] Fence",
+            },
         ),
         # First offset row is a max-enchant weapon variant.
         PosTest(
@@ -80,6 +86,7 @@ CASE = HandlerCase(
                 "block_size": 1378,
                 # A weapon places no character; stored as None so it sorts last.
                 "character_id": None,
+                "character_name": "",
             },
         ),
     ],

@@ -263,7 +263,8 @@ only approach that covers items whose icon is named after a 3D asset
 | Item ID       | num  | `item_id` from the key                            |
 | Icon          | text | First block string, prefixed `ui_texture/icon/`   |
 | Item          | text | LOC `str_type=0`, `str_id1=item_id`               |
-| Character ID  | num  | `character_id`; dash when `0`                     |
+| Object ID     | num  | `character_id` of the placed object or summoned pet; dash when `0` |
+| Object        | text | LOC `str_type=6`, `str_id1=character_id`          |
 | Effect Tag    | text | Second block string when present                  |
 
 ---

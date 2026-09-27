@@ -20,7 +20,7 @@ STATIC_CASE = HandlerCase(
         SchemaTest(
             required_keys=[
                 "character_id", "name_en", "action_script", "condition_script",
-                "knowledge_id", "npc_kind", "class_type", "payload_size",
+                "knowledge_id", "npc_kind", "class_type", "model_path", "payload_size",
             ]
         ),
         CountTest(expected=24017),
@@ -35,12 +35,20 @@ STATIC_CASE = HandlerCase(
                 "payload_size": 586,
                 "npc_kind": 2,
                 "class_type": None,
+                "model_path": "npc/pedu/npc_pedu_named",
             },
         ),
         TargetTest(
             col="character_id",
             value=16640,
-            expected={"name_en": "Dev Plant210", "action_script": "", "knowledge_id": None, "payload_size": 511, "npc_kind": 8},
+            expected={
+                "name_en": "Dev Plant210",
+                "action_script": "",
+                "knowledge_id": None,
+                "payload_size": 511,
+                "npc_kind": 8,
+                "model_path": "monster/dummy_normal",
+            },
         ),
         # A condition script used to be misread into the action script and
         # shifted every field after it.
@@ -57,7 +65,11 @@ STATIC_CASE = HandlerCase(
         # The getknowledge match ignores case.
         TargetTest(col="character_id", value=50613, expected={"knowledge_id": 933}),
         # class_type differs from character_id: Warrior is 1 / 0, Ranger 2 / 4.
-        TargetTest(col="character_id", value=1, expected={"class_type": 0}),
+        TargetTest(
+            col="character_id",
+            value=1,
+            expected={"class_type": 0, "model_path": "pc/1_phm/fighteraction_noweapon"},
+        ),
         TargetTest(col="character_id", value=2, expected={"class_type": 4}),
     ],
 )

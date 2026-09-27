@@ -44,6 +44,9 @@ CASE = HandlerCase(
                 "representative",
                 "radius",
                 "knowledge_ids",
+                "knowledge_count",
+                "knowledge_names",
+                "knowledge_text",
             ],
         ),
         CountTest(expected=1003),
@@ -61,6 +64,9 @@ CASE = HandlerCase(
                 "contribution": 1,
                 "manager_id": 40605,
                 "radius": 2700.0,
+                "knowledge_ids": [389],
+                "knowledge_count": 1,
+                "knowledge_names": ["Wale"],
             },
         ),
         TargetTest(
@@ -73,6 +79,7 @@ CASE = HandlerCase(
                 "manager": None,
                 "representative_id": 40017,
                 "radius": 12700.0,
+                "knowledge_count": 46,
             },
         ),
         TargetTest(

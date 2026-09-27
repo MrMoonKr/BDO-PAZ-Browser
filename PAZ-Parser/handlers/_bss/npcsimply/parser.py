@@ -1,0 +1,69 @@
+"""`npcsimply.bss`: compact identity table for service and story NPCs.
+
+    PABR | u32 count | count x 33-byte row | string table | u32 string_table_start | u32 0
+
+Each row maps a character ID to its primary SpawnType role and string-table
+indexes for the action script, Korean name and Korean role text. Full layout in
+docs/file-formats/npcsimply_bss.md.
+"""
+
+from __future__ import annotations
+
+import struct
+
+from _common.binary import u32
+from _common.knowledge_script import knowledge_id_of
+from _common.pabr_strings import TRAILER_SIZE, read_string_table, string_at, string_table_start
+
+
+_MAGIC = b"PABR"
+_HEADER_SIZE = 8
+
+# u16 character_id | u8 unknown_02 | u8 zero | u32 kind | u32 script_ref
+# | u32 unknown_id | u16 unknown_value | u16 sentinel | u8 unknown_flag
+# | u32 name_ref | u32 role_ref | u32 padding
+_RECORD = struct.Struct("<HBBIIIHHBIII")
+_RECORD_SIZE = 33
+assert _RECORD.size == _RECORD_SIZE
+
+
+def parse_npcsimply_records(data: bytes) -> list[dict]:
+    """Every NPC row in file order, with its strings resolved.
+
+    Raises ValueError on a bad magic, or when the rows do not end where the
+    string table starts: then the row size has changed and every field is suspect.
+    """
+    if len(data) < _HEADER_SIZE + TRAILER_SIZE or data[:4] != _MAGIC:
+        raise ValueError("npcsimply.bss has invalid magic.")
+
+    count = u32(data, 4)
+    rows_end = _HEADER_SIZE + count * _RECORD_SIZE
+    if rows_end != string_table_start(data):
+        raise ValueError(
+            f"npcsimply.bss rows end at 0x{rows_end:X} but its string table "
+            f"starts at 0x{string_table_start(data):X}"
+        )
+
+    strings = read_string_table(data)
+    records: list[dict] = []
+    for offset in range(_HEADER_SIZE, rows_end, _RECORD_SIZE):
+        (
+            character_id, unknown_02, _zero, kind, script_ref,
+            unknown_id, unknown_value, sentinel, unknown_flag,
+            name_ref, role_ref, _padding,
+        ) = _RECORD.unpack_from(data, offset)
+        script = string_at(strings, script_ref)
+        records.append({
+            "character_id": character_id,
+            "unknown_02": unknown_02,
+            "kind": kind,
+            "name_kr": string_at(strings, name_ref),
+            "role_kr": string_at(strings, role_ref),
+            "script": script,
+            "knowledge_id": knowledge_id_of(script),
+            "unknown_id": unknown_id,
+            "unknown_value": unknown_value,
+            "sentinel": sentinel,
+            "unknown_flag": unknown_flag,
+        })
+    return records

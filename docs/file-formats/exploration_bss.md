@@ -179,6 +179,8 @@ Two main nodes have `contribution > 0` but no family: Duvencrune 1651 (1 CP, the
 | Manager        | text | `manager_family_id` with LOC type 6 name     |
 | Representative | text | `representative_id` with LOC type 6 name     |
 | Radius         | num  | Formatted float                              |
+| Knowledge      | num  | Number of knowledge IDs in lists 1-5         |
+| Knowledge Entries | text | LOC type 34 card names, first six then `... (+N)`; bare ID when unnamed |
 
 ---
 

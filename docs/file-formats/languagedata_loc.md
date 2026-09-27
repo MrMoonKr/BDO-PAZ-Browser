@@ -106,13 +106,12 @@ are `str_id2 | str_id3 << 16`. Their `key0` is `str_type` and their `id` is
 | 37       | UI string sheets, `str_id1` = 32-bit hash-like key; see Type 37 below                      |
 | 38       | Other systems                                                                              |
 | 39       | Audio voice lines                                                                          |
-| 54       | NPC gift/confession response dialogue, `str_id1` = NPC ID                                  |
 | 44       | Central Market categories, `str_id1` = main category; see Type 44 below                    |
 | 52       | Item-set bonus text, `str_id1` = `skillpiece.dbss` key; see Type 52 below                  |
+| 54       | NPC gift/confession response dialogue, `str_id1` = NPC ID                                  |
 | 63       | Journal quest adventure log metadata, `str_id1` = journal_key, `str_id2` = book_key         |
 | 71       | Employee names, `str_id1` = `employeename.dbss` employee_name_id, `str_id3` = 12           |
-| 113      | Lightstone combination names with their effects (`"[Imperial Chef]
-Cooking Mastery +30"`), `str_id1` 1 to 182 |
+| 113      | Lightstone combination names with their effects (`"[Imperial Chef] Cooking Mastery +30"`, name and effect split by a newline), `str_id1` 1 to 182 |
 | 115      | Monster Zone Info categories (`"Elvia Realm"`, `"Region Quests"`), `str_id1` 1 to 8        |
 | 116      | Monster Zone Info zone names (`"Sherekhan Necropolis (Day)"`), 113 IDs from 0 to 119       |
 | 117      | Monster Zone Info tags, `str_id4=0` tag (`"#LotsOfMobs"`), `1` tag description             |

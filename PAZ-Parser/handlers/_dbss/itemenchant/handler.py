@@ -7,7 +7,7 @@ from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.lang import load_handler_strings
-from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
+from _common.loc import loc_text
 from .parser import (
     parse_itemenchant_records,
     parse_itemenchantoffset_records,
@@ -17,17 +17,11 @@ from .parser import (
 _LANG_DIR = Path(__file__).parent / "lang"
 _OFFSET_FILE = "itemenchantoffset.dbss"
 
-# Item display names live in LOC type 0, keyed by item ID.
+# Item names are LOC type 0 keyed by item ID; character names type 6.
 _LOC_TYPE_ITEM = 0
+_LOC_TYPE_CHARACTER = 6
 
 _EMPTY = "-"
-
-
-def _item_name(item_id: int) -> str:
-    if not is_loc_loaded():
-        return ""
-
-    return strip_pa_tags(loc_lookup(_LOC_TYPE_ITEM, item_id, 0, 0, 0)).strip()
 
 
 class ItemEnchantOffsetHandler(PreviewHandler):
@@ -77,7 +71,8 @@ class ItemEnchantHandler(PreviewHandler):
             Column(cols.get("itemId", "Item ID"), "num", sort_key="item_id"),
             Column(cols.get("icon", "Icon"), sort_key="icon_path"),
             Column(cols.get("item", "Item"), sort_key="item_name"),
-            Column(cols.get("characterId", "Character ID"), "num", sort_key="character_id"),
+            Column(cols.get("objectId", "Object ID"), "num", sort_key="character_id"),
+            Column(cols.get("object", "Object"), sort_key="character_name"),
             Column(cols.get("effectTag", "Effect Tag"), sort_key="effect_tag"),
         ]
 
@@ -103,9 +98,14 @@ class ItemEnchantHandler(PreviewHandler):
         return [
             {
                 **record,
-                "item_name": _item_name(record["item_id"]),
+                "item_name": loc_text(_LOC_TYPE_ITEM, record["item_id"]),
                 # 0 means "places no character"; None sorts last and exports empty.
                 "character_id": record["character_id"] or None,
+                "character_name": (
+                    loc_text(_LOC_TYPE_CHARACTER, record["character_id"])
+                    if record["character_id"]
+                    else ""
+                ),
             }
             for record in parse_itemenchant_records(data, offset_raw)
         ]
@@ -131,6 +131,7 @@ class ItemEnchantHandler(PreviewHandler):
                 icon_cell(record["icon_path"]) if record["icon_path"] else _EMPTY,
                 e(record.get("item_name") or record["item_id"]),
                 e(record["character_id"]) if record["character_id"] is not None else _EMPTY,
+                e(record["character_name"] or _EMPTY),
                 e(record["effect_tag"] or _EMPTY),
             ]
             for record in slice_

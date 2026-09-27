@@ -17,7 +17,7 @@ CASE = HandlerCase(
     loc_fields=["Knowledge Name", "Category Name"],
     internal_path="gamecommondata/binary/mentalcard.dbss",
     tests=[
-        SchemaTest(required_keys=["entry_id", "entry_name", "node_id", "node_name", "min_favor", "max_favor", "interest"]),
+        SchemaTest(required_keys=["entry_id", "entry_name", "node_id", "node_name", "min_favor", "max_favor", "interest", "icon_path", "obtain", "position", "position_text"]),
         CountTest(expected=12087),
         PosTest(
             pos=0,
@@ -29,6 +29,10 @@ CASE = HandlerCase(
                 "min_favor": 33,
                 "max_favor": 37,
                 "interest": 21,
+                "icon_path": "ui_texture/ui_artwork/ic_09812.dds",
+                "obtain": "Altar of Blood",
+                # All zero means no position.
+                "position_text": "",
             },
         ),
         TargetTest(
@@ -41,6 +45,17 @@ CASE = HandlerCase(
                 "min_favor": 24,
                 "max_favor": 28,
                 "interest": 29,
+                "icon_path": "ui_texture/ui_artwork/ic_00304.dds",
+                "obtain": "Delphe Knights Quartermaster",
+                "position_text": "-133004, 2729, -46023",
+            },
+        ),
+        TargetTest(
+            col="entry_id",
+            value=3030,
+            expected={
+                "entry_name": "Iliya Island",
+                "position_text": "159209, -7831, 292072",
             },
         ),
     ],

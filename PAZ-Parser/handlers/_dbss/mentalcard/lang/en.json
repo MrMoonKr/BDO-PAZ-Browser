@@ -6,11 +6,14 @@
   },
   "columns": {
     "knowledgeId": "Knowledge ID",
+    "icon": "Icon",
     "knowledgeName": "Knowledge Name",
     "categoryId": "Category ID",
     "categoryName": "Category Name",
     "minFavor": "Min Favor",
     "maxFavor": "Max Favor",
-    "interest": "Interest"
+    "interest": "Interest",
+    "obtain": "Obtain",
+    "position": "Position"
   }
 }

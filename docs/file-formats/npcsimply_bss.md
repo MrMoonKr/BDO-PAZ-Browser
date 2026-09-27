@@ -52,11 +52,11 @@ All multi-byte values are little-endian unless noted otherwise.
 
 | Offset  | Type | Field             | Notes                                                                 |
 | ------- | ---- | ----------------- | --------------------------------------------------------------------- |
-| `+0x00` | u16  | character_id      | Character-template key; all 2237 resolve through LOC type `6` and exist in `characterstatic.dbss` |
+| `+0x00` | u16  | character_id      | Character-template key; all 2237 exist in `characterstatic.dbss`; 2198 have a LOC type `6` name, see Notes |
 | `+0x02` | u8   | unknown_02        | `1` on 2074 rows; runs of sequential values on related NPCs, see Open Questions |
 | `+0x03` | u8   | zero              | Always 0                                                              |
 | `+0x04` | u32  | kind              | Primary `SpawnType` role; 23 observed values in the range 1-40         |
-| `+0x08` | u32  | script_ref        | String-pool index of the action script; `getknowledge(...)` on 2161 rows, the empty string on 76 |
+| `+0x08` | u32  | script_ref        | String-pool index of the action script; `getknowledge(...)` on 2161 rows (one spelled `getKnowledge`), the empty string on 76 |
 | `+0x0C` | u32  | unknown_id        | Usually 0; non-zero on 58 rows                                         |
 | `+0x10` | u16  | unknown_value     | Usually 0; non-zero on the same 58 rows as `unknown_id`                |
 | `+0x12` | u16  | sentinel          | Usually `0xFFFF`; 0 on the same 58 rows as `unknown_id`                |
@@ -105,14 +105,20 @@ Observed `string_pool_offset` is `0x12065` (older extraction: `0x117A1`).
 
 ### String Entry
 
-Most entries are UTF-8 Korean text with no encoding marker. UTF-16LE script entries have a one-byte marker before the length.
+Every entry has a one-byte encoding flag and a u32 byte length. There is no
+terminator: the next entry starts right after the payload, and the last one ends
+exactly at the trailer.
 
-| Offset | Type       | Field        | Notes                                                    |
-| ------ | ---------- | ------------ | -------------------------------------------------------- |
-| `+0x00` | u8        | utf16_marker | Present only when value is `0x01`; omitted for UTF-8     |
-| varies | u32        | byte_length  | Payload length in bytes                                  |
-| varies | bytes      | payload      | UTF-8 when no marker; UTF-16LE when `utf16_marker=0x01`  |
-| varies | u8         | terminator   | `0x00` when present                                      |
+| Offset  | Type  | Field       | Notes                                   |
+| ------- | ----- | ----------- | --------------------------------------- |
+| `+0x00` | u8    | is_wide     | `1` for UTF-16LE, `0` for UTF-8         |
+| `+0x01` | u32   | byte_length | Payload length in bytes                 |
+| `+0x05` | bytes | payload     | UTF-16LE when `is_wide=1`, else UTF-8   |
+
+An earlier version of this doc read the flag as an optional marker and the
+next entry's `0` flag as a terminator; both readings split the pool the same
+way. `exploration.bss` uses the same entry layout, and the parser shares one
+reader for both (`handlers/_common/pabr_strings.py`).
 
 Observed pool contents: 2636 UTF-8 strings and 2110 UTF-16LE strings. The pool is not purely 8-bit: every script entry is UTF-16LE. One entry is the empty string (index 34 in the current file, index 0 in the older extraction); absent scripts and roles point at it.
 
@@ -148,6 +154,7 @@ This is the same `[string table][u32 rows_end][u32 0]` tail that `playercharacte
 - `name_ref` and `role_ref` point to Korean UTF-8 strings in the same pool. Role strings are often bracketed labels such as `<과일상인>` or `<거점관리인>`.
 - `unknown_id`, `unknown_value`, `sentinel=0`, and `unknown_flag=1` cluster on vendor/manager rows such as warehouse keepers, material vendors, and stable keepers.
 - Every row's character has `npc_kind` low byte `2` (NPC) in `characterstatic.dbss`.
+- 39 characters have no LOC type `6` name in the current English file: `47623`, `47753`, `47772` to `47807` and `61267`. The handler shows `-` for them; their Korean name stays in its own column.
 
 ---
 

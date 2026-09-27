@@ -128,6 +128,12 @@ Values `5`, `6`, `12`, `15` and `17` occur on 1 to 50 rows each. The value names
 
 Every record holds at least one model path, stored as an i64 byte length followed by ASCII text with no terminator, e.g. `[i64 25] npc/pedu2/npc_pedu2_named`. Its position after `p` varies (most often `p+291`), so find it by scanning for the length-prefixed string. 315 records hold a second path-like string; the longer one is the model. Top-level folders: `monster` (13,655), `npc` (5,078), `creature` (2,109), `object` (1,359), `riding` (793), `cash` (473).
 
+The same length-prefixed ASCII form holds one or two other strings per record,
+behaviour names rather than paths: `9999` (8,212 rows in the 24,017-record
+fixture), `9999_Bow`, `Monsters_Main_Manager`, `Pet_Dog`, `HiredWorker`. None
+contains a `/`, so the parser takes the longest string with a `/` in it as
+`model_path`. In that fixture every record has exactly one such string.
+
 ### Payload Tail
 
 Offsets are relative to the end of the payload (`data_offset + payload_size`).

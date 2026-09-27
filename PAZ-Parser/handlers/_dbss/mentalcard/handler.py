@@ -5,9 +5,9 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import Column, e, sort_keys, table
+from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.lang import load_handler_strings
-from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
+from _common.loc import is_loc_loaded, loc_text
 from .parser import parse_mentalcard_offset_records, parse_mentalcard_records
 
 
@@ -15,11 +15,16 @@ _LANG_DIR = Path(__file__).parent / "lang"
 _OFFSET_FILE = "mentalcardoffset.dbss"
 _LOC_THEME = 9
 _LOC_KNOWLEDGE = 34
+# LOC type 34 sub-field holding the English "how to obtain" text.
+_LOC_ACQUISITION = 2
 _EMPTY = "-"
 
 
-def _loc_text(str_type: int, key: int) -> str:
-    return strip_pa_tags(loc_lookup(str_type, key) or "").strip()
+def _position_text(position: tuple[float, float, float]) -> str:
+    """Whole-number `x, y, z`, or "" for the all-zero "no position" value."""
+    if not any(position):
+        return ""
+    return ", ".join(str(round(axis)) for axis in position)
 
 
 class MentalCardOffsetHandler(PreviewHandler):
@@ -66,12 +71,15 @@ class MentalCardHandler(PreviewHandler):
         cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
         return [
             Column(cols.get("knowledgeId", "Knowledge ID"), "num", sort_key="entry_id"),
+            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
             Column(cols.get("knowledgeName", "Knowledge Name"), sort_key="entry_name"),
             Column(cols.get("categoryId", "Category ID"), "num", sort_key="node_id"),
             Column(cols.get("categoryName", "Category Name"), sort_key="node_name"),
             Column(cols.get("minFavor", "Min Favor"), "num", sort_key="min_favor"),
             Column(cols.get("maxFavor", "Max Favor"), "num", sort_key="max_favor"),
             Column(cols.get("interest", "Interest"), "num", sort_key="interest"),
+            Column(cols.get("obtain", "Obtain"), sort_key="obtain"),
+            Column(cols.get("position", "Position")),
         ]
 
     def sortable_fields(self) -> frozenset[str]:
@@ -96,14 +104,21 @@ class MentalCardHandler(PreviewHandler):
             {
                 "entry_id": record.card_id,
                 # LOC first; the Korean source name stands in without it.
-                "entry_name": (_loc_text(_LOC_KNOWLEDGE, record.card_id) if has_loc else "")
+                "entry_name": (loc_text(_LOC_KNOWLEDGE, record.card_id) if has_loc else "")
                 or record.name_kr,
                 "node_id": record.theme_id,
-                "node_name": _loc_text(_LOC_THEME, record.theme_id) if has_loc else "",
+                "node_name": loc_text(_LOC_THEME, record.theme_id) if has_loc else "",
                 # Stored as floats but always whole numbers.
                 "min_favor": round(record.min_favor),
                 "max_favor": round(record.max_favor),
                 "interest": round(record.interest),
+                "icon_path": record.icon_path,
+                "obtain": (
+                    loc_text(_LOC_KNOWLEDGE, record.card_id, _LOC_ACQUISITION) if has_loc else ""
+                )
+                or record.acquisition_kr,
+                "position": list(record.position),
+                "position_text": _position_text(record.position),
             }
             for record in parse_mentalcard_records(data, offset_raw)
         ]
@@ -123,12 +138,15 @@ class MentalCardHandler(PreviewHandler):
         rows = [
             [
                 e(r["entry_id"]),
+                icon_cell(r["icon_path"]),
                 e(r["entry_name"] or _EMPTY),
                 e(r["node_id"]),
                 e(r["node_name"] or _EMPTY),
                 e(r["min_favor"]),
                 e(r["max_favor"]),
                 e(r["interest"]),
+                e(r["obtain"] or _EMPTY),
+                e(r["position_text"] or _EMPTY),
             ]
             for r in slice_
         ]

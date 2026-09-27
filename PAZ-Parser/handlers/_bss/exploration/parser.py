@@ -13,6 +13,7 @@ from __future__ import annotations
 import struct
 
 from _common.binary import u16, u32
+from _common.pabr_strings import TRAILER_SIZE, read_string_table, string_at, string_table_start
 
 
 _MAGIC = b"PABR"
@@ -21,8 +22,6 @@ _HEAD_SIZE = 117
 _LIST_COUNT = 7
 # Lists 1 to 5 hold knowledge entry IDs; list 0 is a region hash, list 6 empty.
 _KNOWLEDGE_LISTS = range(1, 6)
-_TRAILER_SIZE = 8
-_UTF16 = 1
 
 # Head field offsets.
 _ENABLED = 0x04
@@ -43,19 +42,6 @@ NODE_KIND_NAMES: tuple[str, ...] = (
 )
 
 
-def _read_string_table(data: bytes) -> list[str]:
-    start = u32(data, len(data) - _TRAILER_SIZE)
-    count = u32(data, start)
-    pos = start + 4
-    strings: list[str] = []
-    for _ in range(count):
-        encoding, length = data[pos], u32(data, pos + 1)
-        raw = data[pos + 5:pos + 5 + length]
-        strings.append(raw.decode("utf-16-le" if encoding == _UTF16 else "utf-8", errors="replace"))
-        pos += 5 + length
-    return strings
-
-
 def _read_lists(data: bytes, pos: int) -> tuple[list[list[int]], int]:
     lists: list[list[int]] = []
     for _ in range(_LIST_COUNT):
@@ -74,10 +60,10 @@ def parse_exploration_records(data: bytes) -> list[dict]:
     Raises ValueError on a bad magic, or when the walk does not end where the
     string table starts: then the layout has changed and every field is suspect.
     """
-    if len(data) < _HEADER_SIZE + _TRAILER_SIZE or data[:4] != _MAGIC:
+    if len(data) < _HEADER_SIZE + TRAILER_SIZE or data[:4] != _MAGIC:
         raise ValueError("exploration.bss has invalid magic.")
 
-    strings = _read_string_table(data)
+    strings = read_string_table(data)
     count = u32(data, 4)
     pos = _HEADER_SIZE
     records: list[dict] = []
@@ -90,7 +76,7 @@ def parse_exploration_records(data: bytes) -> list[dict]:
             "node_key": u16(data, head),
             "enabled": data[head + _ENABLED],
             "node_kind": data[head + _NODE_KIND],
-            "name_kr": strings[name_index] if name_index < len(strings) else "",
+            "name_kr": string_at(strings, name_index),
             "is_sub_node": data[head + _IS_SUB_NODE],
             "contribution": data[head + _CONTRIBUTION],
             "manager_id": u16(data, head + _MANAGER_ID),
@@ -100,7 +86,7 @@ def parse_exploration_records(data: bytes) -> list[dict]:
         })
 
     footer_count = u32(data, pos)
-    if pos + 4 + 6 * footer_count != u32(data, len(data) - _TRAILER_SIZE):
+    if pos + 4 + 6 * footer_count != string_table_start(data):
         raise ValueError("exploration.bss records do not end where its string table starts")
 
     return records

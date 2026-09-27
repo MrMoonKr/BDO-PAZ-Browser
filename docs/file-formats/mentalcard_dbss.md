@@ -136,12 +136,14 @@ Every one of the 12,502 records parses with this layout and ends exactly at its 
 | Column          | Type | Notes                                                    |
 | --------------- | ---- | -------------------------------------------------------- |
 | Knowledge ID    | num  | `card_id`                                                |
+| Icon            | text | `icon_path`, lowercased under `ui_texture/`; 12,034 of 12,087 files exist |
 | Knowledge Name  | text | LOC `str_type=34`, `str_id4=0`; fallback to `name_ko`    |
 | Category ID     | num  | `theme_id` (u16, not the full u32)                       |
 | Category Name   | text | LOC `str_type=9` for `theme_id`                          |
 | Favor           | text | `{min_favor} to {max_favor}`                             |
 | Interest        | num  | `interest`                                               |
 | Obtain          | text | LOC `str_type=34`, `str_id4=2`; fallback to `acquisition_ko` |
+| Position        | text | `x, y, z` rounded; dash when all zero                    |
 
 ---
 

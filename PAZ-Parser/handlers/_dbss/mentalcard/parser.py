@@ -30,6 +30,9 @@ _POSITION = struct.Struct("<fff")
 _TAIL_HEAD = struct.Struct("<BII")
 _PADDING_SIZE = 5
 
+# Stored icon paths start at "UI_Artwork/", which hangs off ui_texture.
+ICON_ROOT = "ui_texture/"
+
 
 @dataclass(frozen=True)
 class MentalCardIndexRow:
@@ -48,6 +51,7 @@ class MentalCardRecord:
     flags: int
     name_kr: str
     icon_path: str
+    acquisition_kr: str
     position: tuple[float, float, float]
 
 
@@ -107,7 +111,7 @@ def _parse_record(data: bytes, row: MentalCardIndexRow) -> MentalCardRecord:
     reader.text(wide=True)  # description
     reader.skip(_BODY_FLAGS_SIZE)
     icon_path = reader.text(wide=False)
-    reader.text(wide=True)  # acquisition
+    acquisition_kr = reader.text(wide=True)
     position = reader.unpack(_POSITION)
     _kind, _value, hash_count = reader.unpack(_TAIL_HEAD)
     reader.skip(4 * hash_count + _PADDING_SIZE)
@@ -122,7 +126,8 @@ def _parse_record(data: bytes, row: MentalCardIndexRow) -> MentalCardRecord:
         interest=interest,
         flags=flags,
         name_kr=name_kr,
-        icon_path=icon_path,
+        icon_path=f"{ICON_ROOT}{icon_path.lower()}" if icon_path else "",
+        acquisition_kr=acquisition_kr,
         position=position,
     )
 
