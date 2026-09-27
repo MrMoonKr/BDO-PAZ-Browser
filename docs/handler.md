@@ -382,6 +382,38 @@ Available specs:
 Expected dictionaries use subset matching. Tests only check declared keys, so adding
 new fields to a handler does not break existing tests.
 
+### Tests Must Survive a Game Update
+
+A test fails only when the parser is wrong, never because a patch added,
+removed or rebalanced content. The fixtures are frozen copies today, but they
+get refreshed from the client, and a patch changes counts, file order and
+balance values while the layout stays the same. So assert what stays true:
+
+- **Structure and invariants.** Every record parses, the walk ends exactly at
+  the end of the file or at the offset table's last byte, the row count equals
+  the count the file or its offset table declares, keys repeat where the
+  format repeats them. Derive expected counts from the data, never write the
+  current number.
+- **Schemas and value domains.** `SchemaTest` for required keys, `RangeTest`
+  for enums and bounded fields (`quest_category` in `0`-`19`, flags `0`/`1`).
+- **Identity anchors.** `TargetTest` by a stable key on identity fields that a
+  patch does not touch: node `1` is Velia, class type `25` is Kunoichi, packed
+  quest ID `1050655` splits into chain `2079` / quest `16`, an icon path's
+  folder. Look records up by key, not by position.
+
+Avoid:
+
+- Literal row counts (`CountTest(expected=19599)`): new content changes them.
+- `PosTest` on a position: inserted records shift every later row. Use a
+  keyed `TargetTest` instead.
+- Balance values: favor, interest, prices, stats, rewards and costs are
+  retuned by patches. Assert their type or range, not the number.
+- Totals and "N of M" counts from the current client; put those in the
+  format doc as observations, dated, where a patch can make them stale.
+
+Existing tests still pin counts and positions; converting them is tracked in
+`todo.md` under Tests.
+
 If `get_records()` returns raw snake_case fields but the test should assert the
 user-facing table contract, add a `record_mapper` to `HandlerCase`. The mapper
 receives one raw record and returns the normalized dictionary used by test specs.
