@@ -66,11 +66,11 @@ All multi-byte values are little-endian.
 Each `interest_group` field is a packed u32:
 
 ```text
-bits 31–16 : item_count  (knowledge entries from this group the NPC is interested in)
+bits 31–16 : item_count  (per-group count; meaning unconfirmed, see below)
 bits 15–0  : group_id    (knowledge group ID, matches node_id in mentalcard.dbss)
 ```
 
-`item_count` matches the denominator shown in the in-game amity UI (e.g. "Vendors of Serendia (0/4)"). Observed values: 0, 1, 2, 4, 5, 6, 7, 8, 10. All three fields in a record typically share the same `item_count` (1121 of 1182 records). `item_count=0` is valid and still appears in the amity UI.
+The same numbers appear on the BDO wiki next to each NPC's interest groups, but the game does not show them: the conversation window lists only the topics you can use, with no per-group count or maximum (user, 2026-09-27). It is not the number of topics offered either: with Oliviero (count `6` for Serendia Adventure Log II) the topic list showed 7 cards of that group. What the count controls is open. Observed values: 0, 1, 2, 4, 5, 6, 7, 8, 10. All three fields in a record typically share the same `item_count` (1121 of 1182 records).
 
 ---
 
@@ -146,8 +146,9 @@ The offset file's `data_offset` values increment by exactly 34 (the main record 
 - All 1182 `personality_id` values are unique, it is a true record key.
 - `personality_id_dup` at `+0x0E` is always identical to `personality_id` at `+0x00`; appears to be alignment padding or a redundant lookup key.
 - The `variant` in `personality_type` (1 or 2) is not exposed in `amity-npcs.json`; its in-game meaning is unknown. Distribution is roughly even (584 variant-1, 598 variant-2).
-- Confirmed against Amerigo (NPC ID 41013): all three groups show `item_count=4`, matching the UI display "Vendors of Serendia (0/4)", "Serendia Adventure Log II (0/4)", "Plants (Serendia) (0/4)".
-- The in-game behaviour for `item_count=0` groups is not yet fully understood.
+- The groups and counts match the BDO wiki for Amerigo (41013): Vendors of Serendia, Serendia Adventure Log II and Plants (Serendia), `4` each.
+- The NPC rolls its Interest Level and Favor within these ranges at the start of each conversation, and keeps them when the conversation is continued ([Black Desert Foundry, Story Exchange guide](https://www.blackdesertfoundry.com/story-exchange-guide/)). The guide's Lorenzo Murray (40015) shows Interest 32 and Favor 15, inside the stored 31-34 and 15-19. Worked back from topic tooltips in the current client (2026-09-27), all inside their stored ranges: Oliviero (41091) Interest 30 / Favor 31, Amerigo (41013) 22 / 28, Cleia (41056) 21 / 26. A tracker range built from a few conversations can therefore be narrower than the stored one.
+- They match the wiki for Oliviero (41091) too: Serendia Adventure Log II, Officers of Serendia and Plants (Serendia), `6` each. Each group holds more cards than `item_count` (18, 13 and 11 here). Sharing a group does not mean sharing topics: Amerigo, who also has Serendia Adventure Log II, did not offer the Log II cards Oliviero did. Which cards an NPC offers is open.
 - The stored ranges do not equal the ranges in an amity tracker dataset (taken from a wiki, possibly outdated) or one in-game check (Ornella), under either reading of the upper bound. Interest / favor:
 
   | NPC | Tracker or game | Stored | Stored, max minus 1 |
@@ -160,6 +161,10 @@ The offset file's `data_offset` values increment by exactly 34 (the main record 
   The seen ranges are shifted or narrower in both directions, so they settle neither reading.
 
 ## Open Questions
+
+### What does `item_count` control?
+
+The per-group count matches the numbers the BDO wiki lists next to each interest group, but the game shows no per-group count, and Oliviero's topic list held 7 cards of a group whose count is `6`. It may cap how many of the group's topics the NPC accepts, weight which topics are offered, or be unused. `0` occurs as well. Per the naming rule it should become an `unknown_*` field once the handler pass reaches this format.
 
 ### Are the upper bounds inclusive?
 
