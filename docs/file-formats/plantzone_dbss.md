@@ -202,7 +202,7 @@ Offset rows are not sorted by `data_offset`, but sorted rows cover every byte fr
 
 It is not a per-zone worker lock. In game, which worker types can be hired is
 set per town, and any hired worker can work any node connected to its town
-(confirmed by the user, 2026-09-27). The list still differs by region: 350
+(I checked in game, 2026-09-27). The list still differs by region: 350
 zones list the six base species (Goblin to Dwarf), the 42 Land of the Morning
 Light zones only Dokkebi, Dolswe and Shellfolk, and the two Dokkebi Forest
 excavation zones only Dokkebi. The values match the `plantworker.bss` species

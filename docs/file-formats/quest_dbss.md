@@ -49,13 +49,13 @@ All multi-byte values are little-endian.
 
 | Offset  | Type | Field | Notes                                                        |
 | ------- | ---- | ----- | ------------------------------------------------------------ |
-| `+0x00` | u32  | count | Number of quest records; `18,988` current, `19,599` fixture  |
+| `+0x00` | u32  | count | Number of quest records; `19,327` after the 2026-09-27 client update, `18,988` before it, `19,599` fixture |
 
 ### Record Stream
 
 Records are stored back to back with no offset table and no padding. Record 0 starts at `+0x04`; every later record starts immediately after the previous record's 13-byte trailer. Record `i` belongs to packed quest ID `allquestlist[i]`.
 
-A sequential walk (read the strings, find the packed ID of `allquestlist[i]` right after the objective, then the ID echo and trailer) consumes every byte of the file: `18,988` of `18,988` current records and `19,599` of `19,599` fixture records, with the last record ending exactly at end of file. Record sizes, from the lead to the end of the trailer, range from `512` to `9,464` bytes (current file) and `512` to `8,818` (fixture). The first three fixture records start at `0x00000004`, `0x000005F8` and `0x00000936`.
+A sequential walk (read the strings, find the packed ID of `allquestlist[i]` right after the objective, then the ID echo and trailer) consumes every byte of the file: `19,327` of `19,327` records after the 2026-09-27 update, `18,988` of `18,988` before it and `19,599` of `19,599` fixture records, with the last record ending exactly at end of file. Record sizes, from the lead to the end of the trailer, range from `512` to `9,464` bytes (current file) and `512` to `8,818` (fixture). The first three fixture records start at `0x00000004`, `0x000005F8` and `0x00000936`.
 
 ---
 
@@ -114,7 +114,7 @@ The u32 immediately before `packed_quest_id`. Current file counts (fixture count
 | `8`  | 627   | Crafting / equipment quests (e.g. Blackstar) |
 | `9`  | 2,016 | Event quests (`[Event]` prefix) |
 | `10` | 1     | Guild quests (single observed) |
-| `11` | 827   | Adventure-journal page: exactly the 827 page quests of `journalquest.dbss`, nothing else |
+| `11` | 827   | Adventure-journal page: exactly the page quests of `journalquest.dbss`, nothing else (901 after the 2026-09-27 update, which added journal 13) |
 | `12` | 180   | Season / weekly quests |
 | `13` | 410   | Black Spirit Pass progression quests |
 | `14` | 224   | Tutorial / beginner guide quests |
@@ -137,7 +137,7 @@ Offsets relative to the union start `U = Q+0x80 + 178 × k`, for `k < reward_ent
 | --------- | ---- | ----------------- | ----------------------------------------------- |
 | `U+0x00`  | u32  | family_stat_type  | Selects the populated field; `16` = no reward   |
 | `U+0x04`  | f32  | offence           | Type `0`, All AP                                |
-| `U+0x08`  | f32  | defence           | Type `1`, All DP                                |
+| `U+0x08`  | f32  | defence           | Type `1`; the Garmoth gear planner shows each +1 as +1 DP and +1 DR |
 | `U+0x0C`  | f32  | hp                | Type `2`, Max HP                                |
 | `U+0x10`  | f32  | mp                | Type `3`, Max MP (not observed)                 |
 | `U+0x14`  | i32  | stamina           | Type `4`, Max Stamina                           |
@@ -151,7 +151,16 @@ Offsets relative to the union start `U = Q+0x80 + 178 × k`, for `k < reward_ent
 | `U+0x31`  | u16? | contribution      | Type `12`, only in test quests (chain `1627`)   |
 | `U+0x33`  | u16? | energy            | Type `13`, only in test quests (chain `1627`)   |
 
-Current file, counted entries only: type `16` in 39,517 entries; 98 entries in 98 quests carry a real Family stat, each with only the selected field non-zero. 91 are journal pages (all in entry 0) and 7 are ordinary quests in entries 1 to 4, for example `72350` "A Gift for Papu" (DP +1, entry 1) and `329740` "[Elvia] Kzarka: Barrier of Infestation IV" (HP +20, entry 4). Summed: AP +10, DP +10, HP +1,000, Stamina +438, Weight +50 LT, Inventory +6, Accuracy +29, Evasion +8, Enhancement Chance +5, Valks limit +3.
+Current file, counted entries only: type `16` in 39,517 entries; 98 entries in 98 quests carry a real Family stat, each with only the selected field non-zero. 91 are journal pages (all in entry 0) and 7 are ordinary quests in entries 1 to 4, for example `72350` "A Gift for Papu" (DP +1, entry 1) and `329740` "[Elvia] Kzarka: Barrier of Infestation IV" (HP +20, entry 4). Summed: AP +10, DP +10, HP +1,000, Stamina +438, Weight +50 LT, Inventory +6, Accuracy +29, Evasion +8, Enhancement Chance +5, Valks limit +3. The game shows no total; the same sums hold after the 2026-09-27 update.
+
+I checked this against the [Garmoth](https://garmoth.com) gear planner (2026-09-27), which covers Igor Bartali's Adventure Log and a list of quests: every covered stat matches exactly.
+
+| Source | Garmoth | This file |
+| --- | --- | --- |
+| Igor Bartali's Adventures (journal 1) | HP 877, Stamina 438, AP 6, All Accuracy 29, Inventory 4, DP 6, DR 6, Evasion 8, Weight 28 | HP 877, Stamina 438, AP 6, Accuracy 29, Inventory 4, defence 6, Evasion 8, Weight 28 |
+| Quests: Barrier of Infestation III to V, A Gift for Papu, Mother's Warning, Ruler of Taebaek, Dokkebi's Gift, 10th Anniversary | AP 4, DP 4, DR 4, HP 123 | `264204` / `329740` / `395276` (defence 1, HP 20, AP 1), `72350` (defence 1), `139191` (AP 1), `74052` (AP 1), `598334` (defence 1), journal 6 book 10 "10th Anniversary Event Logs" (HP 103, defence 1, AP 1): AP 4, defence 4, HP 123 |
+
+Garmoth leaves out four journals that also grant stats, which is why its Inventory (4) and Weight (28) are lower: journal 2 Shakatu Merchants' Archive (Weight 2), 3 Storybook - Morning Bosses (Weight 10), 5 Crow Merchants' Records (Weight 8, Inventory 2, Enhancement Chance 5) and 9 Old Moon Logs (Weight 2, Valks limit 3). Garmoth calls `139191` "Mother's Warning"; its LOC type 18 title is "Tungrad School".
 
 ---
 
@@ -211,7 +220,7 @@ titles/objectives.
 
 ## Notes
 
-- Current file: `34,970,852` bytes, `18,988` records. Fixture: `36,525,439` bytes, `19,599` records.
+- "Current" counts in this doc are from the client before the 2026-09-27 update (`34,970,852` bytes, `18,988` records) unless marked. After it: `35,622,613` bytes, `19,327` records, 901 journal pages, 3 records without an icon; the walk still reads every record. Fixture: `36,525,439` bytes, `19,599` records.
 - Parsed preview is a lazy handler: the walk builds a small index on open and each page parses only its own rows.
 - The parser walks the records in `allquestlist.bss` order, so that file is a required companion (it also fills the icon index builder's companion slot). For each record it reads the two scripts, finds the record's own packed ID after them (the objective string must end at the `quest_category` right before it), then takes the next occurrence of that ID as the echo; the next record must parse right after the 13-byte trailer, or end the file. The walk takes about 0.35 s on either file and reads every script: 18,988 of 18,988 current records, 19,599 of 19,599 fixture records. The earlier scan anchored rows on icon paths and on the `기;` pattern and decoded only 8,085 script rows of the current file.
 - The icon path is read through its u64 prefix, not a pattern match. That recovers paths the old `Icon/[A-Za-z0-9_./ -]+` pattern cut short or missed: `Icon/Quest/O'dylilta_820115.dds`, `UI_Artwork/IC_01245.dds`, and `New_Icon/03_ETC/...`, which the pattern read as `Icon/03_ETC/...`. Three records store no icon at all: `69183`, `69175` and `8456145`. The old scan-based icon index had given them, and about a hundred other quests (mostly O'dyllita and Sherekhan ones), a neighbouring record's icon or a truncated path.

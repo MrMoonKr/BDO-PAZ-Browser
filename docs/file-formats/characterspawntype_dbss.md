@@ -167,7 +167,7 @@ A parallel lookup index with one entry per main-file record.
 
 ### Value 41
 
-The client enum skips `41`, but Miles (`59279`) sets it, together with `ItemRepairer`, `ImportantNpc` and `Grocery`. In game Miles gives the Grand Prix quests, so `41` is probably a Grand Prix (horse racing) role, but with a single record that is not certain.
+The client enum skips `41`, but Miles (`59279`) sets it, together with `ItemRepairer`, `ImportantNpc` and `Grocery`. In game Miles gives the Grand Prix quests, so `41` is probably a Grand Prix (horse racing) role. As far as I know he is the only Grand Prix NPC (2026-09-27), which fits a single record, but there is no second case to confirm the name.
 
 ### ChurchBuff
 

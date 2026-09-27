@@ -70,7 +70,7 @@ bits 31–16 : item_count  (per-group count; meaning unconfirmed, see below)
 bits 15–0  : group_id    (knowledge group ID, matches node_id in mentalcard.dbss)
 ```
 
-The same numbers appear on the BDO wiki next to each NPC's interest groups, but the game does not show them: the conversation window lists only the topics you can use, with no per-group count or maximum (user, 2026-09-27). It is not the number of topics offered either: with Oliviero (count `6` for Serendia Adventure Log II) the topic list showed 7 cards of that group. What the count controls is open. Observed values: 0, 1, 2, 4, 5, 6, 7, 8, 10. All three fields in a record typically share the same `item_count` (1121 of 1182 records).
+The same numbers appear on the BDO wiki next to each NPC's interest groups, but the game does not show them: the conversation window lists only the topics you can use, with no per-group count or maximum (I checked in game, 2026-09-27). It is not the number of topics offered either: with Oliviero (count `6` for Serendia Adventure Log II) the topic list showed 7 cards of that group. What the count controls is open. Observed values: 0, 1, 2, 4, 5, 6, 7, 8, 10. All three fields in a record typically share the same `item_count` (1121 of 1182 records).
 
 ---
 

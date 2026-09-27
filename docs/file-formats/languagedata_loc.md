@@ -115,7 +115,7 @@ are `str_id2 | str_id3 << 16`. Their `key0` is `str_type` and their `id` is
 | 115      | Monster Zone Info categories (`"Elvia Realm"`, `"Region Quests"`), `str_id1` 1 to 8        |
 | 116      | Monster Zone Info zone names (`"Sherekhan Necropolis (Day)"`), 113 IDs from 0 to 119       |
 | 117      | Monster Zone Info tags, `str_id4=0` tag (`"#LotsOfMobs"`), `1` tag description             |
-| 121      | Crystal transfusion groups, `str_id1` = group, `str_id2` = maximum count; see Type 121 below |
+| 121      | Crystal transfusion groups, `str_id1` = group, `str_id2` = equip limit; see Type 121 below  |
 | 123      | Workshop and house use names (`"Refinery"`, `"Worker's Lodging"`), `str_id1` 0 to 35       |
 
 The parsed preview labels confirmed and useful provisional types. Unconfirmed
@@ -539,8 +539,9 @@ Observed English examples:
 
 ### Type 121, crystal transfusion groups
 
-Type 121 has 44 rows over 43 group IDs (1 to 103). `str_id2` looks like the
-group's equip limit: `1` for `"Primordial"`, `"Ancient Spirit"` and `"Edania"`, `2` for
+Type 121 has 44 rows over 43 group IDs (1 to 103). `str_id2` is the
+group's equip limit (I confirmed it in game for Viper `2` and Ultimate Hoom `4`,
+2026-09-27): `1` for `"Primordial"`, `"Ancient Spirit"` and `"Edania"`, `2` for
 most groups (`"Viper"`, `"Max HP"`), `4` for `"Ultimate Hoom"`, `6` for
 `"Dawn"`, and `1000` for `"No Group"`, `"Hoom"`, `"Macalod"` and `"Gervish"`.
 Group `26` (`"Dim Magic"`) has rows at both `2` and `6`.
@@ -592,12 +593,6 @@ bdo-data-extractor names the type 37 groups as compiled UI string sheets
 (`GAME`, `RESOURCE`, `ACTIONCHART` and others). Our data shows the `str_id2` and
 `str_id3` grouping but no sheet names, so which value is which sheet is not
 confirmed.
-
-### Type 121 limit value
-
-`str_id2` fits a per-group equip limit (Viper `2`, unlimited groups `1000`).
-In game, the transfusion window should allow two Viper crystals (group `16`)
-and four Ultimate Hoom crystals (group `35`) if this is right.
 
 ### Type 123 key
 

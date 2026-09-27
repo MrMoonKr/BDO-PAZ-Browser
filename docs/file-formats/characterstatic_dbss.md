@@ -145,7 +145,7 @@ Offsets are relative to the end of the payload (`data_offset + payload_size`).
 | `-21`  | u8[2] | zero      | Always `0` |
 | `-4`   | f32  | unknown_tail_f32 | `5000.0` on 23,836 rows, `15000.0` on 339, `3000.0` on 157, `1000.0` on 70 |
 
-`class_type` is a different ID from `character_id`: Warrior is character `1` / class `0`, Ranger `2` / `4`, Sorceress `3` / `8`, Berserker `4` / `12`, Tamer `5` / `16`, Musa `21` / `20`, Valkyrie `25` / `24`. The class number resolves through LOC `str_type=21` (class names) and is the value the client's `getClassType()` returns. bdo-data-extractor reads it as a u32; that fails on the 65 rows where `unknown_t22` is `3`, so it is read here as a u8.
+`class_type` is a different ID from `character_id`: Warrior is character `1` / class `0`, Ranger `2` / `4`, Sorceress `3` / `8`, Berserker `4` / `12`, Tamer `5` / `16`, Musa `21` / `20`, Valkyrie `25` / `24`. The class number resolves through LOC `str_type=21` (class names) and is the value the client's `getClassType()` returns. bdo-data-extractor reads it as a u32; that fails on the 65 rows where `unknown_t22` is `3`, so it is read here as a u8. Kunoichi and Ninja are separate classes (`25` and `26` in LOC type 21): character `26` Kunoichi has `25` and character `27` Ninja has `26`, but character `209`, also named Kunoichi with the same female model (`pc/13_pnw/ninjawomenaction_noweaponmain_w`), stores `26`. Whether that is a data slip or means something is not known; it cannot be seen in game.
 
 Observed `payload_size` ranges from `456` to `1033` bytes (older fixture: `478` to `1055`).
 
