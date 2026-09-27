@@ -666,7 +666,12 @@ row["icon_path"] = icon_path(IconKind.ITEM, item_id)
    PAZ folder in `Api._load_icon_indexes()` and injects them with
    `init_icon_index()`, the same way `init_loc()` supplies LOC data. Results are
    cached by `paz/bdo_icon_cache.py`, keyed by `IconKind.value` and invalidated
-   on the PAZ meta version.
+   on the PAZ meta version or when the code that builds them changes. The cache
+   stores `builder_fingerprint()`, a hash of every function in
+   `Api._icon_index_functions()` plus the project modules they import, so
+   editing a builder or a helper such as `_common/prefixed_string.py` rebuilds
+   the indexes on the next launch. A new builder or build step only needs adding
+   to `_icon_index_functions()`.
 2. **Derivation from the ID**, when that kind declares one and the index has no
    entry. `IconKind.ITEM` derives into the flat `product_icon_png` folder.
 
@@ -675,11 +680,17 @@ empty icon column. Adding one means adding the member, its optional deriver in
 `_DERIVERS`, and one entry in `Api._icon_index_builders()` naming the source
 table, its offset companion (or `None`) and the builder.
 
+`CHARACTER` has one extra step. After every index is built,
+`Api._with_borrowed_character_icons()` gives each character without a working
+icon the icon of the item that places or summons it, using the `character_id`
+at `+0xAA` in `itemenchant.dbss` and `borrow_icons()`. A working own icon
+always wins, and a borrowed icon is used only when its file exists.
+
 | Kind        | Source                  | Entries | Derivation fallback   |
 | ----------- | ----------------------- | ------- | --------------------- |
 | `ITEM`      | `itemenchant.dbss`      | 69,954  | `product_icon_png`    |
 | `QUEST`     | `quest.dbss`            | 16,377  | none                  |
-| `CHARACTER` | `characterobject.dbss`  | 4,817   | none                  |
+| `CHARACTER` | `characterobject.dbss`, gaps from `itemenchant.dbss` | 6,157   | none                  |
 | `PET_EQUIP_SKILL`   | none          | 0       | `08_servant_skill/02_pet` |
 | `FAIRY_EQUIP_SKILL` | none          | 0       | `08_servant_skill/02_pet` |
 
@@ -704,14 +715,14 @@ wrong derived guess rather than replacing it. A malformed file is reported by
 `icon_override_error()` and ignored rather than crashing the app, so check that
 helper if an override does not take effect.
 
-Overrides are the intended fix for the ~850 IDs whose source table references an
+Overrides are the intended fix for the ~535 IDs whose source table references an
 icon the client does not ship. Those references do not change between patches,
 so a correction made once keeps working.
 
 When a referenced icon is not in the PAZ, the cell collapses to a dash rather
 than leaving an empty swatch beside a path that resolves to nothing. The full
 path stays in the cell's `title` attribute, so it is still there on hover. That
-covers the roughly 850 IDs whose source table points at an icon the client does
+covers the roughly 535 IDs whose source table points at an icon the client does
 not ship, until an override supplies the right path.
 
 How far each index actually reaches differs a lot, so check before assuming an
@@ -721,11 +732,12 @@ icon column will look populated. Measured against the live PAZ:
 | ----------- | -------------- | ---------------------- |
 | `ITEM`      | 73,790         | 93.8%                  |
 | `QUEST`     | 19,486         | 83.9%                  |
-| `CHARACTER` | 24,418         | 18.1%                  |
+| `CHARACTER` | 24,418         | 24.9%                  |
 
-`CHARACTER` is low because `characterobject.dbss` only describes NPCs that have
-a world object, 4,817 of 24,418. That is expected rather than broken, but it
-means a character icon column is mostly empty.
+`CHARACTER` is low because only placeable world objects (mostly house
+furniture) and the characters an item places or summons (fences, crops, pets)
+have an icon, 6,068 of 24,418 IDs. NPCs and monsters have none. That is expected
+rather than broken, but it means a character icon column is mostly empty.
 
 The two equip-skill kinds are derivation only: no table stores their paths, but
 routing them through the registry keeps every icon template in one module and

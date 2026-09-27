@@ -7,7 +7,9 @@ to a master item table. It holds one variable-length block per
 (item, enchant level) pair, keyed through a required offset companion. Each block
 carries the item's **icon path as an inline string**, which makes this file the
 authoritative item ID to icon mapping, the one thing that cannot be derived from
-an item ID alone.
+an item ID alone. Items that place or summon something (furniture, fences,
+crops, pets) also name that character, which links them to
+`characterobject.dbss` and `characterstatic.dbss`.
 
 At roughly 194 MB it is the largest file in the game data.
 
@@ -16,6 +18,9 @@ Example:
 ```text
 item 24626 (King Clam Wall Ornament)
   -> New_Icon/03_ETC/06_Housing/InHouse_Cultivate_Sea_Clam_01_Wall.dds
+item 58011 ([Event] Fence)
+  -> New_Icon/03_ETC/06_Housing/00058003.dds
+  -> places character 2053 ([Event] Fence)
 ```
 
 ## Graph
@@ -34,6 +39,8 @@ item 24626 (King Clam Wall Ornament)
 - [languagedata_en.loc](languagedata_loc.md) - English item names for the record key (`str_type=0`)
 - [pet.dbss](pet_dbss.md) - another format that stores an inline icon path per record
 - [quest.dbss](quest_dbss.md) - stores inline icon paths using the same convention
+- [characterobject.dbss](characterobject_dbss.md) - `character_id` names the placed object; its icon fills gaps in the character icon index
+- [characterstatic.dbss](characterstatic_dbss.md) - `character_id` shares this key space; pet items name their pet character
 
 ---
 
@@ -120,16 +127,36 @@ index needs.
 
 ## Block Structure
 
-Only the parts needed for the icon mapping are confirmed. A block opens with the
-item ID and ends with a large run of enchant-related numeric fields that are not
-yet decoded.
+Only the item ID, the placed character and the strings are confirmed. A block
+opens with the item ID and ends with a large run of enchant-related numeric
+fields that are not yet decoded.
 
 | Offset  | Type | Field    | Notes                                    |
 | ------- | ---- | -------- | ---------------------------------------- |
-| `+0x00` | u32  | item_id  | Repeats the item ID from the key         |
-| `+0x04` | —    | unknown  | ~270 bytes of numeric fields             |
-| varies  | —    | strings  | One or two length-prefixed ASCII strings |
+| `+0x00` | u32  | item_id      | Repeats the item ID from the key                             |
+| `+0x04` | —    | unknown      | Numeric fields                                               |
+| `+0xAA` | u16  | character_id | Character the item places or summons; `0` when none. See below |
+| `+0xAC` | u16  | unknown_ac   | `0` on all 3,960 object links; across base items `0` (61,650), `1` (4,786), `2` (2,165), `5` (1,052), `10` (218) |
+| `+0xAE` | —    | unknown      | Numeric fields up to the first string                        |
+| varies  | —    | strings      | One or two length-prefixed ASCII strings                     |
 | varies  | —    | unknown  | Remaining enchant data                   |
+
+### Placed or summoned character
+
+`character_id` sits in the fixed numeric part: in every base-item (variant 0) block the first string starts at `+0xB4` (180) or later, and every block is at least 693 bytes long.
+
+| Measure (variant-0 blocks)                       | Value |
+| ------------------------------------------------ | ----: |
+| Characters named by at least one item            | 5,095 |
+| ... that have a `characterobject.dbss` record    | 3,960 |
+| ... named by exactly one item (kept as a link)   | 5,090 |
+| Characters named by more than one item           |     5 |
+
+All 5,095 are `characterstatic.dbss` IDs; the ones without an object record are mostly pets.
+
+Examples: `58001` Strong Fence Garden (item) → `2001` Strong Fence Garden; `820908` Truffle Mushroom Hypha → `1436` Truffle Mushroom Crop; `860014` [Pet] Striped Cat (Tier 3) → `9425` Cat. Of the 3,960 object links, 2,961 have identical item and character names; the rest pair a seed with its crop or a `[Guild]` item with its structure.
+
+Character `1` is named by 120 unrelated items, so there the value is not a link. The browser keeps only characters named by exactly one item.
 
 ### Length-prefixed string
 
@@ -190,6 +217,7 @@ only approach that covers items whose icon is named after a 3D asset
 | Item ID       | num  | `item_id` from the key                            |
 | Icon          | text | First block string, prefixed `ui_texture/icon/`   |
 | Item          | text | LOC `str_type=0`, `str_id1=item_id`               |
+| Character ID  | num  | `character_id`; dash when `0`                     |
 | Effect Tag    | text | Second block string when present                  |
 
 ---
@@ -219,8 +247,8 @@ only approach that covers items whose icon is named after a 3D asset
 
 ### Enchant Data Fields
 
-The ~270 bytes before the icon string and the remainder after it are
-undecoded. They plausibly carry enchant chance, cost, and stat progression per
+Apart from `character_id`, the numeric fields before the icon string and the
+remainder after it are undecoded. They plausibly carry enchant chance, cost, and stat progression per
 level, since the file is keyed by enchant level, but no field has been
 confirmed. Decoding them is a much larger job than the icon mapping and was not
 attempted.

@@ -22,6 +22,9 @@ _ICON_ROOT = "ui_texture/icon/new_icon"
 # King Clam Wall Ornament: furniture, so its icon is named after the 3D asset
 # and is unreachable from the item ID alone. It is the case this format solves.
 _KING_CLAM = 24626
+# [Event] Fence places character 2053, which has no icon of its own.
+_EVENT_FENCE = 58011
+_EVENT_FENCE_CHARACTER = 2053
 
 CASE = HandlerCase(
     handler_name="itemenchant.dbss",
@@ -40,6 +43,7 @@ CASE = HandlerCase(
                 "effect_tag",
                 "block_size",
                 "item_name",
+                "character_id",
             ],
         ),
         CountTest(expected=169_965),
@@ -59,7 +63,13 @@ CASE = HandlerCase(
                 ),
                 "effect_tag": "",
                 "block_size": 870,
+                "character_id": 17026,
             },
+        ),
+        TargetTest(
+            col="item_id",
+            value=_EVENT_FENCE,
+            expected={"key_variant": 0, "character_id": _EVENT_FENCE_CHARACTER},
         ),
         # First offset row is a max-enchant weapon variant.
         PosTest(
@@ -68,6 +78,8 @@ CASE = HandlerCase(
                 "item_id": 697192,
                 "key_variant": 24,
                 "block_size": 1378,
+                # A weapon places no character; stored as None so it sorts last.
+                "character_id": None,
             },
         ),
     ],
@@ -110,3 +122,21 @@ def test_build_item_icon_index_covers_the_furniture_case() -> None:
     )
     # Every path stays inside the icon tree.
     assert all(p.startswith("ui_texture/icon/") for p in index.values())
+
+
+def test_build_character_item_index_links_placed_objects_and_pets() -> None:
+    from _dbss.itemenchant.parser import build_character_item_index
+    from tests.fixtures import ensure_fixtures
+
+    paths = ensure_fixtures(CASE)
+    index = build_character_item_index(
+        paths["itemenchant.dbss"].read_bytes(),
+        paths["itemenchantoffset.dbss"].read_bytes(),
+    )
+
+    assert len(index) == 5_090
+    assert index[_EVENT_FENCE_CHARACTER] == _EVENT_FENCE
+    # [Pet] Striped Cat (Tier 3) summons character 9425, "Cat".
+    assert index[9425] == 860014
+    # Named by 120 unrelated items, so it is not a link and is left out.
+    assert 1 not in index

@@ -77,6 +77,7 @@ class ItemEnchantHandler(PreviewHandler):
             Column(cols.get("itemId", "Item ID"), "num", sort_key="item_id"),
             Column(cols.get("icon", "Icon"), sort_key="icon_path"),
             Column(cols.get("item", "Item"), sort_key="item_name"),
+            Column(cols.get("characterId", "Character ID"), "num", sort_key="character_id"),
             Column(cols.get("effectTag", "Effect Tag"), sort_key="effect_tag"),
         ]
 
@@ -99,11 +100,15 @@ class ItemEnchantHandler(PreviewHandler):
         if offset_raw is None:
             raise ValueError(f"{_OFFSET_FILE} companion not found.")
 
-        records = parse_itemenchant_records(data, offset_raw)
-        for record in records:
-            record["item_name"] = _item_name(record["item_id"])
-
-        return records
+        return [
+            {
+                **record,
+                "item_name": _item_name(record["item_id"]),
+                # 0 means "places no character"; None sorts last and exports empty.
+                "character_id": record["character_id"] or None,
+            }
+            for record in parse_itemenchant_records(data, offset_raw)
+        ]
 
     def render_records_page(
         self,
@@ -125,6 +130,7 @@ class ItemEnchantHandler(PreviewHandler):
                 e(record["item_id"]),
                 icon_cell(record["icon_path"]) if record["icon_path"] else _EMPTY,
                 e(record.get("item_name") or record["item_id"]),
+                e(record["character_id"]) if record["character_id"] is not None else _EMPTY,
                 e(record["effect_tag"] or _EMPTY),
             ]
             for record in slice_

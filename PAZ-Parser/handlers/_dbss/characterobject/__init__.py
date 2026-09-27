@@ -1,1 +1,1 @@
-"""characterobject.dbss icon extraction (no preview handler yet)."""
+"""characterobject.dbss preview handlers and character icon extraction."""

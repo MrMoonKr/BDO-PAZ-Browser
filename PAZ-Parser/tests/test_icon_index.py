@@ -138,3 +138,53 @@ def test_empty_override_suppresses_a_wrong_derived_path(monkeypatch) -> None:
 
     # Item 9 derives to a path that is not shipped; "" says so explicitly.
     assert icon_path(IconKind.ITEM, 9) == ""
+
+
+_FENCE_CHARACTER = 2053
+_FENCE_ITEM = 58011
+_FENCE_ICON = "ui_texture/icon/new_icon/03_etc/06_housing/00058003.dds"
+
+
+def _borrow(own: dict[int, str], shipped: set[str]) -> dict[int, str]:
+    from _common.icon_index import borrow_icons
+
+    return borrow_icons(
+        own,
+        {_FENCE_ITEM: _FENCE_ICON},
+        {_FENCE_CHARACTER: _FENCE_ITEM},
+        shipped.__contains__,
+    )
+
+
+def test_borrow_fills_a_character_with_no_icon() -> None:
+    assert _borrow({}, {_FENCE_ICON}) == {_FENCE_CHARACTER: _FENCE_ICON}
+
+
+def test_borrow_replaces_an_icon_the_client_does_not_ship() -> None:
+    dead = "ui_texture/icon/new_icon/03_etc/06_housing/missing.dds"
+
+    assert _borrow({_FENCE_CHARACTER: dead}, {_FENCE_ICON}) == {
+        _FENCE_CHARACTER: _FENCE_ICON,
+    }
+
+
+def test_borrow_keeps_a_working_own_icon() -> None:
+    own_icon = "ui_texture/icon/new_icon/03_etc/06_housing/own.dds"
+
+    assert _borrow({_FENCE_CHARACTER: own_icon}, {own_icon, _FENCE_ICON}) == {
+        _FENCE_CHARACTER: own_icon,
+    }
+
+
+def test_borrow_never_swaps_in_a_dead_item_icon() -> None:
+    dead = "ui_texture/icon/new_icon/03_etc/06_housing/missing.dds"
+
+    assert _borrow({_FENCE_CHARACTER: dead}, set()) == {_FENCE_CHARACTER: dead}
+    assert _borrow({}, set()) == {}
+
+
+def test_borrow_leaves_the_input_untouched() -> None:
+    own: dict[int, str] = {}
+    _borrow(own, {_FENCE_ICON})
+
+    assert own == {}

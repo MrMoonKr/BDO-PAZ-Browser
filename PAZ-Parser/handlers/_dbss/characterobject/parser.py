@@ -1,69 +1,102 @@
-"""Icon extraction from `characterobject.dbss`.
+"""`characterobject.dbss` records, located through `characterobjectoffset.dbss`.
 
-There is no preview handler for this format yet, only the part needed to map a
-character ID to its icon, which `characterstatic.dbss` and
-`characterspawntype.dbss` both key by.
+Each record opens with a fixed prefix, then a body chosen by `object_kind`:
+
+    u16 character_id | u8 object_kind | u8 x3 | model_path | kind-specific body
+
+Only the prefix is parsed here. The icon path sits at no fixed offset in the
+body, so the icon index scans for it instead. Full layout in
+docs/file-formats/characterobject_dbss.md.
 
 Unlike `itemenchant.dbss`, blocks are not stored in key order, so offsets jump
-around the file and a contiguity check on consecutive rows fails. The offset row
-is also 10 bytes rather than 12, because the key is a u16.
+around the file and a contiguity check on consecutive rows fails.
 """
 
 from __future__ import annotations
 
 import re
+from dataclasses import dataclass
 
-from _common.binary import u16, u32
+from _common.binary import u16
+from _common.pabr_offset import PabrOffsetRow, parse_pabr_offset_rows
+from _common.prefixed_string import read_prefixed_at
 
 
-_MAGIC = b"PABR"
-_OFFSET_HEADER_SIZE = 8
-_OFFSET_ROW_SIZE = 10
-
-# Stored paths already start at "Icon/", so they hang off ui_texture.
+# Most stored paths start at "Icon/", so they hang off ui_texture. About 200
+# start one level lower at "New_Icon/", which lives under ui_texture/icon/.
 CHARACTER_ICON_ROOT = "ui_texture/"
+_NEW_ICON_PREFIX = "new_icon/"
+_NEW_ICON_ROOT = "ui_texture/icon/"
 
-_ICON_RE = re.compile(rb"(?i)icon/[ -~]{3,120}?\.(?:dds|png)")
+# The optional "New_" keeps a "New_Icon/..." path whole; without it the match
+# starts at the inner "Icon/" and drops a folder level.
+_ICON_RE = re.compile(rb"(?i)(?:new_)?icon/[ -~]{3,120}?\.(?:dds|png)")
+
+_KIND = 0x02
+_MODEL_PATH = 0x06
 
 
-def parse_characterobjectoffset_records(data: bytes) -> list[dict]:
-    """Parse the character-ID index into plain dicts."""
-    if len(data) < _OFFSET_HEADER_SIZE or data[:4] != _MAGIC:
-        raise ValueError("characterobjectoffset.dbss has invalid magic.")
+@dataclass(frozen=True)
+class CharacterObjectRecord:
+    character_id: int
+    object_kind: int
+    model_path: str
 
-    count = u32(data, 4)
-    end = _OFFSET_HEADER_SIZE + count * _OFFSET_ROW_SIZE
+
+def parse_characterobject_records(
+    data: bytes,
+    rows: list[PabrOffsetRow],
+) -> list[CharacterObjectRecord]:
+    """Parse every record prefix, in offset-table order.
+
+    Raises ValueError when a row points outside the file or its record does not
+    open with the row's own ID, since the prefix would then be misread.
+    """
+    return [_parse_record(data, row) for row in rows]
+
+
+def _parse_record(data: bytes, row: PabrOffsetRow) -> CharacterObjectRecord:
+    start = row.offset
+    end = start + row.size
     if end > len(data):
         raise ValueError(
-            f"characterobjectoffset.dbss declares {count:,} rows but is only "
-            f"{len(data):,} bytes."
+            f"character {row.entry_id} runs past the end of characterobject.dbss"
         )
 
-    records: list[dict] = []
-    for index in range(count):
-        pos = _OFFSET_HEADER_SIZE + index * _OFFSET_ROW_SIZE
-        records.append({
-            "character_id": u16(data, pos),
-            "data_offset": u32(data, pos + 0x02),
-            "data_size": u32(data, pos + 0x06),
-        })
+    character_id = u16(data, start)
+    if character_id != row.entry_id:
+        raise ValueError(
+            f"record at 0x{start:X} holds character {character_id}, "
+            f"but the offset table says {row.entry_id}"
+        )
 
-    return records
+    model_path, _ = read_prefixed_at(data, start + _MODEL_PATH, end, wide=False)
+    return CharacterObjectRecord(
+        character_id=character_id,
+        object_kind=data[start + _KIND],
+        model_path=model_path,
+    )
 
 
 def build_character_icon_index(data: bytes, offset_data: bytes) -> dict[int, str]:
     """Map character ID to icon path."""
     icons: dict[int, str] = {}
 
-    for row in parse_characterobjectoffset_records(offset_data):
-        start = row["data_offset"]
-        end = start + row["data_size"]
+    for row in parse_pabr_offset_rows(offset_data):
+        start = row.offset
+        end = start + row.size
         if end > len(data):
             continue
 
         match = _ICON_RE.search(data, start, end)
         if match:
-            path = match.group().decode("ascii").lower()
-            icons[row["character_id"]] = f"{CHARACTER_ICON_ROOT}{path}"
+            icons[row.entry_id] = _icon_paz_path(match.group())
 
     return icons
+
+
+def _icon_paz_path(stored: bytes) -> str:
+    """PAZ path for a stored icon path."""
+    path = stored.decode("ascii").lower()
+    root = _NEW_ICON_ROOT if path.startswith(_NEW_ICON_PREFIX) else CHARACTER_ICON_ROOT
+    return f"{root}{path}"

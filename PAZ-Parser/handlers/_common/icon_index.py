@@ -126,6 +126,31 @@ def init_icon_index(kind: IconKind, mapping: dict[int, str] | None) -> None:
     _INDEXES[kind] = mapping
 
 
+def borrow_icons(
+    own: dict[int, str],
+    lender_icons: dict[int, str],
+    lender_by_entity: dict[int, int],
+    exists: Callable[[str], bool],
+) -> dict[int, str]:
+    """Return `own` with gaps filled from a linked entity's icon.
+
+    For character icons the lender is the item that places or summons the
+    character. An entity keeps its own icon when that file exists; a borrowed
+    icon is used only when it exists, so a gap is never swapped for another
+    dead path. `own` is not modified.
+    """
+    merged = dict(own)
+    for entity_id, lender_id in lender_by_entity.items():
+        if exists(merged.get(entity_id, "")):
+            continue
+
+        borrowed = lender_icons.get(lender_id, "")
+        if borrowed and exists(borrowed):
+            merged[entity_id] = borrowed
+
+    return merged
+
+
 def clear_icon_indexes() -> None:
     """Drop every loaded index, for a folder switch or a failed load."""
     _INDEXES.clear()

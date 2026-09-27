@@ -1,0 +1,228 @@
+# `characterobject.dbss` Format
+
+## Purpose
+
+Per-character world-object records for placeable objects: house furniture and crafting tools, crops, houses and other buildings, tents, barricades and guild siege towers. Each record carries the object's kind, its model path and, for most records, an inline icon path. Names come from LOC type `6`, the same table `characterstatic.dbss` uses.
+
+Example:
+
+```text
+character 1001  kind 2 -> Metal Processing Tool
+                          model 00_Common/Crafting/Crafting_Smithing_01.pam
+character 16111 kind 2 -> Golden Hand Vase
+                          icon  Icon/New_Icon/03_ETC/06_Housing/Pot_Base_48.dds
+character 2101  kind 5 -> Velia 4
+                          model 02_balenos/velia/balenos_velia_str_house_05.pam
+```
+
+## Graph
+
+### Tags
+
+- file format
+- dbss
+- character
+- housing
+- icon
+
+### Connections
+
+- [characterobjectoffset.dbss](#characterobjectoffsetdbss) - required offset table for `characterobject.dbss`
+- [characterstatic.dbss](characterstatic_dbss.md) - same `character_id` key space; every `characterobject.dbss` ID also appears in `characterstaticoffset.dbss`
+- [characterspawntype.dbss](characterspawntype_dbss.md) - keyed by the same character ID, so it shares the character icon index
+- [languagedata_en.loc](languagedata_loc.md) - object names with `str_type=6`, `str_id1=character_id`
+- [itemenchant.dbss](itemenchant_dbss.md) - the item that places each object names it at `+0xAA`; its icon fills gaps here
+
+---
+
+## Companion Files
+
+| File                         | Required | Role                                                  |
+| ---------------------------- | -------- | ----------------------------------------------------- |
+| `characterobjectoffset.dbss` | Required | Maps `character_id` to byte offset and size of record |
+| `languagedata_en.loc`        | Optional | Object names via type `6`                             |
+
+All multi-byte values are little-endian. Strings are a u64 byte length followed by ASCII (or UTF-16-LE, where noted) text with no terminator; the high u32 of the length is always `0`.
+
+---
+
+## File Layout
+
+### `characterobject.dbss`
+
+| Offset  | Type | Field   | Notes                                                     |
+| ------- | ---- | ------- | --------------------------------------------------------- |
+| `+0x00` | u32  | count   | Record count; observed `5,123`, equal to the offset count |
+| `+0x04` | ...  | records | Variable-length records, back to back until end of file   |
+
+Records are contiguous: sorted by offset, each one ends exactly where the next begins, the first starts at `+0x04` and the last ends at end of file. They are **not** stored in key order, so walking the offset table row by row jumps around the file.
+
+### `characterobjectoffset.dbss`
+
+PABR index with a 10-byte row, because the key is a u16.
+
+| Offset  | Type  | Field | Notes                            |
+| ------- | ----- | ----- | -------------------------------- |
+| `+0x00` | u8[4] | magic | `PABR` (ASCII)                   |
+| `+0x04` | u32   | count | Number of rows; observed `5,123` |
+
+#### Index Row (10 bytes, repeated `count` times)
+
+| Offset  | Type | Field        | Notes                                                 |
+| ------- | ---- | ------------ | ----------------------------------------------------- |
+| `+0x00` | u16  | character_id | Unique; observed range `1001` to `19617`, unsorted    |
+| `+0x02` | u32  | data_offset  | Absolute offset of the record in the main file        |
+| `+0x06` | u32  | data_size    | Record size; observed `678` to `56,750`, median `786` |
+
+#### Trailer (12 bytes)
+
+| Offset  | Type | Field       | Observed | Notes                                    |
+| ------- | ---- | ----------- | -------- | ---------------------------------------- |
+| `+0x00` | u32  | reserved_a  | `0`      | Observed zero                            |
+| `+0x04` | u32  | end_of_rows | `51,238` | Byte offset after rows; `8 + count * 10` |
+| `+0x08` | u32  | reserved_b  | `0`      | Observed zero                            |
+
+---
+
+## Record Structure
+
+### Record Prefix (all kinds)
+
+`data_offset` points at the record's own ID, unlike `characterstatic.dbss`, where it points just past it.
+
+| Offset  | Type   | Field        | Notes                                             |
+| ------- | ------ | ------------ | ------------------------------------------------- |
+| `+0x00` | u16    | character_id | Matches the offset-table key in all 5,123 records |
+| `+0x02` | u8     | object_kind  | Selects the record body; see [Object Kinds](#object-kinds) |
+| `+0x03` | u8     | unknown_03   | `0` (5,078) or `1` (45)                           |
+| `+0x04` | u8     | unknown_04   | `0` (4,930) or `1` (193)                          |
+| `+0x05` | u8     | unknown_05   | Always `0`                                        |
+| `+0x06` | string | model_path   | ASCII; see below                                  |
+
+`model_path` extensions: `.pam` (4,479), `.srt` (622), `.r3m` (8), `.pcm` (5). A few paths carry a stray trailing character (`"srt "`, `"pam?"`).
+
+### Furniture Body (`object_kind = 2`, 3,963 records)
+
+Follows `model_path`. Verified for every kind-2 record: walking these fields ends exactly at `data_size`.
+
+| Offset   | Type     | Field       | Notes                                                                  |
+| -------- | -------- | ----------- | ---------------------------------------------------------------------- |
+| `+0x000` | u8[556]  | block       | Fixed block; mostly constant, see [Furniture Block](#furniture-block)  |
+| `+0x22C` | string   | action_name | Empty in 3,887 records; else `OBJECT_BED_GoingToBed` (73) or `USE_BATHTUB_PREFARE` (3) |
+| ...      | u32      | action_hash | `0` exactly when `action_name` is empty                                |
+| ...      | string   | icon_path   | Empty in 9 records                                                     |
+| ...      | u8[48]   | tail        | All zero except bytes `44..46` in 6 records                            |
+
+#### Furniture Block
+
+The 556-byte block is constant across all kind-2 records except for these bytes. Everything not listed is zero or a fixed pattern of `1` flags and identity-like `1.0f` rows.
+
+| Offset   | Type | Field       | Observed                                                             |
+| -------- | ---- | ----------- | -------------------------------------------------------------------- |
+| `+0x010` | u8   | unknown_010 | `1` (3,566), `0` (397)                                               |
+| `+0x091` | u8   | unknown_091 | `0` (3,936), `1` (27)                                                |
+| `+0x0BD` | u8   | unknown_0bd | 7 values; `0` (3,576), `1` (174), `5` (150), `2`, `10`, `4`, `3`     |
+| `+0x135` | u8   | unknown_135 | 35 values; `0` (1,486), `17` (632), `10` (374), `38` (243)           |
+| `+0x137` | u8   | unknown_137 | 11 values; `0` (3,797), `9` (145)                                    |
+| `+0x138` | u8×6 | flags_138   | Six independent `0`/`1` bytes at `+0x138` to `+0x13D`                |
+| `+0x156` | u32  | crop_key_a  | `0`, or `57000 + n` on the 385 crop records                          |
+| `+0x15A` | u32  | crop_key_b  | `0`, or `57100 + n` on the same records                              |
+| `+0x15E` | u8   | unknown_15e | `10` on the crop records, else `0`                                   |
+| `+0x17A` | u16  | unknown_17a | 136 values; `0` (809), `10` (498), `25`, `125`, `200`, `100`, `50`   |
+| `+0x21B` | u32  | unknown_21b | `100` in 3,729 records                                               |
+
+### Structure Body (`object_kind != 2`, 1,160 records)
+
+Houses, buildings, farms, tents, barricades and siege towers. Only the leading strings are walked with certainty; see [Open Questions](#open-questions).
+
+| Order | Type     | Field           | Notes                                                              |
+| ----- | -------- | --------------- | ------------------------------------------------------------------ |
+| 1     | string   | hull_model_path | Present in all 1,160 records; the model path with a `_HH` or `_HH_NR` suffix |
+| 2     | string   | hull_name       | Empty in 220 records (towers, barricades); houses use `HH_<a>_<b>_<c>_<d>_<e>` |
+| 3     | u8       | has_hull        | `1` when hull geometry follows                                     |
+| 4     | ...      | hull geometry   | Float geometry, see below                                          |
+| 5     | string   | material_path   | e.g. `Real_ETC/Material/Icon_Real_ETC_Material_Tent_N_00000000.dds` |
+| 6     | string   | unknown string  | Observed `10`                                                      |
+| 7     | wstring  | name_kr, description_kr | Houses only; UTF-16-LE Korean name and description           |
+| 8     | string   | icon_path       | Houses use per-house icons such as `Icon/New_Icon/03_ETC/06_Housing/2101-1.dds` |
+
+The hull geometry starts with three u32 values (`a`, `b`, `hull_count`), then per hull a u32 `face_count` and `face_count * 140` bytes of f32 data. 12 faces is by far the most common (1,852 hulls). `a` and `b` are always equal (`0`, `1`, `2`, `3` or `4`). This walk lands a constant 333 bytes before `material_path` for 769 single-floor records, but not for multi-floor houses.
+
+### Icon Path
+
+The icon index does not walk the structure body; it scans each record for the first `icon/...(dds|png)` match. 4,817 of 5,123 records contain one, and 17 contain more than one; the index keeps the first. Material paths (`Real_ETC/Material/Icon_...`) have no `icon/` folder, so the scan skips them.
+
+Two stored forms, which resolve to the same PAZ folder:
+
+| Stored prefix | Records | PAZ path                         |
+| ------------- | ------: | -------------------------------- |
+| `Icon/`       |   4,622 | `ui_texture/` + stored path      |
+| `New_Icon/`   |     195 | `ui_texture/icon/` + stored path |
+
+Paths are lowercased to match PAZ entries. 87% of icons live under `icon/new_icon/03_etc/06_housing`, and most of the rest under `07_productmaterial`.
+
+### Borrowed Item Icons
+
+Many objects store no icon (fences, gardens and tents keep only a material path) or one the client does not ship. The item that places the object usually has a working one, and `itemenchant.dbss` names the placed character at `+0xAA`. When the character icon index is built, a character without a working icon takes its item's icon, if that file exists; a working own icon always wins.
+
+```text
+character 2053 [Event] Fence  -> no icon stored
+item 58011 [Event] Fence      -> places 2053, icon 06_housing/00058003.dds
+character 2053 icon           -> ui_texture/icon/new_icon/03_etc/06_housing/00058003.dds
+```
+
+---
+
+## Object Kinds
+
+Grouped by model folder; the kind numbers are observed, not named by the client.
+
+| Kind | Records | Observed objects                                        |
+| ---- | ------: | ------------------------------------------------------- |
+| `2`  |   3,963 | Furniture, crafting tools and crops (`Interior_House`, `Crafting`) |
+| `5`  |     815 | Town buildings and farms (`*_STR_House_*`, `Products/Farm`) |
+| `3`  |      36 | Barricades                                              |
+| `8`  |      28 | Guild citadel small sets                                |
+| `1`  |      25 | Houses                                                  |
+| `0`  |      17 | Farming fences and gardens (14, e.g. `[Event] Fence`), plus two tents and a drilling facility; models reuse `Tent/Minifarm_Housing_*` |
+| `9`  |      17 | Valencia extra houses                                   |
+| `10` to `15`, `17` to `19`, `22` to `26`, `29`, `35` | 1 to 23 each | One guild tower or siege structure type each |
+| `4`, `6`, `7`, `20`, `21`, `27`, `28`, `34`, `36`, `37` | 4 to 16 each | Citadel sets, mines, barricade doors, mixed siege objects, mansion bases |
+
+---
+
+## Suggested UI Layout
+
+| Column       | Type | Notes                                                      |
+| ------------ | ---- | ---------------------------------------------------------- |
+| Character ID | num  | `character_id`, right-aligned                              |
+| Icon         | icon | `IconKind.CHARACTER` lookup, so overrides apply; dash when none |
+| Name         | text | LOC type `6`; shown only when LOC is loaded                |
+| Kind         | num  | `object_kind`                                              |
+| Model        | text | `model_path`                                               |
+
+The handler parses only the record prefix. The inline Korean house names are not used as a name fallback, because reaching them means walking the hull geometry (see [Open Questions](#open-questions)).
+
+---
+
+## Notes
+
+- This file stores icon paths for 4,817 of the 24,418 character IDs in `characterstaticoffset.dbss`; 4,608 of them exist in the PAZ. The rest of the IDs are NPCs, monsters and similar entries with no world-object record.
+- Borrowing item icons raises the character index to 6,157 entries, 6,068 of them working (24.9% of all character IDs, up from 18.9%); pets gain icons this way too. 89 paths still point at icons the client does not ship; fix those with `icon_overrides.json`.
+- Before the `New_Icon/` form was handled, those 195 records resolved to `ui_texture/icon/03_etc/...`, dropping the `new_icon/` level, and all of them pointed at files that do not exist.
+- LOC type `6` names 5,020 of the 5,123 records; most of the rest are mansion props (`DecoPropMansion`).
+- `crop_key_a`/`crop_key_b` are not item IDs: item `57001` is a Striker costume, while character `1201` with `crop_key_a = 57001` is Pepper Crop.
+
+## Open Questions
+
+### Furniture Block Fields
+
+Only about 20 of the 556 block bytes vary. `unknown_17a` takes round values (`10`, `25`, `50`, `100`, `125`, `200`) that fit interior points, and `unknown_21b` is `100` almost everywhere, but neither has been matched to in-game data.
+
+### Multi-floor Hull Geometry
+
+The hull walk (`a`, `b`, `hull_count`, then `face_count * 140` bytes per hull) accounts for single-hull records only. Houses with `a = b = 2` or more leave a consistent but different remainder (181 bytes for 102 records), so a per-floor structure sits between the hulls that is not decoded yet. Until it is, fields after the geometry can only be found by scanning.
+
+### Kind Names
+
+The `object_kind` values group cleanly by model folder, but no client table naming them has been found. `unknown_03`, `unknown_04` and the house `hull_name` parts are also unexplained.

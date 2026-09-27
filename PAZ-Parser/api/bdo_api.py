@@ -4,6 +4,7 @@ import fnmatch
 import json
 import threading
 import time
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
@@ -15,7 +16,7 @@ from .bdo_api_helpers import _DISK_VIRTUAL_PREFIX, _ICON_MAP, _file_icon, _norm
 from .bdo_api_preview import PreviewMixin
 from .bdo_api_search import SearchMixin
 from paz.bdo_cache import load_cache, read_meta_version, save_cache
-from paz.bdo_icon_cache import load_icon_cache, save_icon_cache
+from paz.bdo_icon_cache import builder_fingerprint, load_icon_cache, save_icon_cache
 from bdo_models import PazEntry
 from paz.bdo_paz_extract import extract_entry, find_single_meta_file, parse_meta_file
 from paz.bdo_payload_cache import cached_read_entry_payload, clear_payload_cache
@@ -261,6 +262,14 @@ class Api(PreviewMixin, SearchMixin):
             ),
         }
 
+    def _icon_index_functions(self) -> list[Callable]:
+        """Every function whose code decides what the icon indexes contain."""
+        from _common.icon_index import borrow_icons  # noqa: PLC0415
+        from _dbss.itemenchant.parser import build_character_item_index  # noqa: PLC0415
+
+        builders = [build for _, _, build in self._icon_index_builders().values()]
+        return [*builders, build_character_item_index, borrow_icons]
+
     def _load_icon_indexes(self, version: int) -> None:
         """Install every icon index, from cache or by building it.
 
@@ -279,32 +288,42 @@ class Api(PreviewMixin, SearchMixin):
             return
 
         clear_icon_indexes()
+        by_value = {kind.value: kind for kind in IconKind}
+        fingerprint = builder_fingerprint(self._icon_index_functions())
 
-        cached = load_icon_cache(self._paz_root)
+        cached = load_icon_cache(self._paz_root, fingerprint)
         if cached and cached[0] == version:
-            by_value = {kind.value: kind for kind in IconKind}
             for name, mapping in cached[1].items():
                 kind = by_value.get(name)
                 if kind is not None:
                     init_icon_index(kind, mapping)
             return
 
+        # Each source is read once, so the item links reuse the 194 MB
+        # itemenchant.dbss payload the item index already decompressed.
+        payloads: dict[str, bytes | None] = {}
+
+        def load(path: str) -> bytes | None:
+            if path not in payloads:
+                payloads[path] = self._load_companion_sync(path)
+            return payloads[path]
+
         indexes: dict[str, dict[int, str]] = {}
         try:
             for kind, (source, companion, build) in self._icon_index_builders().items():
-                data = self._load_companion_sync(source)
+                data = load(source)
                 if data is None:
                     continue
 
                 offset_data = None
                 if companion is not None:
-                    offset_data = self._load_companion_sync(companion)
+                    offset_data = load(companion)
                     if offset_data is None:
                         continue
 
-                mapping = build(data, offset_data)
-                init_icon_index(kind, mapping)
-                indexes[kind.value] = mapping
+                indexes[kind.value] = build(data, offset_data)
+
+            indexes = self._with_borrowed_character_icons(indexes, load)
         except Exception as ex:
             clear_icon_indexes()
             self._push_status(
@@ -312,11 +331,41 @@ class Api(PreviewMixin, SearchMixin):
             )
             return
 
+        for name, mapping in indexes.items():
+            init_icon_index(by_value[name], mapping)
+
         if indexes:
             try:
-                save_icon_cache(self._paz_root, version, indexes)
+                save_icon_cache(self._paz_root, version, fingerprint, indexes)
             except Exception:
                 pass
+
+    def _with_borrowed_character_icons(
+        self,
+        indexes: dict[str, dict[int, str]],
+        load: Callable[[str], bytes | None],
+    ) -> dict[str, dict[int, str]]:
+        """Give characters without a working icon the icon of their item.
+
+        Fences, crops and pets often store no icon, or one the client does not
+        ship, while the item that places or summons them does.
+        """
+        from _common.icon_index import IconKind, borrow_icons  # noqa: PLC0415
+        from _dbss.itemenchant.parser import build_character_item_index  # noqa: PLC0415
+
+        characters = indexes.get(IconKind.CHARACTER.value)
+        items = indexes.get(IconKind.ITEM.value)
+        if characters is None or items is None:
+            return indexes
+
+        source, companion, _ = self._icon_index_builders()[IconKind.ITEM]
+        data, offset_data = load(source), load(companion)
+        if data is None or offset_data is None:
+            return indexes
+
+        links = build_character_item_index(data, offset_data)
+        merged = borrow_icons(characters, items, links, self._entry_map_lower.__contains__)
+        return {**indexes, IconKind.CHARACTER.value: merged}
 
     def _load_disk_companions(self) -> None:
         if not self._paz_root:

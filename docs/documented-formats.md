@@ -10,6 +10,8 @@ All formats are little-endian. Unknown fields are named `unknown_*`.
 | `buffoffset.dbss` | PABR index into `buff.dbss`, maps buff_id → offset/size | [buff](file-formats/buff_dbss.md) | 4 |
 | `cashproduct.dbss` | Pearl Shop product catalog, Korean names, inline icon path, and the granted item ID | [cashproduct](file-formats/cashproduct_dbss.md) | 4 |
 | `cashproductoffset.dbss` | Index into `cashproduct.dbss`, maps product ID → offset/size; no PABR magic and no trailer | [cashproduct](file-formats/cashproduct_dbss.md) | 4 |
+| `characterobject.dbss` | Placeable world-object records (mostly house furniture) with model path and inline icon path | [characterobject](file-formats/characterobject_dbss.md) | 3 |
+| `characterobjectoffset.dbss` | PABR index into `characterobject.dbss`, maps character_id → offset/size (10-byte rows) | [characterobject](file-formats/characterobject_dbss.md) | 3 |
 | `characterspawntype.dbss`          | Entity spawn-type flag table, 44 boolean attributes per entity                                                | [characterspawntype](file-formats/characterspawntype_dbss.md)       | 0              |
 | `characterspawntypeoffset.dbss`    | PABR index into `characterspawntype.dbss`, maps entity id_low16 → offset/size                                 | [characterspawntype](file-formats/characterspawntype_dbss.md)       | 0              |
 | `characterstatic.dbss`             | Variable-length character/NPC static records with inline action scripts                                        | [characterstatic](file-formats/characterstatic_dbss.md)             | 3              |
@@ -25,7 +27,7 @@ All formats are little-endian. Unknown fields are named `unknown_*`.
 | `fairyskillchange.dbss`            | Fairy skill reroll cost, maps fairy level 1–50 to the Theiah's Orbs required (1–5)                            | [fairyskillchange](file-formats/fairyskillchange_dbss.md)           | 2              |
 | `fairyskillchangeoffset.dbss`      | Level-keyed offset index into `fairyskillchange.dbss`, maps fairy level → offset/size                          | [fairyskillchange](file-formats/fairyskillchange_dbss.md)           | 2              |
 | `fairyupgraderate.bss` | Fairy Sprouting success rates, per-item chance and guaranteed-success item count for each grade upgrade | [fairyupgraderate](file-formats/fairyupgraderate_bss.md) | 2 |
-| `itemenchant.dbss` | Per-item enchant blocks keyed by item ID + enchant level; carries the inline icon path that maps item ID to icon | [itemenchant](file-formats/itemenchant_dbss.md) | 4 |
+| `itemenchant.dbss` | Per-item enchant blocks keyed by item ID + enchant level; carries the inline icon path that maps item ID to icon, and the character the item places or summons | [itemenchant](file-formats/itemenchant_dbss.md) | 4 |
 | `itemenchantoffset.dbss` | Key/offset index into `itemenchant.dbss`, maps packed `(enchant_level << 24) \| item_id` → offset/size | [itemenchant](file-formats/itemenchant_dbss.md) | 4 |
 | `journalquest.dbss`                | Adventure log category and entry data, 12 journal categories with volumes, metadata, and PAColor unlock text  | [journalquest](file-formats/journalquest_dbss.md)                   | 6              |
 | `journalquestoffset.dbss`          | Index into `journalquest.dbss`, maps (group_id, entry_no) → offset/size                                       | [journalquestoffset](file-formats/journalquestoffset_dbss.md)       | 0              |
@@ -63,6 +65,7 @@ All formats are little-endian. Unknown fields are named `unknown_*`.
 | `petsetoffset.dbss`                | Empty offset companion for `petset.dbss`                                                                       | [petset](file-formats/petset_dbss.md)                               | 0              |
 | `petskill.dbss`                    | Pet skill effect tables keyed by pet skill ID, with baseline and per-level raw effect rows                     | [petskill](file-formats/petskill_dbss.md)                           | 4              |
 | `petskilloffset.dbss`              | Keyed offset index into `petskill.dbss`, maps pet_skill_id → offset/size                                       | [petskill](file-formats/petskill_dbss.md)                           | 4              |
+| `planttown.bss` | PABR town/node list resolved through LOC type 29, in a curated display order | [planttown](file-formats/planttown_bss.md) | 2 |
 | `plantworker.bss`                  | Worker definition table with LOC-backed names, core stats, upgrade links, and icon paths                       | [plantworker](file-formats/plantworker_bss.md)                      | 2              |
 | `plantworkerpassiveskill.bss`      | PABR worker passive skill table with LOC-backed names/descriptions, icon paths, and effect parameters          | [plantworkerpassiveskill](file-formats/plantworkerpassiveskill_bss.md) | 1              |
 | `plantworkerselect.bss`            | Worker selection groups keyed by town/node LOC IDs with worker IDs and hire-cost tiers                         | [plantworkerselect](file-formats/plantworkerselect_bss.md)          | 1              |

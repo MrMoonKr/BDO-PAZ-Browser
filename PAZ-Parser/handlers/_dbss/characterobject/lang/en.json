@@ -1,0 +1,14 @@
+{
+  "offsetColumns": {
+    "characterId": "Character ID",
+    "byteOffset": "Byte Offset",
+    "size": "Size"
+  },
+  "columns": {
+    "characterId": "Character ID",
+    "icon": "Icon",
+    "nameEn": "Name (EN)",
+    "objectKind": "Kind",
+    "modelPath": "Model"
+  }
+}

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from _common.binary import u32
+from _common.binary import u16, u32
 from _common.prefixed_string import find_prefixed_ascii
 
 
@@ -17,6 +17,10 @@ _KEY_VARIANT_SHIFT = 24
 
 # Stored icon paths are relative to this folder.
 ICON_ROOT = "ui_texture/icon/"
+
+# The character this item places or summons (furniture, fences, pets), keyed
+# like characterstatic.dbss and characterobject.dbss; 0 when there is none.
+_CHARACTER_ID = 0xAA
 
 
 def parse_itemenchantoffset_records(data: bytes) -> list[dict]:
@@ -70,6 +74,7 @@ def parse_itemenchant_records(data: bytes, offset_data: bytes) -> list[dict]:
             "item_id": row["item_id"],
             "key_variant": row["key_variant"],
             "icon_path": f"{ICON_ROOT}{icon.lower()}" if icon else "",
+            "character_id": u16(data, start + _CHARACTER_ID),
             "effect_tag": strings[1] if len(strings) > 1 else "",
             "block_size": row["data_size"],
         })
@@ -99,3 +104,31 @@ def build_item_icon_index(data: bytes, offset_data: bytes) -> dict[int, str]:
             index[row["item_id"]] = f"{ICON_ROOT}{strings[0].lower()}"
 
     return index
+
+
+def build_character_item_index(data: bytes, offset_data: bytes) -> dict[int, int]:
+    """Map character ID to the one base item that places or summons it.
+
+    Only variant-0 records are read. A character named by more than one item is
+    left out, because the value is then not a link: character 1 is named by 120
+    unrelated items, and the few others with two or more have no single icon.
+    """
+    items_by_character: dict[int, list[int]] = {}
+
+    for row in parse_itemenchantoffset_records(offset_data):
+        if row["key_variant"]:
+            continue
+
+        start = row["data_offset"]
+        if start + _CHARACTER_ID + 2 > len(data):
+            continue
+
+        character_id = u16(data, start + _CHARACTER_ID)
+        if character_id:
+            items_by_character.setdefault(character_id, []).append(row["item_id"])
+
+    return {
+        character_id: items[0]
+        for character_id, items in items_by_character.items()
+        if len(items) == 1
+    }

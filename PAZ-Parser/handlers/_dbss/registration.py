@@ -41,6 +41,10 @@ from .characterspawntype.handler import (
     CharacterSpawnTypeOffsetHandler,
     CharacterSpawnTypeHandler,
 )
+from .characterobject.handler import (
+    CharacterObjectOffsetHandler,
+    CharacterObjectHandler,
+)
 from .characterstatic.handler import (
     CharacterStaticOffsetHandler,
     CharacterStaticHandler,
@@ -104,6 +108,8 @@ def register_dbss_handlers() -> None:
     register_handler("plantzone.dbss", PlantZoneHandler())
     register_handler("characterspawntypeoffset.dbss", CharacterSpawnTypeOffsetHandler())
     register_handler("characterspawntype.dbss", CharacterSpawnTypeHandler())
+    register_handler("characterobjectoffset.dbss", CharacterObjectOffsetHandler())
+    register_handler("characterobject.dbss", CharacterObjectHandler())
     register_handler("characterstaticoffset.dbss", CharacterStaticOffsetHandler())
     register_handler("characterstatic.dbss", CharacterStaticHandler())
     register_handler("petoffset.dbss", PetOffsetHandler())
