@@ -8,7 +8,7 @@ from bdo_preview import PreviewHandler
 from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.icon_index import IconKind, icon_path
 from _common.lang import load_handler_strings
-from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
+from _common.loc import loc_text
 from .parser import parse_fairyequipskill_records
 
 
@@ -17,13 +17,6 @@ _LOC_TYPE = 10
 # Within LOC type 10 the fourth sub-id selects name vs effect description.
 _LOC_ID4_NAME = 0
 _LOC_ID4_DESCRIPTION = 1
-
-
-def _loc_text(loc_id: int, id4: int) -> str:
-    if not is_loc_loaded():
-        return ""
-
-    return strip_pa_tags(loc_lookup(_LOC_TYPE, loc_id, 0, 0, id4)).strip()
 
 
 class FairyEquipSkillBssHandler(PreviewHandler):
@@ -52,8 +45,8 @@ class FairyEquipSkillBssHandler(PreviewHandler):
         for record in parse_fairyequipskill_records(data):
             row = dict(record)
             loc_id = row["loc_id"]
-            row["skill_name"] = _loc_text(loc_id, _LOC_ID4_NAME)
-            row["skill_description"] = _loc_text(loc_id, _LOC_ID4_DESCRIPTION)
+            row["skill_name"] = loc_text(_LOC_TYPE, loc_id, _LOC_ID4_NAME)
+            row["skill_description"] = loc_text(_LOC_TYPE, loc_id, _LOC_ID4_DESCRIPTION)
             row["icon_path"] = icon_path(IconKind.FAIRY_EQUIP_SKILL, loc_id)
             records.append(row)
 

@@ -92,6 +92,11 @@ def loc_lookup(
     return _LOC_INDEX.get((str_type, str_id1, str_id2, str_id3, str_id4), "")
 
 
+def loc_text(str_type: int, str_id1: int, str_id4: int = 0) -> str:
+    """Display text for a LOC key with PA tags removed, or '' on miss / not loaded."""
+    return strip_pa_tags(loc_lookup(str_type, str_id1, 0, 0, str_id4)).strip()
+
+
 def loc_lookup_prefix(str_type: int, str_id1: int) -> list[str]:
     """Return all strings matching a type/id1 pair in LOC index order."""
     if _LOC_PREFIX is None:

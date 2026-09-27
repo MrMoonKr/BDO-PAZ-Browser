@@ -23,6 +23,13 @@ def e(value: object) -> str:
     return _html.escape(str(value))
 
 
+def join_limited(values: Sequence[str], max_items: int) -> str:
+    """Comma-join the first `max_items` values and count the rest, for list cells."""
+    if len(values) <= max_items:
+        return ", ".join(values)
+    return ", ".join(values[:max_items]) + f", ... (+{len(values) - max_items})"
+
+
 def color_cell(colors: list[str]) -> str:
     if not colors:
         return "-"

@@ -7,19 +7,12 @@ from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
-from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
+from _common.loc import loc_text
 from _bss.plantworker.parser import parse_plantworker_records
 from .parser import parse_plantworkerselect_records
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
-
-
-def _loc_text(str_type: int, str_id1: int) -> str:
-    if not is_loc_loaded():
-        return ""
-
-    return strip_pa_tags(loc_lookup(str_type, str_id1)).strip()
 
 
 def _plantworker_index(companions: dict[str, bytes]) -> dict[int, dict]:
@@ -64,9 +57,9 @@ class PlantWorkerSelectBssHandler(PreviewHandler):
             row = dict(record)
             worker = workers.get(row["worker_id"], {})
             row["selection_name"] = (
-                _loc_text(17, row["selection_id"]) or str(row["selection_id"])
+                loc_text(17, row["selection_id"]) or str(row["selection_id"])
             )
-            row["worker_name"] = _loc_text(6, row["worker_id"])
+            row["worker_name"] = loc_text(6, row["worker_id"])
             row["worker_icon_path"] = worker.get("icon_path", "")
             row["worker_move_speed"] = worker.get("move_speed")
             row["worker_stamina"] = worker.get("stamina")

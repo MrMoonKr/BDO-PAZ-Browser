@@ -5,13 +5,14 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import Column, e, sort_keys, table
+from _common.html import Column, e, join_limited, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 from .parser import parse_journalquest_offset_records, parse_journalquest_records
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
+_LIST_PREVIEW_ITEMS = 6
 
 
 def _page_title(journal_cat_id: int, page_no: int) -> str:
@@ -20,12 +21,6 @@ def _page_title(journal_cat_id: int, page_no: int) -> str:
 
 def _journal_text(group_id: int, entry_no: int, field_id: int) -> str:
     return strip_pa_tags(loc_lookup(63, group_id, entry_no, 0, field_id)).strip()
-
-
-def _join_limited(values: list[str], max_items: int = 6) -> str:
-    if len(values) <= max_items:
-        return ", ".join(values)
-    return ", ".join(values[:max_items]) + f", ... (+{len(values) - max_items})"
 
 
 class JournalQuestOffsetHandler(PreviewHandler):
@@ -152,7 +147,7 @@ class JournalQuestDbssHandler(PreviewHandler):
                 e(r["journal_title_text"]),
                 e(r["subtitle_text"]),
                 e(r["page_vol_title_text"]),
-                e(_join_limited(r["page_titles"])),
+                e(join_limited(r["page_titles"], _LIST_PREVIEW_ITEMS)),
                 e(r["unlock_condition_text"]),
                 e(r["page_count"]),
                 e(r["combine_model"]),

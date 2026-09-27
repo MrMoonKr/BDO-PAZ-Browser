@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import Column, e, sort_keys, table
+from _common.html import Column, e, join_limited, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 from _common.quest.quest import quest_title
@@ -13,12 +13,7 @@ from .parser import parse_questgroup_records
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
-
-
-def _join_limited(values: list[str], max_items: int = 8) -> str:
-    if len(values) <= max_items:
-        return ", ".join(values)
-    return ", ".join(values[:max_items]) + f", ... (+{len(values) - max_items})"
+_LIST_PREVIEW_ITEMS = 8
 
 
 def _group_name_en(group_id: int) -> str:
@@ -84,7 +79,7 @@ class QuestGroupDbssHandler(PreviewHandler):
                 e(r["group_id"]),
                 e(r["name"]),
                 e(r["quest_count"]),
-                e(_join_limited(r["quest_titles"])),
+                e(join_limited(r["quest_titles"], _LIST_PREVIEW_ITEMS)),
             ]
             for r in slice_
         ]

@@ -7,7 +7,7 @@ from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
-from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
+from _common.loc import is_loc_loaded, loc_text
 from .parser import (
     SOURCE_ITEM,
     parse_knowledgelearning_offset_records,
@@ -21,10 +21,6 @@ _LOC_ITEM = 0
 _LOC_CHARACTER = 6
 _LOC_KNOWLEDGE = 34
 _EMPTY = "-"
-
-
-def _loc_text(str_type: int, key: int) -> str:
-    return strip_pa_tags(loc_lookup(str_type, key) or "").strip()
 
 
 class KnowledgeLearningOffsetHandler(PreviewHandler):
@@ -107,9 +103,9 @@ class KnowledgeLearningHandler(PreviewHandler):
                 "table": record.table,
                 "source_type": item if is_item else character,
                 "source_id": record.source_id,
-                "source_name": _loc_text(source_loc, record.source_id) if has_loc else "",
+                "source_name": loc_text(source_loc, record.source_id) if has_loc else "",
                 "card_id": record.card_id,
-                "card_name": _loc_text(_LOC_KNOWLEDGE, record.card_id) if has_loc else "",
+                "card_name": loc_text(_LOC_KNOWLEDGE, record.card_id) if has_loc else "",
             })
         return records
 
