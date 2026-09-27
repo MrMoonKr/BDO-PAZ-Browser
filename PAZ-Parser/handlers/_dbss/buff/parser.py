@@ -28,11 +28,16 @@ _ICON_PLACEHOLDER = "unknown"
 
 # Field offsets inside the stats block.
 _LEVEL = 0x00
-_UNKNOWN_04 = 0x04
+_GROUP = 0x04
+_CONDITION_TYPE = 0x06
 _EFFECT_TYPE = 0x08
 _PARAMS = 0x13
 _DURATION_MS = 0x68
 
+# Tail block offset of the broad family byte (food, elixir, perfume, ...).
+_STACKING_CATEGORY = 0x18
+
+_I16 = struct.Struct("<h")
 _PARAMS_STRUCT = struct.Struct(f"<{PARAM_COUNT}q")
 
 
@@ -69,15 +74,17 @@ def _parse_record(data: bytes, row: PabrOffsetRow) -> dict:
     record = {
         "buff_id": row.entry_id,
         "name": name,
-        "level": u32(data, stats + _LEVEL),
+        "level": _I16.unpack_from(data, stats + _LEVEL)[0],
         "effect_type": data[stats + _EFFECT_TYPE],
-        "unknown_04": u32(data, stats + _UNKNOWN_04),
+        "group": _I16.unpack_from(data, stats + _GROUP)[0],
+        "condition_type": _I16.unpack_from(data, stats + _CONDITION_TYPE)[0],
         "duration_ms": u32(data, stats + _DURATION_MS),
         "unknown_str": unknown_str,
         "icon_path": _icon_paz_path(icon),
         "is_shown": bool(is_shown),
         "apply_rate": apply_rate,
         "description_kr": description,
+        "stacking_category": data[pos + _STACKING_CATEGORY],
     }
     record.update({f"param_{index}": value for index, value in enumerate(params, 1)})
     return record

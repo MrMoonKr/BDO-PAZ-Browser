@@ -1,3 +1,13 @@
+"""`exploration.bss`: the worldmap node table.
+
+    PABR | u32 count | count x (117-byte head + 7 counted u32 lists)
+    | footer (u32 count + 6-byte rows) | string table | u32 string_table_start | u32 0
+
+Records tile the file exactly, so they are walked, not searched for. Node names
+come from LOC type 29 keyed by `node_key`; the string table holds the Korean
+source names. Full layout in docs/file-formats/exploration_bss.md.
+"""
+
 from __future__ import annotations
 
 import struct
@@ -7,75 +17,90 @@ from _common.binary import u16, u32
 
 _MAGIC = b"PABR"
 _HEADER_SIZE = 8
-_MIN_RECORD_SIZE = 48
-_MAX_KNOWLEDGE_ID = 100_000
+_HEAD_SIZE = 117
+_LIST_COUNT = 7
+# Lists 1 to 5 hold knowledge entry IDs; list 0 is a region hash, list 6 empty.
+_KNOWLEDGE_LISTS = range(1, 6)
+_TRAILER_SIZE = 8
+_UTF16 = 1
+
+# Head field offsets.
+_ENABLED = 0x04
+_NODE_KIND = 0x05
+_NAME_INDEX = 0x0A
+_RADIUS = 0x1F
+_MANAGER_ID = 0x2B
+_REPRESENTATIVE_ID = 0x2D
+_CONTRIBUTION = 0x5E
+_IS_SUB_NODE = 0x74
+
+# CppEnums.ExplorationNodeType from global_define_cpp_enum.luac, without the
+# "eExplorationNodeType_" prefix and in the client's spelling.
+NODE_KIND_NAMES: tuple[str, ...] = (
+    "Normal", "Viliage", "City", "Gate", "Farm", "Trade", "Collect", "Quarry",
+    "Logging", "Dangerous", "Finance", "FishTrap", "MinorFinance", "MonopolyFarm",
+    "Craft", "Excavation",
+)
 
 
-def _f32(data: bytes, offset: int) -> float:
-    if offset < 0 or offset + 4 > len(data):
-        return 0.0
-    return struct.unpack_from("<f", data, offset)[0]
+def _read_string_table(data: bytes) -> list[str]:
+    start = u32(data, len(data) - _TRAILER_SIZE)
+    count = u32(data, start)
+    pos = start + 4
+    strings: list[str] = []
+    for _ in range(count):
+        encoding, length = data[pos], u32(data, pos + 1)
+        raw = data[pos + 5:pos + 5 + length]
+        strings.append(raw.decode("utf-16-le" if encoding == _UTF16 else "utf-8", errors="replace"))
+        pos += 5 + length
+    return strings
 
 
-def _is_record_anchor(data: bytes, offset: int, count: int) -> bool:
-    if offset + _MIN_RECORD_SIZE > len(data):
-        return False
-
-    knowledge_id = u32(data, offset)
-    duplicate_id = u32(data, offset + 0x06)
-    group_id = u32(data, offset + 0x0A)
-
-    return (
-        0 < knowledge_id < _MAX_KNOWLEDGE_ID
-        and duplicate_id == knowledge_id
-        and group_id < count
-        and data[offset + 0x0E] in (0, 1)
-        and data[offset + 0x0F] in (0, 1)
-    )
-
-
-def _record_offsets(data: bytes, count: int) -> list[int]:
-    offsets: list[int] = []
-
-    for offset in range(_HEADER_SIZE, len(data) - _MIN_RECORD_SIZE + 1):
-        if _is_record_anchor(data, offset, count):
-            offsets.append(offset)
-            if len(offsets) == count:
-                break
-
-    return offsets
+def _read_lists(data: bytes, pos: int) -> tuple[list[list[int]], int]:
+    lists: list[list[int]] = []
+    for _ in range(_LIST_COUNT):
+        count = u32(data, pos)
+        end = pos + 4 + 4 * count
+        if end > len(data):
+            raise ValueError(f"exploration.bss list at 0x{pos:X} runs past the end of the file")
+        lists.append(list(struct.unpack_from(f"<{count}I", data, pos + 4)))
+        pos = end
+    return lists, pos
 
 
 def parse_exploration_records(data: bytes) -> list[dict]:
-    if len(data) < _HEADER_SIZE:
-        return []
+    """Every node in file order.
 
-    if data[:4] != _MAGIC:
+    Raises ValueError on a bad magic, or when the walk does not end where the
+    string table starts: then the layout has changed and every field is suspect.
+    """
+    if len(data) < _HEADER_SIZE + _TRAILER_SIZE or data[:4] != _MAGIC:
         raise ValueError("exploration.bss has invalid magic.")
 
+    strings = _read_string_table(data)
     count = u32(data, 4)
-    offsets = _record_offsets(data, count)
+    pos = _HEADER_SIZE
     records: list[dict] = []
 
-    for slot, offset in enumerate(offsets):
-        next_offset = offsets[slot + 1] if slot + 1 < len(offsets) else len(data)
+    for _ in range(count):
+        head = pos
+        lists, pos = _read_lists(data, head + _HEAD_SIZE)
+        name_index = u16(data, head + _NAME_INDEX)
         records.append({
-            "slot": slot,
-            "file_offset": offset,
-            "record_size": next_offset - offset,
-            "knowledge_id": u32(data, offset),
-            "unknown_flags": u16(data, offset + 0x04),
-            "duplicate_knowledge_id": u32(data, offset + 0x06),
-            "group_id": u32(data, offset + 0x0A),
-            "enabled": data[offset + 0x0E],
-            "unknown_flag_a": data[offset + 0x10],
-            "unknown_flag_b": data[offset + 0x11],
-            "unknown_flag_c": data[offset + 0x12],
-            "unknown_marker": data[offset + 0x13],
-            "anchor_id_a": u32(data, offset + 0x17),
-            "anchor_id_b": u32(data, offset + 0x1B),
-            "radius": _f32(data, offset + 0x1F),
-            "radius_squared": _f32(data, offset + 0x23),
+            "node_key": u16(data, head),
+            "enabled": data[head + _ENABLED],
+            "node_kind": data[head + _NODE_KIND],
+            "name_kr": strings[name_index] if name_index < len(strings) else "",
+            "is_sub_node": data[head + _IS_SUB_NODE],
+            "contribution": data[head + _CONTRIBUTION],
+            "manager_id": u16(data, head + _MANAGER_ID),
+            "representative_id": u16(data, head + _REPRESENTATIVE_ID),
+            "radius": struct.unpack_from("<f", data, head + _RADIUS)[0],
+            "knowledge_ids": [key for index in _KNOWLEDGE_LISTS for key in lists[index]],
         })
+
+    footer_count = u32(data, pos)
+    if pos + 4 + 6 * footer_count != u32(data, len(data) - _TRAILER_SIZE):
+        raise ValueError("exploration.bss records do not end where its string table starts")
 
     return records

@@ -1,11 +1,11 @@
 {
   "offsetColumns": {
-    "idLow16": "ID Low16",
+    "characterId": "Character ID",
     "byteOffset": "Byte Offset",
     "size": "Size"
   },
   "columns": {
-    "entityId": "entity_id",
+    "characterId": "Character ID",
     "nameEn": "Name (EN)"
   }
 }

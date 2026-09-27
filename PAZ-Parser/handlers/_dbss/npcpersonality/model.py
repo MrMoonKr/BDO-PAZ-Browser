@@ -13,9 +13,9 @@ class NpcPersonalityRecord(TypedDict):
     group_c_id: int
     group_c_count: int
     interest_min: float
-    interest_max_excl: float
+    interest_max: float
     favor_min: float
-    favor_max_excl: float
+    favor_max: float
     personality_type: int
 
 

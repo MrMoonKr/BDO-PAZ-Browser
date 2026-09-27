@@ -2,12 +2,13 @@
 
 ## Purpose
 
-Defines how knowledge entries are obtained. Records map knowledge IDs to their unlock trigger type (`kind`) and an associated index ID. All observed records have kind=13; the exact meaning of this value is not yet confirmed. Parsing is driven by `knowledgelearningoffset.dbss`, which provides each entry's byte offset, kind, and index ID.
+Defines how knowledge entries are obtained from characters and items. The file holds two tables: table 0 maps a character ID (a monster, NPC, gathering node or other `characterstatic.dbss` entry) to the knowledge card it teaches, and table 1 maps an item ID to the card it teaches. Parsing is driven by `knowledgelearningoffset.dbss`, which gives each record's source ID, byte offset and size.
 
 Example:
 
 ```text
-kind: 13  →  knowledge_id: 4521  →  "Imp Captain"
+table 0: character 21207 "Valencian Lion"  →  card 4893 "Valencian Lion"
+table 1: item 8279 "Gurnard"               →  card 8579 "Gurnard"
 ```
 
 ## Graph
@@ -20,16 +21,17 @@ kind: 13  →  knowledge_id: 4521  →  "Imp Captain"
 
 ### Connections
 
-- [mentalcard.dbss](mentalcard_dbss.md), maps the same knowledge_id to its UI node/category
-- [languagedata_en.loc](languagedata_loc.md), English entry names (str_type=34, str_id1=knowledge_id)
+- [mentalcard.dbss](mentalcard_dbss.md), defines the `card_id` each record points to
+- [characterstatic.dbss](characterstatic_dbss.md), the character IDs used as table 0 sources
+- [languagedata_en.loc](languagedata_loc.md), card names (str_type=34), character names (str_type=6) and item names (str_type=0)
 
 ---
 
 ## Companion Files
 
-| File                           | Required | Role                                                     |
-| ------------------------------ | -------- | -------------------------------------------------------- |
-| `knowledgelearningoffset.dbss` | Required | Provides byte offsets, kind, and index ID for each entry |
+| File                           | Required | Role                                                        |
+| ------------------------------ | -------- | ----------------------------------------------------------- |
+| `knowledgelearningoffset.dbss` | Required | Provides source ID, byte offset and size for each record    |
 
 All multi-byte values are little-endian.
 
@@ -39,50 +41,95 @@ All multi-byte values are little-endian.
 
 ### knowledgelearningoffset.dbss
 
-- 12-byte header (content unknown, skipped)
-- Repeating 12-byte records:
+No `PABR` magic and no trailer; the file ends exactly after the last table.
 
-| Offset  | Type | Name   | Description                                 |
-| ------- | ---- | ------ | ------------------------------------------- |
-| `+0x00` | u32  | offset | Byte offset into `knowledgelearning.dbss`   |
-| `+0x04` | u32  | kind   | Unlock trigger type (see Enum Values below) |
-| `+0x08` | u32  | idx_id | Index ID, meaning depends on kind          |
+| Offset  | Type  | Name        | Description                               |
+| ------- | ----- | ----------- | ----------------------------------------- |
+| `+0x00` | u32   | table_count | Observed `2`                              |
+| `+0x04` | ...   | tables      | `table_count` index tables, back to back  |
+
+Each index table:
+
+| Offset  | Type | Name  | Description                                   |
+| ------- | ---- | ----- | --------------------------------------------- |
+| `+0x00` | u32  | count | Rows in this table (`2596` and `2088`)        |
+| `+0x04` | ...  | rows  | `count` 12-byte rows                          |
+
+Index row (12 bytes):
+
+| Offset  | Type | Name        | Description                                              |
+| ------- | ---- | ----------- | -------------------------------------------------------- |
+| `+0x00` | u32  | source_id   | Equals `source_id` at the start of the record            |
+| `+0x04` | u32  | data_offset | Absolute offset of the record in `knowledgelearning.dbss` |
+| `+0x08` | u32  | size        | Record size in bytes; always `13`                        |
 
 ### knowledgelearning.dbss
 
-Records are accessed by absolute byte offset from the offset file. Only one field is currently parsed:
+The two tables follow each other. Each table is:
 
-| Offset  | Type | Name         | Description                                                        |
-| ------- | ---- | ------------ | ------------------------------------------------------------------ |
-| `+0x00` | ?    | unknown      | 9 bytes, layout not yet documented                                |
-| `+0x09` | u32  | knowledge_id | Knowledge entry ID (matches LOC str_type=34 and `mentalcard.dbss`) |
+| Offset  | Type | Name    | Description                                             |
+| ------- | ---- | ------- | ------------------------------------------------------- |
+| `+0x00` | u32  | count   | Matches the index table's `count`                       |
+| `+0x04` | ...  | records | `count` entries of a 4-byte lead `source_id` plus a record |
+
+The index `data_offset` points past the lead, at the record itself. Table 0 starts at `0` and its records end at `44136`; table 1 starts there with its own count.
+
+---
+
+## Record Structure
+
+### Learning Record (13 bytes)
+
+| Offset  | Type | Name        | Description                                                            |
+| ------- | ---- | ----------- | ---------------------------------------------------------------------- |
+| `+0x00` | u32  | source_id   | Character ID (table 0, LOC `str_type=6`) or item ID (table 1, LOC `str_type=0`) |
+| `+0x04` | u32  | source_type | `0` in table 0, `1` in table 1                                         |
+| `+0x08` | u8   | reserved    | Always `0`                                                             |
+| `+0x09` | u32  | card_id     | Knowledge card taught; LOC `str_type=34`, key of `mentalcard.dbss`     |
 
 ---
 
 ## Enum Values
 
-### Known `kind` Values
+### `source_type`
 
-| Value | Meaning                                              |
-| ----- | ---------------------------------------------------- |
-| 13    | Only value observed so far, exact meaning uncertain |
+| Value | Meaning   | Rows  | Evidence                                                        |
+| ----- | --------- | ----- | --------------------------------------------------------------- |
+| 0     | Character | 2,596 | All 2,596 `source_id` values have an LOC `str_type=6` name      |
+| 1     | Item      | 2,088 | All 2,088 `source_id` values have an LOC `str_type=0` name      |
+
+---
+
+## Confirmed Examples
+
+| Table | source_id | Source name (LOC)       | card_id | Card name (LOC)          |
+| ----- | --------- | ----------------------- | ------- | ------------------------ |
+| 0     | `10004`   | Feldspar (str_type=6)   | `7302`  | Feldspar                 |
+| 0     | `21207`   | Valencian Lion          | `4893`  | Valencian Lion           |
+| 0     | `10480`   | Pistachio Tree          | `7836`  | Pistachio                |
+| 1     | `8279`    | Gurnard (str_type=0)    | `8579`  | Gurnard                  |
+| 1     | `9728`    | Blue Whale Molar        | `7765`  | Blue Whale Tooth         |
+
+---
+
+## Notes
+
+- Every `card_id` in both tables is a `mentalcard.dbss` card.
+- The source name equals the card name on 2,504 of 2,596 character rows and 2,003 of 2,088 item rows. The rest are close variants (`Pistachio Tree` teaches `Pistachio`, several Magic Crystals teach `Low Grade Crystal Fusion`).
+- Table 0 teaches 1,458 distinct cards, so several characters can teach one card (for example boss variants). Table 1 teaches 2,045 distinct cards.
+- `source_id` is unique within each table. Read it with the right LOC type: in table 0, `10004` is the character Feldspar, while item `10004` is `Raell Longsword`.
+- The earlier reading of this file skipped a 12-byte header and read rows as `offset, kind, idx_id`. That shifts every row by one field: `kind` was the record size (`13`) and `idx_id` was the next row's `source_id`. It also misreads table 1, whose rows start 4 bytes after table 0's last row.
+- [bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor) describes `knowledgelearning` as card-to-card learning prerequisites. Our files do not support that: `source_id` resolves as a character or item on every row, and only 272 of 2,596 character IDs are also card IDs.
+- `knowledgelearningcharacterkey.bss` (16.5 KB) sits next to this file in `gamecommondata/binary/` and is not decoded yet.
 
 ---
 
 ## Open Questions
 
-### Unknown Header (knowledgelearningoffset.dbss)
+### Other Source Types
 
-The 12-byte header at the start of the offset file has unknown content.
+Only `source_type` 0 and 1 occur, one per table. It is not known whether the client supports other sources (quests, regions) through a third table.
 
-### First 9 Bytes of Each Record
+### Relation To knowledgelearningcharacterkey.bss
 
-What are the 9 bytes at `+0x00` in `knowledgelearning.dbss`? For kind 13, speculation: mob ID at `+0x00`.
-
-### idx_id Semantics
-
-What does `idx_id` encode for each kind value?
-
-### Other `kind` Values
-
-All records observed so far have kind=13. Are there other kind values in practice, and if so, do they change the record layout?
+The name suggests a character-keyed lookup for table 0, but its layout and whether it duplicates or extends table 0 are not known.

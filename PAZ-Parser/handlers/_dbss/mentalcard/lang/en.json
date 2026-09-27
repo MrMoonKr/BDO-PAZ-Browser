@@ -1,12 +1,16 @@
 {
   "offsetColumns": {
-    "internalId": "Internal ID",
-    "dbssOffset": "DBSS Offset"
+    "cardId": "Knowledge ID",
+    "dbssOffset": "DBSS Offset",
+    "size": "Size"
   },
   "columns": {
     "knowledgeId": "Knowledge ID",
     "knowledgeName": "Knowledge Name",
     "categoryId": "Category ID",
-    "categoryName": "Category Name"
+    "categoryName": "Category Name",
+    "minFavor": "Min Favor",
+    "maxFavor": "Max Favor",
+    "interest": "Interest"
   }
 }

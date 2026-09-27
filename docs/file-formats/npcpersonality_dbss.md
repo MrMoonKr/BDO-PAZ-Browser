@@ -56,9 +56,9 @@ All multi-byte values are little-endian.
 | `+0x0A` | u32  | interest_group_c   | Third amity interest group                                    |
 | `+0x0E` | u16  | personality_id_dup | Always equal to `personality_id` at `+0x00`; purpose unknown  |
 | `+0x10` | f32  | interest_min       | Inclusive lower bound for amity interest (range: 11–37)       |
-| `+0x14` | f32  | interest_max_excl  | Exclusive upper bound; usable max = value − 1 (range: 23–70)  |
+| `+0x14` | f32  | interest_max       | Upper bound for amity interest (range: 23–70); inclusive or exclusive is open |
 | `+0x18` | f32  | favor_min          | Inclusive lower bound for amity favor (range: 10–35)          |
-| `+0x1C` | f32  | favor_max_excl     | Exclusive upper bound; usable max = value − 1 (range: 14–68)  |
+| `+0x1C` | f32  | favor_max          | Upper bound for amity favor (range: 14–68); inclusive or exclusive is open |
 | `+0x20` | u16  | personality_type   | Personality category code (see enum below)                    |
 
 #### interest_group Encoding
@@ -82,7 +82,7 @@ bits 15–0  : group_id    (knowledge group ID, matches node_id in mentalcard.db
 
 | Major | Variant 1 | Variant 2 | Horoscope     |
 | ----- | --------- | --------- | ------------- |
-| 1     | 101       | —         | Hammer        |
+| 1     | 101       | -         | Hammer        |
 | 2     | 201       | 202       | Boat          |
 | 3     | 301       | 302       | Shield        |
 | 4     | 401       | 402       | Giant         |
@@ -90,7 +90,7 @@ bits 15–0  : group_id    (knowledge group ID, matches node_id in mentalcard.db
 | 6     | 601       | 602       | Black Dragon  |
 | 7     | 701       | 702       | Treant Owl    |
 | 8     | 801       | 802       | Elephant      |
-| 9     | 901       | —         | Key           |
+| 9     | 901       | -         | Key           |
 | 10    | 1001      | 1002      | Wagon         |
 | 11    | 1101      | 1102      | Sealing Stone |
 | 12    | 1201      | 1202      | Goblin        |
@@ -116,7 +116,7 @@ An index file with one entry per personality record, stored in the same order as
 | `+0x00` | u16  | personality_id | Matches `personality_id` in the main record                                    |
 | `+0x02` | u32  | data_offset    | Byte offset into main file; 2 bytes past record start (skips `personality_id`) |
 | `+0x06` | u16  | data_size      | Always 32 (= record size minus the 2-byte personality_id header)               |
-| `+0x08` | u16  | —              | Not parsed; assumed padding                                                    |
+| `+0x08` | u16  | -              | Not parsed; assumed padding                                                    |
 
 `record_start = data_offset - 2`
 
@@ -148,3 +148,19 @@ The offset file's `data_offset` values increment by exactly 34 (the main record 
 - The `variant` in `personality_type` (1 or 2) is not exposed in `amity-npcs.json`; its in-game meaning is unknown. Distribution is roughly even (584 variant-1, 598 variant-2).
 - Confirmed against Amerigo (NPC ID 41013): all three groups show `item_count=4`, matching the UI display "Vendors of Serendia (0/4)", "Serendia Adventure Log II (0/4)", "Plants (Serendia) (0/4)".
 - The in-game behaviour for `item_count=0` groups is not yet fully understood.
+- The stored ranges do not equal the ranges in an amity tracker dataset (taken from a wiki, possibly outdated) or one in-game check (Ornella), under either reading of the upper bound. Interest / favor:
+
+  | NPC | Tracker or game | Stored | Stored, max minus 1 |
+  | --- | --- | --- | --- |
+  | Amerigo (41013) | 20-24 / 27-29 | 21-24 / 26-29 | 21-23 / 26-28 |
+  | Cleia (41056) | 20-23 / 25-29 | 21-23 / 25-30 | 21-22 / 25-29 |
+  | George Fusto (41118) | 22-25 / 26-30 | 22-24 / 25-29 | 22-23 / 25-28 |
+  | Ornella (41002), in game | 22-23 / 27-28 | 21-25 / 25-28 | 21-24 / 25-27 |
+
+  The seen ranges are shifted or narrower in both directions, so they settle neither reading.
+
+## Open Questions
+
+### Are the upper bounds inclusive?
+
+An earlier version of this doc called `interest_max` and `favor_max` exclusive (usable maximum one less than stored) without recorded evidence. Ornella's in-game favor reached `28`, her stored maximum, which argues against that, but the in-game and tracker ranges differ from the stored ones by more than one elsewhere (see Notes). How the displayed range is derived from the stored one is open.

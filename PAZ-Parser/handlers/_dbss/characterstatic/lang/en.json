@@ -1,6 +1,6 @@
 {
   "offsetColumns": {
-    "idLow16": "ID Low16",
+    "characterId": "Character ID",
     "byteOffset": "Byte Offset",
     "size": "Size"
   },
@@ -8,9 +8,11 @@
     "characterId": "Character ID",
     "nameEn": "Name (EN)",
     "icon": "Icon",
-    "script": "Script",
+    "actionScript": "Action Script",
+    "conditionScript": "Condition",
     "knowledgeId": "Knowledge ID",
-    "payloadSize": "Payload Size",
-    "unknownType": "Unknown Type"
+    "npcKind": "NPC Kind",
+    "classType": "Class Type",
+    "payloadSize": "Payload Size"
   }
 }

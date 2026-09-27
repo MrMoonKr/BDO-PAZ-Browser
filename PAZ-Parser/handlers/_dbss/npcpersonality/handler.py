@@ -73,9 +73,9 @@ class NpcPersonalityHandler(PreviewHandler):
             Column(cols.get("groupB", "Group B (ID ×cnt)"), "num", sort_key="group_b_id"),
             Column(cols.get("groupC", "Group C (ID ×cnt)"), "num", sort_key="group_c_id"),
             Column(cols.get("intMin", "Int Min"), "num", sort_key="interest_min"),
-            Column(cols.get("intMax", "Int Max"), "num", sort_key="interest_max_excl"),
+            Column(cols.get("intMax", "Int Max"), "num", sort_key="interest_max"),
             Column(cols.get("favMin", "Fav Min"), "num", sort_key="favor_min"),
-            Column(cols.get("favMax", "Fav Max"), "num", sort_key="favor_max_excl"),
+            Column(cols.get("favMax", "Fav Max"), "num", sort_key="favor_max"),
             Column(cols.get("horoscope", "Horoscope"), sort_key="personality_type"),
         ]
 
@@ -100,9 +100,9 @@ class NpcPersonalityHandler(PreviewHandler):
                 "group_c_id":         rec["group_c_id"],
                 "group_c_count":      rec["group_c_count"],
                 "interest_min":       rec["interest_min"],
-                "interest_max_excl":  rec["interest_max_excl"],
+                "interest_max":  rec["interest_max"],
                 "favor_min":          rec["favor_min"],
-                "favor_max_excl":     rec["favor_max_excl"],
+                "favor_max":     rec["favor_max"],
                 "personality_type":   rec["personality_type"],
             }
             for rec in records
@@ -125,9 +125,9 @@ class NpcPersonalityHandler(PreviewHandler):
                 e(_group_str(r["group_b_id"], r["group_b_count"])),
                 e(_group_str(r["group_c_id"], r["group_c_count"])),
                 e(int(r["interest_min"])),
-                e(int(r["interest_max_excl"])),
+                e(int(r["interest_max"])),
                 e(int(r["favor_min"])),
-                e(int(r["favor_max_excl"])),
+                e(int(r["favor_max"])),
                 e(_decode_personality_type(r["personality_type"])),
             ]
             for r in slice_

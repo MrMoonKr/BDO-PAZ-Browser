@@ -17,7 +17,7 @@ CASE = HandlerCase(
     loc_fields=["Knowledge Name", "Category Name"],
     internal_path="gamecommondata/binary/mentalcard.dbss",
     tests=[
-        SchemaTest(required_keys=["entry_id", "entry_name", "node_id", "node_name"]),
+        SchemaTest(required_keys=["entry_id", "entry_name", "node_id", "node_name", "min_favor", "max_favor", "interest"]),
         CountTest(expected=12087),
         PosTest(
             pos=0,
@@ -26,6 +26,9 @@ CASE = HandlerCase(
                 "entry_name": "Altar of Blood - The 11th Illusion",
                 "node_id": 24114,
                 "node_name": "Altar of Blood",
+                "min_favor": 33,
+                "max_favor": 37,
+                "interest": 21,
             },
         ),
         TargetTest(
@@ -35,6 +38,9 @@ CASE = HandlerCase(
                 "entry_name": "Granbill",
                 "node_id": 155,
                 "node_name": "Elionism & the Delphe Knights",
+                "min_favor": 24,
+                "max_favor": 28,
+                "interest": 29,
             },
         ),
     ],

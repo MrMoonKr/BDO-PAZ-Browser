@@ -17,24 +17,30 @@ CASE = HandlerCase(
     loc_fields=["Knowledge Name"],
     internal_path="gamecommondata/binary/knowledgelearning.dbss",
     tests=[
-        SchemaTest(required_keys=["knowledge_id", "kind", "knowledge_name", "offset"]),
-        CountTest(expected=4391),
+        SchemaTest(required_keys=["table", "source_type", "source_id", "source_name", "card_id", "card_name"]),
+        # Two tables: 2,533 characters, then 2,070 items.
+        CountTest(expected=4603),
         PosTest(
             pos=0,
             expected={
-                "knowledge_id": 7302,
-                "kind": 13,
-                "knowledge_name": "Feldspar",
-                "offset": 8,
+                "table": 0,
+                "source_type": "Character",
+                "source_id": 10004,
+                "source_name": "Feldspar",
+                "card_id": 7302,
+                "card_name": "Feldspar",
             },
         ),
+        # The item table was misread before; its first row teaches the item's own card.
         TargetTest(
-            col="knowledge_id",
-            value=4893,
+            col="source_id",
+            value=4070,
             expected={
-                "kind": 13,
-                "knowledge_name": "Valencian Lion",
-                "offset": 25,
+                "table": 1,
+                "source_type": "Item",
+                "source_name": "Processed Coal",
+                "card_id": 7605,
+                "card_name": "Processed Coal",
             },
         ),
     ],

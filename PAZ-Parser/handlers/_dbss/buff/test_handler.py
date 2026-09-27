@@ -45,6 +45,9 @@ BUFF_CASE = HandlerCase(
                 "param_10",
                 "is_shown",
                 "apply_rate",
+                "group",
+                "condition_type",
+                "stacking_category",
             ]
         ),
         CountTest(expected=44609),
@@ -96,6 +99,14 @@ BUFF_CASE = HandlerCase(
             value=48724,
             expected={"title": "", "description": "", "effect_type": 40, "is_shown": False},
         ),
+        # Food Max HP variants share one replacement group.
+        TargetTest(
+            col="buff_id",
+            value=59746,
+            expected={"effect_type": 2, "group": 5616, "param_1": 300},
+        ),
+        # Whale tendon elixirs have their own stacking category.
+        TargetTest(col="buff_id", value=58025, expected={"stacking_category": 21}),
         RangeTest(col="level", min_val=0, max_val=999),
         RangeTest(col="duration_ms", min_val=0, max_val=86400000),
     ],

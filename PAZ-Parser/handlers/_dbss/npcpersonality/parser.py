@@ -36,9 +36,9 @@ def parse_npcpersonality_records(data: bytes) -> list[NpcPersonalityRecord]:
             group_c_id=group_c & 0xFFFF,
             group_c_count=(group_c >> 16) & 0xFFFF,
             interest_min=_f32(data, base + 0x10),
-            interest_max_excl=_f32(data, base + 0x14),
+            interest_max=_f32(data, base + 0x14),
             favor_min=_f32(data, base + 0x18),
-            favor_max_excl=_f32(data, base + 0x1C),
+            favor_max=_f32(data, base + 0x1C),
             personality_type=_u16(data, base + 0x20),
         ))
 

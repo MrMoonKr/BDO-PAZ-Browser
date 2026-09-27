@@ -7,11 +7,14 @@ import pytest
 
 from tests.framework import CountTest, HandlerCase, HandlerResult, PosTest, SchemaTest, TargetTest, case_id, run_case
 
+from _dbss.characterspawntype.parser import SPAWN_TYPE_NAMES
+
 
 def _spawn_type_record(record: dict) -> dict:
-    mapped = dict(record)
-    mapped["active_flags"] = [idx for idx, value in enumerate(record["flags"]) if value]
-    return mapped
+    return {
+        **record,
+        "active_roles": [SPAWN_TYPE_NAMES[i] for i, value in enumerate(record["roles"]) if value],
+    }
 
 
 SPAWN_TYPE_CASE = HandlerCase(
@@ -24,10 +27,19 @@ SPAWN_TYPE_CASE = HandlerCase(
     internal_path="gamecommondata/binary/characterspawntype.dbss",
     record_mapper=_spawn_type_record,
     tests=[
-        SchemaTest(required_keys=["entity_id", "name_en", "active_flags"]),
+        SchemaTest(required_keys=["character_id", "name_en", "roles", "active_roles"]),
         CountTest(expected=24017),
-        PosTest(pos=0, expected={"entity_id": 47759, "name_en": "Edania Merchant", "active_flags": [2]}),
-        PosTest(pos=-1, expected={"entity_id": 82176, "name_en": "", "active_flags": []}),
+        PosTest(pos=0, expected={"character_id": 47759, "name_en": "Edania Merchant", "active_roles": ["ImportantNpc"]}),
+        # Read as a u32, this row looked like entity 82176: the NormalNpc byte
+        # sat in the high half of the ID.
+        PosTest(pos=-1, expected={"character_id": 16640, "active_roles": ["NormalNpc"]}),
+        TargetTest(
+            col="character_id",
+            value=47659,
+            expected={
+                "active_roles": ["ItemRepairer", "ImportantNpc", "Stable", "Intimacy", "Mating", "Grocery"],
+            },
+        ),
     ],
 )
 
@@ -40,10 +52,10 @@ OFFSET_CASE = HandlerCase(
     loc_fields=[],
     internal_path="gamecommondata/binary/characterspawntypeoffset.dbss",
     tests=[
-        SchemaTest(required_keys=["id_low16", "offset", "size"]),
+        SchemaTest(required_keys=["character_id", "offset", "size"]),
         CountTest(expected=24017),
-        PosTest(pos=0, expected={"id_low16": 47759, "offset": 4, "size": 48}),
-        PosTest(pos=-1, expected={"id_low16": 16640, "offset": 1152772, "size": 48}),
+        PosTest(pos=0, expected={"character_id": 47759, "offset": 4, "size": 48}),
+        PosTest(pos=-1, expected={"character_id": 16640, "offset": 1152772, "size": 48}),
     ],
 )
 

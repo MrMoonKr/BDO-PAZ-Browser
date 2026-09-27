@@ -86,10 +86,15 @@ Offsets are relative to the end of the name string.
 
 | Offset  | Type    | Field           | Notes                                                                 |
 | ------- | ------- | --------------- | --------------------------------------------------------------------- |
-| `+0x00` | u32     | buff_level      | 1 to 999; `1` in 32,071 rows. Staged buffs count up, e.g. boss stages 1 to 10 |
-| `+0x04` | u32     | unknown_04      | `0` in 28,301 rows; otherwise runs sequentially alongside `buff_id`   |
+| `+0x00` | i16     | buff_level      | 1 to 999; `1` in 32,071 rows. Staged buffs count up, e.g. boss stages 1 to 10 |
+| `+0x02` | u8[2]   | reserved        | Always `0`                                                            |
+| `+0x04` | i16     | group           | `0` in 28,199 rows. Shared by some effect families, see Notes         |
+| `+0x06` | i16     | condition_type  | `0` in 44,390 rows; selects a trigger such as on-hit recovery         |
 | `+0x08` | u8      | effect_type     | 173 distinct values; see Enum Values                                  |
-| `+0x09` | u8[10]  | flag_09..flag_12 | Each byte is `0` or `1`                                             |
+| `+0x09` | u8      | flag_09         | `1` in 44,489 rows                                                    |
+| `+0x0A` | u8      | flag_0a         | `1` in 31,950 rows                                                    |
+| `+0x0B` | u8      | flag_0b         | `1` in 14,707 rows                                                    |
+| `+0x0C` | u8[7]   | flag_0c..flag_12 | Each byte is `0` or `1`                                              |
 | `+0x13` | i64[10] | param_1..param_10 | Effect parameters; meaning depends on `effect_type`. Percentages use a per-million scale (`100000` = 10%) |
 | `+0x63` | u8      | flag_63         | `0` or `1`                                                            |
 | `+0x64` | u8      | flag_64         | `0` or `1`                                                            |
@@ -119,7 +124,7 @@ Offsets are relative to the end of the description string. Mostly zero.
 | `+0x07` | i32  | unknown_07  | `0`, `1000000` or `-1000000`                 |
 | `+0x0B` | u8[12] | reserved  | Always `0`                                   |
 | `+0x17` | u8   | flag_17     | `1` in 221 rows                              |
-| `+0x18` | u8   | unknown_18  | 61 distinct values                           |
+| `+0x18` | u8   | stacking_category | 61 distinct values; broad effect family, see Enum Values |
 | `+0x19` | u8   | flag_19     | `1` in 2,066 rows                            |
 | `+0x1A` | u8   | unknown_1a  | `6` in 18,895 rows, else `0` or `1`          |
 
@@ -176,6 +181,39 @@ of the buffs that use each value.
 | 49    | 1,378 | Crowd-control resistance                           |                                                      |
 | 58    | 1,132 | Elixirs, herbal teas, sequence check buffs         |                                                      |
 
+These are also confirmed against the English LOC type 5 text of their buffs. Percentages use the same per-million scale.
+
+| Value | Rows | Effect                        | Parameters                                                        |
+| ----- | ---: | ----------------------------- | ----------------------------------------------------------------- |
+| 3     | 291  | HP Recovery                   | `param_1` = amount                                                |
+| 5     | 85   | Max MP/WP/SP                  | `param_1` = amount                                                |
+| 6     | 268  | MP Recovery                   | `param_1` = amount                                                |
+| 8     | 205  | Max Stamina                   | `param_1` = amount                                                |
+| 9     | 383  | Movement Speed                | `param_1` per million (`25000` = 2.5%)                            |
+| 10    | 320  | Attack Speed                  | `param_1` per million                                             |
+| 11    | 312  | Casting Speed                 | `param_1` per million                                             |
+| 30    | 509  | Critical Hit Rate             | `param_1` per million                                             |
+| 41    | 804  | All Evasion                   | `param_1` = `3`, `param_2` = amount                               |
+| 80    | 180  | Life-skill EXP                | `param_1` = life skill (`4` Alchemy), `param_2` = amount          |
+| 93    | 238  | Special-attack extra damage   | `param_1` = attack kind (`2` down, `3` air, `4` critical), `param_2` per million |
+| 105   | 123  | Ignore resistance             | `param_1` = resistance kind (`8` all), `param_2` per million      |
+| 128   | 78   | Weather resistance            | `param_1` = `0` heatstroke, `1` hypothermia; `param_2` per million |
+
+[bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor/blob/HEAD/FORMATS.md) also names these, unconfirmed here because their buffs have no English text: 29 Weight Limit, 50 Mount EXP, 57 Drop Rate, 63 worker stamina recovery, 67 potential ranks, 79 Energy recovery, 89 Breath/Strength/Health EXP, 90 Death Penalty Resistance, 95 underwater breathing. It gives 149 as life-skill mastery with `param_1` the life skill, but `Hunting Mastery +100` stores `param_1 = 15`, which that source reads as "all life skills".
+
+### `stacking_category` (tail block `+0x18`)
+
+A broad family byte. Confirmed values:
+
+| Value | Rows | Family                     | Evidence                                              |
+| ----- | ---: | -------------------------- | ----------------------------------------------------- |
+| 0     | 41,859 | None                     |                                                       |
+| 1     | 428  | Food                       | `최상위 음식` (top-tier food) buffs                    |
+| 6     | 118  | Perfume                    | `녹음의 향수` and its component buffs                  |
+| 21    | 4    | Whale tendon elixirs       | The three Whale Tendon Elixirs, plus `[Event] Sweet Pumpkin Pie`, which gives the same buff in game |
+
+Value `2` (647 rows) holds 600-minute elixir-style buffs and value `38` the Adventure's Boon blessings. bdo-data-extractor reads `2` as elixir/draught and `26` as a single draught-reset control record, but 82 buffs here carry `26`, many of them species extra AP (`카마실비아 종족 추가 공격력 +17`).
+
 ---
 
 ## Suggested UI Layout
@@ -214,9 +252,12 @@ of the buffs that use each value.
   in every checked row apart from thousands separators.
 - LOC type 10 was once assumed to be buff text keyed by `buff_id`. It is not:
   only half of the IDs overlap and the text disagrees (see the LOC doc).
-- `unknown_04` is not a LOC key: 8827 resolves to an unrelated item in
-  type 0 and a skill in type 10. Within a buff group it increases by one per
-  buff (9056 to 9061 below).
+- `group` is not a LOC key: 8827 resolves to an unrelated item in type 0 and
+  a skill in type 10. Some families share one value: the 18 food Max HP buffs
+  (+100 to +300) all use `5616`. Others do not: each buff of Adventure's Boon
+  has its own (9056 to 9061 below), and the same effect in the 60 and 300
+  minute variants uses 9050 and 9062. `+0x00` to `+0x07` used to be read as
+  two u32 fields; bytes `+0x02` and `+0x03` are zero in every record.
 - One buff record holds one effect, so a consumable with several effects
   applies a run of consecutive buffs. Only the first carries the description,
   the icon and `is_shown`, and its description opens with the display title.
@@ -284,10 +325,23 @@ millisecond-like values. It is not the stated tick interval: a buff named
 
 ### What do the ten parameters mean per effect type?
 
-`param_1` through `param_10` change meaning with `effect_type`. Types 2, 25,
-39, 40 and 43 are confirmed (see Enum Values); the rest have not been worked
-out. For 39, 40 and 43 `param_1` is always `3`, possibly a mask selecting
-melee, ranged and magic together.
+`param_1` through `param_10` change meaning with `effect_type`. The types in
+Enum Values are confirmed; the rest have not been worked out. For 39, 40, 41
+and 43 `param_1` is `3`; bdo-data-extractor reads it as the target (`0` melee,
+`1` ranged, `2` magic, `3` all).
+
+### When is `group` shared?
+
+Food Max HP buffs share group `5616`, but duration variants of Adventure's Boon
+each get their own value, so `group` is not simply "one effect across variants".
+What decides whether buffs share one is open.
+
+### Is `buff_level` a level or a category?
+
+bdo-data-extractor splits `+0x00` into `i16 Category`, `u8 CategoryLevel` and
+`u8 Level`. The two bytes are zero in every record here, and the i16 counts up
+on staged buffs such as boss stages, so it is kept as `buff_level` until the
+client names it.
 
 ### Which table links items to their buffs?
 

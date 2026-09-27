@@ -1,57 +1,80 @@
+"""`knowledgelearning.dbss`: which character or item teaches which knowledge card.
+
+The offset file holds `table_count` index tables, each `u32 count` plus
+12-byte rows (`source_id`, `data_offset`, `size`). Each row points at a
+13-byte record:
+
+    u32 source_id | u32 source_type | u8 0 | u32 card_id
+
+Table 0 is characters (`source_type` 0), table 1 items (`source_type` 1).
+Full layout in docs/file-formats/knowledgelearning_dbss.md.
+"""
+
 from __future__ import annotations
 
-from _common.binary import u32 as read_u32
-from _common.loc import loc_lookup
-from .model import KnowledgeLearningOffsetRecord, KnowledgeLearningRecord
+import struct
+from dataclasses import dataclass
+
+from _common.binary import u32
+
+_RECORD = struct.Struct("<IIBI")
+_INDEX_ROW = struct.Struct("<III")
+
+SOURCE_CHARACTER = 0
+SOURCE_ITEM = 1
 
 
-def parse_knowledgelearning_offset_records(
-    offset_data: bytes,
-) -> list[KnowledgeLearningOffsetRecord]:
-    records: list[KnowledgeLearningOffsetRecord] = []
-
-    start = 12
-    record_size = 12
-
-    if len(offset_data) < start:
-        return records
-
-    count = (len(offset_data) - start) // record_size
-
-    for index in range(count):
-        pos = start + index * record_size
-
-        records.append(KnowledgeLearningOffsetRecord(
-            offset=read_u32(offset_data, pos),
-            kind=read_u32(offset_data, pos + 4),
-            idx_id=read_u32(offset_data, pos + 8),
-        ))
-
-    return records
+@dataclass(frozen=True)
+class KnowledgeIndexRow:
+    table: int
+    source_id: int
+    offset: int
+    size: int
 
 
-def parse_knowledgelearning_records(
-    dbss_data: bytes,
-    offset_data: bytes,
-) -> list[KnowledgeLearningRecord]:
+@dataclass(frozen=True)
+class KnowledgeLearningRecord:
+    table: int
+    source_id: int
+    source_type: int
+    card_id: int
+
+
+def parse_knowledgelearning_offset_records(data: bytes) -> list[KnowledgeIndexRow]:
+    """Every index row of every table, in file order.
+
+    Raises ValueError when a table runs past the end, or when the tables do
+    not end exactly at the end of the file.
+    """
+    if len(data) < 4:
+        raise ValueError("knowledgelearningoffset.dbss is too short for its table count")
+
+    rows: list[KnowledgeIndexRow] = []
+    pos = 4
+    for table in range(u32(data, 0)):
+        count = u32(data, pos)
+        end = pos + 4 + count * _INDEX_ROW.size
+        if end > len(data):
+            raise ValueError(f"knowledgelearningoffset.dbss table {table} runs past the end")
+        rows.extend(
+            KnowledgeIndexRow(table, source_id, offset, size)
+            for source_id, offset, size in _INDEX_ROW.iter_unpack(data[pos + 4:end])
+        )
+        pos = end
+
+    if pos != len(data):
+        raise ValueError("knowledgelearningoffset.dbss has bytes after its last table")
+    return rows
+
+
+def parse_knowledgelearning_records(data: bytes, offset_data: bytes) -> list[KnowledgeLearningRecord]:
+    """One record per index row. Raises ValueError on a row that does not fit."""
     records: list[KnowledgeLearningRecord] = []
-
-    offset_records = parse_knowledgelearning_offset_records(offset_data)
-
-    for offset_record in offset_records:
-        dbss_offset = offset_record["offset"]
-        kind = offset_record["kind"]
-
-        if dbss_offset >= len(dbss_data):
-            continue
-
-        knowledge_id = read_u32(dbss_data, dbss_offset + 9)
-
-        records.append(KnowledgeLearningRecord(
-            offset=dbss_offset,
-            kind=kind,
-            knowledge_id=knowledge_id,
-            knowledge_name=loc_lookup(34, knowledge_id),
-        ))
-
+    for row in parse_knowledgelearning_offset_records(offset_data):
+        if row.size != _RECORD.size or row.offset + _RECORD.size > len(data):
+            raise ValueError(f"knowledgelearning row for source {row.source_id} does not fit a record")
+        source_id, source_type, _reserved, card_id = _RECORD.unpack_from(data, row.offset)
+        if source_id != row.source_id:
+            raise ValueError(f"knowledgelearning record at 0x{row.offset:X} does not repeat its source ID")
+        records.append(KnowledgeLearningRecord(row.table, source_id, source_type, card_id))
     return records

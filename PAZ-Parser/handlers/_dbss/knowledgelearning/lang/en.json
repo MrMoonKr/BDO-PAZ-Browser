@@ -1,13 +1,19 @@
 {
   "offsetColumns": {
-    "idxId": "Idx ID",
-    "kind": "Kind",
-    "dbssOffset": "DBSS Offset"
+    "table": "Table",
+    "sourceId": "Source ID",
+    "dbssOffset": "DBSS Offset",
+    "size": "Size"
   },
   "columns": {
+    "sourceType": "Source Type",
+    "sourceId": "Source ID",
+    "sourceName": "Source Name",
     "knowledgeId": "Knowledge ID",
-    "kind": "Kind",
-    "knowledgeName": "Knowledge Name",
-    "offset": "Offset"
+    "knowledgeName": "Knowledge Name"
+  },
+  "values": {
+    "character": "Character",
+    "item": "Item"
   }
 }

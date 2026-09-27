@@ -1,10 +1,16 @@
 {
   "columns": {
-    "knowledgeId": "Knowledge ID",
-    "knowledgeName": "Knowledge Name",
-    "groupId": "Group ID",
-    "enabled": "Enabled",
-    "anchorId": "Anchor ID",
+    "nodeKey": "Node Key",
+    "nodeName": "Node Name",
+    "kind": "Kind",
+    "mainSub": "Main/Sub",
+    "contribution": "Contribution",
+    "manager": "Manager",
+    "representative": "Representative",
     "radius": "Radius"
+  },
+  "values": {
+    "main": "Main",
+    "sub": "Sub"
   }
 }

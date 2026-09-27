@@ -17,7 +17,7 @@ PERSONALITY_CASE = HandlerCase(
     loc_fields=[],
     internal_path="gamecommondata/binary/npcpersonality.dbss",
     tests=[
-        SchemaTest(required_keys=["row", "personality_id", "group_a_id", "interest_min", "favor_max_excl", "personality_type"]),
+        SchemaTest(required_keys=["row", "personality_id", "group_a_id", "interest_min", "favor_max", "personality_type"]),
         CountTest(expected=1182),
         PosTest(
             pos=0,
@@ -27,9 +27,9 @@ PERSONALITY_CASE = HandlerCase(
                 "group_a_id": 30949,
                 "group_a_count": 6,
                 "interest_min": 22.0,
-                "interest_max_excl": 23.0,
+                "interest_max": 23.0,
                 "favor_min": 26.0,
-                "favor_max_excl": 28.0,
+                "favor_max": 28.0,
                 "personality_type": 301,
             },
         ),

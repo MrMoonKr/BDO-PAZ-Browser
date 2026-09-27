@@ -17,24 +17,48 @@ STATIC_CASE = HandlerCase(
     loc_fields=["Name"],
     internal_path="gamecommondata/binary/characterstatic.dbss",
     tests=[
-        SchemaTest(required_keys=["character_id", "name_en", "script", "knowledge_id", "payload_size", "unknown_type"]),
+        SchemaTest(
+            required_keys=[
+                "character_id", "name_en", "action_script", "condition_script",
+                "knowledge_id", "npc_kind", "class_type", "payload_size",
+            ]
+        ),
         CountTest(expected=24017),
         PosTest(
             pos=0,
             expected={
                 "character_id": 47759,
                 "name_en": "Edania Merchant",
-                "script": "getknowledge(14469);",
+                "action_script": "getknowledge(14469);",
+                "condition_script": "",
                 "knowledge_id": 14469,
                 "payload_size": 586,
-                "unknown_type": 2,
+                "npc_kind": 2,
+                "class_type": None,
             },
         ),
         TargetTest(
             col="character_id",
             value=16640,
-            expected={"name_en": "Dev Plant210", "script": "", "knowledge_id": None, "payload_size": 511, "unknown_type": 8},
+            expected={"name_en": "Dev Plant210", "action_script": "", "knowledge_id": None, "payload_size": 511, "npc_kind": 8},
         ),
+        # A condition script used to be misread into the action script and
+        # shifted every field after it.
+        TargetTest(
+            col="character_id",
+            value=47332,
+            expected={
+                "action_script": "getknowledge(2095);",
+                "condition_script": "getOceanTendency()>-1;",
+                "knowledge_id": 2095,
+                "npc_kind": 2,
+            },
+        ),
+        # The getknowledge match ignores case.
+        TargetTest(col="character_id", value=50613, expected={"knowledge_id": 933}),
+        # class_type differs from character_id: Warrior is 1 / 0, Ranger 2 / 4.
+        TargetTest(col="character_id", value=1, expected={"class_type": 0}),
+        TargetTest(col="character_id", value=2, expected={"class_type": 4}),
     ],
 )
 
@@ -47,10 +71,10 @@ OFFSET_CASE = HandlerCase(
     loc_fields=[],
     internal_path="gamecommondata/binary/characterstaticoffset.dbss",
     tests=[
-        SchemaTest(required_keys=["id_low16", "offset", "size"]),
+        SchemaTest(required_keys=["character_id", "offset", "size"]),
         CountTest(expected=24017),
-        PosTest(pos=0, expected={"id_low16": 47759, "offset": 6, "size": 586}),
-        PosTest(pos=-1, expected={"id_low16": 16640, "offset": 13563768, "size": 511}),
+        PosTest(pos=0, expected={"character_id": 47759, "offset": 6, "size": 586}),
+        PosTest(pos=-1, expected={"character_id": 16640, "offset": 13563768, "size": 511}),
     ],
 )
 
