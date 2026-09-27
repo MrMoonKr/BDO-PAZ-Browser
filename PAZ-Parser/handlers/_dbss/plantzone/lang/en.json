@@ -6,9 +6,7 @@
   },
   "columns": {
     "zoneId": "Zone ID",
-    "variant": "Variant",
-    "linkedId": "Linked ID",
-    "values": "Values",
-    "dataSize": "Data Size"
+    "nodeName": "Node Name",
+    "productionKey": "Production Key"
   }
 }

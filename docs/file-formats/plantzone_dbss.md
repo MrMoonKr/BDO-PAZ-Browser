@@ -2,14 +2,14 @@
 
 ## Purpose
 
-Defines worker production zones. Each record belongs to one worldmap production sub-node (`record_id` is an `exploration.bss` node key, named through LOC type 29), carries several invariant control fields and one variant byte, links to a production key in `plantexchangegroup.bss`, and lists which worker species may work the zone. `plantzoneoffset.dbss` is required to address the variable-length records.
+Defines worker production zones. Each record belongs to one worldmap production sub-node (`record_id` is an `exploration.bss` node key, named through LOC type 29), carries several invariant control fields and one unknown byte that tracks the production type, links to a production key in `plantexchangegroup.bss`, and lists a set of worker species per zone (not a worker lock; its use is unknown, see Open Questions). `plantzoneoffset.dbss` is required to address the variable-length records.
 
 ```text
 Observed records: 394. Record payloads are 32, 34, or 37 bytes depending on the worker-species list length.
 record_id=1539 -> Teff, production key 1539 -> item subgroup 40189 -> Teff
 ```
 
-The production-key and worker-species readings follow [asheimo/bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor) (`FORMATS.md`, "Worker-production item tables"), checked against the current client files below.
+The production-key reading and the worker-species field boundaries follow [asheimo/bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor) (`FORMATS.md`, "Worker-production item tables"), checked against the current client files below.
 
 ## Graph
 
@@ -28,7 +28,7 @@ The production-key and worker-species readings follow [asheimo/bdo-data-extracto
 - [exploration.bss](exploration_bss.md) - `record_id` is a production sub-node key (394/394)
 - [languagedata.loc](languagedata_loc.md) - `record_id` names resolve via LOC `str_type=29`
 - [plantworker.bss](plantworker_bss.md) - `worker_species` values match the species byte at worker record `+0x38F`
-- `plantexchangegroup.bss` - low 16 bits of `production_key` join its `+0x00` key (394/394)
+- `plantexchangegroup.bss` - `production_key` joins its `+0x00` key (394/394)
 - `itemsubgroup.dbss` - `plantexchangegroup.bss` `+0x06` joins its subgroup key, which lists the produced item IDs
 
 ---
@@ -64,15 +64,16 @@ All multi-byte values are little-endian unless noted otherwise.
 | `+0x04` | u32  | unknown_04           | Always observed as `2`                                                   |
 | `+0x08` | u32  | unknown_08           | Always observed as `0`                                                   |
 | `+0x0C` | u16  | unknown_0c           | Always observed as `2`                                                   |
-| `+0x0E` | u8   | variant              | Observed range `0`-`4`; correlates with node kind, see below             |
+| `+0x0E` | u8   | unknown_0e           | Observed range `0`-`4`; correlates with node kind, see below             |
 | `+0x0F` | u16  | unknown_0f           | Always observed as `101`; note unaligned offset                          |
 | `+0x11` | u16  | unknown_11           | Always observed as `201`; note unaligned offset                          |
 | `+0x13` | u32  | unknown_13           | Always observed as `1`; note unaligned offset                            |
-| `+0x17` | u32  | production_key       | Low 16 bits: `plantexchangegroup.bss` key; high 16 bits usually `0`      |
+| `+0x17` | u16  | production_key       | `plantexchangegroup.bss` key; note unaligned offset                      |
+| `+0x19` | u16  | unknown_19           | Usually `0`; counts up across Specialties nodes, see below               |
 | `+0x1B` | u32  | worker_species_count | Number of trailing `worker_species`; observed `1`, `3`, or `6`           |
-| `+0x1F` | u8[] | worker_species       | Allowed worker species, `worker_species_count` bytes                     |
+| `+0x1F` | u8[] | worker_species       | Worker species values, `worker_species_count` bytes; not a worker lock   |
 
-The current parser exposes `production_key` as `linked_id` and `worker_species` as `values`.
+Earlier versions of this doc read `+0x17` as one u32 `production_key` with an unexplained high word; that high word is `unknown_19`. Earlier versions also called `unknown_0e` `variant`.
 
 Observed record-size distribution:
 
@@ -98,11 +99,11 @@ The same byte is the last byte (`+0x38F`) of every `plantworker.bss` record. Nam
 | 7     | Dolswe workers                                           |
 | 8     | Shellfolk workers                                        |
 
-### `variant` by Node Kind
+### `unknown_0e` by Node Kind
 
-`exploration.bss` `node_kind` of the zone's node, counted per `variant`:
+`exploration.bss` `node_kind` of the zone's node, counted per `unknown_0e`:
 
-| `variant` | Dominant kinds                                                 |
+| `unknown_0e` | Dominant kinds                                              |
 | --------- | -------------------------------------------------------------- |
 | 0         | Quarry 66, MonopolyFarm 3, Logging 1, Excavation 1             |
 | 1         | Collect 48, Farm 15, Excavation 6, MonopolyFarm 4, Craft 1     |
@@ -110,11 +111,11 @@ The same byte is the last byte (`+0x38F`) of every `plantworker.bss` record. Nam
 | 3         | Logging 62, Excavation 3, Quarry 1                             |
 | 4         | FishTrap 41, MonopolyFarm 25, Finance 24, Excavation 24, Craft 6, MinorFinance 2, Quarry 1, Logging 1 |
 
-### `production_key` High Bits
+### `unknown_19` Values
 
-Most keys fit in the low 16 bits. Nineteen records (15 Specialties, 2 Mining, 1 Gathering, 1 Excavation) use non-zero high 16 bits:
+`unknown_19` is `0` on 375 records. Nineteen records (15 Specialties, 2 Mining, 1 Gathering, 1 Excavation) have a non-zero value:
 
-| High 16 bits | Count | Low 16-bit range |
+| `unknown_19` | Count | `production_key` range |
 | ------------ | ----- | ---------------- |
 | `0`          | 375   | `1`-`2044`       |
 | `1`          | 3     | `960`-`1235`     |
@@ -125,12 +126,12 @@ Most keys fit in the low 16 bits. Nineteen records (15 Specialties, 2 Mining, 1 
 | `6`          | 2     | `973`-`976`      |
 | `7`          | 2     | `974`-`977`      |
 
-The high word counts up across consecutive Specialties node keys: 104-110 (Balenos farms such as Bartali, Finto and Wale Farm) carry `1`-`7`, and 613-619 (Calpheon farms such as Falres Dirt and Dias Farm) carry `1`-`7` again. Only the low 16 bits are needed for the join: all 394 low values are `plantexchangegroup.bss` keys, while the full u32 matches only 375.
+It counts up across consecutive Specialties node keys: 104-110 (Balenos farms such as Bartali, Finto and Wale Farm) carry `1`-`7`, and 613-619 (Calpheon farms such as Falres Dirt and Dias Farm) carry `1`-`7` again. All 394 `production_key` values are `plantexchangegroup.bss` keys; read together with `unknown_19` as a u32, only 375 are.
 
 ### Production Item Chain
 
 ```text
-production_key & 0xFFFF -> plantexchangegroup.bss +0x00 (productionKey)
+production_key -> plantexchangegroup.bss +0x00 (productionKey)
 plantexchangegroup.bss +0x06 (u32 itemSubgroupKey) -> itemsubgroup.dbss subgroup key
 itemsubgroup.dbss record -> item IDs (LOC type 0)
 ```
@@ -167,10 +168,8 @@ Offset rows are not sorted by `data_offset`, but sorted rows cover every byte fr
 | -------------- | ---- | --------------------------------------------------- |
 | Zone ID        | num  | `record_id`                                         |
 | Node Name      | text | LOC type 29, `str_id1=record_id`, `str_id4=0`       |
-| Variant        | num  | `variant`                                           |
-| Production Key | num  | Low 16 bits of `production_key`; show high word separately when non-zero |
-| Worker Species | text | Render `worker_species` as species names            |
-| Data Size      | num  | Useful for debugging `worker_species_count` classes |
+| Production Key | num  | `production_key`                                    |
+| Produced Items | text | Not shown yet: needs `plantexchangegroup.bss` and `itemsubgroup.dbss` parsed, see Production Item Chain |
 
 ---
 
@@ -187,14 +186,25 @@ Offset rows are not sorted by `data_offset`, but sorted rows cover every byte fr
 
 ## Open Questions
 
-### Variant Meaning
+### `unknown_0e` Meaning
 
-`variant` tracks the production type (Quarry is mostly `0`, Logging `3`, Fish Drying/Finance `4`) but Farm, Collect, MonopolyFarm and Excavation nodes are split across several values, so it is not simply the node kind. It may be a worker-stat or work-type class; the client enum was not identified.
+`unknown_0e` tracks the production type (Quarry is mostly `0`, Logging `3`, Fish Drying/Finance `4`) but Farm, Collect, MonopolyFarm and Excavation nodes are split across several values, so it is not simply the node kind. It may be a worker-stat or work-type class; the client enum was not identified.
 
-### Production Key High Word
+### `unknown_19` Meaning
 
-The high 16 bits of `production_key` count up across consecutive Specialties node keys, and the full u32 is not a valid `plantexchangegroup.bss` key for those 19 records. Whether the client uses the high word (for example as a display order or unlock step) is not confirmed.
+`unknown_19` counts up across consecutive Specialties node keys on 19 records. Whether the client uses it (for example as a display order or unlock step) is not confirmed.
 
 ### Unresolved Subgroups
 
 36 zones point at production keys whose subgroup key is missing from `itemsubgroupoffset.dbss`. They are not empty: in game zone 2051 `Fish Drying Yard` (production key 1929, subgroup 45018) produces 4 items plus 2 lucky drops. Where the client reads their items from is open.
+
+### What `worker_species` Controls
+
+It is not a per-zone worker lock. In game, which worker types can be hired is
+set per town, and any hired worker can work any node connected to its town
+(confirmed by the user, 2026-09-27). The list still differs by region: 350
+zones list the six base species (Goblin to Dwarf), the 42 Land of the Morning
+Light zones only Dokkebi, Dolswe and Shellfolk, and the two Dokkebi Forest
+excavation zones only Dokkebi. The values match the `plantworker.bss` species
+byte, but what the client uses the list for (a bonus, a default, a leftover
+restriction) is unknown.

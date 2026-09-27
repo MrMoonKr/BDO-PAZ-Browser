@@ -7,10 +7,17 @@ from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
-from .parser import parse_offset_records, parse_plantzone_records
+from _common.loc import loc_text
+from .parser import WORKER_SPECIES_NAMES, parse_offset_records, parse_plantzone_records
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
+_LOC_NODE_NAME = 29
+_EMPTY = "-"
+
+
+def _species_name(species: int) -> str:
+    return WORKER_SPECIES_NAMES[species] if species < len(WORKER_SPECIES_NAMES) else str(species)
 
 
 class PlantZoneOffsetHandler(PreviewHandler):
@@ -58,10 +65,8 @@ class PlantZoneHandler(PreviewHandler):
         cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
         return [
             Column(cols.get("zoneId", "Zone ID"), "num", sort_key="record_id"),
-            Column(cols.get("variant", "Variant"), "num", sort_key="variant"),
-            Column(cols.get("linkedId", "Linked ID"), "num", sort_key="linked_id"),
-            Column(cols.get("values", "Values")),
-            Column(cols.get("dataSize", "Data Size"), "num", sort_key="data_size"),
+            Column(cols.get("nodeName", "Node Name"), sort_key="node_name"),
+            Column(cols.get("productionKey", "Production Key"), "num", sort_key="production_key"),
         ]
 
     def sortable_fields(self) -> frozenset[str]:
@@ -80,7 +85,19 @@ class PlantZoneHandler(PreviewHandler):
         offset_raw = companions.get("plantzoneoffset.dbss")
         if offset_raw is None:
             raise ValueError("plantzoneoffset.dbss companion not found.")
-        return parse_plantzone_records(data, offset_raw)
+
+        return [
+            {
+                **record,
+                "node_name": loc_text(_LOC_NODE_NAME, record["record_id"]),
+                # Not shown: the list is not a worker lock and its use is
+                # unknown. Kept for search and export.
+                "worker_species_text": ", ".join(
+                    _species_name(species) for species in record["worker_species"]
+                ),
+            }
+            for record in parse_plantzone_records(data, offset_raw)
+        ]
 
     def render_records_page(
         self,
@@ -94,10 +111,8 @@ class PlantZoneHandler(PreviewHandler):
         rows = [
             [
                 e(r["record_id"]),
-                e(r["variant"]),
-                e(r["linked_id"]),
-                e(", ".join(str(v) for v in r["values"])),
-                e(r["data_size"]),
+                e(r["node_name"] or _EMPTY),
+                e(r["production_key"]),
             ]
             for r in slice_
         ]
