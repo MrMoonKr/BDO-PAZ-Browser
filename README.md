@@ -121,6 +121,14 @@ python -m pytest -v -s
 
 Open a PAZ folder once in the GUI if fixture fetching has no saved game path yet.
 
+Type-check the files you changed (from the repo root, so `pyrightconfig.json` applies):
+
+```bash
+python -m pyright PAZ-Parser/api/bdo_lookup_indexes.py PAZ-Parser/handlers/_common/lookup_index.py
+```
+
+A full `python -m pyright` still reports older errors, mostly the API mixins reaching `Api` attributes, so check only the files you touched for now.
+
 ---
 
 ## Usage

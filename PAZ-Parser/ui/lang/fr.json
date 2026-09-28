@@ -70,6 +70,7 @@
     "parsing": "Analyse des fichiers PAZ… {elapsed}s écoulées (première exécution seulement, le résultat sera mis en cache)",
     "parsedAndCached": "{count} entrées analysées et mises en cache (version du jeu {version})",
     "error": "Erreur : {message}",
+    "indexFailed": "Impossible de créer les index de recherche, certaines icônes et certains liens manquent : {message}",
     "extracting": "Extraction… {done}/{total}, {extracted} ok  {skipped} ignorés  {failed} échoués",
     "extractDone": "✓  Terminé, {extracted} extraits, {skipped} ignorés, {failed} échoués.",
     "searching": "Recherche… {done}/{total} fichiers analysés, {matches} correspondance(s) pour l'instant",

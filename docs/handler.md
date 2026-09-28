@@ -716,6 +716,58 @@ Rule of thumb:
 
 ---
 
+## Lookup Indexes
+
+Some joins need a table far too large to open as a companion on every preview,
+such as the 194 MB `itemenchant.dbss`. For those the app keeps **lookup
+indexes**: cached `entity ID -> value` tables built once per PAZ folder and
+injected into `_common/lookup_index.py`, the same way `init_loc()` supplies LOC
+data. A handler reads one by kind and ID:
+
+```python
+from _common.lookup_index import IndexKind, lookup
+
+item_id = lookup(IndexKind.CHARACTER_ITEM, character_id)  # None when missing
+```
+
+`lookup()` returns `None` both when the index is not loaded and when it has no
+entry for the ID; render a dash in either case. `is_index_loaded()` tells the
+two apart when it matters. Handler tests install an index with
+`init_index(kind, mapping)` and drop it with `clear_indexes()`.
+
+Every index is one `IndexSpec(kind, sources, build)` in
+`INDEX_SPECS` (`api/bdo_lookup_indexes.py`). `build` receives the payloads of
+`sources` as positional arguments, in the order listed, and returns
+`{entity_id: value}`. `build_indexes()` reads each source once, so specs that
+share a table reuse its payload; a spec with a missing source is skipped. Adding
+an index is one `IndexKind` member plus one spec.
+
+`Api._load_lookup_indexes()` installs every index at folder load. Results are
+cached by `paz/bdo_index_cache.py` in `paz_browser_indexes.cache` next to the
+PAZ files, keyed by `IndexKind.value` (renaming a value orphans its cached data
+until the rebuild) and invalidated on the PAZ meta version or when the code that
+builds them changes. The cache stores `builder_fingerprint()`, a hash of
+`api/bdo_lookup_indexes.py` plus every project module it imports, so editing a
+builder or a helper such as `_common/prefixed_string.py` rebuilds the indexes on
+the next launch. Keep the builder imports at the top of that module: a lazy
+import would hide the builder from the fingerprint.
+
+Values are pickled, so an index may hold icon paths or linked IDs.
+
+| Kind             | Sources                                    | Value          |
+| ---------------- | ------------------------------------------ | -------------- |
+| `ITEM_ICON`      | `itemenchant.dbss`, `itemenchantoffset.dbss` | icon path    |
+| `QUEST_ICON`     | `quest.dbss`, `allquestlist.bss` (record order) | icon path |
+| `CHARACTER_ICON` | `characterobject.dbss`, `characterobjectoffset.dbss` | icon path |
+| `CHARACTER_ITEM` | `itemenchant.dbss`, `itemenchantoffset.dbss` | item ID      |
+
+`CHARACTER_ITEM` maps a character to the one base item that places or summons
+it (`character_id` at `+0xAA` in
+[itemenchant.dbss](file-formats/itemenchant_dbss.md)); characters named by zero
+or several items are left out.
+
+---
+
 ## Icons
 
 `icon_cell(path)` renders an icon cell. The path is not fetched at parse time,
@@ -733,39 +785,31 @@ row["icon_path"] = icon_path(IconKind.ITEM, item_id)
 
 `icon_path()` tries two sources in order:
 
-1. **The icon index for that kind.** For `IconKind.ITEM` it is built from the
-   level-0 records of [itemenchant.dbss](file-formats/itemenchant_dbss.md),
-   which store each item's icon path inline. The app builds every index once per
-   PAZ folder in `Api._load_icon_indexes()` and injects them with
-   `init_icon_index()`, the same way `init_loc()` supplies LOC data. Results are
-   cached by `paz/bdo_icon_cache.py`, keyed by `IconKind.value` and invalidated
-   on the PAZ meta version or when the code that builds them changes. The cache
-   stores `builder_fingerprint()`, a hash of every function in
-   `Api._icon_index_functions()` plus the project modules they import, so
-   editing a builder or a helper such as `_common/prefixed_string.py` rebuilds
-   the indexes on the next launch. A new builder or build step only needs adding
-   to `_icon_index_functions()`.
+1. **The lookup index for that kind**, named by `ICON_INDEXES`
+   (`IconKind.ITEM` reads `IndexKind.ITEM_ICON`, and so on). For items it is
+   built from the level-0 records of `itemenchant.dbss`, which store each item's
+   icon path inline.
 2. **Derivation from the ID**, when that kind declares one and the index has no
    entry. `IconKind.ITEM` derives into the flat `product_icon_png` folder.
 
 Kinds are an `Enum` so a typo is a failure at import rather than a silently
 empty icon column. Adding one means adding the member, its optional deriver in
-`_DERIVERS`, and one entry in `Api._icon_index_builders()` naming the source
-table, its offset companion (or `None`) and the builder.
+`_DERIVERS`, and, when a table stores its icons, an `IndexKind` with its spec
+(see [Lookup Indexes](#lookup-indexes)) mapped in `ICON_INDEXES`.
 
 `CHARACTER` has one extra step. After every index is built,
-`Api._with_borrowed_character_icons()` gives each character without a working
-icon the icon of the item that places or summons it, using the `character_id`
-at `+0xAA` in `itemenchant.dbss` and `borrow_icons()`. A working own icon
-always wins, and a borrowed icon is used only when its file exists.
+`build_indexes()` gives each character without a working icon the icon of the
+item that places or summons it, through `CHARACTER_ITEM` and `borrow_icons()`.
+A working own icon always wins, and a borrowed icon is used only when its file
+exists. The cached `CHARACTER_ICON` index already holds the borrowed icons.
 
-| Kind        | Source                  | Entries | Derivation fallback   |
-| ----------- | ----------------------- | ------- | --------------------- |
-| `ITEM`      | `itemenchant.dbss`      | 69,954  | `product_icon_png`    |
-| `QUEST`     | `quest.dbss`            | 16,377  | none                  |
-| `CHARACTER` | `characterobject.dbss`, gaps from `itemenchant.dbss` | 6,157   | none                  |
-| `PET_EQUIP_SKILL`   | none          | 0       | `08_servant_skill/02_pet` |
-| `FAIRY_EQUIP_SKILL` | none          | 0       | `08_servant_skill/02_pet` |
+| Kind                | Source                  | Entries (client 3458) | Derivation fallback |
+| ------------------- | ----------------------- | ------- | ------------------------- |
+| `ITEM`              | `itemenchant.dbss`      | 70,284  | `product_icon_png`        |
+| `QUEST`             | `quest.dbss`            | 19,324  | none                      |
+| `CHARACTER`         | `characterobject.dbss`, gaps from `itemenchant.dbss` | 6,165 | none |
+| `PET_EQUIP_SKILL`   | none                    | 0       | `08_servant_skill/02_pet` |
+| `FAIRY_EQUIP_SKILL` | none                    | 0       | `08_servant_skill/02_pet` |
 
 ### Fixing an icon by hand
 

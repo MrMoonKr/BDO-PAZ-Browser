@@ -265,15 +265,11 @@ def parse_quest_record(data: bytes, index: QuestIndex, row: int) -> QuestRecord:
 QUEST_ICON_ROOT = "ui_texture/"
 
 
-def build_quest_icon_index(data: bytes, allquestlist_data: bytes | None = None) -> dict[int, str]:
+def build_quest_icon_index(data: bytes, allquestlist_data: bytes) -> dict[int, str]:
     """Map packed quest ID to icon path.
 
-    `allquestlist.bss` fills the builder's companion slot: it names the record
-    order the walk needs. Without it there is nothing to index.
+    `allquestlist.bss` names the record order the walk needs.
     """
-    if allquestlist_data is None:
-        return {}
-
     ids = [record["packed_quest_id"] for record in parse_allquestlist_records(allquestlist_data)]
     index = build_quest_index(data, ids)
     icons: dict[int, str] = {}

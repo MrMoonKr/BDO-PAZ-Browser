@@ -3,8 +3,8 @@
 Most icons cannot be derived from an ID. They live in dozens of per-category
 folders, and thousands are named after a 3D asset with no numeric part at all
 (`inhouse_cultivate_sea_clam_01_wall.dds`). The tables that own those entities
-store the icon path inline, so the app builds an index per kind once per PAZ
-folder and injects it here, the same way `loc.py` receives LOC data.
+store the icon path inline, so the app builds a lookup index per kind once per
+PAZ folder (see `lookup_index.py`), and this module reads it by icon kind.
 
 Each kind may also declare a derivation: the path its ID implies when the index
 is unavailable or has no entry. Derivation alone reaches only ~15% of items, so
@@ -18,11 +18,14 @@ from collections.abc import Callable
 from enum import Enum
 from pathlib import Path
 
+from _common.lookup_index import IndexKind, lookup
+
 
 class IconKind(Enum):
-    """Entity kinds that have an icon index.
+    """Entity kinds with an icon.
 
-    Values double as disk-cache keys, so renaming one orphans its cached data.
+    Values are the keys of `icon_overrides.json`, so renaming one orphans its
+    overrides.
     """
 
     ITEM = "item"
@@ -59,8 +62,13 @@ _DERIVERS: dict[IconKind, Callable[[int], str]] = {
     IconKind.FAIRY_EQUIP_SKILL: _derive_fairy_equip_skill_icon,
 }
 
-# kind -> {entity_id: PAZ icon path}
-_INDEXES: dict[IconKind, dict[int, str]] = {}
+# The lookup index holding each kind's stored icon paths. Kinds absent here
+# have no source table and rely on derivation alone.
+ICON_INDEXES: dict[IconKind, IndexKind] = {
+    IconKind.ITEM: IndexKind.ITEM_ICON,
+    IconKind.QUEST: IndexKind.QUEST_ICON,
+    IconKind.CHARACTER: IndexKind.CHARACTER_ICON,
+}
 
 # Hand-curated fixes, checked into the repo rather than built from the PAZ.
 # They win over the index, because they exist precisely to correct it.
@@ -117,15 +125,6 @@ def icon_override_count(kind: IconKind) -> int:
     return len(_overrides().get(kind, ()))
 
 
-def init_icon_index(kind: IconKind, mapping: dict[int, str] | None) -> None:
-    """Install the index for one kind. Pass None to clear just that kind."""
-    if mapping is None:
-        _INDEXES.pop(kind, None)
-        return
-
-    _INDEXES[kind] = mapping
-
-
 def borrow_icons(
     own: dict[int, str],
     lender_icons: dict[int, str],
@@ -151,17 +150,14 @@ def borrow_icons(
     return merged
 
 
-def clear_icon_indexes() -> None:
-    """Drop every loaded index, for a folder switch or a failed load."""
-    _INDEXES.clear()
+def indexed_icon_path(kind: IconKind, entity_id: int) -> str:
+    """Path stored in the kind's lookup index, or an empty string."""
+    index_kind = ICON_INDEXES.get(kind)
+    if index_kind is None:
+        return ""
 
-
-def is_icon_index_loaded(kind: IconKind) -> bool:
-    return kind in _INDEXES
-
-
-def icon_index_size(kind: IconKind) -> int:
-    return len(_INDEXES.get(kind, ()))
+    stored = lookup(index_kind, entity_id)
+    return stored if isinstance(stored, str) else ""
 
 
 def derive_icon_path(kind: IconKind, entity_id: int) -> str:
@@ -181,7 +177,7 @@ def icon_path(kind: IconKind, entity_id: int) -> str:
     if override is not None:
         return override
 
-    stored = _INDEXES.get(kind, {}).get(entity_id)
+    stored = indexed_icon_path(kind, entity_id)
     if stored:
         return stored
 

@@ -70,6 +70,7 @@
     "parsing": "Разбор файлов PAZ… прошло {elapsed} с (только первый запуск, результат будет кэширован)",
     "parsedAndCached": "{count} записей разобрано и кэшировано (версия игры {version})",
     "error": "Ошибка: {message}",
+    "indexFailed": "Не удалось построить индексы поиска, некоторые значки и ссылки отсутствуют: {message}",
     "extracting": "Извлечение… {done}/{total}, {extracted} ok  {skipped} пропущено  {failed} с ошибкой",
     "extractDone": "✓  Готово, извлечено: {extracted}, пропущено: {skipped}, ошибок: {failed}.",
     "searching": "Поиск… просканировано {done}/{total} файлов, совпадений пока: {matches}",

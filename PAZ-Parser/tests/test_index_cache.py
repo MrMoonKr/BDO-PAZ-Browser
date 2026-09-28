@@ -1,40 +1,53 @@
 from __future__ import annotations
 
+import importlib
 import pickle
 import sys
 from pathlib import Path
 
 import pytest
 
-import paz.bdo_icon_cache as icon_cache
-from paz.bdo_icon_cache import builder_fingerprint, load_icon_cache, save_icon_cache
+import paz.bdo_index_cache as index_cache
+from paz.bdo_index_cache import builder_fingerprint, load_index_cache, save_index_cache
 
-_INDEXES = {"character": {2053: "ui_texture/icon/new_icon/03_etc/06_housing/00058003.dds"}}
+_INDEXES = {
+    "character_icon": {2053: "ui_texture/icon/new_icon/03_etc/06_housing/00058003.dds"},
+    "character_item": {2053: 58011},
+}
 
 
 def test_cache_round_trips_with_the_same_fingerprint(tmp_path: Path) -> None:
-    save_icon_cache(tmp_path, 7, "abc", _INDEXES)
+    save_index_cache(tmp_path, 7, "abc", _INDEXES)
 
-    assert load_icon_cache(tmp_path, "abc") == (7, _INDEXES)
+    assert load_index_cache(tmp_path, "abc") == (7, _INDEXES)
 
 
 def test_cache_built_by_other_code_is_ignored(tmp_path: Path) -> None:
-    save_icon_cache(tmp_path, 7, "abc", _INDEXES)
+    save_index_cache(tmp_path, 7, "abc", _INDEXES)
 
-    assert load_icon_cache(tmp_path, "def") is None
+    assert load_index_cache(tmp_path, "def") is None
 
 
 def test_cache_from_before_fingerprints_is_ignored(tmp_path: Path) -> None:
-    with (tmp_path / icon_cache._CACHE_FILE).open("wb") as f:
+    with (tmp_path / index_cache._CACHE_FILE).open("wb") as f:
         pickle.dump({"format": 2, "version": 7, "indexes": _INDEXES}, f)
 
-    assert load_icon_cache(tmp_path, "abc") is None
+    assert load_index_cache(tmp_path, "abc") is None
+
+
+def test_saving_removes_the_legacy_icon_cache(tmp_path: Path) -> None:
+    legacy = tmp_path / index_cache._LEGACY_CACHE_FILE
+    legacy.write_bytes(b"old")
+
+    save_index_cache(tmp_path, 7, "abc", _INDEXES)
+
+    assert not legacy.exists()
 
 
 def test_fingerprint_covers_imported_helpers() -> None:
     from _dbss.itemenchant.parser import build_item_icon_index
 
-    modules = icon_cache._project_modules([sys.modules[build_item_icon_index.__module__]])
+    modules = index_cache._project_modules([sys.modules[build_item_icon_index.__module__]])
 
     # find_prefixed_ascii decides which string is the icon, so it must count.
     assert "_common.prefixed_string" in modules
@@ -55,11 +68,11 @@ def fake_builder(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         "def build(data, offset_data):\n    return {1: scale('a.dds')}\n"
     )
     monkeypatch.syspath_prepend(str(tmp_path))
-    monkeypatch.setattr(icon_cache, "_PROJECT_PACKAGES", frozenset({"fakepkg", "paz"}))
+    monkeypatch.setattr(index_cache, "_PROJECT_PACKAGES", frozenset({"fakepkg", "paz"}))
 
-    import fakepkg.builder
+    builder = importlib.import_module("fakepkg.builder")
 
-    yield fakepkg.builder.build, package / "helper.py"
+    yield builder.build, package / "helper.py"
 
     for name in [name for name in sys.modules if name.split(".")[0] == "fakepkg"]:
         del sys.modules[name]

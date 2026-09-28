@@ -1,10 +1,11 @@
-"""Disk cache for the icon indexes.
+"""Disk cache for the lookup indexes.
 
 Building an index means decompressing its source table, 194 MB for
 `itemenchant.dbss`, so the result is cached next to the PAZ entry cache and
-invalidated on the same meta version. Mirrors `bdo_cache.py`.
+invalidated on the same meta version. Mirrors `bdo_cache.py`. Values are pickled,
+so an index may hold icon paths or linked IDs.
 
-Indexes are stored keyed by `IconKind.value` rather than by the enum member, so
+Indexes are stored keyed by `IndexKind.value` rather than by the enum member, so
 renaming a kind cannot silently bind cached data to the wrong one.
 
 The meta version only changes with a game patch, so a cache also records a
@@ -19,11 +20,16 @@ import hashlib
 import inspect
 import pickle
 import sys
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path
 from types import ModuleType
 
-_CACHE_FILE = "paz_browser_icons.cache"
+_CACHE_FILE = "paz_browser_indexes.cache"
+# Written before the icon indexes became general lookup indexes; removed on the
+# first save so it does not linger next to the PAZ files.
+_LEGACY_CACHE_FILE = "paz_browser_icons.cache"
+
+CachedIndexes = dict[str, Mapping[int, int | str]]
 
 # Top-level packages whose source can change what an index contains. Standard
 # library and third-party imports are left out: they change with the
@@ -31,10 +37,10 @@ _CACHE_FILE = "paz_browser_icons.cache"
 _PROJECT_PACKAGES = frozenset({"_common", "_dbss", "_bss", "paz"})
 
 
-def load_icon_cache(
+def load_index_cache(
     paz_root: Path,
     fingerprint: str,
-) -> tuple[int, dict[str, dict[int, str]]] | None:
+) -> tuple[int, CachedIndexes] | None:
     """Return (meta version, indexes), or None when absent, unreadable or stale."""
     cache_path = paz_root / _CACHE_FILE
     if not cache_path.exists():
@@ -49,11 +55,11 @@ def load_icon_cache(
         return None
 
 
-def save_icon_cache(
+def save_index_cache(
     paz_root: Path,
     version: int,
     fingerprint: str,
-    indexes: dict[str, dict[int, str]],
+    indexes: CachedIndexes,
 ) -> None:
     cache_path = paz_root / _CACHE_FILE
     with cache_path.open("wb") as f:
@@ -62,10 +68,11 @@ def save_icon_cache(
             f,
             protocol=pickle.HIGHEST_PROTOCOL,
         )
+    (paz_root / _LEGACY_CACHE_FILE).unlink(missing_ok=True)
 
 
 def builder_fingerprint(functions: Iterable[Callable]) -> str:
-    """Hash the source of every project module that shapes the icon indexes.
+    """Hash the source of every project module that shapes the lookup indexes.
 
     Starts from the modules defining `functions`, follows their project imports
     transitively, and always includes this module, so a change to the cache
