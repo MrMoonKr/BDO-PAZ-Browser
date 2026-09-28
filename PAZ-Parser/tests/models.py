@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Mapping
+
+from _common.lookup_index import IndexKind, LookupValue
 
 from .case_input import CaseInput
 from .specs import TestSpec
@@ -19,6 +21,8 @@ class HandlerCase:
     internal_path: str
     tests: list[TestSpec]
     record_mapper: Callable[[dict], dict] | None = None
+    # Installed with init_index() while the handler runs, then removed.
+    lookup_indexes: Mapping[IndexKind, Mapping[int, LookupValue]] = field(default_factory=dict)
 
 
 @dataclass

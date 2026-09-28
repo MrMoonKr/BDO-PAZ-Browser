@@ -138,7 +138,7 @@ Observed `payload_size` ranges from `456` to `1033` bytes (older fixture: `478` 
 | empty                   | `18733`  | Most records |
 | `getknowledge(<id>);`   | `5684`   | Knowledge gained on interaction; one row (`50613`) spells it `getKnowledge(933);` |
 
-The `getknowledge` argument is a knowledge `entry_id`: 5,680 of the 5,684 arguments exist in `mentalcard.dbss` and 5,683 have a LOC `str_type=34` name, which matches the NPC name (e.g. `47791` "Ehren" -> `15936` "Ehren").
+The app groups these links into the `KNOWLEDGE_CHARACTERS` lookup index (`build_knowledge_character_index`), which the `mentalcard.dbss` Learned From column reads. The `getknowledge` argument is a knowledge `entry_id`: 5,680 of the 5,684 arguments exist in `mentalcard.dbss` and 5,683 have a LOC `str_type=34` name, which matches the NPC name (e.g. `47791` "Ehren" -> `15936` "Ehren").
 
 `condition_script` is empty on 24,015 rows. The other 403 hold semicolon-separated condition expressions, 98 of them alongside a `getknowledge` action. Most common calls: `progressQuest` (239, plus `ProgressQuest`/`progressquest` spellings), `CheckRideCharacter` (188), `getOceanTendency` (38), `getIntimacy` (28), `getLifelevel` (27), `clearQuest` (17). Example: `!CheckRideCharacter(29820);...;getIntimacy(47098)>-2500;`.
 

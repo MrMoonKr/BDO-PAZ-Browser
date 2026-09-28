@@ -14,7 +14,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 from enum import Enum
 
-LookupValue = int | str
+# An icon path, one linked ID, or several linked IDs.
+LookupValue = int | str | tuple[int, ...]
 
 
 class IndexKind(Enum):
@@ -28,6 +29,7 @@ class IndexKind(Enum):
     QUEST_ICON = "quest_icon"
     CHARACTER_ICON = "character_icon"
     CHARACTER_ITEM = "character_item"
+    KNOWLEDGE_CHARACTERS = "knowledge_characters"
 
 
 # kind -> {entity_id: value}

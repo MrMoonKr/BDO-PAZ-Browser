@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+from collections.abc import Iterator, Mapping
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from time import perf_counter
 
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler, get_handler
+
+from _common.lookup_index import IndexKind, LookupValue, init_index
 
 from .case_input import CaseInput
 from .fixtures import ensure_fixtures
@@ -71,11 +75,25 @@ def load_case(case: HandlerCase) -> LoadedCase:
     return LoadedCase(handler, entry, data, companions)
 
 
+@contextmanager
+def _installed_indexes(
+    indexes: Mapping[IndexKind, Mapping[int, LookupValue]],
+) -> Iterator[None]:
+    """Install the case's lookup indexes for the duration of the block."""
+    for kind, mapping in indexes.items():
+        init_index(kind, mapping)
+    try:
+        yield
+    finally:
+        for kind in indexes:
+            init_index(kind, None)
+
+
 def run_case(case: HandlerCase) -> HandlerResult:
     loaded = load_case(case)
 
     loc_counter = patch_loc_counter() if case.uses_loc else null_loc_counter()
-    with loc_counter as loc_stats:
+    with loc_counter as loc_stats, _installed_indexes(case.lookup_indexes):
         start = perf_counter()
         records = loaded.handler.get_records(loaded.data, loaded.entry, loaded.companions)
         elapsed_ms = (perf_counter() - start) * 1000

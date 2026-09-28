@@ -5,16 +5,19 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
+from _common.loc import is_loc_loaded, loc_lookup, loc_text, strip_pa_tags
 from _common.html import Column, e, error, icon_cell, sort_keys, table
 from _common.icon_index import IconKind, icon_path
 from _common.lang import load_handler_strings
+from _common.lookup_index import IndexKind, lookup
 from _common.pabr_offset import parse_pabr_offset_rows
 from .parser import parse_characterobject_records
 
 _LANG_DIR = Path(__file__).parent / "lang"
 _OFFSET_FILE = "characterobjectoffset.dbss"
+_LOC_ITEM_NAME = 0
 _LOC_CHARACTER_NAME = 6
+_EMPTY = "-"
 
 
 class CharacterObjectOffsetHandler(PreviewHandler):
@@ -65,6 +68,9 @@ class CharacterObjectHandler(PreviewHandler):
         ]
         if has_loc:
             columns.append(Column(cols.get("nameEn", "Name (EN)"), sort_key="name_en"))
+        columns.append(Column(cols.get("itemId", "Item ID"), "num", sort_key="item_id"))
+        if has_loc:
+            columns.append(Column(cols.get("itemName", "Item"), sort_key="item_name"))
         columns += [
             Column(cols.get("objectKind", "Kind"), "num", sort_key="object_kind"),
             Column(cols.get("modelPath", "Model"), sort_key="model_path"),
@@ -98,16 +104,19 @@ class CharacterObjectHandler(PreviewHandler):
             return [{"_error": f"characterobject.dbss could not be parsed: {ex}"}]
 
         has_loc = is_loc_loaded()
-        return [
-            {
+        records_out: list[dict] = []
+        for r in records:
+            item_id = _item_id(r.character_id)
+            records_out.append({
                 "character_id": r.character_id,
                 "icon_path": icon_path(IconKind.CHARACTER, r.character_id),
                 "name_en": _character_name(r.character_id) if has_loc else "",
+                "item_id": item_id,
+                "item_name": loc_text(_LOC_ITEM_NAME, item_id) if has_loc and item_id is not None else "",
                 "object_kind": r.object_kind,
                 "model_path": r.model_path,
-            }
-            for r in records
-        ]
+            })
+        return records_out
 
     def render_records_page(
         self,
@@ -128,15 +137,27 @@ class CharacterObjectHandler(PreviewHandler):
         for r in slice_:
             row: list[str] = [
                 e(r["character_id"]),
-                icon_cell(r["icon_path"]) if r["icon_path"] else "-",
+                icon_cell(r["icon_path"]) if r["icon_path"] else _EMPTY,
             ]
             if has_loc:
                 row.append(e(r["name_en"]))
+            row.append(e(r["item_id"] or _EMPTY))
+            if has_loc:
+                row.append(e(r["item_name"] or _EMPTY))
             row.append(e(r["object_kind"]))
             row.append(e(r["model_path"]))
             rows.append(row)
 
         return table(meta, self._columns(has_loc), rows)
+
+
+def _item_id(character_id: int) -> int | None:
+    """The one item that places or summons the character, or None.
+
+    None also covers characters named by several items and a missing index.
+    """
+    item_id = lookup(IndexKind.CHARACTER_ITEM, character_id)
+    return item_id if isinstance(item_id, int) else None
 
 
 def _character_name(character_id: int) -> str:

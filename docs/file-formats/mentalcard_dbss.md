@@ -129,6 +129,7 @@ Every one of the 12,502 records parses with this layout and ends exactly at its 
 | Favor           | text | `{min_favor} to {max_favor}`                             |
 | Interest        | num  | `interest`                                               |
 | Obtain          | text | LOC `str_type=34`, `str_id4=2`; fallback to `acquisition_ko` |
+| Learned From    | list | Distinct LOC type `6` names of the characters in `lookup(IndexKind.KNOWLEDGE_CHARACTERS, card_id)`, in ID order, first three then a count; a character without a name shows its ID; unsortable |
 | Position        | text | `x, y, z` rounded; dash when all zero                    |
 
 ---
@@ -139,6 +140,7 @@ Every one of the 12,502 records parses with this layout and ends exactly at its 
 - `theme_id` → LOC `str_type=9`, `str_id1=theme_id` → knowledge category name. Read it as a u16: 524 cards have a non-zero byte at `+0x06` or `+0x07`, and reading `+0x04` as a u32 gives values such as `86040` (`0x15018`) that match no theme. With the u16 read, every card's theme lists that card in its `mentaltheme.dbss` entries.
 - The three floats are whole numbers. `min_favor <= max_favor` on 12,382 cards. Median favor range is 34 to 39 with interest 22 on `flags == 4` cards, and 20 to 26 with interest 30 on the rest.
 - `acquisition_ko` is empty on 651 cards. Whenever LOC has `str_id4=2` for a card, the card also has a non-empty `acquisition_ko` (11,766 cards).
+- `characterstatic.dbss` `getknowledge(<id>)` scripts grant 3,556 of the 12,604 cards on client 3458 (`npcsimply.bss` adds none). Most are granted by one NPC or by copies of one NPC with the same name; card `19` "NPC Pathfind Preventive Knowledge" is granted by 352 characters.
 - Non-zero positions are on 3,146 cards, mostly NPC, barterer and node-manager entries.
 - The index key is not a separate row identifier: it equals `card_id` on every row.
 - How the conversation uses the values, per the [Black Desert Foundry, Story Exchange guide](https://www.blackdesertfoundry.com/story-exchange-guide/): a topic (card) has a fixed Interest Level and a Favor range. The NPC rolls its own Interest Level and Favor each conversation (from its `npcpersonality.dbss` ranges). The window then shows values relative to that NPC: Sparking Interest = topic interest / NPC interest (the chance of a positive reaction, always positive when the topic's is higher), and Interest gained = topic favor minus NPC favor. So the same card shows different numbers with different NPCs (that is how I see it in game, 2026-09-27), and a reading converts back to base values: `interest ≈ sparking × NPC interest`, `favor = interest gained + NPC favor`.

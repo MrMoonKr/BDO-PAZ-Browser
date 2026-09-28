@@ -5,6 +5,7 @@ from typing import Any
 
 import pytest
 
+from _common.lookup_index import IndexKind
 from tests.framework import (
     DeclaredCountTest,
     HandlerCase,
@@ -16,6 +17,9 @@ from tests.framework import (
     run_case,
 )
 
+# A fence placed by exactly one item, the link the CHARACTER_ITEM index keeps.
+_FENCE_CHARACTER = 2053
+_FENCE_ITEM = 58011
 
 OBJECT_CASE = HandlerCase(
     handler_name="characterobject.dbss",
@@ -25,8 +29,14 @@ OBJECT_CASE = HandlerCase(
     uses_loc=True,
     loc_fields=["Name"],
     internal_path="gamecommondata/binary/characterobject.dbss",
+    lookup_indexes={IndexKind.CHARACTER_ITEM: {_FENCE_CHARACTER: _FENCE_ITEM}},
     tests=[
-        SchemaTest(required_keys=["character_id", "icon_path", "name_en", "object_kind", "model_path"]),
+        SchemaTest(
+            required_keys=[
+                "character_id", "icon_path", "name_en", "item_id", "item_name",
+                "object_kind", "model_path",
+            ]
+        ),
         # The data file's own count; the parser walks the offset table's rows.
         DeclaredCountTest(declared=header_count()),
         TargetTest(
@@ -36,7 +46,15 @@ OBJECT_CASE = HandlerCase(
                 "name_en": "Golden Hand Vase",
                 "object_kind": 2,
                 "model_path": "00_Common/Pot/Pot_Base_48.pam",
+                # Not in the installed index, so no item and a dash.
+                "item_id": None,
+                "item_name": "",
             },
+        ),
+        TargetTest(
+            col="character_id",
+            value=_FENCE_CHARACTER,
+            expected={"item_id": _FENCE_ITEM, "item_name": "[Event] Fence"},
         ),
         TargetTest(
             col="character_id",

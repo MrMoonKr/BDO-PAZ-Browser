@@ -180,6 +180,8 @@ Grouped by model folder; the kind numbers are observed, not named by the client.
 | Character ID | num  | `character_id`, right-aligned                              |
 | Icon         | icon | `IconKind.CHARACTER` lookup, so overrides apply; dash when none |
 | Name         | text | LOC type `6`; shown only when LOC is loaded                |
+| Item ID      | num  | `lookup(IndexKind.CHARACTER_ITEM, character_id)`; dash for characters named by zero or several items |
+| Item         | text | LOC type `0` for the item ID; shown only when LOC is loaded |
 | Kind         | num  | `object_kind`                                              |
 | Model        | text | `model_path`                                               |
 
@@ -192,6 +194,7 @@ The handler parses only the record prefix. The inline Korean house names are not
 - This file stores icon paths for 4,817 of the 24,418 character IDs in `characterstaticoffset.dbss`; 4,608 of them exist in the PAZ. The rest of the IDs are NPCs, monsters and similar entries with no world-object record.
 - Borrowing item icons raises the character index to 6,157 entries, 6,068 of them working (24.9% of all character IDs, up from 18.9%); pets gain icons this way too. 89 paths still point at icons the client does not ship; fix those with `icon_overrides.json`.
 - Before the `New_Icon/` form was handled, those 195 records resolved to `ui_texture/icon/03_etc/...`, dropping the `new_icon/` level, and all of them pointed at files that do not exist.
+- The `CHARACTER_ITEM` index (the item that places or summons the character, from `itemenchant.dbss` `+0xAA`) links 3,964 of the 5,127 records on client 3458.
 - LOC type `6` names 5,020 of the 5,123 records; most of the rest are mansion props (`DecoPropMansion`).
 - `crop_key_a`/`crop_key_b` are not item IDs: item `57001` is a Striker costume, while character `1201` with `crop_key_a = 57001` is Pepper Crop.
 

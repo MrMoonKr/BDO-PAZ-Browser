@@ -6,6 +6,7 @@ from typing import Any
 
 import pytest
 
+from _common.lookup_index import IndexKind
 from tests.framework import (
     DeclaredCountTest,
     HandlerCase,
@@ -18,6 +19,9 @@ from tests.framework import (
     run_case,
 )
 
+# Granbill grants card 304; Goyoung (47280) and a later copy (59998) both grant
+# card 2043, so the name is shown once.
+_KNOWLEDGE_CHARACTERS = {304: (43433,), 2043: (47280, 59998)}
 
 CASE = HandlerCase(
     handler_name="mentalcard.dbss",
@@ -27,8 +31,9 @@ CASE = HandlerCase(
     uses_loc=True,
     loc_fields=["Knowledge Name", "Category Name"],
     internal_path="gamecommondata/binary/mentalcard.dbss",
+    lookup_indexes={IndexKind.KNOWLEDGE_CHARACTERS: _KNOWLEDGE_CHARACTERS},
     tests=[
-        SchemaTest(required_keys=["entry_id", "entry_name", "node_id", "node_name", "min_favor", "max_favor", "interest", "icon_path", "obtain", "position", "position_text"]),
+        SchemaTest(required_keys=["entry_id", "entry_name", "node_id", "node_name", "min_favor", "max_favor", "interest", "icon_path", "obtain", "learned_from", "position", "position_text"]),
         DeclaredCountTest(declared=header_count()),
         RangeTest(col="min_favor", min_val=0, max_val=math.inf),
         RangeTest(col="max_favor", min_val=0, max_val=math.inf),
@@ -42,6 +47,8 @@ CASE = HandlerCase(
                 "node_name": "Altar of Blood",
                 "icon_path": "ui_texture/ui_artwork/ic_09812.dds",
                 "obtain": "Altar of Blood",
+                # Not in the installed index.
+                "learned_from": [],
                 # All zero means no position.
                 "position_text": "",
             },
@@ -55,9 +62,11 @@ CASE = HandlerCase(
                 "node_name": "Elionism & the Delphe Knights",
                 "icon_path": "ui_texture/ui_artwork/ic_00304.dds",
                 "obtain": "Delphe Knights Quartermaster",
+                "learned_from": ["Granbill"],
                 "position_text": "-133004, 2729, -46023",
             },
         ),
+        TargetTest(col="entry_id", value=2043, expected={"learned_from": ["Goyoung"]}),
         TargetTest(
             col="entry_id",
             value=3030,

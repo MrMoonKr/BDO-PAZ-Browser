@@ -3,7 +3,7 @@
 Building an index means decompressing its source table, 194 MB for
 `itemenchant.dbss`, so the result is cached next to the PAZ entry cache and
 invalidated on the same meta version. Mirrors `bdo_cache.py`. Values are pickled,
-so an index may hold icon paths or linked IDs.
+so an index may hold icon paths, linked IDs or tuples of IDs.
 
 Indexes are stored keyed by `IndexKind.value` rather than by the enum member, so
 renaming a kind cannot silently bind cached data to the wrong one.
@@ -29,7 +29,8 @@ _CACHE_FILE = "paz_browser_indexes.cache"
 # first save so it does not linger next to the PAZ files.
 _LEGACY_CACHE_FILE = "paz_browser_icons.cache"
 
-CachedIndexes = dict[str, Mapping[int, int | str]]
+# Values match `LookupValue` in handlers/_common/lookup_index.py.
+CachedIndexes = dict[str, Mapping[int, int | str | tuple[int, ...]]]
 
 # Top-level packages whose source can change what an index contains. Standard
 # library and third-party imports are left out: they change with the

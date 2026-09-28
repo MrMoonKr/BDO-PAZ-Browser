@@ -4,8 +4,13 @@ Several large tables store text inline with an 8-byte prefix: a u32 length
 followed by a u32 zero, then the text itself with no terminator. UTF-16 strings
 count characters, ASCII strings count bytes.
 
-The strings sit at no fixed offset inside a block, so ASCII text is located by
-scanning printable runs and confirming the length that precedes each candidate.
+`read_prefixed_at` is the one decoder: strict, for a prefix at a known position,
+and it returns where the next field starts. The lenient readers are for strings
+whose position is only a guess, so they also require a plausible prefix (3 to
+200 units, zero high word) and return nothing instead of raising:
+`read_prefixed_utf16` checks one candidate position, and `find_prefixed_ascii`
+locates ASCII text by scanning printable runs and confirming the length that
+precedes each candidate.
 """
 
 from __future__ import annotations
@@ -23,24 +28,33 @@ _MAX_LENGTH = 200
 _PRINTABLE_RUN = re.compile(rb"[ -~]{3,200}")
 
 
-def read_prefixed_utf16(data: bytes, prefix_at: int) -> str:
-    """Read a UTF-16LE string whose 8-byte prefix starts at `prefix_at`.
+def _is_plausible_prefix(data: bytes, prefix_at: int) -> bool:
+    """Whether `prefix_at` holds a short-string length with a zero high word.
 
-    The stored length counts characters, not bytes. Returns an empty string when
-    the prefix is not a plausible header or the text runs past the buffer.
+    For reads that only guess where a string sits, where a real prefix must be
+    told apart from arbitrary bytes.
     """
-    length = u32(data, prefix_at)
-    if not _MIN_LENGTH <= length <= _MAX_LENGTH:
-        return ""
-    if u32(data, prefix_at + 4) != 0:
+    return (
+        _MIN_LENGTH <= u32(data, prefix_at) <= _MAX_LENGTH
+        and u32(data, prefix_at + 4) == 0
+    )
+
+
+def read_prefixed_utf16(data: bytes, prefix_at: int) -> str:
+    """Read a UTF-16LE string whose 8-byte prefix may start at `prefix_at`.
+
+    The lenient form of `read_prefixed_at`, for a string that is not always
+    there: returns an empty string when the prefix is not a plausible header
+    (3 to 200 characters) or the text runs past the buffer.
+    """
+    if not _is_plausible_prefix(data, prefix_at):
         return ""
 
-    start = prefix_at + STRING_PREFIX_SIZE
-    end = start + length * 2
-    if end > len(data):
+    try:
+        text, _ = read_prefixed_at(data, prefix_at, len(data), wide=True)
+    except ValueError:
         return ""
-
-    return data[start:end].decode("utf-16-le", errors="replace")
+    return text
 
 
 def find_prefixed_ascii(data: bytes, start: int, end: int) -> list[str]:
@@ -54,14 +68,10 @@ def find_prefixed_ascii(data: bytes, start: int, end: int) -> list[str]:
     for match in _PRINTABLE_RUN.finditer(data, start, end):
         text_start = match.start()
         prefix_at = text_start - STRING_PREFIX_SIZE
-        if prefix_at < start:
+        if prefix_at < start or not _is_plausible_prefix(data, prefix_at):
             continue
 
         length = u32(data, prefix_at)
-        if not _MIN_LENGTH <= length <= _MAX_LENGTH:
-            continue
-        if u32(data, prefix_at + 4) != 0:
-            continue
         if length > match.end() - text_start or text_start + length > end:
             continue
 

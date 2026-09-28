@@ -18,7 +18,7 @@ from __future__ import annotations
 import struct
 
 from _common.knowledge_script import knowledge_id_of
-from _common.pabr_offset import PabrOffsetRow
+from _common.pabr_offset import PabrOffsetRow, parse_pabr_offset_rows
 from _common.prefixed_string import find_prefixed_ascii
 
 _TAG = 0x08
@@ -89,3 +89,26 @@ def parse_characterstatic_records(data: bytes, rows: list[PabrOffsetRow]) -> lis
     every later field would be misread.
     """
     return [_parse_record(data, row) for row in rows]
+
+
+def build_knowledge_character_index(data: bytes, offset_data: bytes) -> dict[int, tuple[int, ...]]:
+    """Map knowledge ID to every character whose action script grants it.
+
+    Character IDs are ascending, so the original NPC comes before later copies
+    of it (47280 before 59998). A malformed record is skipped rather than
+    failing the whole index: the preview of this table reports it instead.
+    """
+    characters: dict[int, list[int]] = {}
+
+    for row in parse_pabr_offset_rows(offset_data):
+        try:
+            knowledge_id = _parse_record(data, row)["knowledge_id"]
+        except (ValueError, struct.error):
+            continue
+        if knowledge_id is not None:
+            characters.setdefault(knowledge_id, []).append(row.entry_id)
+
+    return {
+        knowledge_id: tuple(sorted(ids))
+        for knowledge_id, ids in characters.items()
+    }

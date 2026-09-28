@@ -5,6 +5,7 @@ from typing import Any
 
 import pytest
 
+from _dbss.characterstatic.parser import build_knowledge_character_index
 from tests.framework import (
     DeclaredCountTest,
     HandlerCase,
@@ -113,3 +114,16 @@ def test_characterstatic_dbss(spec: Any, static_result: HandlerResult) -> None:
 @pytest.mark.parametrize("spec", OFFSET_CASE.tests, ids=case_id)
 def test_characterstaticoffset_dbss(spec: Any, offset_result: HandlerResult) -> None:
     offset_result.check(spec)
+
+
+def test_knowledge_index_holds_every_granting_character(static_result: HandlerResult) -> None:
+    """The index is the preview's knowledge links, grouped by knowledge ID."""
+    source = static_result.source
+    index = build_knowledge_character_index(source.data, source.file("characterstaticoffset.dbss"))
+
+    expected: dict[int, list[int]] = {}
+    for record in static_result.records:
+        if record["knowledge_id"] is not None:
+            expected.setdefault(record["knowledge_id"], []).append(record["character_id"])
+
+    assert index == {knowledge_id: tuple(sorted(ids)) for knowledge_id, ids in expected.items()}

@@ -96,6 +96,8 @@ Provides keyed lookup into `petexp.dbss`.
 
 Offset records are ordered by descending key: 9, 8, 7, 6, 5, 4, 3, 2, 1.
 
+The rows are the same `[u16 id][u32 offset][u32 size]` rows as a PABR offset table, but the file has no `PABR` magic and no 12-byte trailer (94 bytes = 4 + 9 x 10). The parser reads it with `parse_bare_offset_rows` from `_common/pabr_offset.py`.
+
 ---
 
 ## Suggested UI Layout

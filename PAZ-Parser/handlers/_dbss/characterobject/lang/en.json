@@ -8,6 +8,8 @@
     "characterId": "Character ID",
     "icon": "Icon",
     "nameEn": "Name (EN)",
+    "itemId": "Item ID",
+    "itemName": "Item",
     "objectKind": "Kind",
     "modelPath": "Model"
   }

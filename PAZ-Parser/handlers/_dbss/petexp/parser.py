@@ -2,45 +2,37 @@ from __future__ import annotations
 
 import struct
 
+from _common.pabr_offset import parse_bare_offset_rows
 
-_OFFSET_HEADER_SIZE = 4
-_OFFSET_RECORD_SIZE = 10
+
+# petexp.dbss opens with a u32 record count.
+_DATA_HEADER_SIZE = 4
+# Each offset points just past a u16 copy of the EXP table ID.
+_KEY_PREFIX_SIZE = 2
 _PAYLOAD_SIZE = 406
 _LEVEL_CAPACITY = 50
 
 
 def parse_petexpoffset_records(data: bytes) -> list[dict]:
-    if len(data) < _OFFSET_HEADER_SIZE:
-        return []
-
-    (count,) = struct.unpack_from("<I", data, 0)
-    records: list[dict] = []
-
-    for index in range(count):
-        pos = _OFFSET_HEADER_SIZE + index * _OFFSET_RECORD_SIZE
-        if pos + _OFFSET_RECORD_SIZE > len(data):
-            break
-
-        exp_table_id, data_offset, data_size = struct.unpack_from("<HII", data, pos)
-        records.append({
-            "exp_table_id": exp_table_id,
-            "data_offset": data_offset,
-            "data_size": data_size,
-            "record_start": data_offset - 2,
-        })
-
-    return records
+    return [
+        {
+            "exp_table_id": row.entry_id,
+            "data_offset": row.offset,
+            "data_size": row.size,
+            "record_start": row.offset - _KEY_PREFIX_SIZE,
+        }
+        for row in parse_bare_offset_rows(data)
+    ]
 
 
 def parse_petexp_records(data: bytes, offset_data: bytes) -> list[dict]:
     records: list[dict] = []
-    offsets = parse_petexpoffset_records(offset_data)
 
-    for row, offset_record in enumerate(offsets):
-        record_start = offset_record["record_start"]
-        data_offset = offset_record["data_offset"]
-        data_size = offset_record["data_size"]
-        if record_start < _OFFSET_HEADER_SIZE or data_offset + data_size > len(data):
+    for row, offset_row in enumerate(parse_bare_offset_rows(offset_data)):
+        data_offset = offset_row.offset
+        data_size = offset_row.size
+        record_start = data_offset - _KEY_PREFIX_SIZE
+        if record_start < _DATA_HEADER_SIZE or data_offset + data_size > len(data):
             raise ValueError(f"pet exp record {row} exceeds file size")
         if data_size < _PAYLOAD_SIZE:
             raise ValueError(f"pet exp record {row} payload is too small")
@@ -58,8 +50,8 @@ def parse_petexp_records(data: bytes, offset_data: bytes) -> list[dict]:
                 "row": row,
                 "exp_table_id": exp_table_id,
                 "prefix_exp_table_id": prefix_id,
-                "offset_exp_table_id": offset_record["exp_table_id"],
-                "key_match": prefix_id == exp_table_id == offset_record["exp_table_id"],
+                "offset_exp_table_id": offset_row.entry_id,
+                "key_match": prefix_id == exp_table_id == offset_row.entry_id,
                 "max_level": max_level,
                 "level": level,
                 "required_exp": required_exp,
