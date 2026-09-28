@@ -21,6 +21,13 @@
   --error: #ff6b6b;
   --warning: #e09050;
   --table-row-height: 27px;
+  /* Worker grade name colors, as in game: Naive to Artisan, then named workers */
+  --worker-grade-0: #ffffff;
+  --worker-grade-1: #8db543;
+  --worker-grade-2: #04b3f1;
+  --worker-grade-3: #f6c232;
+  --worker-grade-4: #ac510b;
+  --worker-grade-5: var(--worker-grade-3);
 }
 
 *,

@@ -139,3 +139,28 @@ th.sort-pending::after {
   background: rgba(90, 150, 255, 0.22);
   outline: 1px solid rgba(90, 150, 255, 0.65);
 }
+
+/* Worker names colored by grade (plantworker.bss, plantworkerselect.bss) */
+.worker-grade-0 {
+  color: var(--worker-grade-0);
+}
+
+.worker-grade-1 {
+  color: var(--worker-grade-1);
+}
+
+.worker-grade-2 {
+  color: var(--worker-grade-2);
+}
+
+.worker-grade-3 {
+  color: var(--worker-grade-3);
+}
+
+.worker-grade-4 {
+  color: var(--worker-grade-4);
+}
+
+.worker-grade-5 {
+  color: var(--worker-grade-5);
+}

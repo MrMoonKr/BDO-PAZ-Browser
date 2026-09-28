@@ -1,9 +1,9 @@
 {
   "columns": {
-    "selectionId": "Selection ID",
-    "selectionName": "Selection Name",
     "workerId": "Worker ID",
     "workerName": "Worker Name",
+    "cityId": "City ID",
+    "cityName": "City Name",
     "hireCost": "Hire Cost"
   }
 }

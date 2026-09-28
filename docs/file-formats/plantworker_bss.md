@@ -64,15 +64,31 @@ Each icon entry has one leading zero byte before the length:
 | `+0x00`  | u16  | worker_id       | Worker/NPC ID; LOC type `6` name key               |
 | `+0x02`  | u16  | next_worker_id  | Next-grade/linked worker ID, or `0`                |
 | `+0x04`  | u16  | reserved_a      | Observed `0`                                       |
-| `+0x06`  | u32  | unknown_loc_a   | LOC-like ID; meaning unresolved                    |
-| `+0x0A`  | u32  | unknown_loc_b   | LOC-like ID; meaning unresolved                    |
-| `+0x0E`  | u32  | move_speed      | Worker move stat as displayed in worker data       |
+| `+0x06`  | u32  | grade_class     | Grade the game colors the name by, see Grade Class |
+| `+0x0A`  | u32  | unknown_0a      | Always `grade_class + 5`; meaning unresolved       |
+| `+0x0E`  | u32  | move_speed      | Move speed × 100 (`200` is 2.00 in game)            |
 | `+0x12`  | u32  | stamina         | Worker stamina                                     |
-| `+0x16`  | u32  | luck            | Worker luck                                        |
+| `+0x16`  | u32  | luck            | Luck × 10,000 (`50000` is 5.00 in game)             |
 | `+0x1B`  | u32  | icon_index      | Zero-based index into the trailing icon path table |
-| `+0x16F` | u32  | base_work_speed | Base work speed value                              |
+| `+0x16F` | u32  | base_work_speed | Work speed × 1,000,000 (`30000000` is 30.00)        |
 
 Remaining bytes contain many stat/progression values that are not fully named yet.
+
+Earlier versions of this doc called `grade_class` `unknown_06`, and before that `unknown_loc_a`; `unknown_0a` was `unknown_loc_b`.
+
+### Grade Class
+
+`grade_class` takes five values, one per name color in game (checked against the worker names on 2026-09-28):
+
+| `grade_class` | Grade          | Color  | Workers (2026-09-27 client)                                      |
+| ------------- | -------------- | ------ | ---------------------------------------------------------------- |
+| `28023`       | Base or Naive  | green, white for Naive | 27: every plain `... Worker`, every `Naive ...` and the dev workers |
+| `28024`       | Skilled        | blue   | 15, including `Demibeast Worker` (`8007`), which is white         |
+| `28025`       | Professional   | yellow | 15                                                                |
+| `28026`       | Artisan        | red    | 20, including the 115 WS Torres, Darifu, Zobadi and Afuaru        |
+| `28027`       | Named          | yellow | 29 named workers such as Acher, Tirol and Tiny Nose               |
+
+Naive and base workers share `28023`, and no other field in the record tells them apart, so inside that class the handler checks the English name for `Naive`. The five dev workers (`7996` QA Worker: Time, `7997` QA Worker: Luck, `7998` Grand Chamberlain, `7999` Temporary Laborer, `8000` QA Super Worker) are also `28023` but white in game, and `Demibeast Worker` (`8007`) is `28024` but white too: it is an unused worker with a goblin icon that upgrades into `Artisan Fadus Worker` (`8006`), per [BDO Codex](https://bdocodex.com/us/npc/8007/). The handler lists these six by ID. The values are not LOC keys: LOC type 6 rows with these IDs are unrelated monsters (`28023` Goblin Thrower).
 
 Derived fields:
 
@@ -99,18 +115,20 @@ icon_path = icon_paths[icon_index]
 | ---------- | ---- | ----------------------------------------- |
 | Worker ID  | num  | `worker_id`                               |
 | Icon       | text | Render `icon_path` with icon-cell preview |
-| Name       | text | Prefer LOC type `6`; fall back to blank   |
+| Name       | text | Prefer LOC type `6`; fall back to blank; colored by `grade_class` |
 | Next Tier  | num  | `next_worker_id`; dash when zero, stored as `None` so it sorts last         |
-| Move       | num  | `move_speed`                              |
+| Move       | num  | `move_speed / 100`, two decimals          |
 | Stamina    | num  | `stamina`                                 |
-| Luck       | num  | `luck`                                    |
-| Work Speed | num  | `base_work_speed`                         |
+| Luck       | num  | `luck / 10000`, two decimals              |
+| Work Speed | num  | `base_work_speed / 1000000`, two decimals |
+
+The three scaled stats are shown as the game's worker window shows them; the record keeps the raw integers for sorting and export. A base Giant Worker reads 2.00 move speed, 5.00 luck and 30.00 work speed, and an Artisan Goblin Worker 115.00 work speed before any level-ups. The name is colored by grade (see Grade Class and the color table in [plantworkerselect](plantworkerselect_bss.md), Suggested UI Layout); `worker_grade` is on the record.
 
 ---
 
 ## Notes
 
-- Observed decompressed size is `99,484` bytes.
+- Observed decompressed size is `99,484` bytes, byte-identical in the pre-2026-09-27 fixture and the 2026-09-27 client.
 - File size matches `8 + (106 * 0x390) + 4 + encoded icon path table`.
 - The trailing icon table contains `38` DDS paths under `New_UI_Common_forLua/Widget/WorldMap/WorkerIcon/`.
 
@@ -120,6 +138,6 @@ icon_path = icon_paths[icon_index]
 
 The arrays between `+0x20` and `+0x38F` are not fully identified.
 
-### unknown_loc_a and unknown_loc_b
+### `unknown_0a` Meaning
 
-Both fields resolve to unrelated LOC rows in current English data, their purpose is unconfirmed.
+`unknown_0a` is always `grade_class + 5` (`28028` to `28032`). It resolves to unrelated LOC rows, and no other worker file references either value.

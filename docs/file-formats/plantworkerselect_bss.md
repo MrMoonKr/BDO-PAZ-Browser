@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Worker selection table keyed by town/node LOC IDs. Each group lists workers that can appear for one town/node, plus the observed worker hire cost/price tier.
+Worker selection table keyed by town/node LOC IDs. Each group lists workers that can appear for one town/node, each with the silver price to hire that worker there (`hire_cost`).
 
 Example rows:
 
@@ -30,7 +30,7 @@ All multi-byte values are little-endian unless noted otherwise.
 
 | Offset  | Type | Field        | Notes                              |
 | ------- | ---- | ------------ | ---------------------------------- |
-| `+0x00` | u32  | group_count  | Number of selection groups; `30`   |
+| `+0x00` | u32  | group_count  | Number of selection groups; observed `30` in the pre-2026-09-27 fixture, `31` in the 2026-09-27 client |
 | `+0x04` | ...  | group_stream | `group_count` groups packed in row |
 
 The file is fully consumed by `4 + sum(4 + entry_count * 0x10)`.
@@ -54,6 +54,8 @@ Each group repeats one `selection_id` across all entries. Observed group sizes:
 | 12          | 8           |
 | 13          | 20          |
 
+These are the pre-2026-09-27 fixture's 30 groups and 372 entries. The 2026-09-27 client adds Angavu Outpost (`1733`, 13 entries) as group 1, for 31 groups and 385 entries.
+
 ### Selection Entry (`0x10` bytes)
 
 | Offset  | Type | Field        | Notes                                                 |
@@ -61,7 +63,7 @@ Each group repeats one `selection_id` across all entries. Observed group sizes:
 | `+0x00` | u16  | selection_id | Town/node LOC type `17` key; same value within group  |
 | `+0x02` | u16  | worker_id    | Worker ID; matches `plantworker.bss` and LOC type `6` |
 | `+0x04` | u32  | zero_a       | Always observed as `0`                                |
-| `+0x08` | u32  | hire_cost    | Observed values: `1500`, `3500`, `10000`, `30000`, `90000` |
+| `+0x08` | u32  | hire_cost    | Hire price in silver; observed `1500`, `3500`, `10000`, `30000`, `90000` |
 | `+0x0C` | u32  | zero_b       | Always observed as `0`                                |
 
 Derived fields:
@@ -107,6 +109,7 @@ worker_name = LOC type 6, str_id1=worker_id, str_id4=0
 | `1424`       | Godu Village           | 12          |
 | `1444`       | Bukpo                  | 12          |
 | `1553`       | Hakinza Sanctuary      | 13          |
+| `1733`       | Angavu Outpost         | 13; 2026-09-27 client only |
 
 ---
 
@@ -114,37 +117,55 @@ worker_name = LOC type 6, str_id1=worker_id, str_id4=0
 
 | Group | Selection ID | Selection Name | Worker ID | Worker Name    | Hire Cost |
 | ----- | ------------ | -------------- | --------- | -------------- | --------- |
-| 0     | `77`         | Calpheon City  | `7501`    | Naive Worker   | `1500`    |
-| 0     | `77`         | Calpheon City  | `7502`    | Giant Worker   | `3500`    |
-| 0     | `77`         | Calpheon City  | `7571`    | Artisan Giant Worker | `90000` |
-| 18    | `735`        | Grana          | `8001`    | Papu Worker    | `3500`    |
-| 20    | `955`        | O'draxxia      | `8020`    | Dwarf Worker   | `3500`    |
-| 21    | `1444`       | Bukpo          | `8047`    | Dokkebi Worker | `3500`    |
+| 0     | `77`         | Calpheon City  | `7501`    | Naive Worker   | `1500`     |
+| 0     | `77`         | Calpheon City  | `7502`    | Giant Worker   | `3500`     |
+| 0     | `77`         | Calpheon City  | `7571`    | Artisan Giant Worker | `90000`    |
+| 18    | `735`        | Grana          | `8001`    | Papu Worker    | `3500`     |
+| 20    | `955`        | O'draxxia      | `8020`    | Dwarf Worker   | `3500`     |
+| 21    | `1444`       | Bukpo          | `8047`    | Dokkebi Worker | `3500`     |
+
+Group numbers are from the pre-2026-09-27 fixture; in the 2026-09-27 client every group after `0` moves down by one.
 
 ---
 
 ## Suggested UI Layout
 
-| Column         | Type | Notes                                             |
-| -------------- | ---- | ------------------------------------------------- |
-| Selection ID   | num  | `selection_id`, right-aligned                     |
-| Selection Name | text | Prefer LOC type `17`; fall back to `selection_id` |
-| Worker ID      | num  | `worker_id`, right-aligned                        |
-| Worker Name    | text | Prefer LOC type `6`; fall back to blank           |
-| Hire Cost      | num  | `hire_cost`, right-aligned                        |
+| Column      | Type | Notes                                                                 |
+| ----------- | ---- | --------------------------------------------------------------------- |
+| Worker ID   | num  | `worker_id`, right-aligned                                            |
+| Worker Name | text | Prefer LOC type `6`; fall back to blank; colored by grade, see below  |
+| City ID     | num  | `selection_id`, right-aligned                                         |
+| City Name   | text | Prefer LOC type `17`; fall back to `selection_id`                     |
+| Hire Cost   | num  | `hire_cost`, right-aligned                                            |
+
+The worker name is shown in its in-game grade color, from the `plantworker.bss` companion's `grade_class` (see [plantworker](plantworker_bss.md), Grade Class; `worker_grade` on the record). All 385 entries of the 2026-09-27 client get a grade, and outside Old Wisdom Tree every grade matches its hire price.
+
+| Grade        | Color  | CSS value |
+| ------------ | ------ | --------- |
+| Naive        | white  | `#ffffff` |
+| Base         | green  | `#8db543` |
+| Skilled      | blue   | `#04b3f1` |
+| Professional | yellow | `#f6c232` |
+| Artisan      | red    | `#ac510b` |
+| Named        | yellow | `#f6c232` |
+
+Green is taken from an in-game screenshot of a base Goblin Worker.
 
 ---
 
 ## Notes
 
-- Observed file size is `6,076` bytes.
+- Observed file size is `6,076` bytes in the pre-2026-09-27 fixture, `6,288` in the 2026-09-27 client.
 - There is no `PABR` magic; the file starts with the top-level group count.
 - All `worker_id` values in this file exist in `plantworker.bss`.
 - `zero_a` and `zero_b` are invariant zero fields across all observed entries.
-- Worker costs map to a small fixed set: `1500`, `3500`, `10000`, `30000`, and `90000`.
+- Hire costs map to a small fixed set: `1500`, `3500`, `10000`, `30000`, and `90000`. In most towns the price rises with grade (Naive `1500`, base `3500`, Skilled `10000`, Professional `30000`, Artisan `90000`).
+- In game the five grades are colored white (Naive), green (base, e.g. `Papu Worker`), blue (Skilled), yellow (Professional) and red (Artisan); this file stores only the worker ID, the grade comes from `plantworker.bss`.
+- Old Wisdom Tree (`706`) prices its Papu and Fadus grades in reverse: Artisan `3500`, Professional `10000`, Skilled `30000`, base `90000`.
+- Checked in game on 2026-09-28: in Grána (`735`) a base worker costs 3,500, a Skilled 10,000 and a Professional 30,000; in Old Wisdom Tree an Artisan costs 3,500; in O'draxxia (`955`) a base Dwarf Worker (`8020`) costs 3,500; in Heidel (`32`) a Naive worker costs 1,500, a base 3,500, a Skilled 10,000 and an Artisan Goblin Worker (`7572`) 90,000. All nine match the stored `hire_cost` of that row, covering every price level.
 
 ## Open Questions
 
-### `hire_cost` Semantics
+### Old Wisdom Tree Only Offers Artisans
 
-The `+0x08` value behaves like a worker hire cost or price tier, but the exact in-game label has not been confirmed from UI evidence.
+Old Wisdom Tree (`706`) lists all four Papu and Fadus grades, but in game only Artisan workers came up there (checked 2026-09-28, several rolls). Most likely an event is active; if base, Skilled and Professional workers come up again once it ends, the list is the whole story, and a base worker should then cost 90,000.

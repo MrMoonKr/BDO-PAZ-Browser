@@ -8,6 +8,8 @@ from bdo_preview import PreviewHandler
 from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
+from .display import LUCK_SCALE, MOVE_SPEED_SCALE, WORK_SPEED_SCALE, format_stat, worker_name_cell
+from .grade import worker_grade
 from .parser import parse_plantworker_records
 
 
@@ -47,6 +49,9 @@ class PlantWorkerBssHandler(PreviewHandler):
         for record in parse_plantworker_records(data):
             row = dict(record)
             row["name"] = _worker_name(record["worker_id"])
+            row["worker_grade"] = worker_grade(
+                record["grade_class"], record["worker_id"], row["name"]
+            )
             # 0 means the last tier. None renders a dash and sorts last.
             row["next_worker_id"] = record["next_worker_id"] or None
             records.append(row)
@@ -69,12 +74,12 @@ class PlantWorkerBssHandler(PreviewHandler):
             [
                 e(record["worker_id"]),
                 icon_cell(record.get("icon_path") or f"#{record['icon_index']}"),
-                e(record.get("name") or "-"),
+                worker_name_cell(record.get("name"), record.get("worker_grade")),
                 e(record["next_worker_id"] or "-"),
-                e(record["move_speed"]),
+                e(format_stat(record["move_speed"], MOVE_SPEED_SCALE)),
                 e(record["stamina"]),
-                e(record["luck"]),
-                e(record["base_work_speed"]),
+                e(format_stat(record["luck"], LUCK_SCALE)),
+                e(format_stat(record["base_work_speed"], WORK_SPEED_SCALE)),
             ]
             for record in slice_
         ]

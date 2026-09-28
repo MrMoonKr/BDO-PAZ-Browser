@@ -8,6 +8,8 @@ from bdo_preview import PreviewHandler
 from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import loc_text
+from _bss.plantworker.display import worker_name_cell
+from _bss.plantworker.grade import worker_grade
 from _bss.plantworker.parser import parse_plantworker_records
 from .parser import parse_plantworkerselect_records
 
@@ -30,10 +32,10 @@ class PlantWorkerSelectBssHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
         cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
         return [
-            Column(cols.get("selectionId", "Selection ID"), "num", sort_key="selection_id"),
-            Column(cols.get("selectionName", "Selection Name"), sort_key="selection_name"),
             Column(cols.get("workerId", "Worker ID"), "num", sort_key="worker_id"),
             Column(cols.get("workerName", "Worker Name"), sort_key="worker_name"),
+            Column(cols.get("cityId", "City ID"), "num", sort_key="selection_id"),
+            Column(cols.get("cityName", "City Name"), sort_key="selection_name"),
             Column(cols.get("hireCost", "Hire Cost"), "num", sort_key="hire_cost"),
         ]
 
@@ -60,6 +62,9 @@ class PlantWorkerSelectBssHandler(PreviewHandler):
                 loc_text(17, row["selection_id"]) or str(row["selection_id"])
             )
             row["worker_name"] = loc_text(6, row["worker_id"])
+            row["worker_grade"] = worker_grade(
+                worker.get("grade_class"), row["worker_id"], row["worker_name"] or ""
+            )
             row["worker_icon_path"] = worker.get("icon_path", "")
             row["worker_move_speed"] = worker.get("move_speed")
             row["worker_stamina"] = worker.get("stamina")
@@ -89,10 +94,10 @@ class PlantWorkerSelectBssHandler(PreviewHandler):
 
         rows = [
             [
+                e(record["worker_id"]),
+                worker_name_cell(record.get("worker_name"), record.get("worker_grade")),
                 e(record["selection_id"]),
                 e(record.get("selection_name") or record["selection_id"]),
-                e(record["worker_id"]),
-                e(record.get("worker_name") or "-"),
                 e(record["hire_cost"]),
             ]
             for record in slice_

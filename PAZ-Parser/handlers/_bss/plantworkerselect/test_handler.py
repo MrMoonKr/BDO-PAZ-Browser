@@ -6,15 +6,38 @@ from typing import Any
 import pytest
 
 from tests.framework import (
-    CountTest,
+    CaseInput,
+    DeclaredCount,
+    DeclaredCountTest,
     HandlerCase,
     HandlerResult,
-    PosTest,
+    RangeTest,
     SchemaTest,
     TargetTest,
     case_id,
     run_case,
 )
+
+from _bss.plantworker.grade import WorkerGrade
+
+
+_ICON_FOLDER = "New_UI_Common_forLua/Widget/WorldMap/WorkerIcon/"
+_ENTRY_SIZE = 0x10
+
+
+def _entry_rows() -> DeclaredCount:
+    """Entries in the file: its bytes after the group count and each group's
+    u32 entry count, 16 bytes per entry."""
+
+    def read(source: CaseInput) -> int:
+        raw = source.file(None)
+        group_count = int.from_bytes(raw[:4], "little")
+        entry_bytes = len(raw) - 4 - 4 * group_count
+        if entry_bytes < 0 or entry_bytes % _ENTRY_SIZE:
+            raise AssertionError(f"{len(raw)} bytes do not hold {group_count} groups of 16-byte entries")
+        return entry_bytes // _ENTRY_SIZE
+
+    return read
 
 
 CASE = HandlerCase(
@@ -35,6 +58,7 @@ CASE = HandlerCase(
                 "selection_name",
                 "worker_id",
                 "worker_name",
+                "worker_grade",
                 "hire_cost",
                 "worker_icon_path",
                 "worker_move_speed",
@@ -45,75 +69,49 @@ CASE = HandlerCase(
                 "zero_b",
             ],
         ),
-        CountTest(expected=372),
-        PosTest(
-            pos=0,
+        DeclaredCountTest(declared=_entry_rows()),
+        RangeTest(col="zero_a", min_val=0, max_val=0),
+        RangeTest(col="zero_b", min_val=0, max_val=0),
+        RangeTest(col="worker_grade", min_val=WorkerGrade.NAIVE, max_val=WorkerGrade.ARTISAN),
+        TargetTest(col="selection_id", value=77, expected={"selection_name": "Calpheon City"}),
+        TargetTest(col="selection_id", value=735, expected={"selection_name": "Grána"}),
+        # Worker names and icons come from the plantworker.bss companion.
+        TargetTest(
+            col="worker_id",
+            value=7501,
             expected={
-                "group": 0,
-                "row": 0,
-                "entry_count": 13,
-                "selection_id": 77,
-                "selection_name": "Calpheon City",
-                "worker_id": 7501,
                 "worker_name": "Naive Worker",
-                "hire_cost": 1500,
-                "worker_icon_path": "New_UI_Common_forLua/Widget/WorldMap/WorkerIcon/Worker_Giant01.dds",
-                "worker_move_speed": 150,
-                "worker_stamina": 10,
-                "worker_luck": 0,
-                "worker_base_work_speed": 25000000,
+                "worker_grade": WorkerGrade.NAIVE,
+                "worker_icon_path": f"{_ICON_FOLDER}Worker_Giant01.dds",
             },
         ),
         TargetTest(
             col="worker_id",
             value=7571,
             expected={
-                "group": 0,
-                "selection_id": 77,
-                "selection_name": "Calpheon City",
                 "worker_name": "Artisan Giant Worker",
-                "hire_cost": 90000,
-                "worker_icon_path": "New_UI_Common_forLua/Widget/WorldMap/WorkerIcon/Worker_Giant04.dds",
+                "worker_grade": WorkerGrade.ARTISAN,
+                "worker_icon_path": f"{_ICON_FOLDER}Worker_Giant04.dds",
             },
         ),
-        PosTest(
-            pos=230,
-            expected={
-                "group": 18,
-                "row": 1,
-                "entry_count": 8,
-                "selection_id": 735,
-                "selection_name": "Grána",
-                "worker_id": 8001,
-                "worker_name": "Papu Worker",
-                "hire_cost": 3500,
-                "worker_icon_path": "New_UI_Common_forLua/Widget/WorldMap/WorkerIcon/Worker_Papu01.dds",
-            },
-        ),
+        # O'draxxia is the only town that offers this Dwarf worker.
         TargetTest(
             col="worker_id",
             value=8020,
             expected={
-                "group": 20,
-                "entry_count": 12,
                 "selection_id": 955,
                 "selection_name": "O'draxxia",
                 "worker_name": "Dwarf Worker",
-                "hire_cost": 3500,
-                "worker_icon_path": "New_UI_Common_forLua/Widget/WorldMap/WorkerIcon/Worker_Odilita_Dwarf01.dds",
+                "worker_grade": WorkerGrade.BASE,
+                "worker_icon_path": f"{_ICON_FOLDER}Worker_Odilita_Dwarf01.dds",
             },
         ),
         TargetTest(
             col="worker_id",
             value=8047,
             expected={
-                "group": 21,
-                "entry_count": 12,
-                "selection_id": 1444,
-                "selection_name": "Bukpo",
                 "worker_name": "Dokkebi Worker",
-                "hire_cost": 3500,
-                "worker_icon_path": "New_UI_Common_forLua/Widget/WorldMap/WorkerIcon/Morning_Dokev01.dds",
+                "worker_icon_path": f"{_ICON_FOLDER}Morning_Dokev01.dds",
             },
         ),
     ],
