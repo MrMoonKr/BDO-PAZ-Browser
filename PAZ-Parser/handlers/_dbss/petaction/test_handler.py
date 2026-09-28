@@ -5,13 +5,25 @@ from typing import Any
 
 import pytest
 
-from tests.framework import CountTest, HandlerCase, HandlerResult, PosTest, SchemaTest, TargetTest, case_id, run_case
+from tests.framework import (
+    DeclaredCountTest,
+    HandlerCase,
+    HandlerResult,
+    RangeTest,
+    SchemaTest,
+    TargetTest,
+    case_id,
+    header_count,
+    run_case,
+)
 
+
+_OFFSET_FILE = "petactionoffset.dbss"
 
 PETACTION_CASE = HandlerCase(
     handler_name="petaction.dbss",
     data_file="petaction.dbss",
-    companion_files={"petactionoffset.dbss": "petactionoffset.dbss"},
+    companion_files={_OFFSET_FILE: _OFFSET_FILE},
     loc_file="languagedata_en.loc",
     uses_loc=True,
     loc_fields=["action_name"],
@@ -22,38 +34,37 @@ PETACTION_CASE = HandlerCase(
                 "action_id",
                 "action_name",
                 "icon_action_name",
-                "action_group",
+                "name_kr",
                 "icon_path",
-                "icon_hashes",
                 "record_offset",
                 "record_size",
                 "trailing_zeroes",
                 "action_id_match",
             ]
         ),
-        CountTest(expected=10),
-        PosTest(
-            pos=0,
+        # The data file has no count; the offset table declares it.
+        DeclaredCountTest(declared=header_count(companion=_OFFSET_FILE)),
+        RangeTest(col="action_id_match", min_val=True, max_val=True),
+        RangeTest(col="trailing_zeroes", min_val=True, max_val=True),
+        TargetTest(
+            col="action_id",
+            value=0,
             expected={
-                "action_id": 0,
                 "action_name": "Joy",
                 "icon_action_name": "Like",
-                "action_group": 2,
+                "name_kr": "기쁨",
                 "icon_path": "New_Icon/08_Servant_Skill/02_Pet/Action_0_Like.dds",
-                "icon_hashes_hex": "0xC068AE30",
-                "trailing_zeroes": True,
-                "action_id_match": True,
             },
         ),
+        # The one four-character Korean name; it was once read as a second hash.
         TargetTest(
             col="action_id",
             value=7,
             expected={
                 "action_name": "Crouch",
                 "icon_action_name": "Play2",
-                "action_group": 4,
+                "name_kr": "웅크리기",
                 "icon_path": "New_Icon/08_Servant_Skill/02_Pet/Action_7_Play2.dds",
-                "icon_hashes_hex": "0xD06CC6C5, 0xAE30B9AC",
             },
         ),
     ],
@@ -69,9 +80,9 @@ OFFSET_CASE = HandlerCase(
     internal_path="gamecommondata/binary/petactionoffset.dbss",
     tests=[
         SchemaTest(required_keys=["action_id", "record_offset", "record_size"]),
-        CountTest(expected=10),
-        PosTest(pos=0, expected={"action_id": 0, "record_offset": 0}),
-        PosTest(pos=-1, expected={"action_id": 9}),
+        DeclaredCountTest(declared=header_count()),
+        # The data file has no header, so action 0 starts at byte 0.
+        TargetTest(col="action_id", value=0, expected={"record_offset": 0}),
     ],
 )
 

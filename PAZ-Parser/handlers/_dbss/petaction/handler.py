@@ -61,7 +61,7 @@ class PetActionHandler(PreviewHandler):
             Column(cols.get("actionId", "Action ID"), "num", sort_key="action_id"),
             Column(cols.get("icon", "Icon"), sort_key="icon_path"),
             Column(cols.get("actionName", "Action Name"), sort_key="action_name"),
-            Column(cols.get("group", "Group"), "num", sort_key="action_group"),
+            Column(cols.get("nameKr", "Name (KR)"), sort_key="name_kr"),
         ]
 
     def sortable_fields(self) -> frozenset[str]:
@@ -102,8 +102,7 @@ class PetActionHandler(PreviewHandler):
     ) -> str:
         start = page * page_size
         slice_ = records[start : start + page_size]
-        groups = len({r["action_group"] for r in records})
-        meta = f"{len(records):,} pet actions · {groups:,} groups"
+        meta = f"{len(records):,} pet actions"
         with_loc = sum(1 for r in records if r["action_name"] != r["icon_action_name"])
         if with_loc:
             meta += f" · {with_loc:,} with LOC type 19 names"
@@ -112,7 +111,7 @@ class PetActionHandler(PreviewHandler):
                 e(r["action_id"]),
                 icon_cell(r["icon_path"]),
                 e(r["action_name"]),
-                e(r["action_group"]),
+                e(r["name_kr"]),
             ]
             for r in slice_
         ]
