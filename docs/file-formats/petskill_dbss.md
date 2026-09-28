@@ -2,12 +2,12 @@
 
 ## Purpose
 
-Defines pet skill effect tables. Each record is keyed by `pet_skill_id` and contains one baseline row plus ten level rows for a single pet skill group. Companion `petskilloffset.dbss` provides keyed lookup into the variable-size record stream.
+Defines pet skill effect tables. Each record is keyed by `pet_skill_id` and contains one baseline row plus ten level rows. Companion `petskilloffset.dbss` provides keyed lookup into the variable-size record stream.
 
 Example:
 
 ```text
-pet_skill_id: 47 -> skill_group: 11
+pet_skill_id: 47 -> unknown_00: 11
 level 1 raw_value_a: 3,584,000
 level 10 raw_value_a: 1,280,000
 ```
@@ -57,17 +57,19 @@ The 32 records with `data_size=189` end after the eleven 17-byte rows. The 17 re
 
 ### Effect Row (17 bytes × 11)
 
-Rows start at payload offset `+0x02 + row_index * 17`.
+Rows start at payload offset `+0x02 + row_index * 17`. Offsets below are relative to the row start.
 
 | Offset  | Type | Field        | Notes                                                                                   |
 | ------- | ---- | ------------ | --------------------------------------------------------------------------------------- |
-| `+0x00` | u8   | skill_group  | Skill group code; observed 1–11. Same value in all rows for a record                    |
+| `+0x00` | u8   | unknown_00   | Observed 1–11. Same value in all rows for a record; shared by several records           |
 | `+0x01` | u8   | row_level    | Row 0 uses 1; rows 1–10 use 1–10                                                        |
 | `+0x02` | u16  | —            | Always 0                                                                                |
 | `+0x04` | u32  | raw_value_a  | Primary effect value. Row 0 is always 2560; rows 1–10 vary by `pet_skill_id`            |
 | `+0x08` | u32  | raw_value_b  | Secondary effect value. Row 0 is always 2560; rows 1–10 are 0 or a skill-specific value |
 | `+0x0C` | u32  | row_marker   | Row 0 = 256; rows 1–9 = `(row_level + 1) * 256`; row 10 is 0 or 256                     |
 | `+0x10` | u8   | —            | Always 0                                                                                |
+
+Earlier versions of this doc called `unknown_00` `skill_group`.
 
 ---
 
@@ -97,14 +99,16 @@ Rows start at payload offset `+0x02 + row_index * 17`.
 | Field              | Observed values / range                                      |
 | ------------------ | ------------------------------------------------------------ |
 | `pet_skill_id`     | 1–6, 11–18, 21–23, 26–57 (49 records total)                  |
-| `skill_group`      | 1–11                                                         |
+| `unknown_00`       | 1–11                                                         |
 | `row_level`        | baseline row uses 1; level rows use 1–10                     |
 | `raw_value_a`      | row 0 always 2560; level rows 512,000–128,000,000            |
 | `raw_value_b`      | row 0 always 2560; level rows 0–76,800,000                   |
 | `row_marker`       | 256, 512, 768, 1024, 1280, 1536, 1792, 2048, 2304, 2560, 0   |
 | `extra_marker`     | 9 or 10 when present                                         |
 
-`skill_group` is not unique: multiple `pet_skill_id` records can share one group while carrying different effect values.
+`unknown_00` is not unique: multiple `pet_skill_id` records share one value while carrying different effect values.
+
+The parser yields ten level rows per record: 490 rows for the 49 records. Both files are byte-identical in the pre-2026-09-27 fixture and the 2026-09-27 client.
 
 ---
 
@@ -113,7 +117,6 @@ Rows start at payload offset `+0x02 + row_index * 17`.
 | Column        | Type | Notes                                               |
 | ------------- | ---- | --------------------------------------------------- |
 | Pet Skill ID  | num  | `pet_skill_id`, right-aligned                       |
-| Skill Group   | num  | `skill_group` from row 0                            |
 | Level         | num  | `row_level`; show level rows 1–10 under each record |
 | Value A       | num  | `raw_value_a`; display raw until scale is confirmed |
 | Value B       | num  | `raw_value_b`; display raw until scale is confirmed |
@@ -135,9 +138,9 @@ For compact browsing, show one expandable row per `pet_skill_id`, with the ten l
 
 ## Open Questions
 
-### Skill group names
+### `unknown_00` Meaning
 
-`skill_group` values 1–11 likely identify pet skill/effect categories, but the authoritative mapping to UI names has not been confirmed from this file alone.
+`unknown_00` values 1–11 may identify pet skill or effect categories, since several records share a value, but no mapping to UI names or another table is confirmed.
 
 ### Raw value scale
 
@@ -145,8 +148,8 @@ For compact browsing, show one expandable row per `pet_skill_id`, with the ten l
 
 ### Baseline row meaning
 
-Row 0 is identical across all records except `skill_group`: `raw_value_a=2560`, `raw_value_b=2560`, `row_marker=256`. It may be a base display/effect row, but its exact role is not confirmed.
+Row 0 is identical across all records except `unknown_00`: `raw_value_a=2560`, `raw_value_b=2560`, `row_marker=256`. It may be a base display/effect row, but its exact role is not confirmed.
 
 ### Extra marker byte
 
-Only 17 records have a trailing `extra_marker` byte. Values are 9 or 10, but its relationship to `skill_group`, max level, or UI display is unknown.
+Only 17 records have a trailing `extra_marker` byte. Values are 9 or 10, but its relationship to `unknown_00`, max level, or UI display is unknown.

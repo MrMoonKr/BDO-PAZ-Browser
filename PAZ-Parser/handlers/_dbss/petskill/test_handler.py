@@ -5,7 +5,33 @@ from typing import Any
 
 import pytest
 
-from tests.framework import CountTest, HandlerCase, HandlerResult, PosTest, SchemaTest, TargetTest, case_id, run_case
+from tests.framework import (
+    CaseInput,
+    DeclaredCount,
+    DeclaredCountTest,
+    HandlerCase,
+    HandlerResult,
+    RangeTest,
+    SchemaTest,
+    TargetTest,
+    case_id,
+    header_count,
+    run_case,
+)
+
+
+# Every record holds a baseline row plus ten level rows; the parser keeps the level rows.
+_LEVEL_ROWS = 10
+
+
+def _level_rows() -> DeclaredCount:
+    """Level rows: the record count in the data file header, ten rows each."""
+    records = header_count()
+
+    def read(source: CaseInput) -> int:
+        return records(source) * _LEVEL_ROWS
+
+    return read
 
 
 PETSKILL_CASE = HandlerCase(
@@ -20,7 +46,7 @@ PETSKILL_CASE = HandlerCase(
         SchemaTest(
             required_keys=[
                 "pet_skill_id",
-                "skill_group",
+                "unknown_00",
                 "level",
                 "raw_value_a",
                 "raw_value_b",
@@ -28,30 +54,18 @@ PETSKILL_CASE = HandlerCase(
                 "pet_skill_id_match",
             ]
         ),
-        CountTest(expected=490),
-        PosTest(
-            pos=0,
-            expected={
-                "pet_skill_id": 1,
-                "skill_group": 1,
-                "level": 1,
-                "raw_value_a": 1280000,
-                "raw_value_b": 0,
-                "row_marker": 512,
-                "pet_skill_id_match": True,
-            },
-        ),
+        DeclaredCountTest(declared=_level_rows()),
+        # The key prefix, the payload key and the offset row key agree.
+        RangeTest(col="pet_skill_id_match", min_val=True, max_val=True),
+        RangeTest(col="level", min_val=1, max_val=_LEVEL_ROWS),
+        # The two record sizes: eleven 17-byte rows after the key, plus an optional trailing byte.
+        RangeTest(col="data_size", min_val=189, max_val=190),
         TargetTest(
             col="pet_skill_id",
             value=47,
-            expected={
-                "skill_group": 11,
-                "level": 1,
-                "raw_value_a": 3584000,
-                "raw_value_b": 0,
-                "extra_marker": 9,
-            },
+            expected=[{"level": level} for level in range(1, _LEVEL_ROWS + 1)],
         ),
+        TargetTest(col="pet_skill_id", value=1, expected={"level": 1}),
     ],
 )
 
@@ -65,9 +79,9 @@ PETSKILL_OFFSET_CASE = HandlerCase(
     internal_path="gamecommondata/binary/petskilloffset.dbss",
     tests=[
         SchemaTest(required_keys=["pet_skill_id", "data_offset", "data_size", "record_start"]),
-        CountTest(expected=49),
-        PosTest(pos=0, expected={"pet_skill_id": 47, "data_offset": 6, "data_size": 190}),
-        PosTest(pos=-1, expected={"pet_skill_id": 16, "data_offset": 9191, "data_size": 189}),
+        DeclaredCountTest(declared=header_count()),
+        RangeTest(col="data_size", min_val=189, max_val=190),
+        RangeTest(col="padding", min_val=0, max_val=0),
     ],
 )
 

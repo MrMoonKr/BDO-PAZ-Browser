@@ -106,7 +106,7 @@ def parse_npcgiftdata_records(data: bytes) -> list[NpcGiftDataRecord]:
             break
 
         npc_id        = _u16(data, pos)
-        unknown_param = _u32(data, pos + 2)
+        unknown_02    = _u32(data, pos + 2)
         text_len      = _u32(data, pos + 6)
         # zero field at pos+10 is always 0, skip
         pos += 14
@@ -132,7 +132,7 @@ def parse_npcgiftdata_records(data: bytes) -> list[NpcGiftDataRecord]:
         records.append(NpcGiftDataRecord(
             npc_id=npc_id,
             npc_name=npc_name,
-            unknown_param=unknown_param,
+            unknown_02=unknown_02,
             dialogue=dialogue,
             dialogue_source=source,
         ))

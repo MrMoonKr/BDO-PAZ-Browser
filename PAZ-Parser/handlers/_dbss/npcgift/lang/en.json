@@ -15,7 +15,6 @@
   "dataColumns": {
     "npcId": "NPC ID",
     "npcName": "NPC Name",
-    "unknownParam": "Unknown Param",
     "dialogue": "Dialogue"
   }
 }

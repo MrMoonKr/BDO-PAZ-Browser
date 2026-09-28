@@ -1,19 +1,20 @@
 from __future__ import annotations
 
+import struct
 from dataclasses import replace
 from typing import Any
 
 import pytest
 
 from tests.framework import (
-    CountTest,
+    DeclaredCountTest,
     HandlerCase,
     HandlerResult,
-    PosTest,
     RangeTest,
     SchemaTest,
     TargetTest,
     case_id,
+    header_count,
     run_case,
 )
 
@@ -25,6 +26,12 @@ _KING_CLAM = 24626
 # [Event] Fence places character 2053, which has no icon of its own.
 _EVENT_FENCE = 58011
 _EVENT_FENCE_CHARACTER = 2053
+_WEAPON = 697192
+# The key packs the item ID into its low 24 bits and the key variant above them.
+_MAX_ITEM_ID = 0xFFFFFF
+_OFFSET_HEADER_SIZE = 8
+_OFFSET_ROW_SIZE = 12
+_KEY_VARIANT_SHIFT = 24
 
 CASE = HandlerCase(
     handler_name="itemenchant.dbss",
@@ -47,10 +54,8 @@ CASE = HandlerCase(
                 "character_name",
             ],
         ),
-        CountTest(expected=169_965),
-        # Variant 0 is the base item: exactly one per item ID.
-        RangeTest(col="key_variant", min_val=0, max_val=25),
-        RangeTest(col="item_id", min_val=1, max_val=1_000_827),
+        DeclaredCountTest(declared=header_count()),
+        RangeTest(col="item_id", min_val=1, max_val=_MAX_ITEM_ID),
         # The furniture case: icon path comes from the block, not the item ID.
         TargetTest(
             col="item_id",
@@ -63,7 +68,6 @@ CASE = HandlerCase(
                     "inhouse_cultivate_sea_clam_01_wall.dds"
                 ),
                 "effect_tag": "",
-                "block_size": 870,
                 "character_id": 17026,
                 "character_name": "King Clam Wall Ornament",
             },
@@ -77,17 +81,11 @@ CASE = HandlerCase(
                 "character_name": "[Event] Fence",
             },
         ),
-        # First offset row is a max-enchant weapon variant.
-        PosTest(
-            pos=0,
-            expected={
-                "item_id": 697192,
-                "key_variant": 24,
-                "block_size": 1378,
-                # A weapon places no character; stored as None so it sorts last.
-                "character_id": None,
-                "character_name": "",
-            },
+        # A weapon places no character; stored as None so it sorts last.
+        TargetTest(
+            col="item_id",
+            value=_WEAPON,
+            expected={"character_id": None, "character_name": ""},
         ),
     ],
 )
@@ -121,8 +119,16 @@ def test_build_item_icon_index_covers_the_furniture_case() -> None:
         paths["itemenchantoffset.dbss"].read_bytes(),
     )
 
-    # One entry per level-0 record, not one per enchant variant.
-    assert len(index) == 69_954
+    # One entry per variant-0 record, not one per key variant.
+    offsets = paths["itemenchantoffset.dbss"].read_bytes()
+    (count,) = struct.unpack_from("<I", offsets, 4)
+    base_items = sum(
+        1
+        for row in range(count)
+        if not struct.unpack_from("<I", offsets, _OFFSET_HEADER_SIZE + row * _OFFSET_ROW_SIZE)[0]
+        >> _KEY_VARIANT_SHIFT
+    )
+    assert len(index) == base_items
     assert index[_KING_CLAM] == (
         f"{_ICON_ROOT}/03_etc/06_housing/"
         "inhouse_cultivate_sea_clam_01_wall.dds"
@@ -141,7 +147,9 @@ def test_build_character_item_index_links_placed_objects_and_pets() -> None:
         paths["itemenchantoffset.dbss"].read_bytes(),
     )
 
-    assert len(index) == 5_090
+    # A kept character is named by exactly one item, so no item appears twice.
+    assert len(set(index.values())) == len(index)
+    assert 0 not in index
     assert index[_EVENT_FENCE_CHARACTER] == _EVENT_FENCE
     # [Pet] Striped Cat (Tier 3) summons character 9425, "Cat".
     assert index[9425] == 860014

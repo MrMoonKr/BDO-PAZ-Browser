@@ -5,7 +5,17 @@ from typing import Any
 
 import pytest
 
-from tests.framework import CountTest, HandlerCase, HandlerResult, PosTest, SchemaTest, TargetTest, case_id, run_case
+from tests.framework import (
+    DeclaredCountTest,
+    HandlerCase,
+    HandlerResult,
+    RangeTest,
+    SchemaTest,
+    TargetTest,
+    case_id,
+    header_count,
+    run_case,
+)
 
 
 CASE = HandlerCase(
@@ -18,25 +28,11 @@ CASE = HandlerCase(
     internal_path="gamecommondata/customization/zodiacsignindex.bss",
     tests=[
         SchemaTest(required_keys=["slot", "zodiac_id", "name", "known"]),
-        CountTest(expected=12),
-        PosTest(
-            pos=0,
-            expected={
-                "slot": 0,
-                "zodiac_id": 1,
-                "name": "Hammer",
-                "known": True,
-            },
-        ),
-        TargetTest(
-            col="zodiac_id",
-            value=12,
-            expected={
-                "slot": 11,
-                "name": "Goblin",
-                "known": True,
-            },
-        ),
+        DeclaredCountTest(declared=header_count(offset=4)),
+        # Every listed ID is a sign in zodiacsign.dbss.
+        RangeTest(col="known", min_val=True, max_val=True),
+        TargetTest(col="zodiac_id", value=1, expected={"name": "Hammer"}),
+        TargetTest(col="zodiac_id", value=12, expected={"name": "Goblin"}),
     ],
 )
 

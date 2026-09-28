@@ -40,11 +40,15 @@ All multi-byte values are little-endian.
 
 | Offset  | Type | Field  | Notes                                      |
 | ------- | ---- | ------ | ------------------------------------------ |
-| `+0x00` | u32  | count  | Block count; observed 28,689                |
+| `+0x00` | u32  | count  | Block count; see below                      |
 | `+0x04` | —    | blocks | Variable-length blocks, contiguous          |
 
 The first block starts at byte `4` and the last ends exactly at end of file
 (29,500,854 bytes observed), so the block stream is gap-free.
+
+Observed blocks: 28,689 in the pre-2026-09-27 test fixture, 28,945 in the
+2026-09-27 client (29,769,307 bytes, also gap-free). The other counts in this
+doc are from the fixture.
 
 ---
 
@@ -55,7 +59,7 @@ Unlike most offset companions this file has **no `PABR` magic and no trailer**, 
 
 | Offset  | Type | Field | Notes                            |
 | ------- | ---- | ----- | -------------------------------- |
-| `+0x00` | u32  | count | Number of rows; observed 28,689  |
+| `+0x00` | u32  | count | Number of rows; equals the `cashproduct.dbss` count |
 | `+0x04` | —    | rows  | `count` × 12-byte rows           |
 
 ### Row (12 bytes)

@@ -5,7 +5,16 @@ from typing import Any
 
 import pytest
 
-from tests.framework import CountTest, HandlerCase, HandlerResult, PosTest, SchemaTest, TargetTest, case_id, run_case
+from tests.framework import (
+    DeclaredCountTest,
+    HandlerCase,
+    HandlerResult,
+    SchemaTest,
+    TargetTest,
+    case_id,
+    header_count,
+    run_case,
+)
 
 
 STATIC_CASE = HandlerCase(
@@ -23,21 +32,8 @@ STATIC_CASE = HandlerCase(
                 "knowledge_id", "npc_kind", "class_type", "model_path", "payload_size",
             ]
         ),
-        CountTest(expected=24017),
-        PosTest(
-            pos=0,
-            expected={
-                "character_id": 47759,
-                "name_en": "Edania Merchant",
-                "action_script": "getknowledge(14469);",
-                "condition_script": "",
-                "knowledge_id": 14469,
-                "payload_size": 586,
-                "npc_kind": 2,
-                "class_type": None,
-                "model_path": "npc/pedu/npc_pedu_named",
-            },
-        ),
+        # The data file's own count; the parser walks the offset table's rows.
+        DeclaredCountTest(declared=header_count()),
         TargetTest(
             col="character_id",
             value=16640,
@@ -45,7 +41,6 @@ STATIC_CASE = HandlerCase(
                 "name_en": "Dev Plant210",
                 "action_script": "",
                 "knowledge_id": None,
-                "payload_size": 511,
                 "npc_kind": 8,
                 "model_path": "monster/dummy_normal",
             },
@@ -84,9 +79,9 @@ OFFSET_CASE = HandlerCase(
     internal_path="gamecommondata/binary/characterstaticoffset.dbss",
     tests=[
         SchemaTest(required_keys=["character_id", "offset", "size"]),
-        CountTest(expected=24017),
-        PosTest(pos=0, expected={"character_id": 47759, "offset": 6, "size": 586}),
-        PosTest(pos=-1, expected={"character_id": 16640, "offset": 13563768, "size": 511}),
+        DeclaredCountTest(declared=header_count(offset=4)),
+        # The first payload follows the data file's u32 count and its inline u16 ID.
+        TargetTest(col="offset", value=6, expected={}),
     ],
 )
 

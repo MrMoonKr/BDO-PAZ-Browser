@@ -52,7 +52,7 @@ def parse_fairyupgraderate_records(data: bytes) -> list[dict]:
                 f"fairyupgraderate.bss record {step} is truncated at 0x{pos:X}."
             )
 
-        unknown_lead = u8(data, pos)
+        unknown_00 = u8(data, pos)
         success_cap_ppm = u32(data, pos + 0x01)
         entry_count = u32(data, pos + 0x05)
         pos += _RECORD_HEADER_SIZE
@@ -67,7 +67,7 @@ def parse_fairyupgraderate_records(data: bytes) -> list[dict]:
             rate_ppm = u32(data, pos + 0x04)
             rows.append({
                 "step": step,
-                "unknown_lead": unknown_lead,
+                "unknown_00": unknown_00,
                 "success_cap_ppm": success_cap_ppm,
                 "item_id": u32(data, pos),
                 "rate_ppm": rate_ppm,

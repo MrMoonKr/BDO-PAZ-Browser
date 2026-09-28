@@ -32,7 +32,8 @@ def parse_fairyfeedenchantfailcount_records(data: bytes) -> list[dict]:
 
     Records are variable length and framed by `entry_count`, so the stride comes
     from that field rather than a fixed record size. Entries are unaligned: the
-    two u32 values start at odd offsets inside the 11-byte entry.
+    two u32 values start at odd offsets inside the 11-byte entry. No entry
+    field has a confirmed meaning, so each is named by its offset.
     """
     if len(data) < _HEADER_SIZE or data[:4] != _MAGIC:
         raise ValueError("fairyfeedenchantfailcount.bss has invalid magic.")
@@ -61,10 +62,10 @@ def parse_fairyfeedenchantfailcount_records(data: bytes) -> list[dict]:
         for _ in range(entry_count):
             rows.append({
                 "record": index,
-                "group_id": u16(data, pos),
-                "sub_key": u8(data, pos + 0x02),
-                "value_a": u32(data, pos + 0x03),
-                "value_b": u32(data, pos + 0x07),
+                "unknown_00": u16(data, pos),
+                "unknown_02": u8(data, pos + 0x02),
+                "unknown_03": u32(data, pos + 0x03),
+                "unknown_07": u32(data, pos + 0x07),
             })
             pos += _ENTRY_SIZE
 

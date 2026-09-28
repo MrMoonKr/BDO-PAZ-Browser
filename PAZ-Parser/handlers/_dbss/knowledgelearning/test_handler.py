@@ -5,7 +5,40 @@ from typing import Any
 
 import pytest
 
-from tests.framework import CountTest, HandlerCase, HandlerResult, PosTest, SchemaTest, TargetTest, case_id, run_case
+from tests.framework import (
+    CaseInput,
+    DeclaredCount,
+    DeclaredCountTest,
+    HandlerCase,
+    HandlerResult,
+    SchemaTest,
+    TargetTest,
+    case_id,
+    run_case,
+)
+
+
+# A 4-byte lead source_id before each 13-byte record.
+_ENTRY_SIZE = 4 + 13
+
+
+def _table_rows() -> DeclaredCount:
+    """Rows across the data file's tables: each is a u32 count and `count`
+    17-byte entries, back to back up to the end of the file."""
+
+    def read(source: CaseInput) -> int:
+        raw = source.data
+        pos = 0
+        total = 0
+        while pos < len(raw):
+            count = int.from_bytes(raw[pos : pos + 4], "little")
+            total += count
+            pos += 4 + count * _ENTRY_SIZE
+        if pos != len(raw):
+            raise AssertionError(f"tables end at {pos}, not at the end of {len(raw)} bytes")
+        return total
+
+    return read
 
 
 CASE = HandlerCase(
@@ -18,14 +51,13 @@ CASE = HandlerCase(
     internal_path="gamecommondata/binary/knowledgelearning.dbss",
     tests=[
         SchemaTest(required_keys=["table", "source_type", "source_id", "source_name", "card_id", "card_name"]),
-        # Two tables: 2,533 characters, then 2,070 items.
-        CountTest(expected=4603),
-        PosTest(
-            pos=0,
+        DeclaredCountTest(declared=_table_rows()),
+        TargetTest(
+            col="source_id",
+            value=10004,
             expected={
                 "table": 0,
                 "source_type": "Character",
-                "source_id": 10004,
                 "source_name": "Feldspar",
                 "card_id": 7302,
                 "card_name": "Feldspar",

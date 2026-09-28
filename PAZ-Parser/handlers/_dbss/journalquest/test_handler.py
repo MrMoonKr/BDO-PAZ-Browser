@@ -5,7 +5,33 @@ from typing import Any
 
 import pytest
 
-from tests.framework import CountTest, HandlerCase, HandlerResult, PosTest, SchemaTest, TargetTest, case_id, run_case
+from tests.framework import (
+    CaseInput,
+    DeclaredCount,
+    DeclaredCountTest,
+    HandlerCase,
+    HandlerResult,
+    RangeTest,
+    SchemaTest,
+    TargetTest,
+    case_id,
+    run_case,
+)
+
+
+def _offset_rows(companion: str | None = None) -> DeclaredCount:
+    """Book rows in journalquestoffset.dbss: its u32 words minus the group
+    count and each group's (key, count) pair, three words per book."""
+
+    def read(source: CaseInput) -> int:
+        raw = source.file(companion)
+        group_count = int.from_bytes(raw[:4], "little")
+        book_words = len(raw) // 4 - 1 - 2 * group_count
+        if len(raw) % 4 or book_words < 0 or book_words % 3:
+            raise AssertionError(f"{len(raw)} bytes do not hold {group_count} groups of 12-byte books")
+        return book_words // 3
+
+    return read
 
 
 OFFSET_CASE = HandlerCase(
@@ -18,13 +44,10 @@ OFFSET_CASE = HandlerCase(
     internal_path="gamecommondata/binary/journalquestoffset.dbss",
     tests=[
         SchemaTest(required_keys=["group_id", "entry_no", "byte_offset", "byte_size"]),
-        CountTest(expected=112),
-        PosTest(pos=0, expected={"group_id": 1, "entry_no": 1, "byte_offset": 8, "byte_size": 498}),
-        TargetTest(
-            col="group_id",
-            value=10,
-            expected={"entry_no": 1, "byte_offset": 44190, "byte_size": 320},
-        ),
+        DeclaredCountTest(declared=_offset_rows()),
+        # The first book follows the data file's group count and first book count.
+        TargetTest(col="group_id", value=1, expected={"entry_no": 1, "byte_offset": 8}),
+        TargetTest(col="group_id", value=10, expected={"entry_no": 1}),
     ],
 )
 
@@ -42,7 +65,7 @@ CASE = HandlerCase(
             required_keys=[
                 "group_id",
                 "entry_no",
-                "flag_08",
+                "unknown_08",
                 "journal_cat_id",
                 "journal_title",
                 "page_vol_title",
@@ -52,25 +75,17 @@ CASE = HandlerCase(
                 "page_titles_text",
             ]
         ),
-        CountTest(expected=112),
-        PosTest(
-            pos=0,
+        DeclaredCountTest(declared=_offset_rows("journalquestoffset.dbss")),
+        RangeTest(col="unknown_08", min_val=0, max_val=1),
+        RangeTest(col="terminal", min_val=0, max_val=0),
+        TargetTest(
+            col="journal_cat_id",
+            value=748,
             expected={
                 "group_id": 1,
                 "entry_no": 1,
-                "flag_08": 0,
-                "journal_cat_id": 748,
                 "journal_title": "이고르 바탈리의 모험일지",
-                "page_refs_text": "748:1, 748:2, 748:3",
-                "terminal": 0,
                 "journal_title_text": "Igor Bartali's Adventures",
-                "subtitle_text": "Logs of Velia's Chief Igor Bartali's youthful past",
-                "page_vol_title_text": "Igor Bartali's Adventures - Volume 1",
-                "page_count": 3,
-                "page_titles_text": (
-                    "Hey There Big Fellow!, Irresistible Lure, "
-                    "The Divine Entity inside the Cave"
-                ),
                 # Read through its u64 length; the old scan kept the next length's low byte.
                 "combine_model": "Combine_Etc_Adventure_Bookshelf01",
                 "static_model": "Adventure_Bookshelf_Static_book_00",
@@ -82,13 +97,11 @@ CASE = HandlerCase(
             expected={
                 "group_id": 2,
                 "entry_no": 1,
-                "page_count": 4,
                 "journal_title_text": "Shakatu Merchants' Archive",
-                "page_vol_title_text": "Deve's Encyclopedia - Volume 1\nThe Altinovan on all things random!",
             },
         ),
-        # Every book of journal 7 sets flag_08.
-        TargetTest(col="group_id", value=7, expected={"flag_08": 1}),
+        # Every book of journal 7 sets unknown_08.
+        TargetTest(col="group_id", value=7, expected={"unknown_08": 1}),
     ],
 )
 

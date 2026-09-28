@@ -25,9 +25,6 @@ class NewQuestBssHandler(PreviewHandler):
             Column(cols.get("subId", "Sub ID"), "num", sort_key="quest_id"),
             Column(cols.get("icon", "Icon"), sort_key="icon_path"),
             Column(cols.get("title", "Title"), sort_key="title"),
-            Column(cols.get("sequenceA", "Sequence A"), "num", sort_key="sequence_a"),
-            Column(cols.get("sequenceB", "Sequence B"), "num", sort_key="sequence_b"),
-            Column(cols.get("sequenceC", "Sequence C"), "num", sort_key="sequence_c"),
         ]
 
     def sortable_fields(self) -> frozenset[str]:
@@ -75,9 +72,6 @@ class NewQuestBssHandler(PreviewHandler):
                 e(record["quest_id"]),
                 icon_cell(record["icon_path"]) if record["icon_path"] else "-",
                 e(record.get("title") or "-"),
-                e(record["sequence_a"]),
-                e(record["sequence_b"]),
-                e(record["sequence_c"]),
             ]
             for record in slice_
         ]

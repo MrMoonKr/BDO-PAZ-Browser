@@ -6,9 +6,9 @@
   "columns": {
     "row": "Row",
     "id": "ID",
-    "groupA": "Group A (ID ×cnt)",
-    "groupB": "Group B (ID ×cnt)",
-    "groupC": "Group C (ID ×cnt)",
+    "groupA": "Group A",
+    "groupB": "Group B",
+    "groupC": "Group C",
     "intMin": "Int Min",
     "intMax": "Int Max",
     "favMin": "Fav Min",

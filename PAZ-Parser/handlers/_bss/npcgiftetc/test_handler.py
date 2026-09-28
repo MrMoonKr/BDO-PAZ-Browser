@@ -5,9 +5,10 @@ from typing import Any
 
 import pytest
 
-from tests.framework import CountTest, HandlerCase, HandlerResult, PosTest, SchemaTest, TargetTest, case_id, run_case
+from tests.framework import HandlerCase, HandlerResult, SchemaTest, TargetTest, case_id, run_case
 
 
+# The block is a fixed 32-byte layout with no row count, so the field list is the handler's own.
 CASE = HandlerCase(
     handler_name="npcgiftetc.bss",
     data_file="npcgiftetc.bss",
@@ -18,24 +19,15 @@ CASE = HandlerCase(
     internal_path="gamecommondata/binary/npcgiftetc.bss",
     tests=[
         SchemaTest(required_keys=["field", "value", "notes"]),
-        CountTest(expected=8),
-        PosTest(
-            pos=0,
-            expected={
-                "field": "config_a",
-                "value": 5,
-                "notes": "Global gift-system value",
-            },
+        TargetTest(
+            col="field",
+            value="unknown_04",
+            expected={"notes": "Global gift-system value"},
         ),
         TargetTest(
             col="field",
-            value="config_d",
-            expected={"value": 50000000},
-        ),
-        TargetTest(
-            col="field",
-            value="config_e",
-            expected={"value": 20},
+            value=("reserved0", "reserved1", "reserved2"),
+            expected=[{"value": 0}, {"value": 0}, {"value": 0}],
         ),
     ],
 )

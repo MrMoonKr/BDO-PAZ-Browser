@@ -150,10 +150,10 @@ def _parse_pet_payload(row: int, offset_record: dict, block: bytes, grade_map: d
     reserved_0c = block[0x0C]
     reserved_0d = struct.unpack_from("<H", block, 0x0D)[0]
     equip_skill_slots = block[0x0F]
-    reserved_10 = struct.unpack_from("<H", block, 0x10)[0]
+    unknown_10 = struct.unpack_from("<H", block, 0x10)[0]
     unknown_12 = block[0x12]
     reserved_13 = block[0x13]
-    type_param = struct.unpack_from("<I", block, 0x14)[0]
+    unknown_14 = struct.unpack_from("<I", block, 0x14)[0]
     icon_path_len = struct.unpack_from("<I", block, 0x18)[0]
     reserved_1c = struct.unpack_from("<I", block, 0x1C)[0]
 
@@ -167,8 +167,8 @@ def _parse_pet_payload(row: int, offset_record: dict, block: bytes, grade_map: d
     constants = struct.unpack_from("<IIIIIIIII", footer, 0)
     acquire_type_id = struct.unpack_from("<H", footer, 0x24)[0]
     equip_skill_id = struct.unpack_from("<H", footer, 0x26)[0]
-    upgrade_table = list(struct.unpack_from("<10I", footer, 0x2A))
-    grade_score = footer[0x53]
+    unknown_2a = list(struct.unpack_from("<10I", footer, 0x2A))
+    unknown_53 = footer[0x53]
 
     return {
         "row": row,
@@ -179,23 +179,23 @@ def _parse_pet_payload(row: int, offset_record: dict, block: bytes, grade_map: d
         "tier": tier,
         "max_level": max_level,
         "equip_skill_slots": equip_skill_slots,
-        "type_param": type_param,
+        "unknown_14": unknown_14,
         "icon_path_len": icon_path_len,
         "icon_path": icon_path,
         "acquire_type_id": acquire_type_id,
         "equip_skill_id": equip_skill_id,
-        "grade_score": grade_score,
+        "unknown_53": unknown_53,
         "grade": grade_map.get((species, variant)),
         "offset": offset_record["data_offset"],
         "size": offset_record["data_size"],
         "unknown_12": unknown_12,
-        "upgrade_table": upgrade_table,
+        "unknown_2a": unknown_2a,
         "constants": constants,
         "reserved_04": reserved_04,
         "reserved_06": reserved_06,
         "reserved_0c": reserved_0c,
         "reserved_0d": reserved_0d,
-        "reserved_10": reserved_10,
+        "unknown_10": unknown_10,
         "reserved_13": reserved_13,
         "reserved_1c": reserved_1c,
     }

@@ -72,6 +72,8 @@ Unused `level_exp` slots after `max_level` are zero-filled. Data size is always 
 | 2            | 10        | 144, 216, 312, 408, 504               | 840, 960, 1440            |
 | 1            | 10        | 120, 180, 260, 340, 420               | 700, 800, 1200            |
 
+Together the nine tables hold 160 level thresholds. Both files are byte-identical in the pre-2026-09-27 fixture and the 2026-09-27 client.
+
 ---
 
 ## petexpoffset.dbss

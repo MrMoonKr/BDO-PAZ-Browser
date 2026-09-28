@@ -135,7 +135,6 @@ class NpcGiftDataHandler(PreviewHandler):
         return [
             Column(cols.get("npcId", "NPC ID"), "num", sort_key="npc_id"),
             Column(cols.get("npcName", "NPC Name"), sort_key="npc_name"),
-            Column(cols.get("unknownParam", "Unknown Param"), "num", sort_key="unknown_param"),
             Column(cols.get("dialogue", "Dialogue"), sort_key="dialogue"),
         ]
 
@@ -169,7 +168,6 @@ class NpcGiftDataHandler(PreviewHandler):
             [
                 e(r["npc_id"]),
                 e(r["npc_name"] or "-"),
-                e(r["unknown_param"]),
                 e(r["dialogue"]),
             ]
             for r in slice_

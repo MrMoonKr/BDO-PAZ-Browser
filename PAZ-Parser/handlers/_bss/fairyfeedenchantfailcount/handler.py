@@ -11,17 +11,14 @@ from .parser import parse_fairyfeedenchantfailcount_records
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
-_EMPTY = "-"
 
 
 class FairyFeedEnchantFailCountBssHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
+        # Every entry field is unknown_*: kept for search and export, not shown.
         cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
         return [
-            Column(cols.get("groupId", "Group ID"), "num", sort_key="group_id"),
-            Column(cols.get("subKey", "Sub Key"), "num", sort_key="sub_key"),
-            Column(cols.get("valueA", "Value A"), "num", sort_key="value_a"),
-            Column(cols.get("valueB", "Value B"), "num", sort_key="value_b"),
+            Column(cols.get("record", "Record"), "num", sort_key="record"),
         ]
 
     def sortable_fields(self) -> frozenset[str]:
@@ -33,11 +30,7 @@ class FairyFeedEnchantFailCountBssHandler(PreviewHandler):
         entry: PazEntry,
         companions: dict[str, bytes],
     ) -> list[dict]:
-        records = parse_fairyfeedenchantfailcount_records(data)
-        for record in records:
-            # Sub key 0 means none. None renders a dash and sorts last.
-            record["sub_key"] = record["sub_key"] or None
-        return records
+        return parse_fairyfeedenchantfailcount_records(data)
 
     def render_records_page(
         self,
@@ -47,17 +40,9 @@ class FairyFeedEnchantFailCountBssHandler(PreviewHandler):
     ) -> str:
         start = page * page_size
         slice_ = records[start : start + page_size]
-        groups = len({record["group_id"] for record in records})
-        meta = f"{len(records):,} entries across {groups} groups"
+        record_count = len({record["record"] for record in records})
+        meta = f"{len(records):,} entries across {record_count} records"
 
-        rows = [
-            [
-                e(record["group_id"]),
-                e(record["sub_key"] or _EMPTY),
-                e(f"{record['value_a']:,}"),
-                e(f"{record['value_b']:,}"),
-            ]
-            for record in slice_
-        ]
+        rows = [[e(record["record"])] for record in slice_]
 
         return table(meta, self._columns(), rows)

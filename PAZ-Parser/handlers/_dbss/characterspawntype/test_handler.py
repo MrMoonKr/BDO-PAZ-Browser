@@ -5,9 +5,22 @@ from typing import Any
 
 import pytest
 
-from tests.framework import CountTest, HandlerCase, HandlerResult, PosTest, SchemaTest, TargetTest, case_id, run_case
+from tests.framework import (
+    DeclaredCountTest,
+    HandlerCase,
+    HandlerResult,
+    RangeTest,
+    SchemaTest,
+    TargetTest,
+    case_id,
+    header_count,
+    run_case,
+)
 
 from _dbss.characterspawntype.parser import SPAWN_TYPE_NAMES
+
+
+_RECORD_SIZE = 48
 
 
 def _spawn_type_record(record: dict) -> dict:
@@ -28,11 +41,11 @@ SPAWN_TYPE_CASE = HandlerCase(
     record_mapper=_spawn_type_record,
     tests=[
         SchemaTest(required_keys=["character_id", "name_en", "roles", "active_roles"]),
-        CountTest(expected=24017),
-        PosTest(pos=0, expected={"character_id": 47759, "name_en": "Edania Merchant", "active_roles": ["ImportantNpc"]}),
+        DeclaredCountTest(declared=header_count()),
+        TargetTest(col="character_id", value=47727, expected={"name_en": "Jackson"}),
         # Read as a u32, this row looked like entity 82176: the NormalNpc byte
         # sat in the high half of the ID.
-        PosTest(pos=-1, expected={"character_id": 16640, "active_roles": ["NormalNpc"]}),
+        TargetTest(col="character_id", value=16640, expected={"active_roles": ["NormalNpc"]}),
         TargetTest(
             col="character_id",
             value=47659,
@@ -53,9 +66,10 @@ OFFSET_CASE = HandlerCase(
     internal_path="gamecommondata/binary/characterspawntypeoffset.dbss",
     tests=[
         SchemaTest(required_keys=["character_id", "offset", "size"]),
-        CountTest(expected=24017),
-        PosTest(pos=0, expected={"character_id": 47759, "offset": 4, "size": 48}),
-        PosTest(pos=-1, expected={"character_id": 16640, "offset": 1152772, "size": 48}),
+        DeclaredCountTest(declared=header_count(offset=4)),
+        RangeTest(col="size", min_val=_RECORD_SIZE, max_val=_RECORD_SIZE),
+        # The first record follows the main file's 4-byte count.
+        TargetTest(col="offset", value=4, expected={"size": _RECORD_SIZE}),
     ],
 )
 
@@ -86,3 +100,12 @@ def test_characterspawntype_dbss(spec: Any, spawn_type_result: HandlerResult) ->
 @pytest.mark.parametrize("spec", OFFSET_CASE.tests, ids=case_id)
 def test_characterspawntypeoffset_dbss(spec: Any, offset_result: HandlerResult) -> None:
     offset_result.check(spec)
+
+
+def test_characterspawntype_role_flags_are_0_or_1(spawn_type_result: HandlerResult) -> None:
+    bad = [
+        record["character_id"]
+        for record in spawn_type_result.records
+        if any(value not in (0, 1) for value in record["roles"])
+    ]
+    assert not bad, f"role bytes other than 0 or 1 on characters {bad[:5]}"

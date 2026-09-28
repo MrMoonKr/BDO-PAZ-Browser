@@ -1,8 +1,5 @@
 {
   "columns": {
-    "groupId": "Group ID",
-    "subKey": "Sub Key",
-    "valueA": "Value A",
-    "valueB": "Value B"
+    "record": "Record"
   }
 }

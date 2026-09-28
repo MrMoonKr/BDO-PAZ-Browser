@@ -34,7 +34,7 @@ All multi-byte values are little-endian. Strings are a u64 byte length followed 
 
 | Offset  | Type | Field   | Notes                                                     |
 | ------- | ---- | ------- | --------------------------------------------------------- |
-| `+0x00` | u32  | count   | Record count; observed `5,123`, equal to the offset count |
+| `+0x00` | u32  | count   | Record count; observed `5,123` (2026-09-27 client: `5,127`), equal to the offset count |
 | `+0x04` | ...  | records | Variable-length records, back to back until end of file   |
 
 Records are contiguous: sorted by offset, each one ends exactly where the next begins, the first starts at `+0x04` and the last ends at end of file. They are **not** stored in key order, so walking the offset table row by row jumps around the file.
@@ -46,7 +46,7 @@ PABR index with a 10-byte row, because the key is a u16.
 | Offset  | Type  | Field | Notes                            |
 | ------- | ----- | ----- | -------------------------------- |
 | `+0x00` | u8[4] | magic | `PABR` (ASCII)                   |
-| `+0x04` | u32   | count | Number of rows; observed `5,123` |
+| `+0x04` | u32   | count | Number of rows; observed `5,123` (2026-09-27 client: `5,127`) |
 
 #### Index Row (10 bytes, repeated `count` times)
 

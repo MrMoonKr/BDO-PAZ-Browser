@@ -64,7 +64,7 @@ All multi-byte values are little-endian.
 | `+0x02` | u32        | gift_count | Number of gift rows              |
 | `+0x06` | Gift Row[] | gifts      | `gift_count` rows, 12 bytes each |
 
-Observed `gift_count` values: 23 records have 5 rows; NPC 41002 has 4 rows. The companion `data_size` equals `4 + gift_count * 12`.
+Observed `gift_count` values: in the pre-2026-09-27 fixture 23 records have 5 rows and NPC 41002 has 4 (119 gift rows); in the 2026-09-27 client 22 have 5, NPC 43408 has 4 and NPC 41002 has 3 (117 gift rows). The companion `data_size` equals `4 + gift_count * 12`.
 
 #### Gift Row (12 bytes)
 
@@ -72,7 +72,7 @@ Observed `gift_count` values: 23 records have 5 rows; NPC 41002 has 4 rows. The 
 | ------- | ---- | ------- | ------------------------------------------------------------------ |
 | `+0x00` | u32  | item_id | Gift item ID; matches item LOC type 0 names                        |
 | `+0x04` | u32  | amity_a | Amity gained by giving this item                                   |
-| `+0x08` | u32  | amity_b | Duplicate Amity value; equal to `amity_a` in all 119 observed rows |
+| `+0x08` | u32  | amity_b | Duplicate Amity value; equal to `amity_a` on every observed row (119 pre-2026-09-27, 117 in the 2026-09-27 client) |
 
 ---
 
@@ -95,7 +95,7 @@ Same 4-byte header and 10-byte offset record layout as `npcgiftoffset.dbss`, but
 | Offset  | Type              | Field         | Notes                                                                                                                        |
 | ------- | ----------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | `+0x00` | u16               | npc_id        | NPC key                                                                                                                      |
-| `+0x02` | u32               | unknown_param | Observed: 70 for 23 records, 35 for NPC 43408. Not the LOC type.                                                             |
+| `+0x02` | u32               | unknown_02    | Observed: 70 for 23 records, 35 for NPC 43408. Not the LOC type.                                                             |
 | `+0x06` | u32               | text_len      | Number of visible UTF-16 code units in `text`                                                                                |
 | `+0x0A` | u32               | zero          | Observed: 0                                                                                                                  |
 | `+0x0E` | utf16le[text_len] | text          | Korean confession-response dialogue                                                                                          |
@@ -124,7 +124,7 @@ Small PABR config block (32 bytes) with global gift-system values. See [npcgifte
 | Item Name | text | LOC str_type=0, str_id1=item_id                       |
 | Amity     | num  | `amity_a`; `amity_b` is a duplicate in observed data  |
 
-100 of the 112 distinct gift items resolve an icon from their item ID. The
+100 of the 112 distinct gift items in the pre-2026-09-27 fixture resolve an icon from their item ID. The
 remaining 12 are keyed in `product_icon_png` by asset name instead
 (item 24626 is `inhouse_cultivate_sea_clam_01_wall.png`), which is not
 derivable from the ID, so those render as a missing-icon placeholder. Closing
@@ -136,7 +136,6 @@ that gap needs an item ID to icon name mapping that is not yet decoded.
 | ------------- | ---- | ---------------------------------------------------------------------- |
 | NPC ID        | num  | `npc_id`                                                               |
 | NPC Name      | text | LOC str_type=6, str_id1=npc_id                                         |
-| Unknown Param | num  | `unknown_param`                                                        |
 | Dialogue      | text | English LOC str_type=54 when available; Korean inline text as fallback |
 
 ---
@@ -152,9 +151,9 @@ that gap needs an item ID to icon name mapping that is not yet decoded.
 
 ## Open Questions
 
-### unknown_param in npcgiftdata.dbss
+### `unknown_02` in npcgiftdata.dbss
 
-The meaning of `unknown_param` (observed: 70 for 23 records, 35 for NPC 43408) is not known.
+The meaning of `unknown_02` (observed: 70 for 23 records, 35 for NPC 43408) is not known. Earlier versions of this doc called it `unknown_param`.
 
 ### Dialogue Tail Bytes
 

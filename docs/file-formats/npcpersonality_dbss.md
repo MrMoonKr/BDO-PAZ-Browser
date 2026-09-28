@@ -2,13 +2,13 @@
 
 ## Purpose
 
-Defines NPC personality entries used to parameterise AI behaviour. Each record maps a personality ID to three knowledge group references and four floating-point amity threshold parameters. Used to drive the in-game amity mini-game.
+Defines NPC personality entries used to parameterise AI behaviour. Each record maps a personality ID to three knowledge group references (each with an unknown u16 beside it) and four floating-point amity threshold parameters. Used to drive the in-game amity mini-game.
 
 Example:
 
 ```text
 personality_id: 0x2875  →  personality_type: 101 (Hammer)
-interest_groups: Vendors of Serendia (4), Serendia Log II (4), Plants (4)
+interest_groups: Vendors of Serendia, Serendia Log II, Plants
 interest: 11–37, favor: 10–35
 ```
 
@@ -18,7 +18,7 @@ interest: 11–37, favor: 10–35
 
 | File                        | Required | Role                                    |
 | --------------------------- | -------- | --------------------------------------- |
-| `npcpersonalityoffset.dbss` | Required | ID-keyed index (same count, same order) |
+| `npcpersonalityoffset.dbss` | Required | ID-keyed index (same count, own order)  |
 
 All multi-byte values are little-endian.
 
@@ -30,33 +30,31 @@ All multi-byte values are little-endian.
 
 | Offset  | Type | Field | Notes                                          |
 | ------- | ---- | ----- | ---------------------------------------------- |
-| `+0x00` | u32  | count | Number of personality records (observed: 1182) |
+| `+0x00` | u32  | count | Number of personality records (observed: 1,182 in the pre-2026-09-27 fixture and in the 2026-09-27 client) |
 
 ### Record (34 bytes, repeated `count` times)
 
 | Offset  | Type | Field              | Notes                                                         |
 | ------- | ---- | ------------------ | ------------------------------------------------------------- |
 | `+0x00` | u16  | personality_id     | Unique personality identifier                                 |
-| `+0x02` | u32  | interest_group_a   | `(item_count << 16) \| group_id`, first amity interest group |
-| `+0x06` | u32  | interest_group_b   | Second amity interest group                                   |
-| `+0x0A` | u32  | interest_group_c   | Third amity interest group                                    |
+| `+0x02` | u16  | group_a_id         | First amity interest group (knowledge group ID)               |
+| `+0x04` | u16  | unknown_04         | Per-group number for group A; see below                       |
+| `+0x06` | u16  | group_b_id         | Second amity interest group                                   |
+| `+0x08` | u16  | unknown_08         | Per-group number for group B                                  |
+| `+0x0A` | u16  | group_c_id         | Third amity interest group                                    |
+| `+0x0C` | u16  | unknown_0c         | Per-group number for group C                                  |
 | `+0x0E` | u16  | personality_id_dup | Always equal to `personality_id` at `+0x00`; purpose unknown  |
 | `+0x10` | f32  | interest_min       | Inclusive lower bound for amity interest (range: 11–37)       |
 | `+0x14` | f32  | interest_max       | Upper bound for amity interest (range: 23–70); inclusive or exclusive is open |
 | `+0x18` | f32  | favor_min          | Inclusive lower bound for amity favor (range: 10–35)          |
-| `+0x1C` | f32  | favor_max          | Upper bound for amity favor (range: 14–68); inclusive or exclusive is open |
+| `+0x1C` | f32  | favor_max          | Upper bound for amity favor (range: 14–68; 15–70 in the 2026-09-27 client); inclusive or exclusive is open |
 | `+0x20` | u16  | personality_type   | Personality category code (see enum below)                    |
 
-#### interest_group Encoding
+#### Interest Groups
 
-Each `interest_group` field is a packed u32:
+Each group is a u16 knowledge group ID (matches `node_id` in `mentalcard.dbss`) followed by an unknown u16 (`unknown_04`, `unknown_08`, `unknown_0c`). Earlier versions of this doc read each pair as one packed u32 and called the high half `item_count`.
 
-```text
-bits 31–16 : item_count  (per-group count; meaning unconfirmed, see below)
-bits 15–0  : group_id    (knowledge group ID, matches node_id in mentalcard.dbss)
-```
-
-The same numbers appear on the BDO wiki next to each NPC's interest groups, but the game does not show them: the conversation window lists only the topics you can use, with no per-group count or maximum (I checked in game, 2026-09-27). It is not the number of topics offered either: with Oliviero (count `6` for Serendia Adventure Log II) the topic list showed 7 cards of that group. What the count controls is open. Observed values: 0, 1, 2, 4, 5, 6, 7, 8, 10. All three fields in a record typically share the same `item_count` (1121 of 1182 records).
+The same numbers appear on the BDO wiki next to each NPC's interest groups, but the game does not show them: the conversation window lists only the topics you can use, with no per-group count or maximum (I checked in game, 2026-09-27). It is not the number of topics offered either: with Oliviero (`6` for Serendia Adventure Log II) the topic list showed 7 cards of that group. What the number controls is open. Observed values: 0, 1, 2, 4, 5, 6, 7, 8, 10. All three fields in a record typically share the same value (1121 of 1182 records).
 
 ---
 
@@ -87,7 +85,7 @@ Confirmed by cross-referencing `amity-npcs.json` horoscope fields against `perso
 
 ## npcpersonalityoffset.dbss
 
-An index file with one entry per personality record, stored in the same order as the main file.
+An index file with one entry per personality record.
 
 ### Header (4 bytes)
 
@@ -106,7 +104,7 @@ An index file with one entry per personality record, stored in the same order as
 
 `record_start = data_offset - 2`
 
-The offset file's `data_offset` values increment by exactly 34 (the main record stride) for each successive entry, it is a 1-to-1 sequential index providing no reordering.
+Every offset row points at a record that repeats its `personality_id`, and every record is indexed exactly once, but the rows are not in main-file order: only the first 53 step by the 34-byte stride, the rest are ordered differently (pre-2026-09-27 fixture and 2026-09-27 client alike). An earlier version of this doc called it a sequential index in main-file order.
 
 ---
 
@@ -116,9 +114,9 @@ The offset file's `data_offset` values increment by exactly 34 (the main record 
 | ----------------- | ---- | ------------------------------------------------ |
 | Row               | num  | Record index within the file                     |
 | ID                | num  | `personality_id`                                 |
-| Group A (ID ×cnt) | num  | `group_a_id` with its repeat count               |
-| Group B (ID ×cnt) | num  | `group_b_id` with its repeat count               |
-| Group C (ID ×cnt) | num  | `group_c_id` with its repeat count               |
+| Group A           | num  | `group_a_id`                                     |
+| Group B           | num  | `group_b_id`                                     |
+| Group C           | num  | `group_c_id`                                     |
 | Int Min           | num  | Interest range lower bound                       |
 | Int Max           | num  | Interest range upper bound                       |
 | Fav Min           | num  | Favor range lower bound                          |
@@ -132,9 +130,9 @@ The offset file's `data_offset` values increment by exactly 34 (the main record 
 - All 1182 `personality_id` values are unique, it is a true record key.
 - `personality_id_dup` at `+0x0E` is always identical to `personality_id` at `+0x00`; appears to be alignment padding or a redundant lookup key.
 - The `variant` in `personality_type` (1 or 2) is not exposed in `amity-npcs.json`; its in-game meaning is unknown. Distribution is roughly even (584 variant-1, 598 variant-2).
-- The groups and counts match the BDO wiki for Amerigo (41013): Vendors of Serendia, Serendia Adventure Log II and Plants (Serendia), `4` each.
+- The groups and `unknown_*` numbers match the BDO wiki for Amerigo (41013): Vendors of Serendia, Serendia Adventure Log II and Plants (Serendia), `4` each.
 - The NPC rolls its Interest Level and Favor within these ranges at the start of each conversation, and keeps them when the conversation is continued ([Black Desert Foundry, Story Exchange guide](https://www.blackdesertfoundry.com/story-exchange-guide/)). The guide's Lorenzo Murray (40015) shows Interest 32 and Favor 15, inside the stored 31-34 and 15-19. Worked back from topic tooltips in the current client (2026-09-27), all inside their stored ranges: Oliviero (41091) Interest 30 / Favor 31, Amerigo (41013) 22 / 28, Cleia (41056) 21 / 26. A tracker range built from a few conversations can therefore be narrower than the stored one.
-- They match the wiki for Oliviero (41091) too: Serendia Adventure Log II, Officers of Serendia and Plants (Serendia), `6` each. Each group holds more cards than `item_count` (18, 13 and 11 here). Sharing a group does not mean sharing topics: Amerigo, who also has Serendia Adventure Log II, did not offer the Log II cards Oliviero did. Which cards an NPC offers is open.
+- They match the wiki for Oliviero (41091) too: Serendia Adventure Log II, Officers of Serendia and Plants (Serendia), `6` each. Each group holds more cards than its `unknown_*` number (18, 13 and 11 here). Sharing a group does not mean sharing topics: Amerigo, who also has Serendia Adventure Log II, did not offer the Log II cards Oliviero did. Which cards an NPC offers is open.
 - The stored ranges do not equal the ranges in an amity tracker dataset (taken from a wiki, possibly outdated) or one in-game check (Ornella), under either reading of the upper bound. Interest / favor:
 
   | NPC | Tracker or game | Stored | Stored, max minus 1 |
@@ -145,12 +143,13 @@ The offset file's `data_offset` values increment by exactly 34 (the main record 
   | Ornella (41002), in game | 22-23 / 27-28 | 21-25 / 25-28 | 21-24 / 25-27 |
 
   The seen ranges are shifted or narrower in both directions, so they settle neither reading.
+- The stored ranges change between client versions while the group IDs stay. Interest / favor in the extracted files: Amerigo (41013) 20-25 / 27-30 in the pre-2026-09-27 fixture and 22-24 / 26-30 in the 2026-09-27 client; Oliviero (41091) 32-35 / 32-33, then 31-33 / 32-33. Neither file matches the "Stored" column above, and Oliviero's in-game Interest 30 / Favor 31 falls outside both; which client the "Stored" figures were read from is open.
 
 ## Open Questions
 
-### What does `item_count` control?
+### What do `unknown_04`, `unknown_08` and `unknown_0c` control?
 
-The per-group count matches the numbers the BDO wiki lists next to each interest group, but the game shows no per-group count, and Oliviero's topic list held 7 cards of a group whose count is `6`. It may cap how many of the group's topics the NPC accepts, weight which topics are offered, or be unused. `0` occurs as well. Per the naming rule it should become an `unknown_*` field once the handler pass reaches this format.
+The per-group number matches the numbers the BDO wiki lists next to each interest group, but the game shows no per-group count, and Oliviero's topic list held 7 cards of a group whose number is `6`. It may cap how many of the group's topics the NPC accepts, weight which topics are offered, or be unused. `0` occurs as well.
 
 ### Are the upper bounds inclusive?
 

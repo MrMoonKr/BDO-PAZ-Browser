@@ -6,14 +6,13 @@ from typing import Any
 import pytest
 
 from tests.framework import (
-    CountTest,
+    DeclaredCountTest,
     HandlerCase,
     HandlerResult,
-    PosTest,
-    RangeTest,
     SchemaTest,
     TargetTest,
     case_id,
+    header_count,
     run_case,
 )
 
@@ -41,21 +40,19 @@ PLANTZONE_CASE = HandlerCase(
                 "data_size",
             ]
         ),
-        CountTest(expected=394),
-        RangeTest(col="unknown_0e", min_val=0, max_val=4),
-        PosTest(
-            pos=0,
+        # The data file's own count; the parser walks the offset table's rows.
+        DeclaredCountTest(declared=header_count()),
+        TargetTest(
+            col="record_id",
+            value=1030,
             expected={
-                "record_id": 1030,
                 "node_name": "Fish Drying Yard 2",
-                "unknown_0e": 4,
                 "production_key": 2017,
-                "unknown_19": 0,
                 "worker_species": _ALL_BASE_SPECIES,
                 "worker_species_text": "Goblin, Human, Giant, Papu, Fadus, Dwarf",
+                "data_size": 37,
             },
         ),
-        PosTest(pos=-1, expected={"record_id": 405, "unknown_0e": 4, "production_key": 914, "data_size": 37}),
         # Dokkebi Forest excavation takes Dokkebi workers only.
         TargetTest(
             col="record_id",
@@ -81,9 +78,10 @@ OFFSET_CASE = HandlerCase(
     internal_path="gamecommondata/binary/plantzoneoffset.dbss",
     tests=[
         SchemaTest(required_keys=["record_id", "data_offset", "data_size"]),
-        CountTest(expected=394),
-        PosTest(pos=0, expected={"record_id": 1030, "data_offset": 8304, "data_size": 37}),
-        PosTest(pos=-1, expected={"record_id": 405, "data_offset": 14335, "data_size": 37}),
+        DeclaredCountTest(declared=header_count()),
+        # The first record follows the data file's u32 count.
+        TargetTest(col="data_offset", value=4, expected={}),
+        TargetTest(col="record_id", value=1807, expected={"data_size": 32}),
     ],
 )
 

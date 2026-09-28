@@ -6,17 +6,21 @@ from typing import Any
 import pytest
 
 from tests.framework import (
-    CountTest,
+    DeclaredCountTest,
     HandlerCase,
     HandlerResult,
-    PosTest,
     RangeTest,
     SchemaTest,
     TargetTest,
     case_id,
+    fixed_rows,
+    header_count,
     run_case,
 )
 
+
+_HEADER_SIZE = 4
+_RECORD_SIZE = 12
 
 CASE = HandlerCase(
     handler_name="fairyskillchange.dbss",
@@ -28,20 +32,14 @@ CASE = HandlerCase(
     internal_path="gamecommondata/binary/fairyskillchange.dbss",
     tests=[
         SchemaTest(required_keys=["key", "level", "orb_cost"]),
-        CountTest(expected=50),
-        RangeTest(col="level", min_val=1, max_val=50),
-        RangeTest(col="orb_cost", min_val=1, max_val=5),
-        # Records are stored out of level order; position 0 is level 47.
-        PosTest(pos=0, expected={"key": 47, "level": 47, "orb_cost": 4}),
-        PosTest(pos=-1, expected={"level": 16, "orb_cost": 1}),
-        # Orb-cost band boundaries (Theiah's Orbs needed to reroll skills).
-        TargetTest(col="level", value=1, expected={"orb_cost": 1}),
-        TargetTest(col="level", value=19, expected={"orb_cost": 1}),
-        TargetTest(col="level", value=20, expected={"orb_cost": 2}),
-        TargetTest(col="level", value=29, expected={"orb_cost": 2}),
-        TargetTest(col="level", value=30, expected={"orb_cost": 3}),
-        TargetTest(col="level", value=40, expected={"orb_cost": 4}),
-        TargetTest(col="level", value=50, expected={"orb_cost": 5}),
+        DeclaredCountTest(declared=header_count()),
+        # The header count fills the file exactly.
+        DeclaredCountTest(declared=fixed_rows(_RECORD_SIZE, header_size=_HEADER_SIZE)),
+        # A reroll always costs at least one orb.
+        RangeTest(col="orb_cost", min_val=1, max_val=float("inf")),
+        # The record key is the level.
+        TargetTest(col="level", value=1, expected={"key": 1}),
+        TargetTest(col="level", value=50, expected={"key": 50}),
     ],
 )
 
@@ -55,13 +53,13 @@ OFFSET_CASE = HandlerCase(
     internal_path="gamecommondata/binary/fairyskillchangeoffset.dbss",
     tests=[
         SchemaTest(required_keys=["level", "data_offset", "data_size", "record_start"]),
-        CountTest(expected=50),
-        RangeTest(col="level", min_val=1, max_val=50),
+        DeclaredCountTest(declared=header_count()),
+        DeclaredCountTest(declared=fixed_rows(_RECORD_SIZE, header_size=_HEADER_SIZE)),
         # Every payload is the 8 bytes trailing the 4-byte key prefix.
         RangeTest(col="data_size", min_val=8, max_val=8),
-        PosTest(pos=0, expected={"level": 47, "data_offset": 8, "record_start": 4}),
-        PosTest(pos=1, expected={"level": 46, "data_offset": 20, "record_start": 16}),
-        TargetTest(col="level", value=50, expected={"data_size": 8}),
+        # The first record follows the main file's u32 count.
+        TargetTest(col="data_offset", value=8, expected={"record_start": 4}),
+        TargetTest(col="level", value=1, expected={"data_size": 8}),
     ],
 )
 

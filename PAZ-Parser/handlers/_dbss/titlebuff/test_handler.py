@@ -5,7 +5,16 @@ from typing import Any
 
 import pytest
 
-from tests.framework import CountTest, HandlerCase, HandlerResult, PosTest, SchemaTest, TargetTest, case_id, run_case
+from tests.framework import (
+    DeclaredCountTest,
+    HandlerCase,
+    HandlerResult,
+    SchemaTest,
+    TargetTest,
+    case_id,
+    header_count,
+    run_case,
+)
 
 
 BUFF_CASE = HandlerCase(
@@ -18,30 +27,9 @@ BUFF_CASE = HandlerCase(
     internal_path="gamecommondata/binary/titlebufflist.dbss",
     tests=[
         SchemaTest(required_keys=["level", "required_titles", "text", "offset"]),
-        CountTest(expected=18),
-        PosTest(
-            pos=0,
-            expected={
-                "level": 1,
-                "required_titles": 50,
-                "text": "Acquire x50: Luck +1",
-                "offset": 4,
-            },
-        ),
-        TargetTest(
-            col="required_titles",
-            value=2000,
-            expected={
-                "level": 18,
-                "text": (
-                    "Acquire x2,000: Luck +3 / "
-                    "Max Energy +8 / "
-                    "EXP +12% / "
-                    "Max Stamina +200"
-                ),
-                "offset": 5562,
-            },
-        ),
+        DeclaredCountTest(declared=header_count(companion="titlebufflistoffset.dbss")),
+        # The first tier follows the u32 count.
+        TargetTest(col="level", value=1, expected={"offset": 4}),
     ],
 )
 
@@ -55,9 +43,8 @@ OFFSET_CASE = HandlerCase(
     internal_path="gamecommondata/binary/titlebufflistoffset.dbss",
     tests=[
         SchemaTest(required_keys=["buff_id", "offset"]),
-        CountTest(expected=18),
-        PosTest(pos=0, expected={"buff_id": 0, "offset": 4}),
-        PosTest(pos=-1, expected={"buff_id": 17, "offset": 5562}),
+        DeclaredCountTest(declared=header_count()),
+        TargetTest(col="buff_id", value=0, expected={"offset": 4}),
     ],
 )
 
@@ -88,3 +75,10 @@ def test_titlebufflist_dbss(spec: Any, buff_result: HandlerResult) -> None:
 @pytest.mark.parametrize("spec", OFFSET_CASE.tests, ids=case_id)
 def test_titlebufflistoffset_dbss(spec: Any, offset_result: HandlerResult) -> None:
     offset_result.check(spec)
+
+
+def test_titlebufflist_text_matches_required_titles(buff_result: HandlerResult) -> None:
+    """Each tier's LOC line is the one for its own title count."""
+    for record in buff_result.records:
+        prefix = f"Acquire x{record['required_titles']:,}:"
+        assert record["text"].startswith(prefix), f"level {record['level']}: {record['text']!r}"

@@ -1,21 +1,47 @@
 from __future__ import annotations
 
+import struct
 from dataclasses import replace
 from typing import Any
 
 import pytest
 
 from tests.framework import (
-    CountTest,
+    CaseInput,
+    DeclaredCount,
+    DeclaredCountTest,
     HandlerCase,
     HandlerResult,
-    PosTest,
     RangeTest,
     SchemaTest,
     TargetTest,
     case_id,
     run_case,
 )
+
+
+_HEADER_SIZE = 4
+_RECORD_SIZE = 12
+_RESERVED_SLOTS = 200
+_RESERVED_SLOT = struct.pack("<4I", 200, 0, 0, 0)
+
+
+def _catalog_rows() -> DeclaredCount:
+    """Skill rows: the bytes between the magic and the 200 null reserved slots
+    that end at the trailer's data_end, in 12-byte records."""
+
+    def read(source: CaseInput) -> int:
+        raw = source.file(None)
+        data_end = struct.unpack_from("<I", raw, len(raw) - 8)[0]
+        reserved_start = data_end - _RESERVED_SLOTS * len(_RESERVED_SLOT)
+        catalog_size = reserved_start - _HEADER_SIZE
+        if data_end != len(raw) - 12 or catalog_size < 0 or catalog_size % _RECORD_SIZE:
+            raise AssertionError(f"data_end 0x{data_end:X} does not leave whole records in {len(raw)} bytes")
+        if raw[reserved_start:data_end] != _RESERVED_SLOT * _RESERVED_SLOTS:
+            raise AssertionError(f"the {_RESERVED_SLOTS} slots before 0x{data_end:X} are not all null")
+        return catalog_size // _RECORD_SIZE
+
+    return read
 
 
 _ICON_DIR = "ui_texture/icon/new_icon/08_servant_skill/02_pet"
@@ -33,7 +59,7 @@ CASE = HandlerCase(
             required_keys=[
                 "equip_skill_id",
                 "skill_type",
-                "tier",
+                "unknown_08",
                 "padding",
                 "loc_id",
                 "skill_name",
@@ -41,31 +67,17 @@ CASE = HandlerCase(
                 "icon_path",
             ],
         ),
-        # 35 live records; the trailing 200 null placeholders must be skipped.
-        CountTest(expected=35),
-        RangeTest(col="skill_type", min_val=1, max_val=8),
-        RangeTest(col="equip_skill_id", min_val=0, max_val=34),
-        PosTest(
-            pos=0,
+        # The 200 null reserved slots must be skipped.
+        DeclaredCountTest(declared=_catalog_rows()),
+        RangeTest(col="padding", min_val=0, max_val=0),
+        TargetTest(
+            col="equip_skill_id",
+            value=0,
             expected={
-                "equip_skill_id": 0,
                 "skill_type": 1,
-                "tier": 1,
-                "padding": 0,
                 "loc_id": 49096,
                 "skill_name": "Tingling Breath I",
-                "skill_description": "Underwater Breathing +5 sec",
                 "icon_path": f"{_ICON_DIR}/equipskill_fairy_00049096.dds",
-            },
-        ),
-        PosTest(
-            pos=-1,
-            expected={
-                "equip_skill_id": 34,
-                "skill_type": 8,
-                "loc_id": 49181,
-                "skill_name": "Continuous Care V",
-                "skill_description": "Auto-use from 30 selected items.",
             },
         ),
         # Fairy's Tear is the one group whose loc_ids descend as ids ascend.
@@ -104,7 +116,6 @@ CASE = HandlerCase(
                 "skill_type": 7,
                 "loc_id": 49130,
                 "skill_name": "Gift",
-                "skill_description": "Luck +1",
             },
         ),
         # Legacy and current naming coexist inside skill type 6.
@@ -124,6 +135,15 @@ CASE = HandlerCase(
                 "equip_skill_id": 28,
                 "skill_type": 6,
                 "skill_name": "Miraculous Cheer V",
+            },
+        ),
+        TargetTest(
+            col="equip_skill_id",
+            value=34,
+            expected={
+                "skill_type": 8,
+                "loc_id": 49181,
+                "skill_name": "Continuous Care V",
             },
         ),
     ],

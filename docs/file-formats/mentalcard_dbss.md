@@ -36,7 +36,7 @@ All multi-byte values are little-endian.
 | Offset  | Type  | Name  | Description                                     |
 | ------- | ----- | ----- | ----------------------------------------------- |
 | `+0x00` | u8[4] | magic | ASCII `PABR`                                    |
-| `+0x04` | u32   | count | Number of rows; `12502` in the current client   |
+| `+0x04` | u32   | count | Number of rows; `12,604` after the 2026-09-27 client update, `12,502` before it, `12,087` in the test fixture |
 
 #### Index Row (12 bytes, repeated `count` times)
 
@@ -103,7 +103,7 @@ Strings are `i64` UTF-16 code-unit counts followed by that many UTF-16LE units, 
 | 12    | u32 × hash_count | hashes       | Hash-like values; 271 distinct, lists share prefixes between cards          |
 | 13    | u8[5]         | padding         | Always zero                                                                 |
 
-Every one of the 12,502 records parses with this layout and ends exactly at its index `size`. The same layout holds for the older test fixture (12,087 records).
+Every one of the 12,502 records parses with this layout and ends exactly at its index `size`. The same layout holds for the older test fixture (12,087 records) and for the 12,604 records after the 2026-09-27 update, which still tile the file from byte `4` to its end.
 
 ---
 

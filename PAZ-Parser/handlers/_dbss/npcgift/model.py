@@ -21,6 +21,6 @@ class NpcGiftFlatRecord(TypedDict):
 class NpcGiftDataRecord(TypedDict):
     npc_id: int
     npc_name: str
-    unknown_param: int
+    unknown_02: int
     dialogue: str
     dialogue_source: str

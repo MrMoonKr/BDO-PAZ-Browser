@@ -20,7 +20,7 @@ All multi-byte values are little-endian.
 
 | Offset  | Type | Field | Notes                    |
 | ------- | ---- | ----- | ------------------------ |
-| `+0x00` | u32  | count | Number of offset records |
+| `+0x00` | u32  | count | Number of offset records; `3,048` in the pre-2026-09-27 fixture, `3,172` in the 2026-09-27 client |
 
 ### Offset Record (12 bytes, repeated `count` times)
 
@@ -36,4 +36,5 @@ To read a title record: seek to `offset` in `title.dbss` and read `size` bytes.
 
 ## Notes
 
-- Parsed by the shared `parse_offset_table` helper in `_dbss/common/binary.py`, also used by other `*offset.dbss` companion files.
+- Parsed by the shared `parse_offset_table` helper in `_common/binary.py`, also used by other `*offset.dbss` companion files.
+- The file is exactly `4 + count × 12` bytes in both files, and the lowest `offset` is `4`: the first title record follows the `title.dbss` u32 count.

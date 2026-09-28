@@ -33,7 +33,7 @@ All multi-byte values are little-endian.
 
 | Offset  | Type | Field | Notes                                 |
 | ------- | ---- | ----- | ------------------------------------- |
-| `+0x00` | u32  | count | Number of name records; observed `60` |
+| `+0x00` | u32  | count | Number of name records; observed `60` in the pre-2026-09-27 fixture and in the 2026-09-27 client |
 
 ### Record Stream
 
@@ -53,7 +53,7 @@ The first record starts immediately at `+0x04`. Records are variable length and 
 | ------- | ------------------------- | ---------------- | --------------------------------------------------- |
 | `+0x00` | u32                       | employee_name_id | Matches ID in `employeenameoffset.dbss`             |
 | `+0x04` | u32                       | char_count       | Number of UTF-16 code units in `name`               |
-| `+0x08` | u32                       | unknown_0        | Always `0` in observed data                         |
+| `+0x08` | u32                       | unknown_08       | Always `0` in observed data                         |
 | `+0x0C` | utf16le[`char_count` * 2] | name             | Inline Korean source name                            |
 | varies  | u32                       | terminator       | Always `0` after the name text in observed data     |
 
@@ -94,7 +94,7 @@ To read a name record: seek to `offset` in `employeename.dbss`, read `size` byte
 
 - Record order is not numeric: observed order starts `47` down to `32`, then `60` down to `48`, then `15` down to `1`, then `31` down to `16`.
 - Every offset-row ID matches the `employee_name_id` stored at the beginning of its target record.
-- Every observed `unknown_0` and trailing `terminator` is zero.
+- Every observed `unknown_08` and trailing `terminator` is zero. Earlier versions of this doc called `unknown_08` `unknown_0`.
 - English LOC matches were confirmed for sampled IDs: `47` -> Guile, `34` -> Pilgrave, `15` -> Neil Moss, `1` -> Philav, `60` -> Tails.
 - `employeespawnposition.dbss` directly uses IDs from this table for observed rows `1`-`5` and `41`-`50`.
 

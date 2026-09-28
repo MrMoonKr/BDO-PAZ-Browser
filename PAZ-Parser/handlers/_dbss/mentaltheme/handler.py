@@ -135,8 +135,8 @@ class MentalThemeHandler(PreviewHandler):
                 "child_ids": record["child_ids"],
                 "payload_offset": record["payload_offset"],
                 "payload_size": record["payload_size"],
-                "unknown_flag": record["unknown_flag"],
-                "unknown_value": record["unknown_value"],
+                "unknown_0e": record["unknown_0e"],
+                "unknown_0f": record["unknown_0f"],
                 "terminator": record["terminator"],
             }
             for record in records

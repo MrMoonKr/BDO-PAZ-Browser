@@ -3,7 +3,7 @@
 There is no offset table. Records sit back to back from `+0x04`, and record
 `i` belongs to packed quest ID `allquestlist[i]`:
 
-    u32 lead_a | u32 lead_b | u32 lead_zero | condition_script | action_script
+    u32 unknown_00 | u32 unknown_04 | u32 unknown_08 | condition_script | action_script
     | objective_gap | objective_text_kr | u32 quest_category
     Q: u32 packed_quest_id | ... | u8 block_kind @ Q+0x14
     | u32 reward_entry_count @ Q+0x15 | 178-byte reward entries | ...

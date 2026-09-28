@@ -15,13 +15,13 @@ _MAGIC = b"PABR"
 _LANG_DIR = Path(__file__).parent / "lang"
 
 _FIELDS = [
-    ("config_a", 0x04, "u16", "Global gift-system value"),
-    ("config_b", 0x06, "u16", "Global gift-system value"),
-    ("config_c", 0x08, "u32", "Global gift-system value"),
-    ("config_d", 0x0C, "u32", "Global gift-system value"),
+    ("unknown_04", 0x04, "u16", "Global gift-system value"),
+    ("unknown_06", 0x06, "u16", "Global gift-system value"),
+    ("unknown_08", 0x08, "u32", "Global gift-system value"),
+    ("unknown_0c", 0x0C, "u32", "Global gift-system value"),
     ("reserved0", 0x10, "u32", "Observed zero"),
     ("reserved1", 0x14, "u32", "Observed zero"),
-    ("config_e", 0x18, "u32", "Global gift-system value"),
+    ("unknown_18", 0x18, "u32", "Global gift-system value"),
     ("reserved2", 0x1C, "u32", "Observed zero"),
 ]
 

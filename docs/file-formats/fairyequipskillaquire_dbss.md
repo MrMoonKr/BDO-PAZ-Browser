@@ -168,6 +168,7 @@ Show one row per `(acquire_type_id, equip_skill_id)` and omit zero weights, sinc
 - 43 weight slots cover `equip_skill_id` `0`–`42`, while the fairy catalog only defines `0`–`34`. Slots `35`–`42` are zero in every record, spare capacity shared with the pet table, which uses the same 176-byte record.
 - Only Radiant can roll rank IV and V skills, which the weight table encodes directly rather than through a separate cap field.
 - Morning Star is weighted far above any other skill at low grades (25% for Faint) and drops to 3% at Radiant.
+- Observed: 4 records and 67 non-zero weights (6 + 13 + 18 + 30) in the pre-2026-09-27 fixture and in the 2026-09-27 client; both files are byte-identical between the two.
 
 ---
 

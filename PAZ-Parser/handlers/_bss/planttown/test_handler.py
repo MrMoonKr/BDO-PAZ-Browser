@@ -5,7 +5,16 @@ from typing import Any
 
 import pytest
 
-from tests.framework import CountTest, HandlerCase, HandlerResult, PosTest, SchemaTest, TargetTest, case_id, run_case
+from tests.framework import (
+    DeclaredCountTest,
+    HandlerCase,
+    HandlerResult,
+    SchemaTest,
+    TargetTest,
+    case_id,
+    header_count,
+    run_case,
+)
 
 
 CASE = HandlerCase(
@@ -22,53 +31,17 @@ CASE = HandlerCase(
                 "slot",
                 "node_id",
                 "node_name",
-                "unknown_a",
-                "unknown_b",
-                "unknown_c",
-                "unknown_d",
+                "unknown_04",
+                "unknown_06",
+                "unknown_08",
+                "unknown_0a",
             ],
         ),
-        CountTest(expected=45),
-        PosTest(
-            pos=0,
-            expected={
-                "slot": 0,
-                "node_id": 1785,
-                "node_name": "Nampo's Moodle Village",
-                "unknown_a": 1,
-                "unknown_b": 2,
-                "unknown_c": 10,
-                "unknown_d": 1,
-            },
-        ),
-        PosTest(
-            pos=8,
-            expected={
-                "slot": 8,
-                "node_id": 1623,
-                "node_name": "Grána",
-            },
-        ),
-        TargetTest(
-            col="node_id",
-            value=1301,
-            expected={
-                "slot": 25,
-                "node_name": "Valencia City",
-                "unknown_a": 1,
-                "unknown_b": 2,
-                "unknown_c": 10,
-                "unknown_d": 1,
-            },
-        ),
-        PosTest(
-            pos=-1,
-            expected={
-                "slot": 44,
-                "node_id": 301,
-                "node_name": "Heidel",
-            },
-        ),
+        DeclaredCountTest(declared=header_count(offset=4)),
+        TargetTest(col="node_id", value=1785, expected={"node_name": "Nampo's Moodle Village"}),
+        TargetTest(col="node_id", value=1623, expected={"node_name": "Grána"}),
+        TargetTest(col="node_id", value=1301, expected={"node_name": "Valencia City"}),
+        TargetTest(col="node_id", value=301, expected={"node_name": "Heidel"}),
     ],
 )
 

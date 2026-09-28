@@ -5,7 +5,17 @@ from typing import Any
 
 import pytest
 
-from tests.framework import CountTest, HandlerCase, HandlerResult, PosTest, SchemaTest, TargetTest, case_id, run_case
+from tests.framework import (
+    DeclaredCountTest,
+    HandlerCase,
+    HandlerResult,
+    RangeTest,
+    SchemaTest,
+    TargetTest,
+    case_id,
+    header_count,
+    run_case,
+)
 
 
 CASE = HandlerCase(
@@ -18,16 +28,15 @@ CASE = HandlerCase(
     internal_path="gamecommondata/binary/mentaltheme.dbss",
     tests=[
         SchemaTest(required_keys=["theme_id", "name", "parent_id", "parent_name", "entry_count", "child_count"]),
-        CountTest(expected=902),
-        PosTest(
-            pos=0,
+        DeclaredCountTest(declared=header_count()),
+        RangeTest(col="unknown_0e", min_val=0, max_val=1),
+        TargetTest(
+            col="theme_id",
+            value=20120,
             expected={
-                "theme_id": 20120,
                 "name": "Morning Light - Hwanghae Logs I",
                 "parent_id": 20119,
                 "parent_name": "Morning Light Logs - Hwanghae Province",
-                "entry_count": 47,
-                "child_count": 0,
             },
         ),
         TargetTest(
@@ -37,9 +46,6 @@ CASE = HandlerCase(
                 "name": "Calpheon City Adventure Log I",
                 "parent_id": 20030,
                 "parent_name": "Calpheon Logs",
-                "energy_reward_1": "+1 at 3 entries",
-                "energy_reward_2": "+3 at 10 entries",
-                "entry_count": 10,
             },
         ),
     ],

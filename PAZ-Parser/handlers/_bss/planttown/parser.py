@@ -27,10 +27,10 @@ def parse_planttown_records(data: bytes) -> list[dict]:
         records.append({
             "slot": slot,
             "node_id": u32(data, pos),
-            "unknown_a": u16(data, pos + 0x04),
-            "unknown_b": u16(data, pos + 0x06),
-            "unknown_c": u16(data, pos + 0x08),
-            "unknown_d": u16(data, pos + 0x0A),
+            "unknown_04": u16(data, pos + 0x04),
+            "unknown_06": u16(data, pos + 0x06),
+            "unknown_08": u16(data, pos + 0x08),
+            "unknown_0a": u16(data, pos + 0x0A),
         })
 
     return records

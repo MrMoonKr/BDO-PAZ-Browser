@@ -15,7 +15,6 @@ _OFFSET_COLUMNS = [
 
 _COLUMNS = [
     Column("Pet Skill ID", "num", sort_key="pet_skill_id"),
-    Column("Skill Group", "num", sort_key="skill_group"),
     Column("Level", "num", sort_key="level"),
     Column("Value A", "num", sort_key="raw_value_a"),
     Column("Value B", "num", sort_key="raw_value_b"),
@@ -85,7 +84,6 @@ class PetSkillHandler(PreviewHandler):
         rows = [
             [
                 e(r["pet_skill_id"]),
-                e(r["skill_group"]),
                 e(r["level"]),
                 e(r["raw_value_a"]),
                 e(r["raw_value_b"]),

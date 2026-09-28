@@ -169,6 +169,7 @@ Show one row per `(acquire_type_id, equip_skill_id)` and omit zero weights, sinc
 - Weights index Section 1 of `petequipskill.bss` (`equip_skill_id` `0`–`42`), which is exactly the 43 available slots. The extended Section 2 catalog is not addressable here.
 - `301`–`304` are byte-identical to `201`–`204`, and `401`–`404` are identical to each other. Several other keys pair up (`1`=`2`, `3`=`4`, `103`=`104`).
 - Only the `+5%` mid-tier of each skill group is rollable; the `+7%` and duplicate `+5%` entries never appear.
+- Observed: 21 records and 280 non-zero weights (20 populated records × 14 skills) in the pre-2026-09-27 fixture and in the 2026-09-27 client; both files are byte-identical between the two.
 
 ---
 

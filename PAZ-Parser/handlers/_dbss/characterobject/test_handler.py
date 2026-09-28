@@ -5,7 +5,16 @@ from typing import Any
 
 import pytest
 
-from tests.framework import CountTest, HandlerCase, HandlerResult, PosTest, RangeTest, SchemaTest, TargetTest, case_id, run_case
+from tests.framework import (
+    DeclaredCountTest,
+    HandlerCase,
+    HandlerResult,
+    SchemaTest,
+    TargetTest,
+    case_id,
+    header_count,
+    run_case,
+)
 
 
 OBJECT_CASE = HandlerCase(
@@ -18,20 +27,21 @@ OBJECT_CASE = HandlerCase(
     internal_path="gamecommondata/binary/characterobject.dbss",
     tests=[
         SchemaTest(required_keys=["character_id", "icon_path", "name_en", "object_kind", "model_path"]),
-        CountTest(expected=5123),
-        RangeTest(col="object_kind", min_val=0, max_val=37),
-        PosTest(
-            pos=0,
+        # The data file's own count; the parser walks the offset table's rows.
+        DeclaredCountTest(declared=header_count()),
+        TargetTest(
+            col="character_id",
+            value=16111,
             expected={
-                "character_id": 16111,
                 "name_en": "Golden Hand Vase",
                 "object_kind": 2,
                 "model_path": "00_Common/Pot/Pot_Base_48.pam",
             },
         ),
-        PosTest(
-            pos=-1,
-            expected={"character_id": 16640, "object_kind": 2, "model_path": "Weed_Sunflower_01.srt"},
+        TargetTest(
+            col="character_id",
+            value=16640,
+            expected={"object_kind": 2, "model_path": "Weed_Sunflower_01.srt"},
         ),
         TargetTest(
             col="character_id",
@@ -60,9 +70,9 @@ OFFSET_CASE = HandlerCase(
     internal_path="gamecommondata/binary/characterobjectoffset.dbss",
     tests=[
         SchemaTest(required_keys=["character_id", "offset", "size"]),
-        CountTest(expected=5123),
-        PosTest(pos=0, expected={"character_id": 16111, "offset": 3011279, "size": 714}),
-        PosTest(pos=-1, expected={"character_id": 16640, "offset": 703168, "size": 712}),
+        DeclaredCountTest(declared=header_count(offset=4)),
+        # The first record follows the data file's u32 count; offsets point at the record's own ID.
+        TargetTest(col="offset", value=4, expected={}),
     ],
 )
 

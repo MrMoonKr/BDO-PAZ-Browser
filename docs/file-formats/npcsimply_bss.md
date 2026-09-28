@@ -20,7 +20,7 @@ Top-level PABR block with a fixed-width record table followed by an inline strin
 | Offset  | Type     | Field       | Notes                                      |
 | ------- | -------- | ----------- | ------------------------------------------ |
 | `+0x00` | char[4]  | magic       | ASCII `PABR`                               |
-| `+0x04` | u32      | count       | Number of NPC records (observed: 2237; older extraction: 2169) |
+| `+0x04` | u32      | count       | Number of NPC records (observed: 2,169 in an older extraction, 2,237 in the pre-2026-09-27 fixture, 2,238 in the 2026-09-27 client) |
 | `+0x08` | record[] | records     | 33-byte records repeated `count` times     |
 | varies  | pool     | string_pool | Counted string table referenced by records |
 | EOF - 8 | trailer  | trailer     | Offset of the string pool, see below       |
@@ -40,15 +40,15 @@ All multi-byte values are little-endian unless noted otherwise.
 | `+0x03` | u8   | zero              | Always 0                                                              |
 | `+0x04` | u32  | kind              | Primary `SpawnType` role; 23 observed values in the range 1-40         |
 | `+0x08` | u32  | script_ref        | String-pool index of the action script; `getknowledge(...)` on 2161 rows (one spelled `getKnowledge`), the empty string on 76 |
-| `+0x0C` | u32  | unknown_id        | Usually 0; non-zero on 58 rows                                         |
-| `+0x10` | u16  | unknown_value     | Usually 0; non-zero on the same 58 rows as `unknown_id`                |
-| `+0x12` | u16  | sentinel          | Usually `0xFFFF`; 0 on the same 58 rows as `unknown_id`                |
-| `+0x14` | u8   | unknown_flag      | Usually 0; 1 on 32 rows                                                |
+| `+0x0C` | u32  | unknown_0c        | Usually 0; non-zero on 58 rows                                         |
+| `+0x10` | u16  | unknown_10        | Usually 0; non-zero on the same 58 rows as `unknown_0c`                |
+| `+0x12` | u16  | unknown_12        | Usually `0xFFFF`; 0 on the same 58 rows as `unknown_0c`                |
+| `+0x14` | u8   | unknown_14        | Usually 0; 1 on 32 rows                                                |
 | `+0x15` | u32  | name_ref          | String-pool index for the Korean display name                          |
 | `+0x19` | u32  | role_ref          | String-pool index for Korean role/title text; points at the empty string when absent |
 | `+0x1D` | u32  | padding           | Always 0                                                              |
 
-An earlier version of this doc read `+0x00` as a u32 `npc_id`. The high half is `unknown_02`: as a u32 only 20 of 2237 values resolve through LOC, as a u16 all of them do.
+An earlier version of this doc read `+0x00` as a u32 `npc_id`. The high half is `unknown_02`: as a u32 only 20 of 2237 values resolve through LOC, as a u16 all of them do. Earlier versions of this doc also called `unknown_0c` `unknown_id`, `unknown_10` `unknown_value`, `unknown_12` `sentinel` and `unknown_14` `unknown_flag`.
 
 `script_ref`, `name_ref`, and `role_ref` are unaligned u32 values inside the 33-byte row. bdo-data-extractor ([asheimo/bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor)) reads the same references as aligned u32s at `+0x14` and `+0x18` shifted right by 8 (`packedNameRef`, `packedTitleRef`); both readings give the same index on every row, because the byte after each unaligned reference is always 0. `name_ref` is usually `script_ref + 1` (2045 rows).
 
@@ -132,10 +132,10 @@ This is the same `[string table][u32 rows_end][u32 0]` tail that `playercharacte
 
 ## Notes
 
-- The record table size is exactly `2237 * 33` bytes; fixed records end at `0x12065`, and the string pool parses exactly up to the 8-byte trailer.
+- The record table size is exactly `count * 33` bytes; fixed records end at `0x12065` (`0x12086` in the 2026-09-27 client), and the string pool parses exactly up to the 8-byte trailer.
 - `script_ref` points to a `getknowledge(<id>);` UTF-16LE string for 2161 of 2237 records.
 - `name_ref` and `role_ref` point to Korean UTF-8 strings in the same pool. Role strings are often bracketed labels such as `<과일상인>` or `<거점관리인>`.
-- `unknown_id`, `unknown_value`, `sentinel=0`, and `unknown_flag=1` cluster on vendor/manager rows such as warehouse keepers, material vendors, and stable keepers.
+- `unknown_0c`, `unknown_10`, `unknown_12=0`, and `unknown_14=1` cluster on vendor/manager rows such as warehouse keepers, material vendors, and stable keepers.
 - Every row's character has `npc_kind` low byte `2` (NPC) in `characterstatic.dbss`.
 - 39 characters have no LOC type `6` name in the current English file: `47623`, `47753`, `47772` to `47807` and `61267`. The handler shows `-` for them; their Korean name stays in its own column.
 
@@ -147,9 +147,9 @@ This is the same `[string table][u32 rows_end][u32 0]` tail that `playercharacte
 
 It is `1` on 2074 rows, `0` on 20 and `2` on 18. Most of the remaining 125 rows form runs that follow the character IDs of related NPCs: node managers `47675`-`47704` hold `34`-`63`, the five Thrones `47705`-`47709` hold `64`-`68`, and the Olvia Academy staff `62480`-`62502` hold `10`-`27` (the bulletin board `62521` holds `99`). It may be an order or group index, but nothing else confirms it.
 
-### What are `unknown_id`, `unknown_value`, and `unknown_flag`?
+### What are `unknown_0c`, `unknown_10`, `unknown_12` and `unknown_14`?
 
-These fields are mostly default but become non-zero together on 58 rows, with `unknown_flag=1` on 32 of those rows. `unknown_id` repeats across NPCs (`3001`, `16142`, `16143`, `23004`, `58008`-`58010`, `58012`, `693901` and others) with `unknown_value` between 1 and 60, which looks like an item key and count, but no item table has been joined to confirm it.
+These fields are mostly default but become non-zero together on 58 rows (`unknown_12` drops from `0xFFFF` to 0 on the same rows), with `unknown_14=1` on 32 of those rows. `unknown_0c` repeats across NPCs (`3001`, `16142`, `16143`, `23004`, `58008`-`58010`, `58012`, `693901` and others) with `unknown_10` between 1 and 60, which looks like an item key and count, but no item table has been joined to confirm it.
 
 ### How does the client choose `kind` among several role flags?
 

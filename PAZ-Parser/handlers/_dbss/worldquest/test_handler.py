@@ -5,7 +5,7 @@ from typing import Any
 
 import pytest
 
-from tests.framework import CountTest, HandlerCase, HandlerResult, PosTest, SchemaTest, case_id, run_case
+from tests.framework import HandlerCase, HandlerResult, SchemaTest, TargetTest, case_id, run_case
 
 
 CASE = HandlerCase(
@@ -18,8 +18,12 @@ CASE = HandlerCase(
     internal_path="gamecommondata/binary/worldquest.dbss",
     tests=[
         SchemaTest(required_keys=["count", "status", "extra_bytes"]),
-        CountTest(expected=1),
-        PosTest(pos=0, expected={"count": 0, "status": "No world quest records", "extra_bytes": 0}),
+        # The file is only its u32 count; the handler shows one status row for it.
+        TargetTest(
+            col="status",
+            value="No world quest records",
+            expected=[{"count": 0, "extra_bytes": 0}],
+        ),
     ],
 )
 

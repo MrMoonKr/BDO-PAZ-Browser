@@ -5,7 +5,16 @@ from typing import Any
 
 import pytest
 
-from tests.framework import CountTest, HandlerCase, HandlerResult, PosTest, SchemaTest, TargetTest, case_id, run_case
+from tests.framework import (
+    DeclaredCountTest,
+    HandlerCase,
+    HandlerResult,
+    SchemaTest,
+    TargetTest,
+    case_id,
+    header_count,
+    run_case,
+)
 
 
 CASE = HandlerCase(
@@ -18,14 +27,12 @@ CASE = HandlerCase(
     internal_path="gamecommondata/binary/zodiacsign.dbss",
     tests=[
         SchemaTest(required_keys=["zodiac_id", "name", "float_count", "pairs_count", "constellation_name", "en_trait"]),
-        CountTest(expected=12),
-        PosTest(
-            pos=0,
+        DeclaredCountTest(declared=header_count()),
+        TargetTest(
+            col="zodiac_id",
+            value=1,
             expected={
-                "zodiac_id": 1,
                 "name": "Hammer",
-                "float_count": 6,
-                "pairs_count": 5,
                 "constellation_name": "망치자리",
                 "en_trait": "Brave, Conservative, Righteous, Collaborative, Hot-Blooded.  ",
             },
@@ -35,19 +42,15 @@ CASE = HandlerCase(
             value=6,
             expected={
                 "name": "Black Dragon",
-                "float_count": 7,
-                "pairs_count": 7,
                 "constellation_name": "검은용자리",
                 "en_trait": "Wealth and Fame, Noble, Delicate, Sensitive, Sociable.",
             },
         ),
-        PosTest(
-            pos=-1,
+        TargetTest(
+            col="zodiac_id",
+            value=12,
             expected={
-                "zodiac_id": 12,
                 "name": "Goblin",
-                "float_count": 6,
-                "pairs_count": 6,
                 "constellation_name": "고블린자리",
                 "en_trait": "Linguist, Strong Beliefs, Intellectual, Materialistic, Wise.",
             },

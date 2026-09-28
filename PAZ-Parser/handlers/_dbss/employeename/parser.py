@@ -43,7 +43,7 @@ def parse_employeename_records(data: bytes, offset_data: bytes) -> list[dict]:
             continue
 
         block = data[start:end]
-        employee_name_id, char_count, unknown_0 = struct.unpack_from("<III", block, 0)
+        employee_name_id, char_count, unknown_08 = struct.unpack_from("<III", block, 0)
         name_end = 12 + char_count * 2
         terminator_offset = name_end
 
@@ -57,7 +57,7 @@ def parse_employeename_records(data: bytes, offset_data: bytes) -> list[dict]:
             "employee_name_id": employee_name_id,
             "name_ko": name,
             "char_count": char_count,
-            "unknown_0": unknown_0,
+            "unknown_08": unknown_08,
             "terminator": terminator,
             "data_offset": start,
             "data_size": size,

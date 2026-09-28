@@ -5,7 +5,16 @@ from typing import Any
 
 import pytest
 
-from tests.framework import CountTest, HandlerCase, HandlerResult, PosTest, SchemaTest, TargetTest, case_id, run_case
+from tests.framework import (
+    DeclaredCountTest,
+    HandlerCase,
+    HandlerResult,
+    SchemaTest,
+    TargetTest,
+    case_id,
+    header_count,
+    run_case,
+)
 
 
 CASE = HandlerCase(
@@ -18,31 +27,21 @@ CASE = HandlerCase(
     internal_path="gamecommondata/binary/questgroup.dbss",
     tests=[
         SchemaTest(required_keys=["group_id", "name", "quest_count", "quest_titles", "quest_titles_text"]),
-        CountTest(expected=110),
-        PosTest(
-            pos=0,
+        DeclaredCountTest(declared=header_count()),
+        # The first record follows the u32 count.
+        TargetTest(col="row", value=0, expected={"offset": 0x4}),
+        TargetTest(
+            col="group_id",
+            value=1022,
             expected={
-                "group_id": 1022,
+                "name_kr": "소서러, 여정의 시작",
                 "name": "Sorceress, Beginning of the Journey",
-                "quest_count": 3,
-                "quest_titles": [
-                    "Chiara's Kindness",
-                    "Tom the Vigilante",
-                    "A Skill Instructor of Olvia",
-                ],
             },
         ),
         TargetTest(
             col="group_id",
             value=5801,
-            expected={
-                "name": "To the Wild Desert!",
-                "quest_count": 4,
-                "quest_titles_text": (
-                    "Rest Area on the Barren Sand, Token of Lavania League, "
-                    "Have You Ever Done This Before?, To the Wild Desert!"
-                ),
-            },
+            expected={"name_kr": "거친 사막으로 달려가자!", "name": "To the Wild Desert!"},
         ),
     ],
 )

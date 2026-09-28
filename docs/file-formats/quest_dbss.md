@@ -40,7 +40,7 @@ All multi-byte values are little-endian.
 
 Records are stored back to back with no offset table and no padding. Record 0 starts at `+0x04`; every later record starts immediately after the previous record's 13-byte trailer. Record `i` belongs to packed quest ID `allquestlist[i]`.
 
-A sequential walk (read the strings, find the packed ID of `allquestlist[i]` right after the objective, then the ID echo and trailer) consumes every byte of the file: `19,327` of `19,327` records after the 2026-09-27 update, `18,988` of `18,988` before it and `19,599` of `19,599` fixture records, with the last record ending exactly at end of file. Record sizes, from the lead to the end of the trailer, range from `512` to `9,464` bytes (current file) and `512` to `8,818` (fixture). The first three fixture records start at `0x00000004`, `0x000005F8` and `0x00000936`.
+A sequential walk (read the strings, find the packed ID of `allquestlist[i]` right after the objective, then the ID echo and trailer) consumes every byte of the file: `19,327` of `19,327` records after the 2026-09-27 update, `18,988` of `18,988` before it and `19,599` of `19,599` fixture records, with the last record ending exactly at end of file. Record sizes, from the lead to the end of the trailer, range from `512` to `9,464` bytes (current file), `512` to `11,649` after the 2026-09-27 update and `512` to `8,818` (fixture). The first three fixture records start at `0x00000004`, `0x000005F8` and `0x00000936`.
 
 ---
 
@@ -54,9 +54,9 @@ Strings are a u64 character count (equivalently a u32 count plus a u32 zero) fol
 
 | Offset  | Type             | Field             | Notes                                                                                   |
 | ------- | ---------------- | ----------------- | --------------------------------------------------------------------------------------- |
-| `+0x00` | u32              | lead_a            | Formerly `packed_quest_id_a`. Never equals the record's quest ID (0 of 18,988); only 512 values are `allquestlist` IDs |
-| `+0x04` | u32              | lead_b            | Formerly `packed_quest_id_b`. Equals `lead_a` in 11,419 records; `0x10000`/`0x0` and `0x0`/`0x0` are common |
-| `+0x08` | u32              | lead_zero         | `0` in 18,920 of 18,988                                                                 |
+| `+0x00` | u32              | unknown_00        | Never equals the record's quest ID (0 of 18,988); only 512 values are `allquestlist` IDs |
+| `+0x04` | u32              | unknown_04        | Equals `unknown_00` in 11,419 records; `0x10000`/`0x0` and `0x0`/`0x0` are common        |
+| `+0x08` | u32              | unknown_08        | `0` in 18,920 of 18,988                                                                 |
 | `+0x0C` | u64 + utf16le[n] | condition_script  | Accept/prerequisite expression, e.g. `getLevel()>30;<or>clearquest(654,4);`             |
 | varies  | u64 + utf16le[n] | action_script     | Completion expression, e.g. `killmonster(20007,10);`, `meet(npc_id,count)`              |
 | varies  | u8[]             | objective_gap     | 24 zero bytes in 18,209 records; 26 to 100+ bytes in the rest (content not decoded)     |
@@ -69,9 +69,9 @@ Strings are a u64 character count (equivalently a u32 count plus a u32 zero) fol
 | ---------- | ------------- | ------------------ | ---------------------------------------------------------------------------------- |
 | `Q+0x00`   | u32           | packed_quest_id    | `(quest_id << 16) \| quest_chain_id`; equals `allquestlist[i]` for every record    |
 | `Q+0x04`   | u32           | unknown_q04        | `0x00010000` in 11,303 records; also `0x00010101`, `0x00010001`, `0x00010100`, `0` |
-| `Q+0x08`   | u8[8]         | reserved_q08       | Zero in 18,798 records (all with `block_kind` 7 or 4)                              |
+| `Q+0x08`   | u8[8]         | unknown_q08        | Zero in 18,798 records (all with `block_kind` 7 or 4)                              |
 | `Q+0x10`   | u32           | unknown_q10        | `0` in 15,784 kind-7 blocks; also `24`, `9999`, `22`, `168`                        |
-| `Q+0x14`   | u8            | block_kind         | `7` in 18,152 records, `4` in 646, `0` in 190 (shifted layout, see Open Questions) |
+| `Q+0x14`   | u8            | block_kind         | `7` in 18,152 records, `4` in 646, `0` in 190 (shifted layout, see Open Questions); after the 2026-09-27 update `7` in 18,434, `4` in 702, `0` in 191 |
 | `Q+0x15`   | u32           | reward_entry_count | `0` to `12`; number of 178-byte reward entries                                     |
 | `Q+0x19`   | u8[178 × n]   | reward_entries     | Entry `k` holds a Family-stat union at `Q+0x80 + 178 × k`                          |
 | varies     | u8[]          | unknown_payload    | Rich text (PAColor markup), more length-prefixed Korean strings, numeric config    |
@@ -79,6 +79,8 @@ Strings are a u64 character count (equivalently a u32 count plus a u32 zero) fol
 | varies     | u8[16]        | unknown_post_icon  | 16 bytes in 18,655 records, 8 in 211                                               |
 | varies     | u32           | packed_quest_id_echo | Repeats `packed_quest_id`                                                        |
 | varies     | u8[13]        | trailer            | Most common: `00 × 9, 01 00 00 00` (5,075) and all zero (2,882); record ends here  |
+
+Earlier versions of this doc called `unknown_00`, `unknown_04` and `unknown_08` `lead_a`, `lead_b` and `lead_zero` (and before that `packed_quest_id_a` and `packed_quest_id_b`), and `unknown_q08` `reserved_q08`.
 
 The split between the 13-byte `trailer` and the next record's 12-byte lead is inferred from record 0 (12 bytes before its first string at `+0x0C`) and from the last record (13 bytes after its echo to end of file). [bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor) groups `packed_quest_id_echo`, the trailer and the next record's lead, scripts and objective into one "condition tail" of the earlier quest; our data shows those scripts belong to the next quest: in 8,066 of 11,672 such blocks with a `clearquest` call it names the previous step of the next quest, versus 170 for the earlier quest.
 
@@ -153,11 +155,11 @@ Garmoth leaves out four journals that also grant stats, which is why its Invento
 
 Fixture file (`PAZ-Parser/tests/fixtures/quest.dbss`):
 
-| File Offset  | `lead_a` | Packed Quest ID | Condition                                                       | Action                                                               | Objective KR                                                    | Icon                               |
-| ------------ | -------- | --------------- | --------------------------------------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------- | ---------------------------------- |
-| `0x00000004` | `125285` | `1050655`       | `checkFieldType(hadumField);getLevel()>59;clearquest(2080,10);` | `killMonsterGroup(189,1);`                                           | `<악몽의 그림자> 기가고드 처치하기;`                            | `Icon/Quest/Hadum08.dds`           |
-| `0x000005F8` | `65536`  | `463223`        | `getLevel()>0;`                                                 | `gatheritem(16004,0,1);`                                             | `응축된 마력의 블랙스톤 제작하기;`                              | `Icon/Quest/GrowthPass_GUV_07.dds` |
-| `0x00000936` | `115546` | `6751209`       | `getLevel()>30;<or>clearquest(654,4);`                          | `killmonster(20007,10); killmonster(20009,6); killmonster(24001,2);` | `임프 병사 처치하기;임프 요술사 처치하기;임프 방어탑 파괴하기;` | `Icon/Quest/Imp.dds`               |
+| File Offset  | `unknown_00` | Packed Quest ID | Condition                                                       | Action                                                               | Objective KR                                                    | Icon                               |
+| ------------ | ------------ | --------------- | --------------------------------------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------- | ---------------------------------- |
+| `0x00000004` | `125285`     | `1050655`       | `checkFieldType(hadumField);getLevel()>59;clearquest(2080,10);` | `killMonsterGroup(189,1);`                                           | `<악몽의 그림자> 기가고드 처치하기;`                            | `Icon/Quest/Hadum08.dds`           |
+| `0x000005F8` | `65536`      | `463223`        | `getLevel()>0;`                                                 | `gatheritem(16004,0,1);`                                             | `응축된 마력의 블랙스톤 제작하기;`                              | `Icon/Quest/GrowthPass_GUV_07.dds` |
+| `0x00000936` | `115546`     | `6751209`       | `getLevel()>30;<or>clearquest(654,4);`                          | `killmonster(20007,10); killmonster(20009,6); killmonster(24001,2);` | `임프 병사 처치하기;임프 요술사 처치하기;임프 방어탑 파괴하기;` | `Icon/Quest/Imp.dds`               |
 
 ---
 
@@ -211,17 +213,17 @@ titles/objectives.
 - The icon path is read through its u64 prefix, not a pattern match. That recovers paths the old `Icon/[A-Za-z0-9_./ -]+` pattern cut short or missed: `Icon/Quest/O'dylilta_820115.dds`, `UI_Artwork/IC_01245.dds`, and `New_Icon/03_ETC/...`, which the pattern read as `Icon/03_ETC/...`. Three records store no icon at all: `69183`, `69175` and `8456145`. The old scan-based icon index had given them, and about a hundred other quests (mostly O'dyllita and Sherekhan ones), a neighbouring record's icon or a truncated path.
 - The Family Stat column lists the non-`16` unions of the counted reward entries (skipped when `block_kind` is `0`). On both files that is 104 entries: the 98 real Family stats plus six type `12`/`13` entries in the chain `1627` test quests, shown by type number only.
 - `(file_size - 4) / count` is not integral, confirming variable-length records.
-- There is no step/canonical record split: `lead_a`/`lead_b` are not quest IDs, and the record's own ID is `packed_quest_id` in the fixed block.
+- There is no step/canonical record split: `unknown_00`/`unknown_04` are not quest IDs, and the record's own ID is `packed_quest_id` in the fixed block.
 - Some decoded rows have no direct LOC type 18 title (27 of 18,988 current IDs). In those cases the scripts may still reference localized display quests through `clearquest(chain,id)`.
 - No `questoffset.dbss` was found. `guildquestoffset.dbss` and `journalquestoffset.dbss` exist for related formats, but not for the main quest table.
 - Scripts use semicolon-separated calls and comparisons, `!` negation and markers such as `<or>`: `getLevel()>30`, `clearquest(group,id)`, `killmonster(id,count)`, `gatheritem(item_id,?,count)`, `meet(npc_id,count)`, `collectknowledge(id)`.
-- Journal-page records (`quest_category = 11`) all have `block_kind = 7`, zero `reserved_q08` and zero `unknown_q10`; the 91 pages with a Family stat use reward entry 0.
+- Journal-page records (`quest_category = 11`) all have `block_kind = 7`, zero `unknown_q08` and zero `unknown_q10`; the 91 pages with a Family stat use reward entry 0.
 
 ---
 
 ## Open Questions
 
-### `lead_a` / `lead_b` Meaning
+### `unknown_00` / `unknown_04` Meaning
 
 The two u32 before the accept script are equal in 11,419 records and are mostly not quest IDs (common values `0x0001C204`, `0x00019C47`, `0x0001AE99`). They may be NPC or giver keys, but nothing has been matched to another table yet.
 

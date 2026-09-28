@@ -6,14 +6,14 @@ from typing import Any
 import pytest
 
 from tests.framework import (
-    CountTest,
+    DeclaredCountTest,
     HandlerCase,
     HandlerResult,
-    PosTest,
     RangeTest,
     SchemaTest,
     TargetTest,
     case_id,
+    header_count,
     run_case,
 )
 
@@ -41,15 +41,14 @@ CASE = HandlerCase(
                 "icon_path",
             ],
         ),
-        CountTest(expected=28_689),
+        DeclaredCountTest(declared=header_count()),
         RangeTest(col="item_id", min_val=0, max_val=0xFFFFFF),
-        PosTest(
-            pos=0,
+        TargetTest(
+            col="product_id",
+            value=114415,
             expected={
-                "product_id": 114415,
                 "product_icon_path": f"{_TILE_DIR}/00103985.dds",
                 "item_id": 613110,
-                "block_size": 764,
                 # The displayed icon keys off the item, not the shop tile. No
                 # index is installed under test, so this is the derived
                 # fallback; the app resolves it through the item index.
@@ -65,7 +64,6 @@ CASE = HandlerCase(
                 "product_icon_path": f"{_TILE_DIR}/00105099.dds",
                 "item_id": 340916,
                 "item_name": "[Guardian] Shell Belle Outfit Set",
-                "block_size": 1294,
                 "icon_path": f"{_DERIVED_DIR}/00340916.png",
             },
         ),

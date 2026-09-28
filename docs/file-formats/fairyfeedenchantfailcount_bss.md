@@ -2,16 +2,17 @@
 
 ## Purpose
 
-A small `PABR` lookup table on the fairy feeding/enchant path, keyed by a group
-ID from 1 to 7. Each group holds one or two entries carrying a sub-key and two
-numeric values. The binary layout is fully resolved; the gameplay meaning of the
-values is not confirmed, so field names are deliberately neutral.
+A small `PABR` lookup table on the fairy feeding/enchant path. Each record
+holds one or two 11-byte entries of four integer fields. The binary layout is
+fully resolved; the meaning of every entry field is not confirmed, so all four
+are named by their offset (`unknown_00`, `unknown_02`, `unknown_03`,
+`unknown_07`).
 
-Example:
+Example (`unknown_00`: `unknown_02` -> (`unknown_03`, `unknown_07`)):
 
 ```text
-group 1: sub_key 19 -> (0, 200), sub_key 20 -> (0, 300)
-group 7: sub_key 0  -> (300, 350)
+record 0: 1: 19 -> (0, 200), 1: 20 -> (0, 300)
+record 6: 7: 0  -> (300, 350)
 ```
 
 ---
@@ -30,7 +31,7 @@ All multi-byte values are little-endian.
 | Offset  | Type  | Field   | Notes                                         |
 | ------- | ----- | ------- | --------------------------------------------- |
 | `+0x00` | u8[4] | magic   | `PABR` (ASCII)                                |
-| `+0x04` | u32   | count   | Number of records; observed 7                 |
+| `+0x04` | u32   | count   | Number of records; observed 7 (see Notes)     |
 | `+0x08` | —     | records | `count` variable-length records, back to back |
 | end-12  | —     | trailer | 12-byte file trailer                          |
 
@@ -45,19 +46,22 @@ trailer.
 | `+0x04` | —    | entries     |          | `entry_count` × 11-byte entries    |
 
 Records have no key of their own. Every entry in a record repeats the same
-`group_id`, and that ID equals the record index plus one across all seven
+`unknown_00`, and that value equals the record index plus one across all seven
 records.
 
 ### Entry (11 bytes, repeated `entry_count` times)
 
-| Offset  | Type | Field    | Notes                                              |
-| ------- | ---- | -------- | -------------------------------------------------- |
-| `+0x00` | u16  | group_id | 1–7; identical for every entry in the same record  |
-| `+0x02` | u8   | sub_key  | 19 or 20 in groups 1–2, otherwise 0                |
-| `+0x03` | u32  | value_a  | 0 whenever `sub_key` is non-zero                   |
-| `+0x07` | u32  | value_b  | 200, 300, or 350                                   |
+| Offset  | Type | Field      | Notes                                                   |
+| ------- | ---- | ---------- | ------------------------------------------------------- |
+| `+0x00` | u16  | unknown_00 | 1–7; identical for every entry in the same record       |
+| `+0x02` | u8   | unknown_02 | 19 or 20 where `unknown_00` is 1–2, otherwise 0         |
+| `+0x03` | u32  | unknown_03 | 0 whenever `unknown_02` is non-zero                     |
+| `+0x07` | u32  | unknown_07 | 200, 300, or 350                                        |
 
-The 11-byte entry is unaligned, `value_a` starts at an odd offset, so a parser
+Earlier versions of this doc called `unknown_00` `group_id`, `unknown_02`
+`sub_key`, `unknown_03` `value_a` and `unknown_07` `value_b`.
+
+The 11-byte entry is unaligned, `unknown_03` starts at an odd offset, so a parser
 must read the two u32 fields at `+0x03` and `+0x07` rather than assume 4-byte
 alignment.
 
@@ -78,8 +82,8 @@ and [zodiacsignindex.bss](zodiacsignindex_bss.md).
 
 All nine entries in the observed file:
 
-| Record | group_id | sub_key | value_a | value_b |
-| ------ | -------- | ------- | ------- | ------- |
+| Record | unknown_00 | unknown_02 | unknown_03 | unknown_07 |
+| ------ | ---------- | ---------- | ---------- | ---------- |
 | 0      | 1        | 19      | 0       | 200     |
 | 0      | 1        | 20      | 0       | 300     |
 | 1      | 2        | 19      | 0       | 200     |
@@ -90,20 +94,20 @@ All nine entries in the observed file:
 | 5      | 6        | 0       | 100     | 300     |
 | 6      | 7        | 0       | 300     | 350     |
 
-The table splits cleanly in two. Groups 1–2 carry two entries each, keyed by
-`sub_key` 19 and 20, with `value_a` zero. Groups 3–7 carry one entry with
-`sub_key` zero and a non-zero `value_a`.
+The table splits cleanly in two. Records 0–1 carry two entries each, told apart
+by `unknown_02` 19 and 20, with `unknown_03` zero. Records 2–6 carry one entry
+with `unknown_02` zero and a non-zero `unknown_03`.
 
 ---
 
 ## Suggested UI Layout
 
-| Column   | Type | Notes                                   |
-| -------- | ---- | --------------------------------------- |
-| Group ID | num  | `group_id`                              |
-| Sub Key  | num  | `sub_key`; dash when zero, stored as `None` so it sorts last                |
-| Value A  | num  | `value_a`                               |
-| Value B  | num  | `value_b`                               |
+| Column | Type | Notes                                   |
+| ------ | ---- | --------------------------------------- |
+| Record | num  | Record index, 0-based                   |
+
+The four `unknown_*` entry fields stay on each row for search and export but
+are not shown.
 
 ---
 
@@ -114,8 +118,10 @@ The table splits cleanly in two. Groups 1–2 carry two entries each, keyed by
   4-byte `entry_count` prefix and the 11-byte entry size.
 - Records are variable length, so a parser must follow `entry_count` rather than
   assume the 15-byte or 26-byte sizes seen in this file.
-- `group_id` is redundant with the record index in the observed data, but it is
-  stored per entry rather than per record, so it is read from the entry.
+- `unknown_00` is redundant with the record index in the observed data, but it
+  is stored per entry rather than per record, so it is read from the entry.
+- Observed: 7 records and 9 entries in the pre-2026-09-27 fixture and in the
+  2026-09-27 client; the file is byte-identical between the two.
 - The filename suggests this sits on the fairy feeding and enchant path, which
   is the same system documented in `fairyupgraderate.bss`. Nothing in this file
   or in `languagedata_en.loc` confirms that link, so it is not asserted here.
@@ -130,9 +136,9 @@ The table splits cleanly in two. Groups 1–2 carry two entries each, keyed by
 
 ## Open Questions
 
-### Value Semantics
+### `unknown_03` and `unknown_07` Meaning
 
-`value_a` and `value_b` are unidentified. The filename points at a failure
+`unknown_03` and `unknown_07` are unidentified. The filename points at a failure
 counter, and the pairs read plausibly as bounds (`0..200`, `100..300`,
 `300..350`), but nothing in the file confirms that they are a range rather than
 two independent settings such as a threshold and a cap.
@@ -144,16 +150,16 @@ There is no repeated attempt for a counter reaching 100 or 350 to accumulate
 over. That points the `enchant` in the filename at the feeding and growth path
 instead, or at a counter kept across fairies rather than within one.
 
-### `group_id` Meaning
+### `unknown_00` Meaning
 
-`group_id` runs 1–7. It is not the four fairy grades and not the three Sprouting
+`unknown_00` runs 1–7. It is not the four fairy grades and not the three Sprouting
 steps, so it indexes something else on the feeding path. A file that keys the
 same 1–7 range would identify it.
 
-### `sub_key` 19 and 20
+### `unknown_02` 19 and 20
 
-Only groups 1 and 2 split into two entries, distinguished by `sub_key` 19 and
-20, and only those entries have `value_a` of zero. The values are too small to
+Only records 0 and 1 split into two entries, distinguished by `unknown_02` 19
+and 20, and only those entries have `unknown_03` of zero. The values are too small to
 be item IDs and do not match the fairy-growth item IDs used by
 `fairyupgraderate.bss`. Fairy levels are the strongest candidate, since the tier
 level caps are 10, 20, 30, and 50, putting 19 and 20 exactly at the Glimmering

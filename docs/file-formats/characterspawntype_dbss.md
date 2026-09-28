@@ -29,7 +29,7 @@ All multi-byte values are little-endian.
 
 | Offset  | Type | Field | Notes                                  |
 | ------- | ---- | ----- | -------------------------------------- |
-| `+0x00` | u32  | count | Number of records; observed `24,017`   |
+| `+0x00` | u32  | count | Number of records; observed `24,017` in the pre-2026-09-27 fixture, `24,551` in the 2026-09-27 client |
 
 ### Record (48 bytes, repeated `count` times)
 
@@ -44,7 +44,7 @@ All multi-byte values are little-endian.
 
 ### SpawnType
 
-Names come from `CppEnums.SpawnType` in `luacscript/x64/include/global_define_cpp_enum.luac`, in the client's spelling without the `eSpawnType_` prefix. The enum has no name for value `41`, although one record sets it. Counts and examples are from the observed file.
+Names come from `CppEnums.SpawnType` in `luacscript/x64/include/global_define_cpp_enum.luac`, in the client's spelling without the `eSpawnType_` prefix. The enum has no name for value `41`, although one record sets it. Counts and examples are from the pre-2026-09-27 fixture.
 
 | Value | Offset  | SpawnType | Records | Example |
 | ----: | ------- | --------- | ------: | ------- |
@@ -142,8 +142,8 @@ A parallel lookup index with one entry per main-file record.
 
 ## Notes
 
-- Every record sets at least one role. 21,561 records set only `NormalNpc`, and no record sets `NormalNpc` together with another role; the other 2,456 are service NPCs.
-- 103 distinct role patterns occur.
+- Every record sets at least one role. 21,561 records set only `NormalNpc` (22,055 in the 2026-09-27 client), and no record sets `NormalNpc` together with another role; the other 2,456 (2,496) are service NPCs.
+- 103 distinct role patterns occur (102 in the 2026-09-27 client).
 - `Inn`, `Alchemy`, `TerritoryTrade`, `Smuggle`, `PC`, `GuildSupplyShop` and `PcRoomStable` are set on no record.
 - An earlier version of this doc read `+0x00` as a u32 entity ID and the flags from `+0x04`. That turned the `NormalNpc` and `SkillTrainer` bytes into a fake "entity namespace" in the high 16 bits (entity `82176` is character `16640` with `NormalNpc` set) and shifted every flag index by two.
 - Records are stored in offset-table order, not sorted by `character_id`.

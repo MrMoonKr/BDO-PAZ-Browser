@@ -6,10 +6,9 @@ from typing import Any
 import pytest
 
 from tests.framework import (
-    CountTest,
     HandlerCase,
     HandlerResult,
-    PosTest,
+    RangeTest,
     SchemaTest,
     TargetTest,
     case_id,
@@ -17,6 +16,8 @@ from tests.framework import (
 )
 
 
+# The file declares no row count. Each live Section 2 record sits at slot
+# `equip_skill_id - 15`, which checks the variable-length walk stays aligned.
 CASE = HandlerCase(
     handler_name="petequipskill.bss",
     data_file="petequipskill.bss",
@@ -34,33 +35,19 @@ CASE = HandlerCase(
                 "skill_name",
                 "icon_path",
                 "skill_type",
-                "tier",
+                "unknown_08",
                 "padding",
                 "loc_id",
-                "extra_flag",
-                "extra_value",
+                "unknown_0c",
+                "unknown_10",
             ],
         ),
-        CountTest(expected=116),
-        PosTest(
-            pos=0,
-            expected={
-                "slot": 0,
-                "section": "S1",
-                "equip_skill_id": 0,
-                "skill_type": 1,
-                "tier": 1,
-                "padding": 0,
-            },
-        ),
+        RangeTest(col="padding", min_val=0, max_val=0),
+        RangeTest(col="unknown_0c", min_val=0, max_val=1),
         TargetTest(
-            col="equip_skill_id",
-            value=15,
-            expected={
-                "section": "S1",
-                "skill_type": 8,
-                "loc_id": 49023,
-            },
+            col="loc_id",
+            value=49023,
+            expected={"equip_skill_id": 15, "section": "S1", "slot": 15, "skill_type": 8},
         ),
         TargetTest(
             col="loc_id",
@@ -68,42 +55,33 @@ CASE = HandlerCase(
             expected={
                 "equip_skill_id": 15,
                 "section": "S2",
+                "slot": 0,
                 "skill_type": 4,
                 "skill_name": "Skill EXP +1%",
                 "icon_path": "ui_texture/icon/new_icon/08_servant_skill/02_pet/equipskill_00049061.dds",
-                "extra_flag": 0,
-                "extra_value": None,
             },
         ),
+        # Follows equip_skill_id 65, which carries the extra u32.
         TargetTest(
-            col="equip_skill_id",
-            value=91,
+            col="loc_id",
+            value=49047,
+            expected={"equip_skill_id": 66, "section": "S2", "slot": 51},
+        ),
+        TargetTest(
+            col="loc_id",
+            value=49162,
             expected={
+                "equip_skill_id": 91,
                 "section": "S2",
+                "slot": 76,
                 "skill_type": 18,
-                "loc_id": 49162,
                 "skill_name": "Barter EXP +1%",
-                "extra_flag": 0,
             },
         ),
         TargetTest(
-            col="equip_skill_id",
-            value=104,
-            expected={
-                "section": "S2",
-                "extra_flag": 1,
-                "extra_value": 1,
-            },
-        ),
-        PosTest(
-            pos=-1,
-            expected={
-                "section": "S2",
-                "equip_skill_id": 111,
-                "skill_type": 19,
-                "loc_id": 49176,
-                "extra_flag": 0,
-            },
+            col="loc_id",
+            value=49176,
+            expected={"equip_skill_id": 111, "section": "S2", "slot": 96, "skill_type": 19},
         ),
     ],
 )

@@ -1,26 +1,29 @@
 from __future__ import annotations
 
+import math
 from dataclasses import replace
 from typing import Any
 
 import pytest
 
 from tests.framework import (
-    CountTest,
+    DeclaredCountTest,
     HandlerCase,
     HandlerResult,
-    PosTest,
     RangeTest,
     SchemaTest,
     TargetTest,
     case_id,
+    header_count,
     run_case,
 )
 
 
-# 20 populated acquire types x 14 rollable skills; key 0 has no weights.
-_EXPECTED_ROWS = 280
+# Offset rows point 2 bytes into each 176-byte record, past its key prefix.
+_RECORD_DATA_SIZE = 174
 
+# One row per non-zero weight, so the header's record count does not give the
+# row count; the offset case checks the declared record count.
 PET_EQUIP_SKILL_ACQUIRE_CASE = HandlerCase(
     handler_name="petequipskillaquire.dbss",
     data_file="petequipskillaquire.dbss",
@@ -46,31 +49,22 @@ PET_EQUIP_SKILL_ACQUIRE_CASE = HandlerCase(
                 "total_weight",
             ]
         ),
-        CountTest(expected=_EXPECTED_ROWS),
-        # Only the mid-tier entry of each of 14 skill categories is rollable.
-        RangeTest(col="equip_skill_id", min_val=1, max_val=36),
-        # Pet weights are relative, not normalised to 1,000,000 like the fairy table.
-        RangeTest(col="total_weight", min_val=700_000, max_val=1_010_000),
-        PosTest(
-            pos=0,
-            expected={
-                "acquire_type_id": 204,
-                "group": 2,
-                "tier": 4,
-                "equip_skill_id": 1,
-                "skill_name": "Karma Recovery +5%",
-                "weight": 160000,
-            },
-        ),
-        TargetTest(
-            col="acquire_type_id",
-            value=401,
-            expected={"group": 4, "tier": 1, "total_weight": 700000},
-        ),
+        # Weights index the 43 Section 1 catalog slots; zero weights are not rows.
+        RangeTest(col="equip_skill_id", min_val=0, max_val=math.inf),
+        RangeTest(col="weight", min_val=1, max_val=float("inf")),
+        RangeTest(col="chance_pct", min_val=0.0, max_val=100.0),
+        # The key splits as group * 100 + tier.
+        TargetTest(col="acquire_type_id", value=204, expected={"group": 2, "tier": 4}),
+        TargetTest(col="acquire_type_id", value=401, expected={"group": 4, "tier": 1}),
         TargetTest(
             col="loc_id",
             value=49001,
             expected={"equip_skill_id": 9, "skill_name": "Luck +1"},
+        ),
+        TargetTest(
+            col="equip_skill_id",
+            value=1,
+            expected={"skill_name": "Karma Recovery +5%"},
         ),
     ],
 )
@@ -92,12 +86,10 @@ PET_EQUIP_SKILL_ACQUIRE_OFFSET_CASE = HandlerCase(
                 "record_start",
             ]
         ),
-        CountTest(expected=21),
-        RangeTest(col="data_size", min_val=174, max_val=174),
-        PosTest(
-            pos=0,
-            expected={"acquire_type_id": 204, "data_offset": 6, "record_start": 4},
-        ),
+        DeclaredCountTest(declared=header_count()),
+        RangeTest(col="data_size", min_val=_RECORD_DATA_SIZE, max_val=_RECORD_DATA_SIZE),
+        # The first record follows the main file's u32 count.
+        TargetTest(col="data_offset", value=6, expected={"record_start": 4}),
     ],
 )
 

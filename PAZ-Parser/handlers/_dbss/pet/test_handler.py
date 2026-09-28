@@ -5,8 +5,25 @@ from typing import Any
 
 import pytest
 
-from tests.framework import CountTest, HandlerCase, HandlerResult, PosTest, SchemaTest, TargetTest, case_id, run_case
+from tests.framework import (
+    DeclaredCountTest,
+    HandlerCase,
+    HandlerResult,
+    RangeTest,
+    SchemaTest,
+    TargetTest,
+    case_id,
+    header_count,
+    run_case,
+)
 
+
+_CAT = 9101
+_CAT_ICON = "New_UI_Common_forLua\\Window\\Stable\\Pet\\Pet_Cat_0991.dds"
+# A pet record is a 32-byte header, the icon path and a 94-byte footer.
+_PET_FIXED_SIZE = 32 + 94
+# petexp.dbss stores at most 50 levels per EXP table.
+_MAX_PET_LEVEL = 50
 
 PET_CASE = HandlerCase(
     handler_name="pet.dbss",
@@ -30,14 +47,20 @@ PET_CASE = HandlerCase(
                 "acquire_type_id",
                 "equip_skill_id",
                 "icon_path",
+                "unknown_12",
+                "unknown_14",
+                "unknown_53",
                 "pet_id_match",
             ]
         ),
-        CountTest(expected=1782),
-        PosTest(
-            pos=0,
+        DeclaredCountTest(declared=header_count()),
+        # The key prefix, the header and the offset row all carry the same pet ID.
+        RangeTest(col="pet_id_match", min_val=True, max_val=True),
+        RangeTest(col="max_level", min_val=1, max_val=_MAX_PET_LEVEL),
+        TargetTest(
+            col="pet_id",
+            value=_CAT,
             expected={
-                "pet_id": 9101,
                 "pet_name": "Cat",
                 "display_name": "Cat",
                 "variant": 2,
@@ -45,12 +68,7 @@ PET_CASE = HandlerCase(
                 "tier": 1,
                 "grade": 1,
                 "grade_name": "Classic",
-                "max_level": 10,
-                "equip_skill_slots": 2,
-                "acquire_type_id": 0,
-                "equip_skill_id": 21,
-                "icon_path": "New_UI_Common_forLua\\Window\\Stable\\Pet\\Pet_Cat_0991.dds",
-                "pet_id_match": True,
+                "icon_path": _CAT_ICON,
             },
         ),
         TargetTest(
@@ -60,9 +78,8 @@ PET_CASE = HandlerCase(
                 "pet_name": "Golden Star",
                 "display_name": "Golden Star",
                 "variant": 1,
+                "species": 105,
                 "tier": 4,
-                "acquire_type_id": 304,
-                "equip_skill_id": 78,
                 "grade": 2,
                 "grade_name": "Rare",
                 "icon_path": "New_UI_Common_forLua\\Window\\Stable\\Pet\\GoldStar_Pet_0004.dds",
@@ -81,9 +98,9 @@ OFFSET_CASE = HandlerCase(
     internal_path="gamecommondata/binary/petoffset.dbss",
     tests=[
         SchemaTest(required_keys=["pet_id", "data_offset", "data_size"]),
-        CountTest(expected=1782),
-        PosTest(pos=0, expected={"pet_id": 56325, "data_offset": 45819, "data_size": 181}),
-        PosTest(pos=-1, expected={"pet_id": 9501, "data_offset": 330592, "data_size": 181}),
+        DeclaredCountTest(declared=header_count()),
+        RangeTest(col="padding", min_val=0, max_val=0),
+        TargetTest(col="pet_id", value=_CAT, expected={"data_size": _PET_FIXED_SIZE + len(_CAT_ICON)}),
     ],
 )
 
@@ -108,31 +125,22 @@ GRADE_CASE = HandlerCase(
                 "key_match",
             ]
         ),
-        CountTest(expected=203),
-        PosTest(
-            pos=0,
-            expected={
-                "key": 262,
-                "variant": 6,
-                "species": 1,
-                "grade": 3,
-                "grade_name": "Premium",
-                "data_offset": 2012,
-                "data_size": 8,
-                "key_match": True,
-            },
+        DeclaredCountTest(declared=header_count()),
+        # The key, its duplicate and the offset row key agree on every record.
+        RangeTest(col="key_match", min_val=True, max_val=True),
+        # Every record is 12 bytes: a 4-byte key prefix and 8 bytes of data.
+        RangeTest(col="data_size", min_val=8, max_val=8),
+        # 1-5 are labelled; 6 is open.
+        RangeTest(col="grade", min_val=1, max_val=6),
+        TargetTest(
+            col="key",
+            value=262,
+            expected={"variant": 6, "species": 1, "grade": 3, "grade_name": "Premium"},
         ),
         TargetTest(
             col="key",
             value=15878,
-            expected={
-                "variant": 6,
-                "species": 62,
-                "grade": 2,
-                "grade_name": "Rare",
-                "data_offset": 8,
-                "data_size": 8,
-            },
+            expected={"variant": 6, "species": 62, "grade": 2, "grade_name": "Rare"},
         ),
     ],
 )
@@ -147,9 +155,11 @@ GRADE_OFFSET_CASE = HandlerCase(
     internal_path="gamecommondata/binary/petgradeoffset.dbss",
     tests=[
         SchemaTest(required_keys=["key", "variant", "species", "data_offset", "data_size"]),
-        CountTest(expected=203),
-        PosTest(pos=0, expected={"key": 262, "variant": 6, "species": 1, "data_offset": 2012, "data_size": 8}),
-        PosTest(pos=-1, expected={"key": 9744, "variant": 16, "species": 38, "data_offset": 1064, "data_size": 8}),
+        DeclaredCountTest(declared=header_count()),
+        RangeTest(col="data_size", min_val=8, max_val=8),
+        RangeTest(col="padding", min_val=0, max_val=0),
+        TargetTest(col="key", value=262, expected={"variant": 6, "species": 1}),
+        TargetTest(col="key", value=9744, expected={"variant": 16, "species": 38}),
     ],
 )
 

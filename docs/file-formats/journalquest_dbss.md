@@ -61,7 +61,7 @@ Strings are length-prefixed: a u64 character count followed by that many UTF-16L
 | ------- | --------------------- | ---------------------- | ------------------------------------------------------------------------------------------ |
 | `+0x00` | u32                   | journal_key            | Journal group key; equals the containing group in 112 of 112 records                       |
 | `+0x04` | u32                   | book_key               | Book key within the group; equals the offset-file key in 112 of 112 records                |
-| `+0x08` | u8                    | flag_08                | Boolean; `1` in 43 records (all books of journals 7, 10, 12 and 13, plus journal 6 book 8)      |
+| `+0x08` | u8                    | unknown_08             | `0` or `1`; `1` in 43 records (all books of journals 7, 10, 12 and 13, plus journal 6 book 8)      |
 | `+0x09` | u64 + utf16le[n]      | journal_name_kr        | Korean journal name; identical for every book in a group except journal 6                  |
 | varies  | u64 + utf16le[n]      | journal_description_kr | Korean journal description                                                                 |
 | varies  | u64 + utf16le[n]      | book_name_kr           | Korean book (volume) name; may contain a `\n` and a second line                            |
@@ -72,7 +72,7 @@ Strings are length-prefixed: a u64 character count followed by that many UTF-16L
 | varies  | u32[page_count]       | page_quest_ids         | Packed quest IDs `(quest_id << 16) \| quest_chain_id`                                      |
 | varies  | u32                   | reserved_end           | `0` in 112 of 112 records; the record ends exactly here                                   |
 
-The previously documented `unknown_08` (`0x00000d00` etc.) was `flag_08` plus the low bytes of the first string length. The "trailing `"` in `combine_model`" was the low byte of the next string's u64 length (`0x22` = 34 characters); it is not part of the stored value.
+Earlier versions of this doc called `unknown_08` `flag_08`. An even older reading of `unknown_08` as a u32 (`0x00000d00` etc.) was this byte plus the low bytes of the first string length. The "trailing `"` in `combine_model`" was the low byte of the next string's u64 length (`0x22` = 34 characters); it is not part of the stored value.
 
 ### Page Quest IDs
 
@@ -86,7 +86,7 @@ Current file totals (after the 2026-09-27 update): 119 books, 901 pages, 901 dis
 
 Current client data (`files/journalquest.dbss`), offset-file order:
 
-| Journal Key | Books | Pages | English Journal Name (LOC 63, `id4=0`) | `flag_08` set | Books with unlock text |
+| Journal Key | Books | Pages | English Journal Name (LOC 63, `id4=0`) | `unknown_08` set | Books with unlock text |
 | ----------: | ----: | ----: | -------------------------------------- | ------------: | ---------------------: |
 |           1 |    15 |    71 | Igor Bartali's Adventures              |             0 |                     15 |
 |           2 |    11 |    51 | Shakatu Merchants' Archive             |             0 |                     11 |
@@ -161,7 +161,7 @@ Page text is LOC `str_type=18` keyed by the page's packed quest ID, like any que
 
 ## Open Questions
 
-### `flag_08` Meaning
+### `unknown_08` Meaning
 
 The byte at `+0x08` is `1` for every book of journals 7 ("Storybook - Donghae"), 10 ("Outer Edania"), 12 ("Storybook - Hwanghae") and 13 ("Inner Edania", added 2026-09-27) and for journal 6 book 8, and `0` elsewhere, including the other storybook journal 3. bdo-data-extractor also leaves it unnamed. Its effect (UI style, story mode, reward handling) needs an in-game comparison.
 

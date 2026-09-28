@@ -2,7 +2,7 @@
 
 Each book record is self-describing:
 
-    u32 journal_key | u32 book_key | u8 flag_08
+    u32 journal_key | u32 book_key | u8 unknown_08
     | journal_name | journal_description | book_name | unlock_requirement
     | bookshelf_scene | book_model
     | u32 page_count | u32[page_count] page_quest_ids | u32 reserved_end
@@ -93,7 +93,7 @@ def _page_ref(packed: int) -> dict:
 
 def _parse_book(block: bytes, row: int, offset_record: dict) -> dict:
     reader = _Reader(block, row)
-    group_id, entry_no, flag_08 = reader.unpack(_HEADER)
+    group_id, entry_no, unknown_08 = reader.unpack(_HEADER)
     journal_title = reader.text(wide=True)
     subtitle = reader.text(wide=True)
     page_vol_title = reader.text(wide=True)
@@ -113,7 +113,7 @@ def _parse_book(block: bytes, row: int, offset_record: dict) -> dict:
         "size": offset_record["byte_size"],
         "group_id": group_id,
         "entry_no": entry_no,
-        "flag_08": flag_08,
+        "unknown_08": unknown_08,
         # Every page of a book belongs to one quest chain.
         "journal_cat_id": pages[0]["journal_cat_id"] if pages else 0,
         "journal_title": journal_title,

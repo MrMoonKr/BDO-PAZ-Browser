@@ -40,6 +40,8 @@ All multi-byte values are little-endian.
 
 Observed entry IDs are zero-based and align with `internal_id` inside each block.
 
+Observed entries: 18 in the pre-2026-09-27 test fixture and in the 2026-09-27 client.
+
 ---
 
 ## Record Structure

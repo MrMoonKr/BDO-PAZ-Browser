@@ -5,7 +5,16 @@ from typing import Any
 
 import pytest
 
-from tests.framework import CountTest, HandlerCase, HandlerResult, PosTest, SchemaTest, TargetTest, case_id, run_case
+from tests.framework import (
+    HandlerCase,
+    HandlerResult,
+    RangeTest,
+    SchemaTest,
+    TargetTest,
+    case_id,
+    header_count,
+    run_case,
+)
 
 
 CASE = HandlerCase(
@@ -21,53 +30,31 @@ CASE = HandlerCase(
             required_keys=[
                 "group",
                 "row",
-                "flags",
+                "unknown_00",
                 "quest_chain_id",
                 "quest_id",
                 "packed_quest_id",
                 "title",
-                "sequence_a",
-                "sequence_b",
-                "sequence_c",
+                "unknown_05",
+                "unknown_09",
+                "unknown_0d",
             ],
         ),
-        CountTest(expected=1255),
-        PosTest(
-            pos=0,
+        # Zero in every row; a row read off its 17-byte stride would not be.
+        RangeTest(col="unknown_00", min_val=0, max_val=0),
+        TargetTest(
+            col="packed_quest_id",
+            value=600883,
             expected={
-                "group": 0,
-                "row": 0,
-                "flags": 0,
                 "quest_chain_id": 11059,
                 "quest_id": 9,
-                "packed_quest_id": 600883,
                 "title": "[Event] Love for Pets",
-                "sequence_a": 1,
-                "sequence_b": 2,
-                "sequence_c": 2,
-            },
-        ),
-        PosTest(
-            pos=1,
-            expected={
-                "group": 0,
-                "row": 1,
-                "quest_chain_id": 11059,
-                "quest_id": 10,
-                "title": "[Event] Savory Good Feed",
             },
         ),
         TargetTest(
             col="packed_quest_id",
             value=77129,
-            expected={
-                "group": 223,
-                "quest_chain_id": 11593,
-                "quest_id": 1,
-                "sequence_a": 899,
-                "sequence_b": 2,
-                "sequence_c": 2,
-            },
+            expected={"quest_chain_id": 11593, "quest_id": 1},
         ),
     ],
 )
@@ -85,3 +72,10 @@ def newquest_result(request: Any) -> HandlerResult:
 @pytest.mark.parametrize("spec", CASE.tests, ids=case_id)
 def test_newquest_bss(spec: Any, newquest_result: HandlerResult) -> None:
     newquest_result.check(spec)
+
+
+def test_newquest_bss_reaches_last_group(newquest_result: HandlerResult) -> None:
+    # The file declares only a group count; each group header holds its own row count.
+    group_count = header_count(offset=4)(newquest_result.source)
+
+    assert max(record["group"] for record in newquest_result.records) == group_count - 1

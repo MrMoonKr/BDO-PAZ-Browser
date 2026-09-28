@@ -47,12 +47,14 @@ One record per grade transition, in ascending grade order.
 
 | Offset  | Type | Field            | Observed | Notes                                        |
 | ------- | ---- | ---------------- | -------- | -------------------------------------------- |
-| `+0x00` | u8   | unknown_lead     | 0        | Zero in all three records                    |
+| `+0x00` | u8   | unknown_00       | 0        | Zero in all three records                    |
 | `+0x01` | u32  | success_cap_ppm  | 1000000  | 100% success, and the cap on accumulated rate |
 | `+0x05` | u32  | entry_count      | 2        | Number of item entries that follow           |
 | `+0x09` | —    | entries          |          | `entry_count` × 16-byte entries              |
 
 Records carry no explicit key, the upgrade step is the record index.
+
+Earlier versions of this doc called `unknown_00` `unknown_lead`.
 
 ### Entry (16 bytes, repeated `entry_count` times)
 
@@ -167,14 +169,17 @@ steps and 16× at the last.
 - Framing check: leading-byte framing is the only one that fits. With a trailing
   byte per record the third record would end at 132, one byte past the
   `end_of_records` value of 131.
-- `fairyfeedenchantfailcount.bss` sits next to this file in the PAZ tree and is
-  likely a related fail-counter table, but it is not yet decoded or documented.
+- [fairyfeedenchantfailcount.bss](fairyfeedenchantfailcount_bss.md) sits next to
+  this file in the PAZ tree; its layout is decoded but no field meaning is
+  confirmed, so a link to Sprouting is not established.
+- Observed: 3 records and 6 entries in the pre-2026-09-27 fixture and in the
+  2026-09-27 client; the file is byte-identical between the two.
 
 ---
 
 ## Open Questions
 
-### `unknown_lead`
+### `unknown_00` Meaning
 
 The first byte of every record is zero. It may be a record type tag, a grade key
 that happens to be zero-based, or padding carried from the writer. Only a file
@@ -184,5 +189,5 @@ where it varies would distinguish these.
 
 Sprouting can be retried after a rebirth, but nothing in this file encodes a
 retry allowance, a rebirth cost, or a changed rate on a retry. Those values live
-elsewhere, `fairyfeedenchantfailcount.bss` and the fairy potion tables are the
-nearest undecoded candidates.
+elsewhere; `fairyfeedenchantfailcount.bss` (layout decoded, meaning open) and the
+fairy potion tables are the nearest candidates.

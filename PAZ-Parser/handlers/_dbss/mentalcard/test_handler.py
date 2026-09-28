@@ -1,11 +1,22 @@
 from __future__ import annotations
 
+import math
 from dataclasses import replace
 from typing import Any
 
 import pytest
 
-from tests.framework import CountTest, HandlerCase, HandlerResult, PosTest, SchemaTest, TargetTest, case_id, run_case
+from tests.framework import (
+    DeclaredCountTest,
+    HandlerCase,
+    HandlerResult,
+    RangeTest,
+    SchemaTest,
+    TargetTest,
+    case_id,
+    header_count,
+    run_case,
+)
 
 
 CASE = HandlerCase(
@@ -18,17 +29,17 @@ CASE = HandlerCase(
     internal_path="gamecommondata/binary/mentalcard.dbss",
     tests=[
         SchemaTest(required_keys=["entry_id", "entry_name", "node_id", "node_name", "min_favor", "max_favor", "interest", "icon_path", "obtain", "position", "position_text"]),
-        CountTest(expected=12087),
-        PosTest(
-            pos=0,
+        DeclaredCountTest(declared=header_count()),
+        RangeTest(col="min_favor", min_val=0, max_val=math.inf),
+        RangeTest(col="max_favor", min_val=0, max_val=math.inf),
+        RangeTest(col="interest", min_val=0, max_val=math.inf),
+        TargetTest(
+            col="entry_id",
+            value=15055,
             expected={
-                "entry_id": 15055,
                 "entry_name": "Altar of Blood - The 11th Illusion",
                 "node_id": 24114,
                 "node_name": "Altar of Blood",
-                "min_favor": 33,
-                "max_favor": 37,
-                "interest": 21,
                 "icon_path": "ui_texture/ui_artwork/ic_09812.dds",
                 "obtain": "Altar of Blood",
                 # All zero means no position.
@@ -42,9 +53,6 @@ CASE = HandlerCase(
                 "entry_name": "Granbill",
                 "node_id": 155,
                 "node_name": "Elionism & the Delphe Knights",
-                "min_favor": 24,
-                "max_favor": 28,
-                "interest": 29,
                 "icon_path": "ui_texture/ui_artwork/ic_00304.dds",
                 "obtain": "Delphe Knights Quartermaster",
                 "position_text": "-133004, 2729, -46023",

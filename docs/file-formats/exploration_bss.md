@@ -30,7 +30,7 @@ All multi-byte values are little-endian unless noted otherwise.
 | Offset  | Type    | Field              | Notes                                                              |
 | ------- | ------- | ------------------ | ------------------------------------------------------------------ |
 | `+0x00` | char[4] | magic              | `PABR` (ASCII)                                                     |
-| `+0x04` | u32     | record_count       | Observed `1003`                                                    |
+| `+0x04` | u32     | record_count       | Observed `1003` (2026-09-27 client: `1080`)                        |
 | `+0x08` | record  | records            | 117-byte head plus seven counted lists, packed back-to-back        |
 | varies  | table   | footer             | `u32 count` plus `count` 6-byte rows; observed `111` rows          |
 | varies  | pool    | string_table       | `u32 count` plus Korean strings; observed `622` entries            |
@@ -169,6 +169,7 @@ Two main nodes have `contribution > 0` but no family: Duvencrune 1651 (1 CP, the
 
 - Cross-checked against an independent node dataset (849 nodes, keyed by the same `node_key`): `contribution` matches the node's CP cost on all 849, `is_sub_node` matches on 847, and every node that dataset marks as a city has `node_kind` `1` or `2`. The exceptions are Mining site 156 and Fish Drying Yard 2 (1044), which the file flags as sub-nodes, and Oquilla's Eye 1727, which is kind `City` there but not a city in the dataset.
 - The file has no same-stem companion in the current PAZ listing.
+- Counts in this doc are from the pre-2026-09-27 fixture. The 2026-09-27 client has 1080 records: 615 main nodes and 465 sub-nodes (was 583 and 420). Velia (`1`) lists 46 knowledge IDs in both.
 - The reference project reports 1037 records, 494 families with 914 nodes and a third CP-without-manager record (2055); the current client file has 1003 records, 494 families with 883 nodes, and no node 2055.
 - LOC type 34 also has entries for 987 of the 1003 keys, but they are unrelated knowledge entries (key 65 is `Cron Castle Altar` in type 34, while the inline Korean name `웨일 농장` matches type 29 `Wale Farm`).
 - All 45 `planttown.bss` node IDs and all 394 `plantzone.dbss` record IDs are keys in this file; every plant zone is a sub-node.

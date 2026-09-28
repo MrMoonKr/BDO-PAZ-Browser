@@ -6,17 +6,22 @@ from typing import Any
 import pytest
 
 from tests.framework import (
-    CountTest,
+    DeclaredCountTest,
     HandlerCase,
     HandlerResult,
-    PosTest,
     RangeTest,
     SchemaTest,
     TargetTest,
     case_id,
+    header_count,
     run_case,
 )
 
+from _dbss.characterspawntype.parser import ROLE_COUNT
+
+
+# unknown_12 reads 0xFFFF on every row without an unknown_0c.
+_NO_UNKNOWN_0C = 0xFFFF
 
 CASE = HandlerCase(
     handler_name="npcsimply.bss",
@@ -38,19 +43,19 @@ CASE = HandlerCase(
                 "script",
                 "knowledge_id",
                 "unknown_02",
-                "unknown_id",
-                "unknown_value",
-                "sentinel",
-                "unknown_flag",
+                "unknown_0c",
+                "unknown_10",
+                "unknown_12",
+                "unknown_14",
             ],
         ),
-        CountTest(expected=2237),
-        RangeTest(col="kind", min_val=1, max_val=40),
-        PosTest(
-            pos=0,
+        DeclaredCountTest(declared=header_count(offset=4)),
+        RangeTest(col="kind", min_val=0, max_val=ROLE_COUNT - 1),
+        RangeTest(col="unknown_14", min_val=0, max_val=1),
+        TargetTest(
+            col="character_id",
+            value=47791,
             expected={
-                "character_id": 47791,
-                "unknown_02": 53,
                 "kind": 4,
                 "kind_name": "ImportantNpc",
                 "name_kr": "에론",
@@ -83,19 +88,6 @@ CASE = HandlerCase(
                 "knowledge_id": 2387,
             },
         ),
-        # One of the 58 rows with an extra ID and value.
-        TargetTest(
-            col="character_id",
-            value=47008,
-            expected={
-                "kind_name": "ShopMerchant",
-                "knowledge_id": 1342,
-                "unknown_id": 3001,
-                "unknown_value": 10,
-                "sentinel": 0,
-                "unknown_flag": 1,
-            },
-        ),
         # The only script spelled `getKnowledge`.
         TargetTest(
             col="character_id",
@@ -118,3 +110,12 @@ def npcsimply_result(request: Any) -> HandlerResult:
 @pytest.mark.parametrize("spec", CASE.tests, ids=case_id)
 def test_npcsimply_bss(spec: Any, npcsimply_result: HandlerResult) -> None:
     npcsimply_result.check(spec)
+
+
+def test_npcsimply_unknown_12_marks_rows_without_unknown_0c(npcsimply_result: HandlerResult) -> None:
+    mismatched = [
+        record["character_id"]
+        for record in npcsimply_result.records
+        if (record["unknown_12"] == _NO_UNKNOWN_0C) != (record["unknown_0c"] == 0)
+    ]
+    assert not mismatched, f"unknown_12 and unknown_0c disagree on characters {mismatched[:5]}"

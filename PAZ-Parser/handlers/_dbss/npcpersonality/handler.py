@@ -18,10 +18,8 @@ def _decode_personality_type(code: int) -> str:
     return name if name else f"?{major}"
 
 
-def _group_str(group_id: int, item_count: int) -> str:
-    if group_id == 0:
-        return "-"
-    return f"{group_id} ×{item_count}"
+def _group_str(group_id: int) -> str:
+    return "-" if group_id == 0 else str(group_id)
 
 
 class NpcPersonalityOffsetHandler(PreviewHandler):
@@ -69,9 +67,9 @@ class NpcPersonalityHandler(PreviewHandler):
         return [
             Column(cols.get("row", "Row"), "num", sort_key="row"),
             Column(cols.get("id", "ID"), "num", sort_key="personality_id"),
-            Column(cols.get("groupA", "Group A (ID ×cnt)"), "num", sort_key="group_a_id"),
-            Column(cols.get("groupB", "Group B (ID ×cnt)"), "num", sort_key="group_b_id"),
-            Column(cols.get("groupC", "Group C (ID ×cnt)"), "num", sort_key="group_c_id"),
+            Column(cols.get("groupA", "Group A"), "num", sort_key="group_a_id"),
+            Column(cols.get("groupB", "Group B"), "num", sort_key="group_b_id"),
+            Column(cols.get("groupC", "Group C"), "num", sort_key="group_c_id"),
             Column(cols.get("intMin", "Int Min"), "num", sort_key="interest_min"),
             Column(cols.get("intMax", "Int Max"), "num", sort_key="interest_max"),
             Column(cols.get("favMin", "Fav Min"), "num", sort_key="favor_min"),
@@ -94,15 +92,15 @@ class NpcPersonalityHandler(PreviewHandler):
                 "row":                rec["row"],
                 "personality_id":     rec["personality_id"],
                 "group_a_id":         rec["group_a_id"],
-                "group_a_count":      rec["group_a_count"],
+                "unknown_04":         rec["unknown_04"],
                 "group_b_id":         rec["group_b_id"],
-                "group_b_count":      rec["group_b_count"],
+                "unknown_08":         rec["unknown_08"],
                 "group_c_id":         rec["group_c_id"],
-                "group_c_count":      rec["group_c_count"],
+                "unknown_0c":         rec["unknown_0c"],
                 "interest_min":       rec["interest_min"],
-                "interest_max":  rec["interest_max"],
+                "interest_max":       rec["interest_max"],
                 "favor_min":          rec["favor_min"],
-                "favor_max":     rec["favor_max"],
+                "favor_max":          rec["favor_max"],
                 "personality_type":   rec["personality_type"],
             }
             for rec in records
@@ -121,9 +119,9 @@ class NpcPersonalityHandler(PreviewHandler):
             [
                 e(r["row"]),
                 e(r["personality_id"]),
-                e(_group_str(r["group_a_id"], r["group_a_count"])),
-                e(_group_str(r["group_b_id"], r["group_b_count"])),
-                e(_group_str(r["group_c_id"], r["group_c_count"])),
+                e(_group_str(r["group_a_id"])),
+                e(_group_str(r["group_b_id"])),
+                e(_group_str(r["group_c_id"])),
                 e(int(r["interest_min"])),
                 e(int(r["interest_max"])),
                 e(int(r["favor_min"])),

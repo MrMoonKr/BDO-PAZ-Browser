@@ -43,7 +43,7 @@ def parse_fairyequipskill_records(data: bytes) -> list[dict]:
         records.append({
             "equip_skill_id": equip_skill_id,
             "skill_type": u32(data, pos + 0x04),
-            "tier": u8(data, pos + 0x08),
+            "unknown_08": u8(data, pos + 0x08),
             "padding": u8(data, pos + 0x09),
             "loc_id": u16(data, pos + 0x0A),
         })

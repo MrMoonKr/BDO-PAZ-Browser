@@ -38,7 +38,7 @@ Each index table:
 
 | Offset  | Type | Name  | Description                                   |
 | ------- | ---- | ----- | --------------------------------------------- |
-| `+0x00` | u32  | count | Rows in this table (`2596` and `2088`)        |
+| `+0x00` | u32  | count | Rows in this table: `2596` and `2088` in the 2026-09-27 client, `2533` and `2070` in the pre-2026-09-27 fixture |
 | `+0x04` | ...  | rows  | `count` 12-byte rows                          |
 
 Index row (12 bytes):
@@ -58,7 +58,7 @@ The two tables follow each other. Each table is:
 | `+0x00` | u32  | count   | Matches the index table's `count`                       |
 | `+0x04` | ...  | records | `count` entries of a 4-byte lead `source_id` plus a record |
 
-The index `data_offset` points past the lead, at the record itself. Table 0 starts at `0` and its records end at `44136`; table 1 starts there with its own count.
+The index `data_offset` points past the lead, at the record itself. Table 0 starts at `0` and its records end at `44136` (`43065` in the pre-2026-09-27 fixture); table 1 starts there with its own count.
 
 ---
 

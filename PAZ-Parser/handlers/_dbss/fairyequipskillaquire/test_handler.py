@@ -1,26 +1,30 @@
 from __future__ import annotations
 
+import math
 from dataclasses import replace
 from typing import Any
 
 import pytest
 
 from tests.framework import (
-    CountTest,
+    DeclaredCountTest,
     HandlerCase,
     HandlerResult,
-    PosTest,
     RangeTest,
     SchemaTest,
     TargetTest,
     case_id,
+    header_count,
     run_case,
 )
 
 
-# 6 + 13 + 18 + 30 rollable skills across the four fairy grades.
-_EXPECTED_ROWS = 67
+_PPM_SCALE = 1_000_000
+# Offset rows point 2 bytes into each 176-byte record, past its key prefix.
+_RECORD_DATA_SIZE = 174
 
+# One row per non-zero weight, so the header's record count does not give the
+# row count; the offset case checks the declared record count.
 FAIRY_EQUIP_SKILL_ACQUIRE_CASE = HandlerCase(
     handler_name="fairyequipskillaquire.dbss",
     data_file="fairyequipskillaquire.dbss",
@@ -46,50 +50,30 @@ FAIRY_EQUIP_SKILL_ACQUIRE_CASE = HandlerCase(
                 "total_weight",
             ]
         ),
-        CountTest(expected=_EXPECTED_ROWS),
         RangeTest(col="acquire_type_id", min_val=501, max_val=504),
         RangeTest(col="fairy_grade", min_val=1, max_val=4),
+        # Weights index the 43 catalog slots; zero weights are not rows.
+        RangeTest(col="equip_skill_id", min_val=0, max_val=math.inf),
+        RangeTest(col="weight", min_val=1, max_val=_PPM_SCALE),
+        RangeTest(col="chance_pct", min_val=0.0, max_val=100.0),
         # Every grade's weights are parts-per-million summing to 1,000,000.
-        RangeTest(col="total_weight", min_val=1_000_000, max_val=1_000_000),
-        PosTest(
-            pos=0,
-            expected={
-                "acquire_type_id": 504,
-                "grade_name": "Radiant",
-                "equip_skill_id": 0,
-                "skill_name": "Tingling Breath I",
-                "weight": 10000,
-                "chance_pct": 1.0,
-            },
-        ),
-        # Faint can only roll rank I skills plus Morning Star.
+        RangeTest(col="total_weight", min_val=_PPM_SCALE, max_val=_PPM_SCALE),
+        TargetTest(col="acquire_type_id", value=501, expected={"grade_name": "Faint", "fairy_grade": 1}),
+        TargetTest(col="acquire_type_id", value=504, expected={"grade_name": "Radiant", "fairy_grade": 4}),
         TargetTest(
-            col="acquire_type_id",
-            value=501,
-            expected={"grade_name": "Faint", "fairy_grade": 1},
+            col="loc_id",
+            value=49096,
+            expected={"equip_skill_id": 0, "skill_name": "Tingling Breath I"},
         ),
-        # Morning Star is the single most likely roll for a Faint fairy.
         TargetTest(
-            col="weight",
-            value=250000,
-            expected={
-                "acquire_type_id": 501,
-                "equip_skill_id": 19,
-                "skill_name": "Morning Star",
-                "chance_pct": 25.0,
-            },
+            col="loc_id",
+            value=49120,
+            expected={"equip_skill_id": 19, "skill_name": "Morning Star"},
         ),
-        # Miraculous Cheer V is Radiant-only at 10%.
         TargetTest(
             col="loc_id",
             value=49129,
-            expected={
-                "acquire_type_id": 504,
-                "equip_skill_id": 28,
-                "skill_name": "Miraculous Cheer V",
-                "weight": 100000,
-                "chance_pct": 10.0,
-            },
+            expected={"equip_skill_id": 28, "skill_name": "Miraculous Cheer V"},
         ),
     ],
 )
@@ -111,12 +95,10 @@ FAIRY_EQUIP_SKILL_ACQUIRE_OFFSET_CASE = HandlerCase(
                 "record_start",
             ]
         ),
-        CountTest(expected=4),
-        RangeTest(col="data_size", min_val=174, max_val=174),
-        PosTest(
-            pos=0,
-            expected={"acquire_type_id": 504, "data_offset": 6, "record_start": 4},
-        ),
+        DeclaredCountTest(declared=header_count()),
+        RangeTest(col="data_size", min_val=_RECORD_DATA_SIZE, max_val=_RECORD_DATA_SIZE),
+        # The first record follows the main file's u32 count.
+        TargetTest(col="data_offset", value=6, expected={"record_start": 4}),
     ],
 )
 

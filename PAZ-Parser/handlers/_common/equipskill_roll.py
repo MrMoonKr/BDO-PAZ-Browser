@@ -24,7 +24,7 @@ WEIGHT_COUNT = 43
 # Fairy tables normalise to this total; pet tables do not (see format docs).
 PPM_SCALE = 1_000_000
 
-# Catalog records are 12 bytes from +0x04: [u32 id][u32 type][u8 tier][u8 pad][u16 loc_id].
+# Catalog records are 12 bytes from +0x04: [u32 id][u32 type][u8 unknown_08][u8 pad][u16 loc_id].
 _CATALOG_START = 4
 _CATALOG_RECORD_SIZE = 12
 _CATALOG_NULL_ID = 200

@@ -40,12 +40,12 @@ All multi-byte values are little-endian.
 
 | Offset  | Type | Field   | Notes                                                |
 | ------- | ---- | ------- | ---------------------------------------------------- |
-| `+0x00` | u32  | count   | Record count; observed 169,965, matching the companion |
+| `+0x00` | u32  | count   | Record count, matching the companion; observed 169,965 before 2026-09-27, 170,322 after |
 | `+0x04` | ...  | blocks  | Variable-length blocks, contiguous, in key order      |
 
 Blocks are addressed only through the companion. The first block starts at byte
 `4`, and the last block ends exactly at end of file (203,540,909 bytes observed),
-so the block stream is gap-free.
+so the block stream is gap-free. The 2026-09-27 client file is 203,937,007 bytes.
 
 ---
 
@@ -54,7 +54,7 @@ so the block stream is gap-free.
 | Offset  | Type  | Field  | Notes                            |
 | ------- | ----- | ------ | -------------------------------- |
 | `+0x00` | u8[4] | magic  | `PABR` (ASCII)                   |
-| `+0x04` | u32   | count  | Number of rows; observed 169,965 |
+| `+0x04` | u32   | count  | Number of rows; observed 169,965 before 2026-09-27, 170,322 after |
 | `+0x08` | ...   | rows   | `count` × 12-byte rows           |
 | end-12  | ...   | trailer | 12-byte file trailer            |
 
@@ -78,7 +78,7 @@ The same trailer shape used by
 | Offset  | Type | Field          | Observed  | Notes                              |
 | ------- | ---- | -------------- | --------- | ---------------------------------- |
 | `+0x00` | u32  | reserved_a     | 0         | Always zero                        |
-| `+0x04` | u32  | end_of_rows    | 2,039,588 | Equals `8 + count × 12`            |
+| `+0x04` | u32  | end_of_rows    | 2,039,588 | Equals `8 + count × 12` (2,043,872 after 2026-09-27) |
 | `+0x08` | u32  | reserved_b     | 0         | Always zero                        |
 
 ---
@@ -92,7 +92,7 @@ key = (key_variant << 24) | item_id
 | Field       | Bits   | Observed range |
 | ----------- | ------ | -------------- |
 | key_variant | 31..24 | 0-25           |
-| item_id     | 23..0  | 1-1,000,827    |
+| item_id     | 23..0  | 1-1,000,827 (1-1,000,841 after 2026-09-27) |
 
 The low 24 bits are confirmed item IDs: 69,292 of them match a name in
 `languagedata_en.loc`. **What the high byte means is not confirmed.** Variant `0`
@@ -103,6 +103,8 @@ index needs.
 | ------------- | ------- | --------------------------- |
 | variant 0     | 69,954  | One per base item           |
 | variants 1-25 | 100,011 | Unconfirmed, see the open question |
+
+Row counts are from the pre-2026-09-27 fixture. The 2026-09-27 client has 70,284 variant-0 rows and 100,038 rows with variants 1-25; the variant range is still 0-25.
 
 ---
 
@@ -178,6 +180,8 @@ Values 11 to 20 also occur (1,092 items) and are unnamed. Every one of the
 | ... that have a `characterobject.dbss` record    | 3,960 |
 | ... named by exactly one item (kept as a link)   | 5,090 |
 | Characters named by more than one item           |     5 |
+
+Measured before the 2026-09-27 update. After it, 5,103 characters are named by at least one item, still 5 by more than one, so 5,098 are kept as links.
 
 All 5,095 are `characterstatic.dbss` IDs; the ones without an object record are mostly pets.
 

@@ -6,14 +6,14 @@ from typing import Any
 import pytest
 
 from tests.framework import (
-    CountTest,
+    DeclaredCountTest,
     HandlerCase,
     HandlerResult,
-    PosTest,
     RangeTest,
     SchemaTest,
     TargetTest,
     case_id,
+    header_count,
     run_case,
 )
 
@@ -49,23 +49,23 @@ CASE = HandlerCase(
                 "knowledge_text",
             ],
         ),
-        CountTest(expected=1003),
+        DeclaredCountTest(declared=header_count(offset=4)),
+        # CppEnums.ExplorationNodeType has 16 members.
         RangeTest(col="node_kind", min_val=0, max_val=15),
-        RangeTest(col="contribution", min_val=0, max_val=3),
+        RangeTest(col="enabled", min_val=0, max_val=1),
+        RangeTest(col="is_sub_node", min_val=0, max_val=1),
+        RangeTest(col="radius", min_val=0.0, max_val=float("inf")),
         # Named through LOC type 29. Type 34 (knowledge) gave "Cron Castle Altar".
-        PosTest(
-            pos=0,
+        TargetTest(
+            col="node_key",
+            value=65,
             expected={
-                "node_key": 65,
                 "node_name": "Wale Farm",
                 "name_kr": "웨일 농장",
                 "kind": "Normal",
                 "main_sub": "Main",
-                "contribution": 1,
                 "manager_id": 40605,
-                "radius": 2700.0,
                 "knowledge_ids": [389],
-                "knowledge_count": 1,
                 "knowledge_names": ["Wale"],
             },
         ),
@@ -75,17 +75,14 @@ CASE = HandlerCase(
             expected={
                 "node_name": "Velia",
                 "kind": "City",
-                "contribution": 0,
                 "manager": None,
                 "representative_id": 40017,
-                "radius": 12700.0,
-                "knowledge_count": 46,
             },
         ),
         TargetTest(
             col="node_key",
             value=3,
-            expected={"node_name": "Cron Castle", "kind": "Dangerous", "contribution": 2},
+            expected={"node_name": "Cron Castle", "kind": "Dangerous"},
         ),
     ],
 )

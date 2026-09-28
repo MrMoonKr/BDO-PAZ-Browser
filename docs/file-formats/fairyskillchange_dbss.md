@@ -146,6 +146,7 @@ fairies can roll level 4 or above.
 ## Notes
 
 - Both files are exactly 604 bytes and carry the same record count, stride, and ordering.
+- Observed rows: 50 in the pre-2026-09-27 fixture and 50 in the 2026-09-27 client; both files are byte-identical between the two.
 - `key` and `level` are identical in every record, so the two cannot be told apart from this data alone; the split is inferred from where the offset companion points.
 - No localization is involved, the format contains no strings and no LOC IDs.
 - The cost bands are uneven: 1 orb covers 19 levels while 2–4 orbs cover 10 each and 5 orbs applies only at level 50.

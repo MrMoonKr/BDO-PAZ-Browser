@@ -1,21 +1,44 @@
 from __future__ import annotations
 
+import struct
 from dataclasses import replace
 from typing import Any
 
 import pytest
 
 from tests.framework import (
-    CountTest,
+    CaseInput,
+    DeclaredCount,
+    DeclaredCountTest,
     HandlerCase,
     HandlerResult,
-    PosTest,
     RangeTest,
     SchemaTest,
     TargetTest,
     case_id,
     run_case,
 )
+
+
+_HEADER_SIZE = 8
+_RECORD_HEADER_SIZE = 4
+_ENTRY_SIZE = 11
+
+
+def _entry_rows() -> DeclaredCount:
+    """Entry rows: the record bytes up to the trailer's end_of_records, less
+    each declared record's 4-byte entry_count, in 11-byte entries."""
+
+    def read(source: CaseInput) -> int:
+        raw = source.file(None)
+        (count,) = struct.unpack_from("<I", raw, 4)
+        end_of_records = struct.unpack_from("<I", raw, len(raw) - 8)[0]
+        entry_bytes = end_of_records - _HEADER_SIZE - count * _RECORD_HEADER_SIZE
+        if entry_bytes < 0 or entry_bytes % _ENTRY_SIZE:
+            raise AssertionError(f"{count} records do not end on whole entries at 0x{end_of_records:X}")
+        return entry_bytes // _ENTRY_SIZE
+
+    return read
 
 
 CASE = HandlerCase(
@@ -30,70 +53,16 @@ CASE = HandlerCase(
         SchemaTest(
             required_keys=[
                 "record",
-                "group_id",
-                "sub_key",
-                "value_a",
-                "value_b",
+                "unknown_00",
+                "unknown_02",
+                "unknown_03",
+                "unknown_07",
             ],
         ),
-        # 7 records: groups 1-2 hold two entries each, groups 3-7 hold one.
-        CountTest(expected=9),
-        RangeTest(col="group_id", min_val=1, max_val=7),
-        RangeTest(col="record", min_val=0, max_val=6),
-        RangeTest(col="value_b", min_val=200, max_val=350),
-        PosTest(
-            pos=0,
-            expected={
-                "record": 0,
-                "group_id": 1,
-                "sub_key": 19,
-                "value_a": 0,
-                "value_b": 200,
-            },
-        ),
-        PosTest(
-            pos=1,
-            expected={
-                "record": 0,
-                "group_id": 1,
-                "sub_key": 20,
-                "value_a": 0,
-                "value_b": 300,
-            },
-        ),
-        # Group 7 is the only one with a value_a above 100.
-        PosTest(
-            pos=-1,
-            expected={
-                "record": 6,
-                "group_id": 7,
-                "sub_key": None,
-                "value_a": 300,
-                "value_b": 350,
-            },
-        ),
-        # Groups 3-6 are identical apart from their ID.
-        TargetTest(
-            col="group_id",
-            value=4,
-            expected={
-                "record": 3,
-                "sub_key": None,
-                "value_a": 100,
-                "value_b": 300,
-            },
-        ),
-        # The second two-entry record mirrors the first.
-        TargetTest(
-            col="record",
-            value=1,
-            expected={
-                "group_id": 2,
-                "sub_key": 19,
-                "value_a": 0,
-                "value_b": 200,
-            },
-        ),
+        DeclaredCountTest(declared=_entry_rows()),
+        # Every entry repeats its record's key, which is the record index plus one.
+        TargetTest(col="record", value=0, expected={"unknown_00": 1}),
+        TargetTest(col="record", value=1, expected={"unknown_00": 2}),
     ],
 )
 

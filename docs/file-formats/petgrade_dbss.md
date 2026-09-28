@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Maps each (species, variant) pet combination to a grade value. 203 records cover all distinct (species, variant) pairs present in `pet.dbss`. Values 1–5 map to known grade labels; value 6 remains unconfirmed.
+Maps each (species, variant) pet combination to a grade value, one record per pair. 21 `pet.dbss` records have a pair with no grade record. Values 1–5 map to known grade labels; value 6 remains unconfirmed.
 
 Example:
 
@@ -30,7 +30,7 @@ All multi-byte values are little-endian.
 
 | Offset  | Type | Field | Notes                              |
 | ------- | ---- | ----- | ---------------------------------- |
-| `+0x00` | u32  | count | Number of records (observed: 203)  |
+| `+0x00` | u32  | count | Number of records (observed: 203 before 2026-09-27, 282 after) |
 
 ### Record (12 bytes, repeated `count` times)
 
@@ -48,7 +48,7 @@ All multi-byte values are little-endian.
 
 ## petgradeoffset.dbss
 
-Provides O(1) lookup by (species, variant) key. 203 entries, one per main-file record.
+Provides O(1) lookup by (species, variant) key, one entry per main-file record.
 
 ### Header (4 bytes)
 
@@ -84,7 +84,7 @@ where `grade_map` is built from `petgradeoffset.dbss` as `{(species, variant): g
 
 ## Notes
 
-- 203 unique (species, variant) pairs; 1782 total pet records → average ~8.8 records per pair across pet tiers.
+- Before the 2026-09-27 client update: 203 (species, variant) pairs for 1,782 pet records, about 8.8 records per pair across pet tiers. After it: 282 pairs for 2,009 pet records; all 79 new pairs have grade 2.
 - `grade` observed range: 1–6. Values 1–5 map to Classic, Rare, Premium, Rare, Special. Value 6 remains unconfirmed.
 - Record order in the main file differs from offset file order (the offset file is an arbitrary-order index, not sequential).
 - The key encoding `(species << 8) | variant` appears only in this file pair; `pet.dbss` stores `variant` and `species` as separate bytes at `+0x02` and `+0x03`.

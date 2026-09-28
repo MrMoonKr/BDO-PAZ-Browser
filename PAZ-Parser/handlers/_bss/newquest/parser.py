@@ -51,13 +51,13 @@ def parse_newquest_records(data: bytes) -> list[NewQuestRecord]:
             records.append({
                 "group": group,
                 "row": row,
-                "flags": u8(data, offset),
+                "unknown_00": u8(data, offset),
                 "quest_chain_id": quest_chain_id,
                 "quest_id": quest_id,
                 "packed_quest_id": (quest_id << 16) | quest_chain_id,
-                "sequence_a": u32(data, offset + 5),
-                "sequence_b": u32(data, offset + 9),
-                "sequence_c": u32(data, offset + 13),
+                "unknown_05": u32(data, offset + 5),
+                "unknown_09": u32(data, offset + 9),
+                "unknown_0d": u32(data, offset + 13),
             })
             offset += _ROW_SIZE
 

@@ -6,7 +6,17 @@ from typing import Any
 import pytest
 
 from _common.loc import strip_pa_tags
-from tests.framework import CountTest, HandlerCase, HandlerResult, PosTest, RangeTest, SchemaTest, TargetTest, case_id, run_case
+from tests.framework import (
+    DeclaredCountTest,
+    HandlerCase,
+    HandlerResult,
+    RangeTest,
+    SchemaTest,
+    TargetTest,
+    case_id,
+    header_count,
+    run_case,
+)
 
 from .handler import _category_label
 
@@ -39,7 +49,22 @@ CASE = HandlerCase(
     tests=[
         SchemaTest(required_keys=["TitleId", "Category", "Title", "TitleColor", "TitleRequirements", "Special", "Effect"]),
         RangeTest(col="TitleId", min_val=1, max_val=9999),
-        CountTest(expected=3048),
+        DeclaredCountTest(declared=header_count(companion="titleoffset.dbss")),
+        TargetTest(
+            col="TitleId",
+            value=1,
+            expected={
+                "Category": "Combat",
+                "Title": "Battle Ready",
+                "TitleColor": "-",
+                "TitleRequirements": (
+                    "Title Requirement: Defeat Parasitic Bees "
+                    "Enough fundamentals. Parasitic Bees are nothing."
+                ),
+                "Special": False,
+                "Effect": "-",
+            },
+        ),
         TargetTest(
             col="TitleId",
             value=3,
@@ -85,21 +110,6 @@ CASE = HandlerCase(
                     "Effect": "-",
                 },
             ],
-        ),
-        PosTest(
-            pos=0,
-            expected={
-                "TitleId": 1,
-                "Category": "Combat",
-                "Title": "Battle Ready",
-                "TitleColor": "-",
-                "TitleRequirements": (
-                    "Title Requirement: Defeat Parasitic Bees "
-                    "Enough fundamentals. Parasitic Bees are nothing."
-                ),
-                "Special": False,
-                "Effect": "-",
-            },
         ),
     ],
 )

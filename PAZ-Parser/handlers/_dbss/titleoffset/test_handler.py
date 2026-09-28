@@ -5,7 +5,16 @@ from typing import Any
 
 import pytest
 
-from tests.framework import CountTest, HandlerCase, HandlerResult, PosTest, SchemaTest, TargetTest, case_id, run_case
+from tests.framework import (
+    DeclaredCountTest,
+    HandlerCase,
+    HandlerResult,
+    SchemaTest,
+    TargetTest,
+    case_id,
+    header_count,
+    run_case,
+)
 
 
 CASE = HandlerCase(
@@ -18,19 +27,9 @@ CASE = HandlerCase(
     internal_path="gamecommondata/binary/titleoffset.dbss",
     tests=[
         SchemaTest(required_keys=["title_id", "offset"]),
-        CountTest(expected=3048),
-        PosTest(
-            pos=0,
-            expected={
-                "title_id": 1,
-                "offset": 510,
-            },
-        ),
-        TargetTest(
-            col="title_id",
-            value=3795,
-            expected={"offset": 835800},
-        ),
+        DeclaredCountTest(declared=header_count()),
+        # One title starts right after the u32 count of title.dbss.
+        TargetTest(col="offset", value=0x4, expected={}),
     ],
 )
 

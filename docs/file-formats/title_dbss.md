@@ -33,8 +33,9 @@ Requirement: Kill Stoneback Crabs
 | `+0x08 + n*0x0C` | u32  | Offset into `title.dbss` |
 | `+0x0C + n*0x0C` | u32  | Block size               |
 
-Observed sample: 3,048 entries. The largest `offset + size` equals the
-`title.dbss` byte length, so the offset table accounts for the full file.
+Observed entries: 3,048 in the pre-2026-09-27 test fixture, 3,172 in the
+2026-09-27 client. The largest `offset + size` equals the `title.dbss` byte
+length, so the offset table accounts for the full file.
 
 ## General Block Header
 

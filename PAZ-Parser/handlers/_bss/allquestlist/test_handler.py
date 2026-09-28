@@ -5,7 +5,16 @@ from typing import Any
 
 import pytest
 
-from tests.framework import CountTest, HandlerCase, HandlerResult, PosTest, SchemaTest, TargetTest, case_id, run_case
+from tests.framework import (
+    DeclaredCountTest,
+    HandlerCase,
+    HandlerResult,
+    SchemaTest,
+    TargetTest,
+    case_id,
+    header_count,
+    run_case,
+)
 
 
 CASE = HandlerCase(
@@ -18,22 +27,21 @@ CASE = HandlerCase(
     internal_path="gamecommondata/binary/allquestlist.bss",
     tests=[
         SchemaTest(required_keys=["slot", "packed_quest_id", "quest_chain_id", "quest_id", "title"]),
-        CountTest(expected=19599),
-        PosTest(
-            pos=0,
+        # The u32 count after the PABR magic.
+        DeclaredCountTest(declared=header_count(offset=4)),
+        TargetTest(
+            col="packed_quest_id",
+            value=1050655,
             expected={
-                "slot": 0,
-                "packed_quest_id": 1050655,
                 "quest_chain_id": 2079,
                 "quest_id": 16,
                 "title": "[Elvia Weekly] Gigagord",
             },
         ),
         TargetTest(
-            col="slot",
-            value=19598,
+            col="packed_quest_id",
+            value=181218,
             expected={
-                "packed_quest_id": 181218,
                 "quest_chain_id": 50146,
                 "quest_id": 2,
                 "title": "A Whole New Experience Presented by Fughar! (Black Spirit Pass)",

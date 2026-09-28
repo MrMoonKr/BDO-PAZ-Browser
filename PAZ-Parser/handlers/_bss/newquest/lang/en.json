@@ -4,9 +4,6 @@
     "mainId": "Main ID",
     "subId": "Sub ID",
     "icon": "Icon",
-    "title": "Title",
-    "sequenceA": "Sequence A",
-    "sequenceB": "Sequence B",
-    "sequenceC": "Sequence C"
+    "title": "Title"
   }
 }

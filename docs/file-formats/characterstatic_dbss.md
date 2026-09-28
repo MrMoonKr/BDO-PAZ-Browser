@@ -43,7 +43,7 @@ All multi-byte integer values observed in the DBSS payload are little-endian.
 
 | Offset  | Type | Field         | Notes                                      |
 | ------- | ---- | ------------- | ------------------------------------------ |
-| `+0x00` | u32  | record_count  | Number of records; observed `24418` (older fixture: `24017`) |
+| `+0x00` | u32  | record_count  | Number of records; observed `24418` (older fixture: `24017`; 2026-09-27 client: `24551`) |
 | `+0x04` | ...  | record_stream | Repeated inline ID + variable-length payload chunks |
 
 The stream is not fixed-width. Use `characterstaticoffset.dbss` to slice records.
@@ -211,10 +211,11 @@ Every member has a `characterstatic.dbss` record with `class_type` other than `1
 
 ## Notes
 
-- Observed files contain `24418` records (older fixture: `24017`).
+- Observed files contain `24418` records (older fixture: `24017`; 2026-09-27 client: `24551`).
 - Offset rows are sorted by descending character ID in early data but should be treated as an index, not as a sorted table guarantee.
 - `character_id` values are unique u16s; the highest observed is `65302`.
 - LOC lookup confirms sample IDs: `47759` is "Yamarko", `16640` is "Dev Plant210", and `62223` is "Wandering Merchant".
+- A character ID can be reused for a different character: in the older fixture `47759` was "Edania Merchant" (`getknowledge(14469);`, model `npc/pedu/npc_pedu_named`), and it heads the offset table there; in the 2026-09-27 client `47791` "Ehren" heads it.
 - `characterstaticoffset.dbss` uses the same `PABR` 10-byte row pattern as `characterspawntypeoffset.dbss`, but its `data_offset` points after an inline u16 ID.
 - An earlier version of this doc read the script as a null-terminated UTF-16BE string at `+0x10` followed by 8 zero bytes. That misread is one byte off the real `action_len` + UTF-16LE layout; it decodes ASCII scripts correctly only while `condition_script` is empty, and it is the source of the "306 control-like strings" the old doc listed.
 - `tag`, the inline `character_id` at `p+1` and `class_type` validate on both the current client and the older test fixture (96 players there).

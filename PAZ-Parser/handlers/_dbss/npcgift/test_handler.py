@@ -1,11 +1,47 @@
 from __future__ import annotations
 
+import struct
 from dataclasses import replace
 from typing import Any
 
 import pytest
 
-from tests.framework import CountTest, HandlerCase, HandlerResult, PosTest, SchemaTest, TargetTest, case_id, run_case
+from tests.framework import (
+    CaseInput,
+    DeclaredCount,
+    DeclaredCountTest,
+    HandlerCase,
+    HandlerResult,
+    RangeTest,
+    SchemaTest,
+    TargetTest,
+    case_id,
+    header_count,
+    run_case,
+)
+
+
+_OFFSET_ROW = struct.Struct("<HIHH")
+_GIFT_COUNT_SIZE = 4
+_GIFT_ROW_SIZE = 12
+
+
+def _offset_gift_rows(companion: str) -> DeclaredCount:
+    """Gift rows the offset file declares: each record's `data_size` is a u32
+    gift count plus 12 bytes per gift."""
+
+    def read(source: CaseInput) -> int:
+        raw = source.file(companion)
+        count = int.from_bytes(raw[:4], "little")
+        total = 0
+        for _npc_id, _offset, size, _padding in _OFFSET_ROW.iter_unpack(raw[4 : 4 + count * _OFFSET_ROW.size]):
+            gift_bytes = size - _GIFT_COUNT_SIZE
+            if gift_bytes < 0 or gift_bytes % _GIFT_ROW_SIZE:
+                raise AssertionError(f"data_size {size} is not a gift count plus 12-byte gift rows")
+            total += gift_bytes // _GIFT_ROW_SIZE
+        return total
+
+    return read
 
 
 GIFT_CASE = HandlerCase(
@@ -27,28 +63,26 @@ GIFT_CASE = HandlerCase(
                 "icon_path",
             ],
         ),
-        CountTest(expected=119),
-        PosTest(
-            pos=0,
+        DeclaredCountTest(declared=_offset_gift_rows("npcgiftoffset.dbss")),
+        TargetTest(
+            col="item_id",
+            value=24626,
             expected={
                 "npc_id": 40012,
                 "npc_name": "Crio",
-                "item_id": 24626,
                 "item_name": "King Clam Wall Ornament",
-                "amity": 48,
                 "icon_path": (
                     "ui_texture/icon/new_icon/product_icon_png/00024626.png"
                 ),
             },
         ),
-        PosTest(
-            pos=-1,
+        TargetTest(
+            col="item_id",
+            value=16102,
             expected={
                 "npc_id": 44019,
                 "npc_name": "Deve",
-                "item_id": 16102,
                 "item_name": "Transparent Empty Bottle",
-                "amity": 31,
             },
         ),
     ],
@@ -63,14 +97,13 @@ GIFT_DATA_CASE = HandlerCase(
     loc_fields=["NPC Name", "Dialogue"],
     internal_path="gamecommondata/binary/npcgiftdata.dbss",
     tests=[
-        SchemaTest(required_keys=["npc_id", "npc_name", "unknown_param", "dialogue", "dialogue_source"]),
-        CountTest(expected=24),
-        PosTest(
-            pos=0,
+        SchemaTest(required_keys=["npc_id", "npc_name", "unknown_02", "dialogue", "dialogue_source"]),
+        DeclaredCountTest(declared=header_count()),
+        TargetTest(
+            col="npc_id",
+            value=40012,
             expected={
-                "npc_id": 40012,
                 "npc_name": "Crio",
-                "unknown_param": 70,
                 "dialogue": "Thanks. Queek!",
                 "dialogue_source": "loc",
             },
@@ -78,7 +111,7 @@ GIFT_DATA_CASE = HandlerCase(
         TargetTest(
             col="npc_id",
             value=44019,
-            expected={"npc_name": "Deve", "unknown_param": 70, "dialogue_source": "loc"},
+            expected={"npc_name": "Deve", "dialogue_source": "loc"},
         ),
     ],
 )
@@ -94,8 +127,10 @@ OFFSET_CASES = [
         internal_path="gamecommondata/binary/npcgiftoffset.dbss",
         tests=[
             SchemaTest(required_keys=["npc_id", "data_offset", "data_size", "padding"]),
-            CountTest(expected=24),
-            PosTest(pos=0, expected={"npc_id": 40012, "data_offset": 6, "data_size": 64, "padding": 0}),
+            DeclaredCountTest(declared=header_count()),
+            RangeTest(col="padding", min_val=0, max_val=0),
+            # The first record follows the 4-byte count; its offset skips the npc_id.
+            TargetTest(col="npc_id", value=40012, expected={"data_offset": 6}),
         ],
     ),
     HandlerCase(
@@ -108,8 +143,9 @@ OFFSET_CASES = [
         internal_path="gamecommondata/binary/npcgiftdataoffset.dbss",
         tests=[
             SchemaTest(required_keys=["npc_id", "data_offset", "data_size", "padding"]),
-            CountTest(expected=24),
-            PosTest(pos=0, expected={"npc_id": 40012, "data_offset": 6, "data_size": 30, "padding": 0}),
+            DeclaredCountTest(declared=header_count()),
+            RangeTest(col="padding", min_val=0, max_val=0),
+            TargetTest(col="npc_id", value=40012, expected={"data_offset": 6}),
         ],
     ),
 ]
@@ -148,3 +184,4 @@ def test_npcgift_offsets(case: HandlerCase) -> None:
     result = run_case(replace(case, tests=[]))
     for spec in case.tests:
         result.check(spec)
+

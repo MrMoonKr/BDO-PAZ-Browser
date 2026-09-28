@@ -10,7 +10,8 @@ _SECTION1_RECORD_SIZE = 12
 _NULL_BLOCK_COUNT = 15
 _NULL_BLOCK_RECORD_SIZE = 16
 _SECTION2_RECORD_SIZE = 16
-_TRAILER_SIZE = 4
+# [u32 0][u32 data_end][u32 0], the same trailer as fairyequipskill.bss.
+_TRAILER_SIZE = 12
 _NULL_EQUIP_SKILL_ID = 200
 
 
@@ -43,11 +44,11 @@ def _parse_section1(data: bytes) -> list[dict]:
             "section": "S1",
             "equip_skill_id": u32(data, pos),
             "skill_type": u32(data, pos + 0x04),
-            "tier": u8(data, pos + 0x08),
+            "unknown_08": u8(data, pos + 0x08),
             "padding": u8(data, pos + 0x09),
             "loc_id": u16(data, pos + 0x0A),
-            "extra_flag": None,
-            "extra_value": None,
+            "unknown_0c": None,
+            "unknown_10": None,
         })
 
     return records
@@ -62,30 +63,33 @@ def _parse_section2(data: bytes) -> list[dict]:
     while pos + _SECTION2_RECORD_SIZE <= end:
         equip_skill_id = u32(data, pos)
         skill_type = u32(data, pos + 0x04)
-        tier = u8(data, pos + 0x08)
+        unknown_08 = u8(data, pos + 0x08)
         padding = u8(data, pos + 0x09)
         loc_id = u16(data, pos + 0x0A)
-        extra_flag = u32(data, pos + 0x0C)
+        # 0 or 1; each record with 1 carries one more u32 after the 16 bytes.
+        unknown_0c = u32(data, pos + 0x0C)
         pos += _SECTION2_RECORD_SIZE
 
         if equip_skill_id == _NULL_EQUIP_SKILL_ID:
             slot += 1
             continue
 
+        unknown_10 = None
+        if unknown_0c == 1 and pos + 4 <= end:
+            unknown_10 = u32(data, pos)
+            pos += 4
+
         records.append({
             "slot": slot,
             "section": "S2",
             "equip_skill_id": equip_skill_id,
             "skill_type": skill_type,
-            "tier": tier,
+            "unknown_08": unknown_08,
             "padding": padding,
             "loc_id": loc_id,
-            "extra_flag": extra_flag,
-            "extra_value": None,
+            "unknown_0c": unknown_0c,
+            "unknown_10": unknown_10,
         })
-        if extra_flag == 1 and pos + 4 <= end:
-            records[-1]["extra_value"] = u32(data, pos)
-            pos += 4
         slot += 1
 
     return records

@@ -22,19 +22,15 @@ def parse_npcpersonality_records(data: bytes) -> list[NpcPersonalityRecord]:
     for index in range(count):
         base = 4 + index * _RECORD_SIZE
 
-        group_a = _u32(data, base + 0x02)
-        group_b = _u32(data, base + 0x06)
-        group_c = _u32(data, base + 0x0A)
-
         records.append(NpcPersonalityRecord(
             row=index,
             personality_id=_u16(data, base + 0x00),
-            group_a_id=group_a & 0xFFFF,
-            group_a_count=(group_a >> 16) & 0xFFFF,
-            group_b_id=group_b & 0xFFFF,
-            group_b_count=(group_b >> 16) & 0xFFFF,
-            group_c_id=group_c & 0xFFFF,
-            group_c_count=(group_c >> 16) & 0xFFFF,
+            group_a_id=_u16(data, base + 0x02),
+            unknown_04=_u16(data, base + 0x04),
+            group_b_id=_u16(data, base + 0x06),
+            unknown_08=_u16(data, base + 0x08),
+            group_c_id=_u16(data, base + 0x0A),
+            unknown_0c=_u16(data, base + 0x0C),
             interest_min=_f32(data, base + 0x10),
             interest_max=_f32(data, base + 0x14),
             favor_min=_f32(data, base + 0x18),

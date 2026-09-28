@@ -77,9 +77,11 @@ Each payload is preceded by a 2-byte `theme_id` lead in the main stream. The off
 | `+0x04` | u32  | need_count      | Entries needed for first reward                       |
 | `+0x08` | u16  | increase_wp_2   | Second energy reward amount                           |
 | `+0x0A` | u32  | need_count_2    | Entries needed for second reward                      |
-| `+0x0E` | u8   | unknown_flag    | Unknown; observed `0` or `1` in common records         |
-| `+0x0F` | u32  | unknown_value   | Unknown; often `0`, otherwise small UI-like values    |
+| `+0x0E` | u8   | unknown_0e      | Observed `0` or `1`; see Open Questions               |
+| `+0x0F` | u32  | unknown_0f      | Usually `0`; see Open Questions                       |
 | `+0x13` | u32  | entry_count     | Number of direct `entries` that follow                 |
+
+Earlier versions of this doc called `unknown_0e` `unknown_flag` and `unknown_0f` `unknown_value`.
 
 ### Entries (`entry_count * 4` bytes)
 
@@ -128,7 +130,7 @@ Sample records confirmed from `mentaltheme.dbss`, `mentalthemeoffset.dbss`, `men
 
 ## Notes
 
-- `mentaltheme.dbss` and `mentalthemeoffset.dbss` both start with the same count: `931` in the current client, `902` in the test fixture.
+- `mentaltheme.dbss` and `mentalthemeoffset.dbss` both start with the same count: `939` after the 2026-09-27 client update, `931` before it, `902` in the test fixture.
 - `mentalthemeoffset.dbss` has no `PABR` magic and no trailer; it ends exactly at `4 + count * 10`.
 - `parent_id` links form a tree: 11 roots (`parent_id = 0`, e.g. `1` People, `5001` Topography, `10001` Ecology, `10399` None), maximum depth 3, no cycles, and every parent exists. The 920 non-root themes each appear exactly once in their parent's `child_ids`.
 - The direct `entries` of all themes together list each of the 12,502 cards once, and each listed card's u16 `theme_id` in `mentalcard.dbss` names the theme that lists it.
@@ -141,6 +143,6 @@ Sample records confirmed from `mentaltheme.dbss`, `mentalthemeoffset.dbss`, `men
 
 ## Open Questions
 
-### Unknown Stats Tail
+### `unknown_0e` and `unknown_0f` Meaning
 
-The 5 bytes at stats offsets `+0x0E..+0x12` look like `unknown_flag: u8` plus `unknown_value: u32`. `unknown_flag` is `1` on 232 themes (94 of them under Trade). `unknown_value` is `0` on 898 themes; the other 33 all have `unknown_flag = 1` and carry unique consecutive values `2501` to `2533` in theme ID order (`10101` to `10601`, ecology groups of Serendia, Calpheon and neighbours), which looks like a sort or unlock index. Neither meaning is confirmed.
+The 5 bytes at stats offsets `+0x0E..+0x12` read as a u8 `unknown_0e` plus a u32 `unknown_0f`. `unknown_0e` is `1` on 232 themes (94 of them under Trade). `unknown_0f` is `0` on 898 themes; the other 33 all have `unknown_0e = 1` and carry unique consecutive values `2501` to `2533` in theme ID order (`10101` to `10601`, ecology groups of Serendia, Calpheon and neighbours), which looks like a sort or unlock index. Neither meaning is confirmed.

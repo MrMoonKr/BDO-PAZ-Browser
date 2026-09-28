@@ -5,7 +5,7 @@
 Defines worker production zones. Each record belongs to one worldmap production sub-node (`record_id` is an `exploration.bss` node key, named through LOC type 29), carries several invariant control fields and one unknown byte that tracks the production type, links to a production key in `plantexchangegroup.bss`, and lists a set of worker species per zone (not a worker lock; its use is unknown, see Open Questions). `plantzoneoffset.dbss` is required to address the variable-length records.
 
 ```text
-Observed records: 394. Record payloads are 32, 34, or 37 bytes depending on the worker-species list length.
+Observed records: 394 in the pre-2026-09-27 fixture, 439 in the 2026-09-27 client (45 more 37-byte zones). Record payloads are 32, 34, or 37 bytes depending on the worker-species list length.
 record_id=1539 -> Teff, production key 1539 -> item subgroup 40189 -> Teff
 ```
 
@@ -27,7 +27,7 @@ All multi-byte values are little-endian unless noted otherwise.
 
 | Offset  | Type | Field         | Notes                                      |
 | ------- | ---- | ------------- | ------------------------------------------ |
-| `+0x00` | u32  | record_count  | Number of records; observed `394`          |
+| `+0x00` | u32  | record_count  | Number of records; observed `394` (2026-09-27 client: `439`) |
 | `+0x04` | ...  | record_stream | Variable-length records, packed back-to-back |
 
 `(file_size - 4) / record_count` is not integral, so records must be sliced with `plantzoneoffset.dbss`.
