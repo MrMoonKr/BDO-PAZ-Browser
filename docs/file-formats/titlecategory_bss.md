@@ -2,29 +2,46 @@
 
 ## Purpose
 
-Maps title IDs to their category. A flat array of fixed-size records with no file header; record count is derived from file size.
+Lists the title IDs of each title category. A `PABR` file holding one counted list of `title.dbss` title IDs per category, in category order, followed by the usual `PABR` trailer.
 
 Example:
 
 ```text
-title_id: 44  →  category: 1 (Combat)
-title_id: 218 →  category: 0 (World)
+category 0 (World)  -> title_id 211, 212, 213, ...
+category 1 (Combat) -> title_id 1, 2, 3, ...
 ```
 
 ---
 
-## Record Structure
+## File Layout
 
 All multi-byte values are little-endian.
 
-### Record (8 bytes, repeated for each entry)
+### Header (8 bytes)
 
-| Offset  | Type | Field       | Notes                          |
-| ------- | ---- | ----------- | ------------------------------ |
-| `+0x00` | u32  | title_id    | Unique title identifier        |
-| `+0x04` | u32  | category_id | Category code (see enum below) |
+| Offset  | Type    | Field          | Notes                                  |
+| ------- | ------- | -------------- | -------------------------------------- |
+| `+0x00` | char[4] | magic          | `PABR` (ASCII)                         |
+| `+0x04` | u32     | category_count | Number of category lists; observed `4` |
 
-Record count = `file_size / 8`.
+### Category List (repeated `category_count` times)
+
+The list's position is its `category_id`, starting at `0`.
+
+| Offset  | Type       | Field       | Notes                                   |
+| ------- | ---------- | ----------- | --------------------------------------- |
+| `+0x00` | u32        | title_count | Number of title IDs in this category    |
+| `+0x04` | u32[count] | title_ids   | `title.dbss` title IDs                  |
+
+### Trailer (12 bytes)
+
+| Offset  | Type | Field          | Notes                                                    |
+| ------- | ---- | -------------- | -------------------------------------------------------- |
+| `+0x00` | u32  | reserved_a     | Observed `0`                                             |
+| `+0x04` | u32  | end_of_entries | Byte offset right after the last list; `file_size - 12`  |
+| `+0x08` | u32  | reserved_b     | Observed `0`                                             |
+
+The number of listed titles follows from the header and trailer alone: `(end_of_entries - 8) / 4 - category_count`.
 
 ---
 
@@ -43,8 +60,18 @@ Record count = `file_size / 8`.
 
 ## Notes
 
-- Little-endian throughout.
-- No file header, parsing relies solely on file size being a multiple of 8.
-- Category IDs outside 0–3 are decoded as `Unknown (N)` by the preview handler.
-- `title.dbss` also carries the category field inline after requirement text; `titlecategory.bss` is not needed for category display.
-- WIP: handler output is currently inaccurate.
+- Observed lists (World, Combat, Life Skill, Fishing): `1,243`, `853`, `195`, `757` titles (`3,048` in all, `12,228` bytes) in the pre-2026-09-27 fixture; `1,316`, `900`, `197`, `759` (`3,172`, `12,724` bytes) in the 2026-09-27 client.
+- Checked against `title.dbss` in both files: every title appears in exactly one list, the lists cover every `title.dbss` title, and each title's list matches the category `title.dbss` stores inline.
+- Only the Combat list is sorted by title ID; the others start at `211` (World), `597` (Life Skill) and `218` (Fishing) and are not sorted.
+- `title.dbss` carries the category inline, so `titlecategory.bss` is not needed for category display.
+- Earlier versions of this doc, and of the handler, read the file as headerless 8-byte `(title_id, category_id)` pairs. That reading made the `PABR` magic the first title ID and paired unrelated title IDs after it.
+
+---
+
+## Suggested UI Layout
+
+| Column   | Type | Notes                                              |
+| -------- | ---- | -------------------------------------------------- |
+| Title ID | num  | One row per listed title ID                        |
+| Cat ID   | num  | Index of the list the title is in                  |
+| Category | text | Name from Category IDs above                       |
