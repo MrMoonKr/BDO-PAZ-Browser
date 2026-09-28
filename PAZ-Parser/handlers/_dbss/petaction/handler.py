@@ -91,7 +91,10 @@ class PetActionHandler(PreviewHandler):
             loc_name = ""
             if has_loc:
                 loc_name = strip_pa_tags(loc_lookup(19, record["action_id"])).strip()
-            record["action_name"] = loc_name or icon_action_name
+            record["has_loc_name"] = bool(loc_name)
+            # The Korean name is the real one; the icon suffix is only a guess
+            # ("Like" for Joy), so it is the last resort.
+            record["action_name"] = loc_name or record["name_kr"] or icon_action_name
         return records
 
     def render_records_page(
@@ -103,7 +106,7 @@ class PetActionHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} pet actions"
-        with_loc = sum(1 for r in records if r["action_name"] != r["icon_action_name"])
+        with_loc = sum(1 for r in records if r["has_loc_name"])
         if with_loc:
             meta += f" · {with_loc:,} with LOC type 19 names"
         rows = [

@@ -34,7 +34,7 @@ The first group uses a shorter 10-byte header. Groups 1 through 111 use a 22-byt
 
 | Offset  | Type | Field            | Observed | Notes                    |
 | ------- | ---- | ---------------- | -------- | ------------------------ |
-| `+0x00` | u32  | group_key        | `104`    | Meaning not confirmed    |
+| `+0x00` | u32  | unknown_00       | `104`    | Meaning not confirmed    |
 | `+0x04` | u8[3] | padding         | `00 00 00` | Observed zero          |
 | `+0x07` | u8   | quest_ref_count  | `14`     | Number of following rows |
 | `+0x08` | u16  | padding          | `0`      | Observed zero            |
@@ -43,11 +43,11 @@ The first group uses a shorter 10-byte header. Groups 1 through 111 use a 22-byt
 
 | Offset  | Type | Field            | Observed / Notes                           |
 | ------- | ---- | ---------------- | ------------------------------------------ |
-| `+0x00` | u32  | unknown_a        | Commonly `2`                               |
-| `+0x04` | u32  | unknown_b        | Commonly `2`                               |
-| `+0x08` | u32  | unknown_c        | Observed `0` in sampled headers            |
-| `+0x0C` | u16  | group_key_a      | Group key / sequence value; meaning unknown |
-| `+0x0E` | u32  | group_key_b      | Group key / sequence value; meaning unknown |
+| `+0x00` | u32  | unknown_00       | Commonly `2`                               |
+| `+0x04` | u32  | unknown_04       | Commonly `2`                               |
+| `+0x08` | u32  | unknown_08       | Observed `0` in sampled headers            |
+| `+0x0C` | u16  | unknown_0c       | Group key / sequence value; meaning unknown |
+| `+0x0E` | u32  | unknown_0e       | Group key / sequence value; meaning unknown |
 | `+0x12` | u16  | quest_ref_count  | Number of following rows                   |
 | `+0x14` | u16  | padding          | Observed `0` in sampled headers            |
 
@@ -55,12 +55,14 @@ The first group uses a shorter 10-byte header. Groups 1 through 111 use a 22-byt
 
 | Offset  | Type | Field          | Notes                                                                 |
 | ------- | ---- | -------------- | --------------------------------------------------------------------- |
-| `+0x00` | u8   | flags          | Observed `0` for 3,082 rows and `1` for 7 rows                        |
+| `+0x00` | u8   | unknown_00     | Observed `0` for 3,082 rows and `1` for 7 rows                        |
 | `+0x01` | u16  | quest_chain_id | LOC type 18 `str_id1`; combines with `quest_id` to form quest key     |
 | `+0x03` | u16  | quest_id       | LOC type 18 `str_id2`; combines with `quest_chain_id` to form quest key |
-| `+0x05` | u32  | sequence_a     | Observed range `1..3341`; likely ordering/index data                  |
-| `+0x09` | u32  | sequence_b     | Commonly `2`; other values appear in later groups                     |
-| `+0x0D` | u32  | sequence_c     | Observed range `2..3337`; likely parent/next/index data               |
+| `+0x05` | u32  | unknown_05     | Observed range `1..3341`; likely ordering/index data                  |
+| `+0x09` | u32  | unknown_09     | Commonly `2`; other values appear in later groups                     |
+| `+0x0D` | u32  | unknown_0d     | Observed range `2..3337`; likely parent/next/index data               |
+
+Earlier versions of this doc called the row's `unknown_00` `flags` and `unknown_05` / `unknown_09` / `unknown_0d` `sequence_a..c`, and the group header fields `group_key`, `unknown_a..c` and `group_key_a` / `group_key_b`.
 
 Derived packed quest ID:
 
@@ -78,7 +80,7 @@ The first payload bytes resemble another small header followed by UTF-16 text, b
 
 ## Reference Rows
 
-| Group | Row | flags | Quest Chain ID | Quest ID | sequence_a | sequence_b | sequence_c | Example LOC Title |
+| Group | Row | unknown_00 | Quest Chain ID | Quest ID | unknown_05 | unknown_09 | unknown_0d | Example LOC Title |
 | ----: | --: | ----: | -------------: | -------: | ---------: | ---------: | ---------: | ----------------- |
 | 0     | 0   | `0`   | `40022`        | `1`      | `1`        | `2`        | `3`        | `[Special Growth] Birth of a Prestigious Family` |
 | 0     | 13  | `0`   | `40022`        | `14`     | `17`       | `2`        | `5`        | `[Special Growth] Fughar's Memorandum - Chapter 11` |
@@ -95,10 +97,6 @@ The first payload bytes resemble another small header followed by UTF-16 text, b
 | Main ID      | num  | `quest_chain_id`; LOC type 18 `str_id1`                          |
 | Sub ID       | num  | `quest_id`; LOC type 18 `str_id2`                                |
 | Title        | text | Prefer LOC type 18 row with matching main/sub ID and `str_id4=0` |
-| Flags        | num  | Raw `flags` byte                                                 |
-| Sequence A   | num  | Raw `sequence_a`                                                 |
-| Sequence B   | num  | Raw `sequence_b`                                                 |
-| Sequence C   | num  | Raw `sequence_c`                                                 |
 
 ---
 
@@ -116,11 +114,11 @@ The first payload bytes resemble another small header followed by UTF-16 text, b
 
 ### Group Header Fields
 
-The meaning of `group_key`, `group_key_a`, `group_key_b`, and the three `unknown_*` header fields is not confirmed.
+The meaning of the first group's `unknown_00` and the five `unknown_*` fields of the later group headers is not confirmed.
 
-### Sequence Fields
+### Row Fields
 
-`sequence_a`, `sequence_b`, and `sequence_c` look like order, parent, or link indexes, but their exact UI behavior is not confirmed.
+The row's `unknown_05`, `unknown_09`, and `unknown_0d` look like order, parent, or link indexes, but their exact UI behavior is not confirmed. `unknown_00` is `1` on only 7 rows.
 
 ### Text Payload Boundaries
 

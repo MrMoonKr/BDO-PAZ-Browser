@@ -146,7 +146,6 @@ def _parse_pet_payload(row: int, offset_record: dict, block: bytes, grade_map: d
         raise ValueError(f"pet record {row} is too small")
 
     pet_id, variant, species, reserved_04, tier, reserved_06, max_level = struct.unpack_from("<HBBBBBB", block, 0)
-    const_90000000 = struct.unpack_from("<I", block, 0x08)[0]
     reserved_0c = block[0x0C]
     reserved_0d = struct.unpack_from("<H", block, 0x0D)[0]
     equip_skill_slots = block[0x0F]
@@ -164,7 +163,7 @@ def _parse_pet_payload(row: int, offset_record: dict, block: bytes, grade_map: d
         raise ValueError(f"pet record {row} footer exceeds record size")
 
     footer = block[footer_start:footer_end]
-    constants = struct.unpack_from("<IIIIIIIII", footer, 0)
+    unknown_00 = list(struct.unpack_from("<9I", footer, 0x00))
     acquire_type_id = struct.unpack_from("<H", footer, 0x24)[0]
     equip_skill_id = struct.unpack_from("<H", footer, 0x26)[0]
     unknown_2a = list(struct.unpack_from("<10I", footer, 0x2A))
@@ -190,7 +189,7 @@ def _parse_pet_payload(row: int, offset_record: dict, block: bytes, grade_map: d
         "size": offset_record["data_size"],
         "unknown_12": unknown_12,
         "unknown_2a": unknown_2a,
-        "constants": constants,
+        "unknown_00": unknown_00,
         "reserved_04": reserved_04,
         "reserved_06": reserved_06,
         "reserved_0c": reserved_0c,

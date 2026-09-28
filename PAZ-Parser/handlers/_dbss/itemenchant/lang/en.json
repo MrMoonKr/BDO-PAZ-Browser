@@ -4,8 +4,7 @@
     "icon": "Icon",
     "item": "Item",
     "objectId": "Object ID",
-    "object": "Object",
-    "effectTag": "Effect Tag"
+    "object": "Object"
   },
   "offsetColumns": {
     "itemId": "Item ID",

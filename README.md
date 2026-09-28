@@ -105,7 +105,7 @@ pip install -r PAZ-Parser/requirements.txt
 
 ## Testing
 
-Handler unit tests use pytest and live beside the handler they cover. Missing test inputs are fetched into the gitignored `PAZ-Parser/tests/fixtures/` cache from the configured PAZ folder.
+Handler unit tests use pytest and live beside the handler they cover. Missing test inputs are fetched into the gitignored `PAZ-Parser/tests/fixtures/` cache from the configured PAZ folder. When the installed client changes, the next run fetches all of them again (details in `docs/handler.md`).
 
 Install dev dependencies:
 
@@ -183,6 +183,7 @@ PAZ-Parser/
 │   ├── models.py           # HandlerCase, HandlerResult
 │   ├── runner.py           # run_case()
 │   ├── fixtures.py         # Auto-fetches test inputs from PAZ folder
+│   ├── fixture_sync.py     # Refreshes fixtures when the client changes
 │   └── fixtures/           # Gitignored cached binaries
 │
 ├── ui/                     # Web UI (HTML + JS + CSS)

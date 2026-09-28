@@ -207,10 +207,8 @@ Maps each personality type (2 variants × 12 signs = 24 records) to a slot-trigg
 | Name          | text | LOC `str_type=7`, `str_id1=zodiac_id`, `str_id4=0` |
 | Stars         | num  | Number of stars in the constellation              |
 | Pairs         | num  | Number of connecting line pairs                   |
-| Constellation | text | Rendered star layout                              |
-| Traits        | text | Trait text, preferring the user's language        |
-| Traits (EN)   | text | LOC `str_id4=1` English trait text                |
-| Traits (KR)   | text | Inline Korean trait text from the record          |
+| Constellation | text | `constellation_name`, the inline Korean name       |
+| Traits (EN)   | text | LOC `str_id4=1` English trait text; when LOC is not loaded the column is Traits (KR) with the inline Korean `trait_text` |
 
 ---
 

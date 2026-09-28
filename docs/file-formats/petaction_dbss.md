@@ -102,7 +102,7 @@ Provides keyed lookup into `petaction.dbss` and supplies the record count.
 | ----------- | ---- | --------------------------------- |
 | Action ID   | num  | Primary key; right-aligned        |
 | Icon        | Icon | Rendered from `icon_path`         |
-| Action Name | text | LOC type 19 name; fallback to icon filename suffix |
+| Action Name | text | LOC type 19 name; without LOC the Korean `name_kr`, then the icon filename suffix |
 | Name (KR)   | text | `name_kr`                         |
 
 ---

@@ -199,7 +199,7 @@ Every member has a `characterstatic.dbss` record with `class_type` other than `1
 | Character ID | num  | `character_id`; right-aligned |
 | Icon         | text | Resolved from the character ID through the character icon index; covers about 20% of characters |
 | Name (EN)    | text | LOC lookup `str_type=6`, `str_id1=character_id`; shown only when LOC is loaded |
-| Kind         | num  | `npc_kind` low byte |
+| NPC Kind     | num  | `npc_kind` low byte (`npc_kind_low` in the handler, which also keeps the full u32 for search and CSV) |
 | Class        | text | `class_type` through LOC `str_type=21`; blank when `101` |
 | Script       | text | `action_script` |
 | Knowledge ID | num  | Extract from `getknowledge(<id>);` (case-insensitive) when present |

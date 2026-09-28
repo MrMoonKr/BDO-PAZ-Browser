@@ -51,9 +51,9 @@ Records begin immediately at `+0x04`. Each record is stored as a 2-byte key pref
 | ------- | --------- | --------------- | --------------------------------------------------------------------- |
 | `+0x00` | u16       | pet_skill_id    | Equals the 2-byte key prefix and offset-table key                     |
 | `+0x02` | row[11]   | effect_rows     | One baseline row (`row_index=0`) plus ten level rows (`1..10`)        |
-| `+0xBD` | u8        | extra_marker    | Present only when `data_size=190`; observed values 9 and 10           |
+| `+0xBD` | u8        | unknown_bd      | Present only when `data_size=190`; observed values 9 and 10           |
 
-The 32 records with `data_size=189` end after the eleven 17-byte rows. The 17 records with `data_size=190` have one trailing `extra_marker` byte.
+The 32 records with `data_size=189` end after the eleven 17-byte rows. The 17 records with `data_size=190` have one trailing `unknown_bd` byte.
 
 ### Effect Row (17 bytes × 11)
 
@@ -66,10 +66,10 @@ Rows start at payload offset `+0x02 + row_index * 17`. Offsets below are relativ
 | `+0x02` | u16  | —            | Always 0                                                                                |
 | `+0x04` | u32  | raw_value_a  | Primary effect value. Row 0 is always 2560; rows 1–10 vary by `pet_skill_id`            |
 | `+0x08` | u32  | raw_value_b  | Secondary effect value. Row 0 is always 2560; rows 1–10 are 0 or a skill-specific value |
-| `+0x0C` | u32  | row_marker   | Row 0 = 256; rows 1–9 = `(row_level + 1) * 256`; row 10 is 0 or 256                     |
+| `+0x0C` | u32  | unknown_0c   | Row 0 = 256; rows 1–9 = `(row_level + 1) * 256`; row 10 is 0 or 256                     |
 | `+0x10` | u8   | —            | Always 0                                                                                |
 
-Earlier versions of this doc called `unknown_00` `skill_group`.
+Earlier versions of this doc called `unknown_00` `skill_group`, `unknown_0c` `row_marker` and the payload's `unknown_bd` `extra_marker`.
 
 ---
 
@@ -103,8 +103,8 @@ Earlier versions of this doc called `unknown_00` `skill_group`.
 | `row_level`        | baseline row uses 1; level rows use 1–10                     |
 | `raw_value_a`      | row 0 always 2560; level rows 512,000–128,000,000            |
 | `raw_value_b`      | row 0 always 2560; level rows 0–76,800,000                   |
-| `row_marker`       | 256, 512, 768, 1024, 1280, 1536, 1792, 2048, 2304, 2560, 0   |
-| `extra_marker`     | 9 or 10 when present                                         |
+| `unknown_0c`       | 256, 512, 768, 1024, 1280, 1536, 1792, 2048, 2304, 2560, 0   |
+| `unknown_bd`       | 9 or 10 when present                                         |
 
 `unknown_00` is not unique: multiple `pet_skill_id` records share one value while carrying different effect values.
 
@@ -144,12 +144,12 @@ For compact browsing, show one expandable row per `pet_skill_id`, with the ten l
 
 ### Raw value scale
 
-`raw_value_a`, `raw_value_b`, and `row_marker` appear scaled in several different ways. The correct display formula needs confirmation from UI code or in-game pet skill percentage displays.
+`raw_value_a`, `raw_value_b`, and `unknown_0c` appear scaled in several different ways. The correct display formula needs confirmation from UI code or in-game pet skill percentage displays.
 
 ### Baseline row meaning
 
-Row 0 is identical across all records except `unknown_00`: `raw_value_a=2560`, `raw_value_b=2560`, `row_marker=256`. It may be a base display/effect row, but its exact role is not confirmed.
+Row 0 is identical across all records except `unknown_00`: `raw_value_a=2560`, `raw_value_b=2560`, `unknown_0c=256`. It may be a base display/effect row, but its exact role is not confirmed.
 
 ### Extra marker byte
 
-Only 17 records have a trailing `extra_marker` byte. Values are 9 or 10, but its relationship to `unknown_00`, max level, or UI display is unknown.
+Only 17 records have a trailing `unknown_bd` byte. Values are 9 or 10, but its relationship to `unknown_00`, max level, or UI display is unknown.

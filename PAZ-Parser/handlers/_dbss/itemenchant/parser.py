@@ -54,8 +54,8 @@ def parse_itemenchantoffset_records(data: bytes) -> list[dict]:
 def parse_itemenchant_records(data: bytes, offset_data: bytes) -> list[dict]:
     """Parse one row per (item, key variant), carrying the inline icon path.
 
-    The first string in a block is always the icon path; an optional second
-    string is an effect tag such as `ITEM_BIC_HIT_1`.
+    The first string in a block is always the icon path; what the optional
+    second string (e.g. `ITEM_BIC_HIT_1`) means is unconfirmed.
     """
     records: list[dict] = []
 
@@ -75,7 +75,7 @@ def parse_itemenchant_records(data: bytes, offset_data: bytes) -> list[dict]:
             "key_variant": row["key_variant"],
             "icon_path": f"{ICON_ROOT}{icon.lower()}" if icon else "",
             "character_id": u16(data, start + _CHARACTER_ID),
-            "effect_tag": strings[1] if len(strings) > 1 else "",
+            "second_string": strings[1] if len(strings) > 1 else "",
             "block_size": row["data_size"],
         })
 

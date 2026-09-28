@@ -46,7 +46,7 @@ def _parse_effect_row(payload: bytes, row_index: int) -> dict:
     padding = struct.unpack_from("<H", payload, pos + 2)[0]
     raw_value_a = struct.unpack_from("<I", payload, pos + 4)[0]
     raw_value_b = struct.unpack_from("<I", payload, pos + 8)[0]
-    row_marker = struct.unpack_from("<I", payload, pos + 12)[0]
+    unknown_0c = struct.unpack_from("<I", payload, pos + 12)[0]
     row_padding = payload[pos + 16]
 
     return {
@@ -57,7 +57,7 @@ def _parse_effect_row(payload: bytes, row_index: int) -> dict:
         "padding": padding,
         "raw_value_a": raw_value_a,
         "raw_value_b": raw_value_b,
-        "row_marker": row_marker,
+        "unknown_0c": unknown_0c,
     }
 
 
@@ -86,7 +86,7 @@ def parse_petskill_records(data: bytes, offset_data: bytes) -> list[dict]:
         key_prefix = struct.unpack_from("<H", data, record_start)[0]
         payload = data[data_offset:data_offset + data_size]
         pet_skill_id = struct.unpack_from("<H", payload, 0)[0]
-        extra_marker = payload[_BASE_PAYLOAD_SIZE] if data_size == _EXTRA_PAYLOAD_SIZE else None
+        unknown_bd = payload[_BASE_PAYLOAD_SIZE] if data_size == _EXTRA_PAYLOAD_SIZE else None
         effect_rows = [_parse_effect_row(payload, row_index) for row_index in range(_EFFECT_ROW_COUNT)]
         baseline = effect_rows[0]
 
@@ -98,8 +98,8 @@ def parse_petskill_records(data: bytes, offset_data: bytes) -> list[dict]:
                 "level": effect["level"],
                 "raw_value_a": effect["raw_value_a"],
                 "raw_value_b": effect["raw_value_b"],
-                "row_marker": effect["row_marker"],
-                "extra_marker": extra_marker,
+                "unknown_0c": effect["unknown_0c"],
+                "unknown_bd": unknown_bd,
                 "data_offset": data_offset,
                 "data_size": data_size,
                 "key_prefix": key_prefix,
@@ -109,7 +109,7 @@ def parse_petskill_records(data: bytes, offset_data: bytes) -> list[dict]:
                 ),
                 "baseline_raw_value_a": baseline["raw_value_a"],
                 "baseline_raw_value_b": baseline["raw_value_b"],
-                "baseline_row_marker": baseline["row_marker"],
+                "baseline_unknown_0c": baseline["unknown_0c"],
             })
 
     return sorted(records, key=lambda record: (record["pet_skill_id"], record["level"]))

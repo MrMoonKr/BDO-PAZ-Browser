@@ -5,6 +5,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -19,11 +20,18 @@ FIXTURES_DIR = Path(
 ).resolve()
 
 
+class FixtureFetchError(Exception):
+    """A fixture could not be extracted from the client or copied from the game folder."""
+
+
 def ensure_fixtures(case: HandlerCase) -> dict[str, Path]:
     fixture_paths = resolve_fixture_paths(case)
     missing = [name for name, path in fixture_paths.items() if not path.exists()]
     if missing:
-        fetch_fixtures(missing)
+        try:
+            fetch_fixtures(missing)
+        except FixtureFetchError as ex:
+            pytest.fail(str(ex))
 
     missing = [name for name, path in fixture_paths.items() if not path.exists()]
     if missing:
@@ -42,53 +50,70 @@ def resolve_fixture_paths(case: HandlerCase) -> dict[str, Path]:
 
 
 def fetch_fixtures(fixture_names: list[str]) -> None:
+    """Fetch into a staging folder, then replace, so a failed fetch keeps the old copy.
+
+    `browser.py --file` never overwrites an existing file, so a refresh cannot
+    extract straight into the fixtures folder.
+    """
     FIXTURES_DIR.mkdir(parents=True, exist_ok=True)
-    browser = REPO_ROOT / "browser.py"
-
-    for fixture_name in fixture_names:
-        command = [
-            sys.executable,
-            str(browser),
-            "--file",
-            fixture_name,
-            "--output",
-            str(FIXTURES_DIR),
-        ]
-        result = subprocess.run(
-            command,
-            cwd=REPO_ROOT,
-            text=True,
-            capture_output=True,
-            check=False,
-        )
-        if result.returncode != 0:
-            if copy_external_fixture(fixture_name):
-                continue
-
-            details = "\n".join(part for part in (result.stdout, result.stderr) if part)
-            pytest.fail(
-                f"could not fetch fixture {fixture_name!r} via browser.py --file. "
-                f"Check PAZ folder config or pass --paz-folder manually once.\n{details}"
-            )
+    with tempfile.TemporaryDirectory(dir=FIXTURES_DIR, prefix=".fetch-") as staging:
+        staging_dir = Path(staging)
+        for fixture_name in fixture_names:
+            _fetch_fixture(fixture_name, staging_dir)
+            os.replace(staging_dir / fixture_name, FIXTURES_DIR / fixture_name)
 
 
-def copy_external_fixture(fixture_name: str) -> bool:
+def _fetch_fixture(fixture_name: str, output_dir: Path) -> None:
+    command = [
+        sys.executable,
+        str(REPO_ROOT / "browser.py"),
+        "--file",
+        fixture_name,
+        "--output",
+        str(output_dir),
+    ]
+    result = subprocess.run(
+        command,
+        cwd=REPO_ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode == 0 and (output_dir / fixture_name).exists():
+        return
+    if copy_external_fixture(fixture_name, output_dir):
+        return
+
+    details = "\n".join(part for part in (result.stdout, result.stderr) if part)
+    raise FixtureFetchError(
+        f"could not fetch fixture {fixture_name!r} via browser.py --file. "
+        f"Check PAZ folder config or pass --paz-folder manually once.\n{details}"
+    )
+
+
+def copy_external_fixture(fixture_name: str, output_dir: Path) -> bool:
     source = find_external_fixture(fixture_name)
     if source is None:
         return False
 
-    shutil.copy2(source, FIXTURES_DIR / fixture_name)
+    shutil.copy2(source, output_dir / fixture_name)
     return True
 
 
-def find_external_fixture(fixture_name: str) -> Path | None:
+def configured_paz_folder() -> Path | None:
+    """The PAZ folder last opened in the GUI, from `paz_config.json`."""
     config_path = PAZ_PARSER_DIR / "paz_config.json"
     try:
-        paz_folder = Path(json.loads(config_path.read_text()).get("last_folder", ""))
-    except Exception:
+        last_folder = json.loads(config_path.read_text()).get("last_folder", "")
+    except (OSError, ValueError):
         return None
 
-    if not paz_folder:
+    return Path(last_folder) if last_folder else None
+
+
+def find_external_fixture(fixture_name: str) -> Path | None:
+    paz_folder = configured_paz_folder()
+    if paz_folder is None:
         return None
 
     game_root = paz_folder.parent

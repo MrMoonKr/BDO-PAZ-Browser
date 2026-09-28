@@ -14,6 +14,8 @@ from .parser import NO_CLASS_TYPE, parse_characterstatic_records
 
 _LANG_DIR = Path(__file__).parent / "lang"
 _LOC_CHARACTER_NAME = 6
+# The low byte of `npc_kind` is the character kind; the higher bits are unmapped flags.
+_NPC_KIND_LOW_MASK = 0xFF
 
 
 def _character_name(character_id: int) -> str:
@@ -77,7 +79,7 @@ class CharacterStaticHandler(PreviewHandler):
             Column(cols.get("actionScript", "Action Script"), sort_key="action_script"),
             Column(cols.get("conditionScript", "Condition"), sort_key="condition_script"),
             Column(cols.get("knowledgeId", "Knowledge ID"), "num", sort_key="knowledge_id"),
-            Column(cols.get("npcKind", "NPC Kind"), "num", sort_key="npc_kind"),
+            Column(cols.get("npcKind", "NPC Kind"), "num", sort_key="npc_kind_low"),
             Column(cols.get("classType", "Class Type"), "num", sort_key="class_type"),
             Column(cols.get("model", "Model"), sort_key="model_path"),
             Column(cols.get("payloadSize", "Payload Size"), "num", sort_key="payload_size"),
@@ -120,6 +122,7 @@ class CharacterStaticHandler(PreviewHandler):
                 "condition_script": r["condition_script"],
                 "knowledge_id": r["knowledge_id"],
                 "npc_kind": r["npc_kind"],
+                "npc_kind_low": r["npc_kind"] & _NPC_KIND_LOW_MASK,
                 # 101 means "not a player character"; None sorts last.
                 "class_type": None if r["class_type"] == NO_CLASS_TYPE else r["class_type"],
                 "model_path": r["model_path"],
@@ -154,7 +157,7 @@ class CharacterStaticHandler(PreviewHandler):
             row.append(e(r["action_script"]))
             row.append(e(r["condition_script"]))
             row.append(_optional(r["knowledge_id"]))
-            row.append(e(r["npc_kind"]))
+            row.append(e(r["npc_kind_low"]))
             row.append(_optional(r["class_type"]))
             row.append(e(r["model_path"] or "-"))
             row.append(e(r["payload_size"]))

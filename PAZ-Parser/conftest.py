@@ -73,11 +73,41 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         default=False,
         help="Show only failed tests and a pass/total summary",
     )
+    parser.addoption(
+        "--refresh-fixtures",
+        action="store_true",
+        default=False,
+        help="Fetch every fixture again from the installed client, even if it did not change",
+    )
+    parser.addoption(
+        "--frozen-fixtures",
+        action="store_true",
+        default=False,
+        help="Use the cached fixtures as they are, without checking the installed client",
+    )
 
 
 def pytest_configure(config: pytest.Config) -> None:
+    if config.getoption("--refresh-fixtures") and config.getoption("--frozen-fixtures"):
+        raise pytest.UsageError("--refresh-fixtures and --frozen-fixtures cannot be combined")
     if config.getoption("--clean", default=False):
         config.pluginmanager.register(_CleanPlugin(config), "clean_plugin")
+
+
+def pytest_sessionstart(session: pytest.Session) -> None:
+    config = session.config
+    if config.getoption("--frozen-fixtures"):
+        return
+
+    from tests.fixture_sync import sync_fixtures
+    from tests.fixtures import FixtureFetchError
+
+    reporter = config.pluginmanager.get_plugin("terminalreporter")
+    report = reporter.write_line if reporter is not None else print
+    try:
+        sync_fixtures(force=bool(config.getoption("--refresh-fixtures")), report=report)
+    except FixtureFetchError as ex:
+        pytest.exit(f"fixture refresh failed, cached fixtures kept:\n{ex}", returncode=1)
 
 
 class _CleanPlugin:

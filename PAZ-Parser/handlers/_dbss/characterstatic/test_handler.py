@@ -29,7 +29,7 @@ STATIC_CASE = HandlerCase(
         SchemaTest(
             required_keys=[
                 "character_id", "name_en", "action_script", "condition_script",
-                "knowledge_id", "npc_kind", "class_type", "model_path", "payload_size",
+                "knowledge_id", "npc_kind", "npc_kind_low", "class_type", "model_path", "payload_size",
             ]
         ),
         # The data file's own count; the parser walks the offset table's rows.
@@ -55,6 +55,7 @@ STATIC_CASE = HandlerCase(
                 "condition_script": "getOceanTendency()>-1;",
                 "knowledge_id": 2095,
                 "npc_kind": 2,
+                "npc_kind_low": 2,
             },
         ),
         # The getknowledge match ignores case.

@@ -62,7 +62,7 @@ Each record is stored as `[u16 key_prefix][data_bytes]`. The `key_prefix` (2 byt
 | `+0x18` | u32  | icon_path_len     | Byte length of the icon path string (no null terminator)                                |
 | `+0x1C` | u32  | —                 | Always 0; reserved                                                                      |
 
-Earlier versions of this doc called `unknown_14` `type_param`, and first labeled `unknown_12` `dds_variant`. In the footer below, `unknown_2a` was `upgrade_table` and `unknown_53` was `tier_score` (`grade_score` in the parser). The parser called `unknown_10` `reserved_10`.
+Earlier versions of this doc called `unknown_14` `type_param`, and first labeled `unknown_12` `dds_variant`. In the footer below, `unknown_00` was six `const_*` fields (`constants` in the parser), `unknown_2a` was `upgrade_table` and `unknown_53` was `tier_score` (`grade_score` in the parser). The parser called `unknown_10` `reserved_10`.
 
 #### Icon Path (variable, `icon_path_len` bytes)
 
@@ -78,15 +78,7 @@ The icon path is ASCII-encoded with no null terminator; its byte length is given
 
 | Offset  | Type     | Field           | Notes                                                         |
 | ------- | -------- | --------------- | ------------------------------------------------------------- |
-| `+0x00` | u32      | const_30000_a   | Always 30000 in every record                                  |
-| `+0x04` | u32      | —               | Always 0                                                      |
-| `+0x08` | u32      | const_15000     | Always 15000 (= const_30000_a / 2)                            |
-| `+0x0C` | u32      | —               | Always 0                                                      |
-| `+0x10` | u32      | const_30000_b   | Always 30000                                                  |
-| `+0x14` | u32      | —               | Always 0                                                      |
-| `+0x18` | u32      | const_500000    | Always 500000                                                 |
-| `+0x1C` | u32      | const_1000000   | Always 1000000                                                |
-| `+0x20` | u32      | const_2         | Always 2                                                      |
+| `+0x00` | u32 × 9  | unknown_00      | Always 30000, 0, 15000, 0, 30000, 0, 500000, 1000000, 2       |
 | `+0x24` | u16      | acquire_type_id | Key into `petequipskillaquire.dbss`; 0 = none; varies by tier |
 | `+0x26` | u16      | equip_skill_id  | Pet equip-skill identifier; varies by pet type and tier       |
 | `+0x28` | u16      | —               | Always 0; padding                                             |
@@ -156,7 +148,7 @@ Rows are sorted by `pet_id` ascending for stable browsing.
 - `equip_skill_slots` = `tier + 1` for all regular pets (values 1–4). Airiss pets break this rule, reaching values of 7, 8, or 9.
 - `max_level` is 10 for all regular pets. Airiss variants: tier 1 = 20, tier 2 = 30, tier 3 = 50.
 - `unknown_12` does NOT reliably match the icon filename's 4-digit number (e.g. Cat_0991 → 0, Cat_0000 → 45).
-- The three constant groups in the footer (30000, 15000, 30000, 500000, 1000000, 2) are identical in every record.
+- The footer's `unknown_00` block (30000, 15000, 30000, 500000, 1000000, 2 and three zeros) is identical in every record.
 - `acquire_type_id` values 301–304 appear for regular pets and correspond to tiers 0–4 (tier 0 → 301, tier 4 → 304); lower values (1, 2, 3, 4) and mid-range values (101–104, 201–204, 401–404, 501–504) appear for specific sub-groups. 501–504 (21 pets, in both the pre-2026-09-27 and the 2026-09-27 files) have no row in `petequipskillaquire.dbss`.
 - 21 records have no `petgrade.dbss` row for their `(species, variant)` and show no grade.
 
@@ -172,9 +164,9 @@ The u16 at `+0x10` is `0` in most records and `256` (byte `+0x11` = 1) in 355, 2
 
 It does not match the 4-digit icon filename number: Cats 0991–0993 all store 0, Cat_0000 stores 45, and Dogs show values like 79, 68, 51 that match neither path numbers nor tier. Its meaning is unknown.
 
-### Footer constant fields
+### Footer `unknown_00`
 
-The six constant u32 values in the footer (30000, 15000, 30000, 500000, 1000000, 2) are identical in every record. They may be global pet system parameters duplicated per record, or references to shared game tables. Their in-game meaning (satiety, exchange cost, breeding cost?) is unconfirmed.
+The six non-zero u32 values in `unknown_00` (30000, 15000, 30000, 500000, 1000000, 2) are identical in every record. They may be global pet system parameters duplicated per record, or references to shared game tables. Their in-game meaning (satiety, exchange cost, breeding cost?) is unconfirmed.
 
 ### `unknown_2a` Meaning
 

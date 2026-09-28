@@ -16,8 +16,8 @@ from tests.framework import (
 )
 
 
-# The file declares no row count. Each live Section 2 record sits at slot
-# `equip_skill_id - 15`, which checks the variable-length walk stays aligned.
+# The file declares no row count. Every record sits at the slot equal to its
+# `equip_skill_id`, which checks both walks find their ends and stay aligned.
 CASE = HandlerCase(
     handler_name="petequipskill.bss",
     data_file="petequipskill.bss",
@@ -55,7 +55,7 @@ CASE = HandlerCase(
             expected={
                 "equip_skill_id": 15,
                 "section": "S2",
-                "slot": 0,
+                "slot": 15,
                 "skill_type": 4,
                 "skill_name": "Skill EXP +1%",
                 "icon_path": "ui_texture/icon/new_icon/08_servant_skill/02_pet/equipskill_00049061.dds",
@@ -65,7 +65,7 @@ CASE = HandlerCase(
         TargetTest(
             col="loc_id",
             value=49047,
-            expected={"equip_skill_id": 66, "section": "S2", "slot": 51},
+            expected={"equip_skill_id": 66, "section": "S2", "slot": 66},
         ),
         TargetTest(
             col="loc_id",
@@ -73,7 +73,7 @@ CASE = HandlerCase(
             expected={
                 "equip_skill_id": 91,
                 "section": "S2",
-                "slot": 76,
+                "slot": 91,
                 "skill_type": 18,
                 "skill_name": "Barter EXP +1%",
             },
@@ -81,7 +81,7 @@ CASE = HandlerCase(
         TargetTest(
             col="loc_id",
             value=49176,
-            expected={"equip_skill_id": 111, "section": "S2", "slot": 96, "skill_type": 19},
+            expected={"equip_skill_id": 111, "section": "S2", "slot": 111, "skill_type": 19},
         ),
     ],
 )
@@ -102,3 +102,17 @@ def test_petequipskill_bss(
     petequipskill_result: HandlerResult,
 ) -> None:
     petequipskill_result.check(spec)
+
+
+def test_every_record_sits_at_its_own_slot(petequipskill_result: HandlerResult) -> None:
+    misplaced = [
+        (record["section"], record["slot"], record["equip_skill_id"])
+        for record in petequipskill_result.records
+        if record["slot"] != record["equip_skill_id"]
+    ]
+
+    assert misplaced == []
+
+
+def test_both_sections_are_present(petequipskill_result: HandlerResult) -> None:
+    assert {record["section"] for record in petequipskill_result.records} == {"S1", "S2"}

@@ -50,7 +50,7 @@ PETSKILL_CASE = HandlerCase(
                 "level",
                 "raw_value_a",
                 "raw_value_b",
-                "row_marker",
+                "unknown_0c",
                 "pet_skill_id_match",
             ]
         ),

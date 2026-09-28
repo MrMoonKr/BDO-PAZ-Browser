@@ -206,7 +206,7 @@ A block holds at most two strings:
 | Position | Content                                                        |
 | -------- | -------------------------------------------------------------- |
 | first    | Icon path, relative to `ui_texture/icon/`                       |
-| second   | Optional effect tag such as `ITEM_BIC_HIT_1`; absent in most blocks |
+| second   | Optional `second_string` such as `ITEM_BIC_HIT_1`; absent in most blocks, meaning unconfirmed |
 
 **The first string is always the icon path.** In a 400-block sample the length
 prefix matched the string length 400 out of 400 times.
@@ -250,7 +250,6 @@ only approach that covers items whose icon is named after a 3D asset
 | Item          | text | LOC `str_type=0`, `str_id1=item_id`               |
 | Object ID     | num  | `character_id` of the placed object or summoned pet; dash when `0` |
 | Object        | text | LOC `str_type=6`, `str_id1=character_id`          |
-| Effect Tag    | text | Second block string when present                  |
 
 ---
 
@@ -293,10 +292,13 @@ also unconfirmed whether they have an icon reachable some other way.
 
 ### Second Block String
 
-The optional second string looks like an effect or sound tag
+The optional second string (`second_string` in the parser; it has no fixed
+offset, so it cannot be named `unknown_<offset>`) looks like an effect or sound tag
 (`ITEM_BIC_HIT_1` through `ITEM_BIC_HIT_4` were observed) and appeared in 46 of
 350 sampled blocks, all of them weapons or armour. What consumes it, and whether
-other tag families exist, is unconfirmed.
+other tag families exist, is unconfirmed. Earlier versions called it
+`effect_tag` and showed it as an Effect Tag column; it stays on the record for
+search and CSV but is no longer shown.
 
 ### Key Variant Meaning
 

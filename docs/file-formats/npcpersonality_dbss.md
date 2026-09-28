@@ -131,19 +131,22 @@ Every offset row points at a record that repeats its `personality_id`, and every
 - `personality_id_dup` at `+0x0E` is always identical to `personality_id` at `+0x00`; appears to be alignment padding or a redundant lookup key.
 - The `variant` in `personality_type` (1 or 2) is not exposed in `amity-npcs.json`; its in-game meaning is unknown. Distribution is roughly even (584 variant-1, 598 variant-2).
 - The groups and `unknown_*` numbers match the BDO wiki for Amerigo (41013): Vendors of Serendia, Serendia Adventure Log II and Plants (Serendia), `4` each.
-- The NPC rolls its Interest Level and Favor within these ranges at the start of each conversation, and keeps them when the conversation is continued ([Black Desert Foundry, Story Exchange guide](https://www.blackdesertfoundry.com/story-exchange-guide/)). The guide's Lorenzo Murray (40015) shows Interest 32 and Favor 15, inside the stored 31-34 and 15-19. Worked back from topic tooltips in the current client (2026-09-27), all inside their stored ranges: Oliviero (41091) Interest 30 / Favor 31, Amerigo (41013) 22 / 28, Cleia (41056) 21 / 26. A tracker range built from a few conversations can therefore be narrower than the stored one.
+- The NPC rolls its Interest Level and Favor at the start of each conversation, and keeps them when the conversation is continued ([Black Desert Foundry, Story Exchange guide](https://www.blackdesertfoundry.com/story-exchange-guide/)). Readings do not always fall inside the stored ranges, though: see the table below.
 - They match the wiki for Oliviero (41091) too: Serendia Adventure Log II, Officers of Serendia and Plants (Serendia), `6` each. Each group holds more cards than its `unknown_*` number (18, 13 and 11 here). Sharing a group does not mean sharing topics: Amerigo, who also has Serendia Adventure Log II, did not offer the Log II cards Oliviero did. Which cards an NPC offers is open.
-- The stored ranges do not equal the ranges in an amity tracker dataset (taken from a wiki, possibly outdated) or one in-game check (Ornella), under either reading of the upper bound. Interest / favor:
+- The stored ranges change between client versions while the group IDs stay, and the ranges seen outside the file fit neither client consistently. Interest / favor, stored minimum to maximum:
 
-  | NPC | Tracker or game | Stored | Stored, max minus 1 |
-  | --- | --- | --- | --- |
-  | Amerigo (41013) | 20-24 / 27-29 | 21-24 / 26-29 | 21-23 / 26-28 |
-  | Cleia (41056) | 20-23 / 25-29 | 21-23 / 25-30 | 21-22 / 25-29 |
-  | George Fusto (41118) | 22-25 / 26-30 | 22-24 / 25-29 | 22-23 / 25-28 |
-  | Ornella (41002), in game | 22-23 / 27-28 | 21-25 / 25-28 | 21-24 / 25-27 |
+  | NPC | Seen | Source of the seen range | Pre-2026-09-27 fixture | Client 3458 (2026-09-27) |
+  | --- | --- | --- | --- | --- |
+  | Lorenzo Murray (40015) | 32 / 15 | Foundry guide | 31-35 / 16-20 | 30-35 / 17-18 |
+  | Ornella (41002) | 22-23 / 27-28 | In game | 22-23 / 25-28 | 22-23 / 26-29 |
+  | Amerigo (41013) | 20-24 / 27-29 | Amity tracker dataset | 20-25 / 27-30 | 22-24 / 26-30 |
+  | Amerigo (41013) | 22 / 28 | Topic tooltips, 2026-09-27 | 20-25 / 27-30 | 22-24 / 26-30 |
+  | Cleia (41056) | 20-23 / 25-29 | Amity tracker dataset | 22-23 / 26-28 | 22-25 / 25-28 |
+  | Cleia (41056) | 21 / 26 | Topic tooltips, 2026-09-27 | 22-23 / 26-28 | 22-25 / 25-28 |
+  | Oliviero (41091) | 30 / 31 | Topic tooltips, 2026-09-27 | 32-35 / 32-33 | 31-33 / 32-33 |
+  | George Fusto (41118) | 22-25 / 26-30 | Amity tracker dataset | 20-23 / 25-29 | 20-24 / 27-29 |
 
-  The seen ranges are shifted or narrower in both directions, so they settle neither reading.
-- The stored ranges change between client versions while the group IDs stay. Interest / favor in the extracted files: Amerigo (41013) 20-25 / 27-30 in the pre-2026-09-27 fixture and 22-24 / 26-30 in the 2026-09-27 client; Oliviero (41091) 32-35 / 32-33, then 31-33 / 32-33. Neither file matches the "Stored" column above, and Oliviero's in-game Interest 30 / Favor 31 falls outside both; which client the "Stored" figures were read from is open.
+  Ornella and the 2026-09-27 Amerigo reading fit, but Oliviero's and Cleia's current readings sit one or two below the current minimums, and Lorenzo's favor 15 is below both files. The tracker dataset comes from a wiki and may predate both files. An earlier version of this table listed a "Stored" column that matched neither fixture; it was replaced with values read from both files (2026-09-28).
 
 ## Open Questions
 
@@ -153,4 +156,4 @@ The per-group number matches the numbers the BDO wiki lists next to each interes
 
 ### Are the upper bounds inclusive?
 
-An earlier version of this doc called `interest_max` and `favor_max` exclusive (usable maximum one less than stored) without recorded evidence. Ornella's in-game favor reached `28`, her stored maximum, which argues against that, but the in-game and tracker ranges differ from the stored ones by more than one elsewhere (see Notes). How the displayed range is derived from the stored one is open.
+An earlier version of this doc called `interest_max` and `favor_max` exclusive (usable maximum one less than stored) without recorded evidence. Ornella's in-game favor reached `28`, her stored maximum in the pre-2026-09-27 fixture (`29` in client 3458), which argues against that, but other readings fall below the stored minimums (see Notes), so the stored range may not bound what the game rolls. How the displayed range is derived from the stored one is open.

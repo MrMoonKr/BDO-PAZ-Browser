@@ -73,7 +73,6 @@ class ItemEnchantHandler(PreviewHandler):
             Column(cols.get("item", "Item"), sort_key="item_name"),
             Column(cols.get("objectId", "Object ID"), "num", sort_key="character_id"),
             Column(cols.get("object", "Object"), sort_key="character_name"),
-            Column(cols.get("effectTag", "Effect Tag"), sort_key="effect_tag"),
         ]
 
     def sortable_fields(self) -> frozenset[str]:
@@ -132,7 +131,6 @@ class ItemEnchantHandler(PreviewHandler):
                 e(record.get("item_name") or record["item_id"]),
                 e(record["character_id"]) if record["character_id"] is not None else _EMPTY,
                 e(record["character_name"] or _EMPTY),
-                e(record["effect_tag"] or _EMPTY),
             ]
             for record in slice_
         ]

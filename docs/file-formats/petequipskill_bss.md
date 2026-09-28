@@ -36,7 +36,7 @@ Records begin immediately at `+0x04`.
 
 ### Section 1, Standard Pet Skills (43 × 12 bytes, offset `0x004`)
 
-Covers `equip_skill_id` 0–42 (regular pets). Stride = **12 bytes**.
+Covers `equip_skill_id` 0–42 (regular pets). Stride = **12 bytes**. The file stores no count: record `n` holds `equip_skill_id = n`, so the section ends at the first record whose ID is not its index, which is the first null placeholder (ID 200) of the slot table below. The parser finds the end this way, so a patch that adds Section 1 skills moves the null block and Section 2 without breaking the walk.
 
 | Offset  | Type | Field         | Notes                                          |
 | ------- | ---- | ------------- | ---------------------------------------------- |
@@ -70,7 +70,7 @@ Covers `equip_skill_id` 15–111 (Airiss and premium pets, plus overlap with Sec
 
 Earlier versions of this doc called `unknown_08` `tier`, `unknown_0c` `extra_flag` and `unknown_10` `extra_value`.
 
-The null block and Section 2 together are exactly 200 slots, from `0x208` up to the trailer's `data_end`, and every live Section 2 record sits at the slot whose index equals its `equip_skill_id` (slots `0`–`14` are the null block). Reading one extra u32 after each `unknown_0c = 1` record is what keeps that alignment and lands the last slot exactly on `data_end`.
+The null block and Section 2 together are exactly 200 slots, from `0x208` up to the trailer's `data_end`, and every live Section 2 record sits at the slot whose index equals its `equip_skill_id` (slots `0`–`14` are the null block). Reading one extra u32 after each `unknown_0c = 1` record is what keeps that alignment and lands the last slot exactly on `data_end`. The parser walks the null block and Section 2 as one table starting right after Section 1, and its `slot` field is the table index, so every record in both sections has `slot = equip_skill_id`.
 
 ---
 

@@ -47,7 +47,7 @@ CASE = HandlerCase(
                 "item_id",
                 "key_variant",
                 "icon_path",
-                "effect_tag",
+                "second_string",
                 "block_size",
                 "item_name",
                 "character_id",
@@ -67,7 +67,7 @@ CASE = HandlerCase(
                     f"{_ICON_ROOT}/03_etc/06_housing/"
                     "inhouse_cultivate_sea_clam_01_wall.dds"
                 ),
-                "effect_tag": "",
+                "second_string": "",
                 "character_id": 17026,
                 "character_name": "King Clam Wall Ornament",
             },

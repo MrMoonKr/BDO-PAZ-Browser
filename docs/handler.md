@@ -337,6 +337,7 @@ PAZ-Parser/
 │   ├── models.py             # HandlerCase, HandlerResult
 │   ├── runner.py             # run_case(), load_case()
 │   ├── fixtures.py           # auto-fetches test inputs
+│   ├── fixture_sync.py       # refreshes fixtures when the client changes
 │   └── fixtures/             # gitignored cached binaries
 └── handlers/
     └── _dbss/
@@ -396,9 +397,9 @@ new fields to a handler does not break existing tests.
 ### Tests Must Survive a Game Update
 
 A test fails only when the parser is wrong, never because a patch added,
-removed or rebalanced content. The fixtures are frozen copies today, but they
-get refreshed from the client, and a patch changes counts, file order and
-balance values while the layout stays the same. So assert what stays true:
+removed or rebalanced content. The fixtures are cached copies of the installed
+client and get refreshed when it is patched (see below), and a patch changes
+counts, file order and balance values while the layout stays the same. So assert what stays true:
 
 - **Structure and invariants.** Every record parses, the walk ends exactly at
   the end of the file or at the offset table's last byte, the row count equals
@@ -445,6 +446,33 @@ are fetched automatically:
 
 - PAZ files are extracted with `browser.py --file <name> --output PAZ-Parser/tests/fixtures`.
 - External files such as `languagedata_en.loc` are copied from the configured game folder.
+
+The cached fixtures follow the installed client. `.client_stamp.json` in the
+fixtures folder records which client they came from: the `.meta` header
+version and size, plus the size and modified time of `languagedata_en.loc`
+(it sits outside the PAZ folder, so the meta version does not cover it). At
+the start of every run the stamp is compared with the installed client, and
+when they differ every cached fixture is fetched again before any test runs:
+
+```text
+fixtures: refreshing 74 files (client 3457 -> client 3458)
+fixtures: up to date with client 3458
+```
+
+Each file is fetched into a staging folder and then replaces the cached copy,
+and the stamp is written only after every fetch succeeded. A failed fetch
+stops the run and keeps the old files and stamp, so the next run retries.
+Without a configured or reachable client the run uses the cached fixtures as
+they are and says so.
+
+| Option                | Effect                                                          |
+|-----------------------|-----------------------------------------------------------------|
+| (none)                | Refresh only when the installed client changed                  |
+| `--refresh-fixtures`  | Fetch every cached fixture again, even from the same client     |
+| `--frozen-fixtures`   | Skip the client check, use the cached files (compare snapshots) |
+
+Do not re-pin expected values to make a refreshed run pass; a failure after a
+refresh means the parser or the test assumed something a patch can change.
 
 The app must have a saved PAZ folder in `PAZ-Parser/paz_config.json`. Open a PAZ
 folder once in the GUI if test fixture fetching fails.
