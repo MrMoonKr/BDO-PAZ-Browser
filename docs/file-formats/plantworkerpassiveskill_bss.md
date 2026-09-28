@@ -31,7 +31,7 @@ All multi-byte values are little-endian unless noted otherwise.
 | Offset  | Type  | Field              | Notes                                                   |
 | ------- | ----- | ------------------ | ------------------------------------------------------- |
 | `+0x00` | u8[4] | magic              | `PABR` (ASCII)                                          |
-| `+0x04` | u32   | skill_record_count | Number of skill records; observed `72`                  |
+| `+0x04` | u32   | skill_record_count | Number of skill records; observed `72` (also in the 2026-09-27 client) |
 | `+0x08` | ...   | skill_records      | Usually `0x38` bytes each; one observed extended record |
 | varies  | u32   | string_count       | Number of string entries; observed `174`                |
 | varies  | ...   | string_table       | Length-prefixed UTF-16LE strings                        |
@@ -55,7 +55,7 @@ The fixed/extended skill-record block begins at `0x08` and the string table star
 | `+0x0C` | u32  | description_index  | Index into `string_table`; Korean effect description    |
 | `+0x10` | u32  | acquisition_weight | Observed values: `1000`, `1050`, `1400`, `2100`, `2500`, `2800` |
 | `+0x14` | u32  | zero_a             | Always observed as `0`                                  |
-| `+0x18` | u32  | effect_type        | Effect family; see Effect Types                         |
+| `+0x18` | u32  | effect_type        | `0` flat stats, `1` full refund, `2` stats per level up, `6` extra work; see Effect Types |
 | `+0x1C` | u32  | apply_mode         | Usually `7`; observed `0` for `skill_id=1012`           |
 | `+0x20` | u32  | apply_scope        | Always observed as `7`                                  |
 | `+0x24` | u32  | effect_type_copy   | Mirrors `effect_type` in many rows                      |
@@ -87,7 +87,7 @@ display_description = LOC type 22, str_id1=skill_id, str_id4=1; fallback inline_
 
 ## Effect Types
 
-### `effect_type = 0` - Direct Stat Or Work-Speed Modifier
+### `effect_type = 0` - Flat Stats
 
 Direct stat and work-speed effects. `effect_target` is `0` for generic stat modifiers such as movement speed, work speed, and luck. For named work-speed knowledge skills, `effect_target` identifies the work category.
 
@@ -114,11 +114,13 @@ Observed scaling:
 | Work Speed +N | `effect_value_a` | `N * 1000000` |
 | Luck +N | `effect_value_a` | `N * 10000` |
 
+`effect_value_b` selects the stat for every `effect_type = 0` record: `0` movement speed, `1` work speed, `2` luck (the same codes `effect_type = 2` uses in `effect_target`). The named work-speed skills (targets `1` to `13`) all store `1`. This holds for every record and matches every English description in the 2026-09-27 client.
+
 `skill_id=1012` combines two generic direct effects: the base record stores Movement Speed +7%, and the extra parameter block stores Work Speed +2.
 
-### `effect_type = 1` - Material Return Chance
+### `effect_type = 1` - Full Refund
 
-Material return effects. `effect_target` is the chance scaled by `1,000,000`. `effect_value_a` and `effect_value_b` describe returned material amount/type parameters.
+Material refund effects. `effect_target` is the chance scaled by `1,000,000`. `effect_value_a` is the share of the material refunded, on the same scale (`1000000` is a full refund). `effect_value_b` equals `effect_value_a` on every refund record in both clients (`100000` before the 2026-09-27 update, when the text read "10% of 1 Crafting Material", `1000000` after), so it is shown on the same scale; which of the two the game reads is not known.
 
 | Example Skill | Effect Target | Meaning | Effect Values |
 | ------------- | ------------- | ------- | ------------- |
@@ -129,7 +131,7 @@ Material return effects. `effect_target` is the chance scaled by `1,000,000`. `e
 | `2002` Unexpected Luck B | `3000` | Very low chance | `1000000`, `1000000` |
 | `2001` Unexpected Luck A | `5000` | Low chance | `1000000`, `1000000` |
 
-### `effect_type = 2` - Per-Level Stat Growth
+### `effect_type = 2` - Stats per Level Up
 
 Per-level stat growth effects. `effect_target` identifies the stat that grows on worker level-up.
 
@@ -139,7 +141,7 @@ Per-level stat growth effects. `effect_target` identifies the stat that grows on
 | `1` | Work speed | `1902` Craftsmanship | `200000` = Work Speed +0.2 per level |
 | `2` | Luck | `1903` Blessed Hand | `2000` = Luck +0.2 per level |
 
-### `effect_type = 6` - Extra/Repeat Work
+### `effect_type = 6` - Extra Work
 
 Extra-work effects. `effect_target` identifies the production category and `effect_value_a` is the extra work count.
 
@@ -197,16 +199,21 @@ The string table is a flat pool, not grouped records. Skill records choose any s
 | Name        | text | Prefer LOC type `22`; fall back to `inline_name` |
 | Description | text | Prefer LOC type `22`; fall back to `inline_description` |
 | Weight      | num  | `acquisition_weight`, right-aligned        |
-| Effect Type | num  | `effect_type`, right-aligned               |
-| Target      | num  | `effect_target`, right-aligned             |
-| Effect A    | num  | `effect_value_a`, right-aligned            |
-| Effect B    | num  | `effect_value_b`; dash when zero, stored as `None` so it sorts last |
+| Effect Type | text | `effect_type` by name: Flat Stats, Full Refund, Stats per Level Up, Extra Work; sorts by the number |
+| Target      | text | What the skill affects: the stat (`Work Speed`, `Move Speed`, `Luck`), with the work category for targets `1` to `13` (`Cannon/Siege Weapon Work Speed`); the production category for extra work (`Siege Weapons`); a dash for refunds, whose `effect_target` is the chance. Sorts by `effect_target` |
+| Effect A    | num  | How much: `+2` work speed, `+7%` movement speed, `+0.7` luck, `+0.2` per level, `+3` extra work; for refunds the chance (`effect_target`, `7000` is `0.7%`) |
+| Effect B    | num  | For refunds the share refunded (`effect_value_a`, `1000000` is `100%`); a dash for every other type. Sorts by `effect_value_b` |
+
+The shown values are scaled from the raw fields, which stay on the record for sorting and export. The stat names follow the `0`/`1`/`2` codes, which match every description. The category names are not stored anywhere found so far: they are the wording the skills' own English descriptions use for each target value (each value has exactly one wording), so a value not seen yet shows as its number. The targets are not keys of another table found so far: the workshop types in `houseinforeceipe.dbss` number the same work differently (jewelry `8`, tool `9`, refinery `10`, costume `18`), and its processing sub-types `30` to `34` come in a different order than the packing targets `9001` to `9006`.
 
 ---
 
 ## Notes
 
-- Observed file size is `13,090` bytes.
+- Observed file size is `13,090` bytes (2026-09-27 client: `13,294`).
+- The 2026-09-27 client retunes the Thrifty skills: `effect_target` `50000`/`70000`/`100000` became `7000`/`10000`/`15000` for C/B/A, both effect values `100000` became `1000000`, and Thrifty C now reads "0.7% Chance to Fully Refund One Material, Selected with Equal Probability". The tables above show the pre-2026-09-27 values.
+- BDO Codex lists every worker skill with Level `Naive` and Class `Warrior`. These look like the defaults for zero values (class `0` is Warrior), not data: no field in this record varies that way, and `zero_a` / `zero_b` are `0` on every skill.
+- `acquisition_weight` is most likely the weight for rolling the skill when a worker learns one; the game does not show it, so it cannot be checked in game.
 - The string table starts at `0xFD8`; the EOF trailer repeats this offset as `string_table_start`.
 - The string table contains `174` entries: names, icon paths, and descriptions in one shared pool.
 - Icon paths are UTF-16LE strings under `/New_UI_Common_forLua/Skill/WorkerSkill/`.
@@ -218,3 +225,16 @@ The string table is a flat pool, not grouped records. Skill records choose any s
 ### Extended `1012` Record
 
 `skill_id=1012` has an extra 16-byte parameter block before the next record. The extra values encode its Work Speed +2 effect, but the general rule that determines when this extension appears is not confirmed.
+
+### `effect_target` Is Not Fully Confirmed
+
+`effect_target` means something different per `effect_type`, and not every reading is equally backed (2026-09-27 client):
+
+| Reading | Evidence | Status |
+| ------- | -------- | ------ |
+| Refund chance (`effect_type = 1`) | All 6 refund skills match their text (`7000` is "0.7% Chance"), and the 2026-09-27 update changed value and text together (`50000`/`70000`/`100000` read 5/7/10% before, `7000`/`10000`/`15000` read 0.7/1/1.5% after) | Confirmed |
+| Stat code (`effect_type = 2`) | `0`/`1`/`2` match the stat named in all 4 descriptions, with the same codes `effect_value_b` uses for `effect_type = 0` | Confirmed |
+| Category key (`effect_type = 0` targets `1` to `13`, `effect_type = 6`) | Each value goes with exactly one category wording across 32 skills, including the paired `10xx`/`20xx` skills (`1009` and `2015` are both target `9`, both "Cannon/Siege Weapon") | Very likely |
+| Category names | Taken from those descriptions; no table in the client files found that names the keys (`houseinforeceipe.dbss` numbers workshops differently) | Not confirmed |
+
+Whether the client actually reads `effect_target` to decide which work gets the bonus, rather than the description being written separately, is not proven. An in-game check would settle it: a worker with Node Knowledge (`1011`, target `11`, "Node Work Speed +5") should get the +5 on node work only, not in a workshop.
