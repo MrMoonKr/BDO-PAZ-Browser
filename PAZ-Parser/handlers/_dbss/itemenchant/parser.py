@@ -9,11 +9,10 @@ _OFFSET_HEADER_SIZE = 8
 _OFFSET_ROW_SIZE = 12
 _TRAILER_SIZE = 12
 
-# key = (variant << 24) | item_id. Variant 0 is the base item and there is
-# exactly one per item ID. What the non-zero variants mean is unconfirmed: the
-# observed range 0-25 is wider than BDO's visible enchant levels.
+# key = (enchant_level << 24) | item_id. Level 0 is the base item and there is
+# exactly one per item ID; an item has one record per level up to its maximum.
 _ITEM_ID_MASK = 0x00FFFFFF
-_KEY_VARIANT_SHIFT = 24
+_ENCHANT_LEVEL_SHIFT = 24
 
 # Stored icon paths are relative to this folder.
 ICON_ROOT = "ui_texture/icon/"
@@ -43,7 +42,7 @@ def parse_itemenchantoffset_records(data: bytes) -> list[dict]:
         records.append({
             "key": key,
             "item_id": key & _ITEM_ID_MASK,
-            "key_variant": key >> _KEY_VARIANT_SHIFT,
+            "enchant_level": key >> _ENCHANT_LEVEL_SHIFT,
             "data_offset": u32(data, pos + 0x04),
             "data_size": u32(data, pos + 0x08),
         })
@@ -51,15 +50,31 @@ def parse_itemenchantoffset_records(data: bytes) -> list[dict]:
     return records
 
 
-def parse_itemenchant_records(data: bytes, offset_data: bytes) -> list[dict]:
-    """Parse one row per (item, key variant), carrying the inline icon path.
+def max_enchant_levels(offset_rows: list[dict]) -> dict[int, int]:
+    """Map item ID to its highest enchant level; 0 when it cannot be enhanced."""
+    levels: dict[int, int] = {}
+    for row in offset_rows:
+        item_id = row["item_id"]
+        levels[item_id] = max(levels.get(item_id, 0), row["enchant_level"])
+    return levels
 
-    The first string in a block is always the icon path; what the optional
-    second string (e.g. `ITEM_BIC_HIT_1`) means is unconfirmed.
+
+def parse_itemenchant_records(data: bytes, offset_data: bytes) -> list[dict]:
+    """Parse one row per item from its level-0 block, with its highest level.
+
+    Higher levels repeat the base item's icon, and what else differs per level
+    is not decoded, so they only contribute `max_enchant_level`. The first
+    string in a block is always the icon path; what the optional second string
+    (e.g. `ITEM_BIC_HIT_1`) means is unconfirmed.
     """
+    offset_rows = parse_itemenchantoffset_records(offset_data)
+    max_levels = max_enchant_levels(offset_rows)
     records: list[dict] = []
 
-    for row in parse_itemenchantoffset_records(offset_data):
+    for row in offset_rows:
+        if row["enchant_level"]:
+            continue
+
         start = row["data_offset"]
         end = start + row["data_size"]
         if end > len(data):
@@ -72,7 +87,7 @@ def parse_itemenchant_records(data: bytes, offset_data: bytes) -> list[dict]:
         icon = strings[0] if strings else ""
         records.append({
             "item_id": row["item_id"],
-            "key_variant": row["key_variant"],
+            "max_enchant_level": max_levels[row["item_id"]],
             "icon_path": f"{ICON_ROOT}{icon.lower()}" if icon else "",
             "character_id": u16(data, start + _CHARACTER_ID),
             "second_string": strings[1] if len(strings) > 1 else "",
@@ -83,15 +98,15 @@ def parse_itemenchant_records(data: bytes, offset_data: bytes) -> list[dict]:
 
 
 def build_item_icon_index(data: bytes, offset_data: bytes) -> dict[int, str]:
-    """Map item ID to icon path using only the variant-0 (base item) records.
+    """Map item ID to icon path using only the level-0 (base item) records.
 
-    Non-zero variants repeat the base item's icon, so skipping them cuts the
+    Higher levels repeat the base item's icon, so skipping them cuts the
     work to a third without losing an entry.
     """
     index: dict[int, str] = {}
 
     for row in parse_itemenchantoffset_records(offset_data):
-        if row["key_variant"]:
+        if row["enchant_level"]:
             continue
 
         start = row["data_offset"]
@@ -109,14 +124,14 @@ def build_item_icon_index(data: bytes, offset_data: bytes) -> dict[int, str]:
 def build_character_item_index(data: bytes, offset_data: bytes) -> dict[int, int]:
     """Map character ID to the one base item that places or summons it.
 
-    Only variant-0 records are read. A character named by more than one item is
+    Only level-0 records are read. A character named by more than one item is
     left out, because the value is then not a link: character 1 is named by 120
     unrelated items, and the few others with two or more have no single icon.
     """
     items_by_character: dict[int, list[int]] = {}
 
     for row in parse_itemenchantoffset_records(offset_data):
-        if row["key_variant"]:
+        if row["enchant_level"]:
             continue
 
         start = row["data_offset"]

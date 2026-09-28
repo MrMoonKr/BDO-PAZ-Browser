@@ -7,6 +7,7 @@ from typing import Any
 import pytest
 
 from tests.framework import (
+    CaseInput,
     DeclaredCountTest,
     HandlerCase,
     HandlerResult,
@@ -14,7 +15,6 @@ from tests.framework import (
     SchemaTest,
     TargetTest,
     case_id,
-    header_count,
     run_case,
 )
 
@@ -27,11 +27,31 @@ _KING_CLAM = 24626
 _EVENT_FENCE = 58011
 _EVENT_FENCE_CHARACTER = 2053
 _WEAPON = 697192
-# The key packs the item ID into its low 24 bits and the key variant above them.
+# Kzarka Gauntlet enhances +1 to +15, then PRI to PEN: levels 1-20.
+_KZARKA_GAUNTLET = 11210
+_PEN = 20
+# The key packs the item ID into its low 24 bits and the enchant level above them.
 _MAX_ITEM_ID = 0xFFFFFF
 _OFFSET_HEADER_SIZE = 8
 _OFFSET_ROW_SIZE = 12
-_KEY_VARIANT_SHIFT = 24
+_ENCHANT_LEVEL_SHIFT = 24
+_OFFSET_FILE = "itemenchantoffset.dbss"
+
+
+def _base_item_count(offsets: bytes) -> int:
+    """Offset rows with enchant level 0: one per item."""
+    (count,) = struct.unpack_from("<I", offsets, 4)
+    return sum(
+        1
+        for row in range(count)
+        if not struct.unpack_from("<I", offsets, _OFFSET_HEADER_SIZE + row * _OFFSET_ROW_SIZE)[0]
+        >> _ENCHANT_LEVEL_SHIFT
+    )
+
+
+def _declared_items(source: CaseInput) -> int:
+    return _base_item_count(source.file(_OFFSET_FILE))
+
 
 CASE = HandlerCase(
     handler_name="itemenchant.dbss",
@@ -45,7 +65,7 @@ CASE = HandlerCase(
         SchemaTest(
             required_keys=[
                 "item_id",
-                "key_variant",
+                "max_enchant_level",
                 "icon_path",
                 "second_string",
                 "block_size",
@@ -54,14 +74,14 @@ CASE = HandlerCase(
                 "character_name",
             ],
         ),
-        DeclaredCountTest(declared=header_count()),
+        DeclaredCountTest(declared=_declared_items),
         RangeTest(col="item_id", min_val=1, max_val=_MAX_ITEM_ID),
         # The furniture case: icon path comes from the block, not the item ID.
         TargetTest(
             col="item_id",
             value=_KING_CLAM,
             expected={
-                "key_variant": 0,
+                "max_enchant_level": 0,
                 "item_name": "King Clam Wall Ornament",
                 "icon_path": (
                     f"{_ICON_ROOT}/03_etc/06_housing/"
@@ -76,7 +96,7 @@ CASE = HandlerCase(
             col="item_id",
             value=_EVENT_FENCE,
             expected={
-                "key_variant": 0,
+                "max_enchant_level": 0,
                 "character_id": _EVENT_FENCE_CHARACTER,
                 "character_name": "[Event] Fence",
             },
@@ -86,6 +106,11 @@ CASE = HandlerCase(
             col="item_id",
             value=_WEAPON,
             expected={"character_id": None, "character_name": ""},
+        ),
+        TargetTest(
+            col="item_id",
+            value=_KZARKA_GAUNTLET,
+            expected={"max_enchant_level": _PEN, "item_name": "Kzarka Gauntlet"},
         ),
     ],
 )
@@ -119,15 +144,8 @@ def test_build_item_icon_index_covers_the_furniture_case() -> None:
         paths["itemenchantoffset.dbss"].read_bytes(),
     )
 
-    # One entry per variant-0 record, not one per key variant.
-    offsets = paths["itemenchantoffset.dbss"].read_bytes()
-    (count,) = struct.unpack_from("<I", offsets, 4)
-    base_items = sum(
-        1
-        for row in range(count)
-        if not struct.unpack_from("<I", offsets, _OFFSET_HEADER_SIZE + row * _OFFSET_ROW_SIZE)[0]
-        >> _KEY_VARIANT_SHIFT
-    )
+    # One entry per level-0 record, not one per enchant level.
+    base_items = _base_item_count(paths[_OFFSET_FILE].read_bytes())
     assert len(index) == base_items
     assert index[_KING_CLAM] == (
         f"{_ICON_ROOT}/03_etc/06_housing/"

@@ -29,6 +29,7 @@ class ItemEnchantOffsetHandler(PreviewHandler):
         cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
         return [
             Column(cols.get("itemId", "Item ID"), "num", sort_key="item_id"),
+            Column(cols.get("enchantLevel", "Enchant Level"), "num", sort_key="enchant_level"),
             Column(cols.get("dataOffset", "Data Offset"), "num", sort_key="data_offset"),
             Column(cols.get("dataSize", "Data Size"), "num", sort_key="data_size"),
         ]
@@ -56,6 +57,7 @@ class ItemEnchantOffsetHandler(PreviewHandler):
         rows = [
             [
                 e(record["item_id"]),
+                e(record["enchant_level"]),
                 e(f"0x{record['data_offset']:08X}"),
                 e(f"{record['data_size']:,}"),
             ]
@@ -71,6 +73,7 @@ class ItemEnchantHandler(PreviewHandler):
             Column(cols.get("itemId", "Item ID"), "num", sort_key="item_id"),
             Column(cols.get("icon", "Icon"), sort_key="icon_path"),
             Column(cols.get("item", "Item"), sort_key="item_name"),
+            Column(cols.get("maxLevel", "Max Level"), "num", sort_key="max_enchant_level"),
             Column(cols.get("objectId", "Object ID"), "num", sort_key="character_id"),
             Column(cols.get("object", "Object"), sort_key="character_name"),
         ]
@@ -117,8 +120,8 @@ class ItemEnchantHandler(PreviewHandler):
     ) -> str:
         start = page * page_size
         slice_ = records[start : start + page_size]
-        items = len({record["item_id"] for record in records})
-        meta = f"{len(records):,} records across {items:,} items"
+        enhanceable = sum(1 for record in records if record["max_enchant_level"])
+        meta = f"{len(records):,} items · {enhanceable:,} enhanceable"
 
         with_icon = sum(1 for record in records if record["icon_path"])
         if with_icon:
@@ -129,6 +132,7 @@ class ItemEnchantHandler(PreviewHandler):
                 e(record["item_id"]),
                 icon_cell(record["icon_path"]) if record["icon_path"] else _EMPTY,
                 e(record.get("item_name") or record["item_id"]),
+                e(record["max_enchant_level"]),
                 e(record["character_id"]) if record["character_id"] is not None else _EMPTY,
                 e(record["character_name"] or _EMPTY),
             ]

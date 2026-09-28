@@ -3,11 +3,13 @@
     "itemId": "Item ID",
     "icon": "Icon",
     "item": "Item",
+    "maxLevel": "Max Level",
     "objectId": "Object ID",
     "object": "Object"
   },
   "offsetColumns": {
     "itemId": "Item ID",
+    "enchantLevel": "Enchant Level",
     "dataOffset": "Data Offset",
     "dataSize": "Data Size"
   }

@@ -86,25 +86,35 @@ The same trailer shape used by
 ## Key Packing
 
 ```text
-key = (key_variant << 24) | item_id
+key = (enchant_level << 24) | item_id
 ```
 
-| Field       | Bits   | Observed range |
-| ----------- | ------ | -------------- |
-| key_variant | 31..24 | 0-25           |
-| item_id     | 23..0  | 1-1,000,827 (1-1,000,841 after 2026-09-27) |
+| Field         | Bits   | Observed range |
+| ------------- | ------ | -------------- |
+| enchant_level | 31..24 | 0-25           |
+| item_id       | 23..0  | 1-1,000,827 (1-1,000,841 after 2026-09-27) |
 
 The low 24 bits are confirmed item IDs: 69,292 of them match a name in
-`languagedata_en.loc`. **What the high byte means is not confirmed.** Variant `0`
-is the base item, with exactly one record per item ID, which is all the icon
-index needs.
+`languagedata_en.loc`. The high byte is the enhancement level. Every item has
+one record per level from `0` up to its maximum, with no gaps, and the maximum
+matches the item's enhancement range in game. Level `0` is the base item, which
+is all the icon index needs. Earlier versions of this doc called the field
+`key_variant`, because 25 looked wider than BDO's enhancement range.
 
-| Key group     | Rows    | Meaning                     |
-| ------------- | ------- | --------------------------- |
-| variant 0     | 69,954  | One per base item           |
-| variants 1-25 | 100,011 | Unconfirmed, see the open question |
+Per-item maximum on the 2026-09-27 client, checked in game (2026-09-28):
 
-Row counts are from the pre-2026-09-27 fixture. The 2026-09-27 client has 70,284 variant-0 rows and 100,038 rows with variants 1-25; the variant range is still 0-25.
+| Max | Items  | Example                                   | In game                     |
+| --- | ------ | ----------------------------------------- | --------------------------- |
+| 0   | 60,873 | Non-enhanceable items                     | -                           |
+| 1   | 4,147  | Basteer Longsword (10011); 4,093 of them are Pearl Shop outfit tops (`09_Cash/01_Equip/03_Upperbody` icons) | Basteer: enhanceable, "※ Enhancement is available by using only Black Stone (Basteer)."; the level count is not shown |
+| 2   | 2      | Sealed Spirit's Earring (11826)           | +1 to +2                    |
+| 3   | 4      | Tears of the Wind Necklace (11654)        | +1 to +3                    |
+| 5   | 251    | Deboreka Earring (11882), Sicil's Necklace (11625) | +1 to +5 (PRI to PEN) |
+| 7   | 50     | Ultimate Basteer Longsword (10070)        | +1 to +7                    |
+| 10  | 518    | Kharazad Necklace (11697), Sovereign Scythe (747402) | +1 to +10        |
+| 15  | 105    | Adventurer's Longsword (10073)            | +1 to +15                   |
+| 20  | 4,167  | Kzarka Gauntlet (11210), Blackstar Greatsword (731101) | +1 to +15, then PRI to PEN |
+| 25  | 167    | Tuvala Helmet (695105), Tuvala Noble Sword (695135) | +1 to +15, PRI to PEN, then VI to X |
 
 ---
 
@@ -172,9 +182,9 @@ Values 11 to 20 also occur (1,092 items) and are unnamed. Every one of the
 
 ### Placed or summoned character
 
-`character_id` sits in the fixed numeric part: in every base-item (variant 0) block the first string starts at `+0xB4` (180) or later, and every block is at least 693 bytes long.
+`character_id` sits in the fixed numeric part: in every base-item (level 0) block the first string starts at `+0xB4` (180) or later, and every block is at least 693 bytes long.
 
-| Measure (variant-0 blocks)                       | Value |
+| Measure (level-0 blocks)                         | Value |
 | ------------------------------------------------ | ----: |
 | Characters named by at least one item            | 5,095 |
 | ... that have a `characterobject.dbss` record    | 3,960 |
@@ -243,11 +253,14 @@ only approach that covers items whose icon is named after a 3D asset
 
 ## Suggested UI Layout
 
+One row per item, read from its level-0 block. Higher levels only feed Max Level: they repeat the icon, and nothing else in them is decoded yet. The offset table keeps one row per key, with an Enchant Level column.
+
 | Column        | Type | Notes                                             |
 | ------------- | ---- | ------------------------------------------------- |
 | Item ID       | num  | `item_id` from the key                            |
 | Icon          | text | First block string, prefixed `ui_texture/icon/`   |
 | Item          | text | LOC `str_type=0`, `str_id1=item_id`               |
+| Max Level     | num  | Highest `enchant_level` among the item's keys; `0` when it cannot be enhanced |
 | Object ID     | num  | `character_id` of the placed object or summoned pet; dash when `0` |
 | Object        | text | LOC `str_type=6`, `str_id1=character_id`          |
 
@@ -299,13 +312,3 @@ offset, so it cannot be named `unknown_<offset>`) looks like an effect or sound 
 other tag families exist, is unconfirmed. Earlier versions called it
 `effect_tag` and showed it as an Effect Tag column; it stays on the record for
 search and CSV but is no longer shown.
-
-### Key Variant Meaning
-
-The high byte of the key runs 0-25. It was first read as an enchant level, since
-the file is named `itemenchant`, but that does not hold up: BDO's visible
-enchant range is narrower than 25, and the values do not line up with enchant
-levels in the app. Whether the byte is an enchant step, a different upgrade
-track, a variant index, or something else is unresolved, so the field is named
-`key_variant` and is not displayed. Variant `0` is reliably the base item, which
-is the only property the icon index depends on.
