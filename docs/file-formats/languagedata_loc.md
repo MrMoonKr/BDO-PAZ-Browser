@@ -77,7 +77,7 @@ are `str_id2 | str_id3 << 16`. Their `key0` is `str_type` and their `id` is
 | 25       | Quest chain/group names, `str_id1` = chain/group ID (matches `questgroup.dbss` group_id)   |
 | 29       | Town/node names, `str_id1` = node_id from `planttown.bss`; `str_id4` selects sub-field     |
 | 34       | Knowledge card text, `str_id1` = `mentalcard.dbss` card_id; see Type 34 below              |
-| 37       | UI string sheets, `str_id1` = 32-bit hash-like key; see Type 37 below                      |
+| 37       | UI string sheets, `str_id1` = `stringtable.bss` key hash; see Type 37 below                |
 | 38       | Other systems                                                                              |
 | 39       | Audio voice lines                                                                          |
 | 44       | Central Market categories, `str_id1` = main category; see Type 44 below                    |
@@ -430,12 +430,25 @@ description and acquisition strings.
 
 ### Type 37, UI string sheets
 
-Type 37 holds 54,094 UI strings. `str_id1` is a 32-bit hash-like key (68,470
-to 4,294,947,966), not a table ID, and `str_id4` is always `0`. `str_id2`
-(`0` to `7`) and `str_id3` (`0` or `1`) group the strings: `str_id2=1` holds
-general UI labels (`"Hire"`, `"Booking Status (Server Time)"`), `str_id2=0`
-and `str_id2=3` hold dialogue-like lines (`"Good! You didn't forget how to
-hold a gun!"`), and `str_id3=1, str_id2=5` holds embedded video URLs.
+Type 37 holds 54,094 UI strings, the translations of
+[`stringtable.bss`](stringtable_bss.md). `str_id1` is the hash of the string
+key (`LUA_WIDGET_TOWNNPCNAVI_NPCTYPETEXT_6` -> `0x4D282741`), which
+`stringtable.bss` stores next to each key. `str_id2` is the sheet the key sits
+in:
+
+| str_id2 | Sheet         | Holds                                   |
+| ------- | ------------- | --------------------------------------- |
+| 0       | `CUTSCENE`    | Cutscene subtitles                      |
+| 1       | `GAME`        | Lua UI strings, labels and tooltips     |
+| 2       | `RESOURCE`    | UI panel resources                      |
+| 3       | `ACTIONCHART` | Speech bubbles and action lines         |
+| 4       | `TOOL`        | Enum labels                             |
+| 5       | `WEB`         | In-game web page strings                |
+| 6       | `SymbolNo`    | Server error and result messages        |
+| 7       | `IMAGESLIDE`  | Image slide subtitles                   |
+
+`str_id3` is `0`, or `1` for a second variant of the key (352 rows, mostly
+regional URLs and date lines); `str_id4` is always `0`.
 `titlebufflist.dbss` uses this type for its tooltip text.
 
 ### Type 44, Central Market categories
@@ -560,13 +573,6 @@ while groups `11` to `15`, `16` to `20` and `300` to `302` repeat one message
 (`Olivia`, `Elixir of Old Memory`, `Study: Farmer Drunk on the Scent of Grapes`)
 with different lore text. That pattern suggests quest or dialogue scripts pick
 the message by group and index.
-
-### Type 37 sheet names
-
-bdo-data-extractor names the type 37 groups as compiled UI string sheets
-(`GAME`, `RESOURCE`, `ACTIONCHART` and others). Our data shows the `str_id2` and
-`str_id3` grouping but no sheet names, so which value is which sheet is not
-confirmed.
 
 ### Type 123 key
 

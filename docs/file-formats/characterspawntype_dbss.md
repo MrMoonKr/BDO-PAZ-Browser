@@ -46,54 +46,56 @@ All multi-byte values are little-endian.
 
 Names come from `CppEnums.SpawnType` in `luacscript/x64/include/global_define_cpp_enum.luac`, in the client's spelling without the `eSpawnType_` prefix. The enum has no name for value `41`, although one record sets it. Counts and examples are from the pre-2026-09-27 fixture.
 
-| Value | Offset  | SpawnType | Records | Example |
-| ----: | ------- | --------- | ------: | ------- |
-| 0 | `+0x02` | `NormalNpc` | 21,561 | Weakkebi (`47183`) |
-| 1 | `+0x03` | `SkillTrainer` | 52 | Valks (`47653`) |
-| 2 | `+0x04` | `ItemRepairer` | 255 | Alper (`47659`) |
-| 3 | `+0x05` | `ShopMerchant` | 299 | Jackson (`47727`) |
-| 4 | `+0x06` | `ImportantNpc` | 2,272 | Edania Merchant (`47759`) |
-| 5 | `+0x07` | `TradeMerchant` | 124 | Roig Mills (`47651`) |
-| 6 | `+0x08` | `WareHouse` | 33 | Erdin (`47665`) |
-| 7 | `+0x09` | `Stable` | 91 | Alper (`47659`) |
-| 8 | `+0x0A` | `Wharf` | 38 | Akin (`47670`) |
-| 9 | `+0x0B` | `Transfer` | 31 | Erdin (`47665`) |
-| 10 | `+0x0C` | `Intimacy` | 2,145 | Jackson (`47727`) |
-| 11 | `+0x0D` | `Guild` | 16 | Selim (`47666`) |
-| 12 | `+0x0E` | `Explorer` | 494 | Zaid (`47741`) |
-| 13 | `+0x0F` | `Inn` | 0 |  |
-| 14 | `+0x10` | `Auction` | 38 | Taner (`47657`) |
-| 15 | `+0x11` | `Mating` | 45 | Alper (`47659`) |
-| 16 | `+0x12` | `Potion` | 141 | Eileen (`47649`) |
-| 17 | `+0x13` | `Weapon` | 99 | Ferit (`47658`) |
-| 18 | `+0x14` | `Jewel` | 15 | Emet (`47662`) |
-| 19 | `+0x15` | `Furniture` | 38 | Ergin (`47656`) |
-| 20 | `+0x16` | `Collect` | 58 | Daon (`47301`) |
-| 21 | `+0x17` | `Fish` | 37 | Akin (`47670`) |
-| 22 | `+0x18` | `Worker` | 30 | Serdar (`47671`) |
-| 23 | `+0x19` | `Alchemy` | 0 |  |
-| 24 | `+0x1A` | `GuildShop` | 59 | Zafer (`47661`) |
-| 25 | `+0x1B` | `ItemMarket` | 21 | Taner (`47657`) |
-| 26 | `+0x1C` | `TerritorySupply` | 7 | Heira (`46010`) |
-| 27 | `+0x1D` | `TerritoryTrade` | 0 |  |
-| 28 | `+0x1E` | `Smuggle` | 0 |  |
-| 29 | `+0x1F` | `Cook` | 34 | Vargas (`47740`) |
-| 30 | `+0x20` | `PC` | 0 |  |
-| 31 | `+0x21` | `Grocery` | 79 | Alper (`47659`) |
-| 32 | `+0x22` | `RandomShop` | 22 | Patrigio (`47673`) |
-| 33 | `+0x23` | `SupplyShop` | 12 | Faruk (`47663`) |
-| 34 | `+0x24` | `RandomShopDay` | 10 | Morco (`47466`) |
-| 35 | `+0x25` | `FishSupplyShop` | 12 | Burak (`47668`) |
-| 36 | `+0x26` | `GuildSupplyShop` | 0 |  |
-| 37 | `+0x27` | `GuildStable` | 17 | Zafer (`47661`) |
-| 38 | `+0x28` | `GuildWharf` | 19 | Vedat (`47669`) |
-| 39 | `+0x29` | `PcRoomStable` | 0 |  |
-| 40 | `+0x2A` | `Instrument` | 4 | Artina (`59267`) |
-| 41 | `+0x2B` | `Unknown41` | 1 | Miles (`59279`), the Grand Prix quest giver |
-| 42 | `+0x2C` | `TraningVehicleShop` | 9 | Hiznak (`47022`) |
-| 43 | `+0x2D` | `AbyssOneEnterPosGuide` | 15 | The Magnus Entrance - Well (`61263`) |
-| 44 | `+0x2E` | `ChangeMarniStone` | 1 | Wacky Toshi (`44638`) |
-| 45 | `+0x2F` | `ChurchBuff` | 21 | Edania Merchant (`47766`) |
+The Navi label is the text the town NPC navigation widget shows for the role: `luacscript/x64/widget/townnpcnavi/panel_widget_townnpcnavi.luac` builds its label table as `SpawnType.<name>` -> `PAGetString(Defines.StringSheet_GAME, "LUA_WIDGET_TOWNNPCNAVI_NPCTYPETEXT_<n>")`, read from the Lua 5.1 bytecode on client 3458. The column shows `_<n>` and its English LOC text (type `37`, see [`stringtable.bss`](stringtable_bss.md)). 35 values have a label; values 1 to 32 use their own number, `SupplyShop` uses `_39`, `RandomShopDay` `_34` and `Instrument` `_35`. The widget uses no key for the rest, and keys `_33`, `_36`, `_37` and `_38` (Delivery, Black Spirit's Training, Abyssal Well, Silver (Church) Buffs) are not in its table.
+
+| Value | Offset  | SpawnType | Navi label | Records | Example |
+| ----: | ------- | --------- | ---------- | ------: | ------- |
+| 0 | `+0x02` | `NormalNpc` |  | 21,561 | Weakkebi (`47183`) |
+| 1 | `+0x03` | `SkillTrainer` | `_1` Skill Instructor | 52 | Valks (`47653`) |
+| 2 | `+0x04` | `ItemRepairer` | `_2` Repair | 255 | Alper (`47659`) |
+| 3 | `+0x05` | `ShopMerchant` | `_3` General Shop | 299 | Jackson (`47727`) |
+| 4 | `+0x06` | `ImportantNpc` | `_4` Important Conversation | 2,272 | Edania Merchant (`47759`) |
+| 5 | `+0x07` | `TradeMerchant` | `_5` Trade Manager | 124 | Roig Mills (`47651`) |
+| 6 | `+0x08` | `WareHouse` | `_6` Storage | 33 | Erdin (`47665`) |
+| 7 | `+0x09` | `Stable` | `_7` Stable | 91 | Alper (`47659`) |
+| 8 | `+0x0A` | `Wharf` | `_8` Wharf | 38 | Akin (`47670`) |
+| 9 | `+0x0B` | `Transfer` | `_9` Transport | 31 | Erdin (`47665`) |
+| 10 | `+0x0C` | `Intimacy` | `_10` Conversation | 2,145 | Jackson (`47727`) |
+| 11 | `+0x0D` | `Guild` | `_11` Guild | 16 | Selim (`47666`) |
+| 12 | `+0x0E` | `Explorer` | `_12` Exploration | 494 | Zaid (`47741`) |
+| 13 | `+0x0F` | `Inn` | `_13` Inn | 0 |  |
+| 14 | `+0x10` | `Auction` | `_14` Auction | 38 | Taner (`47657`) |
+| 15 | `+0x11` | `Mating` | `_15` Merchant | 45 | Alper (`47659`) |
+| 16 | `+0x12` | `Potion` | `_16` General Goods | 141 | Eileen (`47649`) |
+| 17 | `+0x13` | `Weapon` | `_17` Weapons/Armor | 99 | Ferit (`47658`) |
+| 18 | `+0x14` | `Jewel` | `_18` Jeweler | 15 | Emet (`47662`) |
+| 19 | `+0x15` | `Furniture` | `_19` Furniture | 38 | Ergin (`47656`) |
+| 20 | `+0x16` | `Collect` | `_20` Material | 58 | Daon (`47301`) |
+| 21 | `+0x17` | `Fish` | `_21` Fishing Vendor | 37 | Akin (`47670`) |
+| 22 | `+0x18` | `Worker` | `_22` Work Supervisor | 30 | Serdar (`47671`) |
+| 23 | `+0x19` | `Alchemy` | `_23` Alchemist | 0 |  |
+| 24 | `+0x1A` | `GuildShop` | `_24` Guild Shop | 59 | Zafer (`47661`) |
+| 25 | `+0x1B` | `ItemMarket` | `_25` Central Market | 21 | Taner (`47657`) |
+| 26 | `+0x1C` | `TerritorySupply` | `_26` Imperial Delivery | 7 | Heira (`46010`) |
+| 27 | `+0x1D` | `TerritoryTrade` | `_27` Imperial Trading | 0 |  |
+| 28 | `+0x1E` | `Smuggle` | `_28` Smuggle | 0 |  |
+| 29 | `+0x1F` | `Cook` | `_29` Cooking | 34 | Vargas (`47740`) |
+| 30 | `+0x20` | `PC` | `_30` Oasis Vendor | 0 |  |
+| 31 | `+0x21` | `Grocery` | `_31` Stable Merchant | 79 | Alper (`47659`) |
+| 32 | `+0x22` | `RandomShop` | `_32` Random Shop | 22 | Patrigio (`47673`) |
+| 33 | `+0x23` | `SupplyShop` | `_39` Imperial Crafting Delivery | 12 | Faruk (`47663`) |
+| 34 | `+0x24` | `RandomShopDay` | `_34` Random Shop | 10 | Morco (`47466`) |
+| 35 | `+0x25` | `FishSupplyShop` |  | 12 | Burak (`47668`) |
+| 36 | `+0x26` | `GuildSupplyShop` |  | 0 |  |
+| 37 | `+0x27` | `GuildStable` |  | 17 | Zafer (`47661`) |
+| 38 | `+0x28` | `GuildWharf` |  | 19 | Vedat (`47669`) |
+| 39 | `+0x29` | `PcRoomStable` |  | 0 |  |
+| 40 | `+0x2A` | `Instrument` | `_35` Instruments | 4 | Artina (`59267`) |
+| 41 | `+0x2B` | `Unknown41` |  | 1 | Miles (`59279`), the Grand Prix quest giver |
+| 42 | `+0x2C` | `TraningVehicleShop` |  | 9 | Hiznak (`47022`) |
+| 43 | `+0x2D` | `AbyssOneEnterPosGuide` |  | 15 | The Magnus Entrance - Well (`61263`) |
+| 44 | `+0x2E` | `ChangeMarniStone` |  | 1 | Wacky Toshi (`44638`) |
+| 45 | `+0x2F` | `ChurchBuff` |  | 21 | Edania Merchant (`47766`) |
 
 Checked in game: Wacky Toshi (`ChangeMarniStone`) exchanges Marni stones, and Miles (value `41`) hands out the Grand Prix quests, `[Daily] Grand Prix, Become the Best` (4549/11) and `[Weekly] Old Moon Grand Prix, Rider of Honor` (4549/10).
 
