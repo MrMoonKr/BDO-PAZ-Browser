@@ -9,7 +9,8 @@ from _common.html import Column, e, icon_cell, join_limited, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_text
 from _common.lookup_index import IndexKind, lookup
-from .parser import parse_mentalcard_offset_records, parse_mentalcard_records
+from .combo import combo_text, has_combo
+from .parser import MentalCardRecord, parse_mentalcard_offset_records, parse_mentalcard_records
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
@@ -28,6 +29,19 @@ def _position_text(position: tuple[float, float, float]) -> str:
     if not any(position):
         return ""
     return ", ".join(str(round(axis)) for axis in position)
+
+
+def _combo_fields(record: MentalCardRecord) -> dict:
+    """Raw combo values and the tooltip text; all `None` without a combo, so they sort last."""
+    if not has_combo(record):
+        return {"combo_text": None, "buff_type": None, "combo_value": None, "valid_turn": None, "apply_turn": None}
+    return {
+        "combo_text": combo_text(record),
+        "buff_type": record.buff_type,
+        "combo_value": round(record.varied_value),
+        "valid_turn": record.valid_turn,
+        "apply_turn": record.apply_turn,
+    }
 
 
 def _learned_from(card_id: int, has_loc: bool) -> list[str]:
@@ -67,7 +81,7 @@ class MentalCardOffsetHandler(PreviewHandler):
         companions: dict[str, bytes],
     ) -> list[dict]:
         return [
-            {"card_id": row.card_id, "dbss_offset": row.offset, "size": row.size}
+            {"card_id": row.entry_id, "dbss_offset": row.offset, "size": row.size}
             for row in parse_mentalcard_offset_records(data)
         ]
 
@@ -99,6 +113,7 @@ class MentalCardHandler(PreviewHandler):
             Column(cols.get("minFavor", "Min Favor"), "num", sort_key="min_favor"),
             Column(cols.get("maxFavor", "Max Favor"), "num", sort_key="max_favor"),
             Column(cols.get("interest", "Interest"), "num", sort_key="interest"),
+            Column(cols.get("combo", "Combo"), sort_key="combo_text"),
             Column(cols.get("obtain", "Obtain"), sort_key="obtain"),
             Column(cols.get("learnedFrom", "Learned From")),
             Column(cols.get("position", "Position")),
@@ -134,6 +149,7 @@ class MentalCardHandler(PreviewHandler):
                 "min_favor": round(record.min_favor),
                 "max_favor": round(record.max_favor),
                 "interest": round(record.interest),
+                **_combo_fields(record),
                 "icon_path": record.icon_path,
                 "obtain": (
                     loc_text(_LOC_KNOWLEDGE, record.card_id, _LOC_ACQUISITION) if has_loc else ""
@@ -168,6 +184,7 @@ class MentalCardHandler(PreviewHandler):
                 e(r["min_favor"]),
                 e(r["max_favor"]),
                 e(r["interest"]),
+                e(r["combo_text"] or _EMPTY),
                 e(r["obtain"] or _EMPTY),
                 e(join_limited(r["learned_from"], _LIST_PREVIEW_ITEMS) or _EMPTY),
                 e(r["position_text"] or _EMPTY),

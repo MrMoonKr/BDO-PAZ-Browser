@@ -2,7 +2,7 @@
 
 Each book record is self-describing:
 
-    u32 journal_key | u32 book_key | u8 unknown_08
+    u32 journal_key | u32 book_key | u8 is_record_book
     | journal_name | journal_description | book_name | unlock_requirement
     | bookshelf_scene | book_model
     | u32 page_count | u32[page_count] page_quest_ids | u32 reserved_end
@@ -18,37 +18,11 @@ from __future__ import annotations
 import struct
 
 from _common.binary import u32, u32_hi, u32_lo
+from _common.record_reader import RecordReader
 
 
 _HEADER = struct.Struct("<IIB")
-_U64 = struct.Struct("<Q")
 _U32 = struct.Struct("<I")
-
-
-class _Reader:
-    """Sequential reader over one book record; raises when a field runs past it."""
-
-    def __init__(self, block: bytes, row: int) -> None:
-        self._block, self._row, self.pos = block, row, 0
-
-    def _take(self, size: int) -> bytes:
-        end = self.pos + size
-        if end > len(self._block):
-            raise ValueError(f"journalquest record {self._row} runs past its size at +0x{self.pos:X}")
-        raw = self._block[self.pos:end]
-        self.pos = end
-        return raw
-
-    def unpack(self, fmt: struct.Struct) -> tuple:
-        return fmt.unpack(self._take(fmt.size))
-
-    def text(self, *, wide: bool) -> str:
-        (length,) = self.unpack(_U64)
-        raw = self._take(length * (2 if wide else 1))
-        return raw.decode("utf-16-le" if wide else "ascii", errors="replace")
-
-    def at_end(self) -> bool:
-        return self.pos == len(self._block)
 
 
 def parse_journalquest_offset_records(data: bytes) -> list[dict]:
@@ -92,8 +66,8 @@ def _page_ref(packed: int) -> dict:
 
 
 def _parse_book(block: bytes, row: int, offset_record: dict) -> dict:
-    reader = _Reader(block, row)
-    group_id, entry_no, unknown_08 = reader.unpack(_HEADER)
+    reader = RecordReader(block, 0, len(block), f"journalquest record {row}")
+    group_id, entry_no, is_record_book = reader.unpack(_HEADER)
     journal_title = reader.text(wide=True)
     subtitle = reader.text(wide=True)
     page_vol_title = reader.text(wide=True)
@@ -113,7 +87,7 @@ def _parse_book(block: bytes, row: int, offset_record: dict) -> dict:
         "size": offset_record["byte_size"],
         "group_id": group_id,
         "entry_no": entry_no,
-        "unknown_08": unknown_08,
+        "is_record_book": is_record_book,
         # Every page of a book belongs to one quest chain.
         "journal_cat_id": pages[0]["journal_cat_id"] if pages else 0,
         "journal_title": journal_title,

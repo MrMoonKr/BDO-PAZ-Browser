@@ -2,15 +2,16 @@
 
 ## Purpose
 
-Defines every knowledge entry (card). Each record holds the card ID, its owning knowledge category (theme), the amity conversation parameters, the Korean source name, description and acquisition text, the icon path, and a world position. Used to build knowledge trees and place entries within the knowledge UI.
+Defines every knowledge entry (card). Each record holds the card ID, its owning knowledge category (theme), the amity conversation parameters and combo effect, the Korean source name, description and acquisition text, the icon path, and a world position. Used to build knowledge trees and place entries within the knowledge UI.
 
-Field names `cardKey`, `themeKey`, `minFavor`, `maxFavor` and `interest` follow the notes of [bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor); the layout below was re-checked against our files.
+Field names `cardKey`, `themeKey`, `minFavor`, `maxFavor` and `interest` follow the notes of [bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor); the layout below was re-checked against our files. The combo field names follow the client Lua getters (`getBuffType`, `getVariedValue`, `getValidTurn`, `getApplyTurn`).
 
-Example:
+Example (client 3458):
 
 ```text
 card_id: 15879  →  theme_id: 10087 "Ecology of Voidekaia"  →  "Despair-Consumed Blader"
-favor 4 to 8, interest 42, icon UI_Artwork/IC_015879.dds
+favor 1 to 8, interest 45, combo "After 4 turns, Favor will increase by 6 for 1 turns",
+icon UI_Artwork/IC_015879.dds
 ```
 
 ---
@@ -80,10 +81,12 @@ Strings are `i64` UTF-16 code-unit counts followed by that many UTF-16LE units, 
 | `+0x08` | f32  | min_favor  | Amity conversation favor, lower bound; whole numbers `0` to `72`              |
 | `+0x0C` | f32  | max_favor  | Amity conversation favor, upper bound; whole numbers `0` to `100`             |
 | `+0x10` | f32  | interest   | Amity conversation interest; whole numbers `0` to `100`                       |
-| `+0x14` | u32  | flags      | Bit field; `4` on 9,874 cards, otherwise combinations of bits 0, 28, 29, 30, 31 |
-| `+0x18` | u32  | packed_a   | `0` exactly when `flags == 4`; otherwise values near `320`, `576`, `832`, `1088` |
-| `+0x1C` | u32  | packed_b   | `0` exactly when `flags == 4`; otherwise `256`, `512`, `768` or `1024`        |
-| `+0x20` | u8   | reserved   | Always `0`                                                                     |
+| `+0x14` | u8   | buff_type  | Combo effect stat: `0` Favor, `1` Interest Level, `4` no combo (9,962 cards)  |
+| `+0x15` | f32  | varied_value | Combo amount, unaligned; whole numbers `1` to `10` (one card `19`); `0` without a combo |
+| `+0x19` | u32  | valid_turn | Combo duration in turns, `1` to `4`; `0` without a combo                      |
+| `+0x1D` | u32  | apply_turn | Combo delay, `1` to `4`; the tooltip shows it plus one; `0` without a combo   |
+
+The combo fields build the tooltip's "Next combo effect" line: "After `{apply_turn + 1}` turns, `{Favor | Interest Level}` will increase by `{varied_value}` for `{valid_turn}` turns", or "None" when `buff_type` is `4`. Confirmed in game on 2026-09-27 and 2026-09-28 against 19 cards, 10 with a combo and 9 without; see Confirmed Examples. No card stores a decrease or a `buff_type` other than `0`, `1` and `4`.
 
 ### Card Body (variable, follows the header)
 
@@ -109,11 +112,30 @@ Every one of the 12,502 records parses with this layout and ends exactly at its 
 
 ## Confirmed Examples
 
-| card_id | LOC Name                | theme_id | min/max favor | interest | flags        | position                     |
-| ------- | ----------------------- | -------- | ------------- | -------- | ------------ | ---------------------------- |
-| `15879` | Despair-Consumed Blader | `10087`  | `4` / `8`     | `42`     | `0x80000000` | `0, 0, 0`                    |
-| `3001`  | Velia                   | `5101`   | `45` / `50`   | `17`     | `4`          | `152611, -7849, 290383`      |
-| `15949` | Ynix Remnant            | `355`    | `35` / `36`   | `22`     | `4`          | `1115590, 6865, 651513`      |
+Client 3458:
+
+| card_id | LOC Name                | theme_id | min/max favor | interest | combo (type, value, valid, apply) | position                     |
+| ------- | ----------------------- | -------- | ------------- | -------- | --------------------------------- | ---------------------------- |
+| `15879` | Despair-Consumed Blader | `10087`  | `1` / `8`     | `45`     | Favor, `6`, `1`, `3`              | `0, 0, 0`                    |
+| `3001`  | Velia                   | `5101`   | `45` / `49`   | `20`     | none                              | `152611, -7849, 290383`      |
+| `15949` | Ynix Remnant            | `355`    | `35` / `37`   | `22`     | none                              | `1115590, 6865, 651513`      |
+
+Combo text checked in game (Ornella on 2026-09-27, the rest through Oliviero on 2026-09-28). Every card's Attributes (Interest Level, Favor range) also equal the stored values exactly:
+
+| card_id | Name | Stored combo (type, value, valid, apply) | Tooltip "Next combo effect" |
+| ---: | --- | --- | --- |
+| 102 | Ornella | Favor, 4, 3, 1 | After 2 turns, Favor will increase by 4 for 3 turns |
+| 6059 | Al Rhundi's Journal | Favor, 1, 3, 2 | After 3 turns, Favor will increase by 1 for 3 turns |
+| 6062 | Lazy Soldiers | Favor, 5, 1, 1 | After 2 turns, Favor will increase by 5 for 1 turns |
+| 6063 | Cruhorn's Errand | Interest, 3, 3, 1 | After 2 turns, Interest Level will increase by 3 for 3 turns |
+| 6075 | Kite Flying | Interest, 3, 3, 1 | After 2 turns, Interest Level will increase by 3 for 3 turns |
+| 6080 | Laborers of the Quarry | Favor, 4, 1, 3 | After 4 turns, Favor will increase by 4 for 1 turns |
+| 6090 | Melissa's Heart | Interest, 3, 3, 1 | After 2 turns, Interest Level will increase by 3 for 3 turns |
+| 6092 | Secret Mission at the Abandoned Fort Site | Interest, 3, 1, 2 | After 3 turns, Interest Level will increase by 3 for 1 turns |
+| 6106 | Broken Wagon | Favor, 8, 2, 1 | After 2 turns, Favor will increase by 8 for 2 turns |
+| 6122 | Demibeast and Shai | Favor, 8, 1, 4 | After 5 turns, Favor will increase by 8 for 1 turns |
+
+Stored as no combo and shown as "None": `4024` Lost Lamb, `6066` Heidel Church Belfry, `6079` Cannonball Master, `6086` Mine Imps Gone Berserk, `6087` Bloodstained Letter, `6093` Risk Factors Everywhere, `6095` Broken Cannon, `6096` Ornella's taste, `6105` Orcs and Spirits.
 
 ---
 
@@ -128,6 +150,7 @@ Every one of the 12,502 records parses with this layout and ends exactly at its 
 | Category Name   | text | LOC `str_type=9` for `theme_id`                          |
 | Favor           | text | `{min_favor} to {max_favor}`                             |
 | Interest        | num  | `interest`                                               |
+| Combo           | text | `After {apply_turn + 1} turns: {Favor or Interest Level} +{varied_value} for {valid_turn} turns`; dash when `buff_type` is `4` |
 | Obtain          | text | LOC `str_type=34`, `str_id4=2`; fallback to `acquisition_ko` |
 | Learned From    | list | Distinct LOC type `6` names of the characters in `lookup(IndexKind.KNOWLEDGE_CHARACTERS, card_id)`, in ID order, first three then a count; a character without a name shows its ID; unsortable |
 | Position        | text | `x, y, z` rounded; dash when all zero                    |
@@ -138,39 +161,21 @@ Every one of the 12,502 records parses with this layout and ends exactly at its 
 
 - `card_id` → LOC `str_type=34`, `str_id1=card_id`; `str_id4` selects name (0), description (1) and acquisition text (2). 12,485 of 12,502 cards have an English name.
 - `theme_id` → LOC `str_type=9`, `str_id1=theme_id` → knowledge category name. Read it as a u16: 524 cards have a non-zero byte at `+0x06` or `+0x07`, and reading `+0x04` as a u32 gives values such as `86040` (`0x15018`) that match no theme. With the u16 read, every card's theme lists that card in its `mentaltheme.dbss` entries.
-- The three floats are whole numbers. `min_favor <= max_favor` on 12,382 cards. Median favor range is 34 to 39 with interest 22 on `flags == 4` cards, and 20 to 26 with interest 30 on the rest.
+- The three floats are whole numbers. `min_favor <= max_favor` on 12,484 of 12,604 cards in client 3458. In client 3458 the median favor range is 34 to 39 with interest 22 on cards without a combo, and 20 to 26 with interest 30 on the 2,642 cards with one.
 - `acquisition_ko` is empty on 651 cards. Whenever LOC has `str_id4=2` for a card, the card also has a non-empty `acquisition_ko` (11,766 cards).
 - `characterstatic.dbss` `getknowledge(<id>)` scripts grant 3,556 of the 12,604 cards on client 3458 (`npcsimply.bss` adds none). Most are granted by one NPC or by copies of one NPC with the same name; card `19` "NPC Pathfind Preventive Knowledge" is granted by 352 characters.
-- Non-zero positions are on 3,146 cards, mostly NPC, barterer and node-manager entries.
+- Non-zero positions are on 3,147 cards in client 3458, mostly NPC, barterer and node-manager entries. They use the same world frame as the `exploration.bss` node positions: town cards sit exactly on their node (Olvia `3032`, Calpheon `3177`, Keplan `3176`), and NPC cards sit where the NPC stands (Igor Bartali `18`, Islin Bartali `1` and Marsella `6` are all within about 35 m of the Velia node at `18588, 76647`).
 - The index key is not a separate row identifier: it equals `card_id` on every row.
 - How the conversation uses the values, per the [Black Desert Foundry, Story Exchange guide](https://www.blackdesertfoundry.com/story-exchange-guide/): a topic (card) has a fixed Interest Level and a Favor range. The NPC rolls its own Interest Level and Favor each conversation (from its `npcpersonality.dbss` ranges). The window then shows values relative to that NPC: Sparking Interest = topic interest / NPC interest (the chance of a positive reaction, always positive when the topic's is higher), and Interest gained = topic favor minus NPC favor. So the same card shows different numbers with different NPCs (that is how I see it in game, 2026-09-27), and a reading converts back to base values: `interest ≈ sparking × NPC interest`, `favor = interest gained + NPC favor`.
-- The guide's example is close to, but not equal to, the stored values: topic Shiel shows Interest Level `11` and Favor `31`-`39`; card `11` stores `10` and `33`-`38`. Its NPC, Lorenzo Murray (`40015`), shows Interest `32` and Favor `15`, both inside his stored ranges (`31`-`34`, `15`-`19`).
+- The guide's example is close to, but not equal to, the stored values: topic Shiel shows Interest Level `11` and Favor `31`-`39`; card `11` stored `10` and `33`-`38` before the 2026-09-27 update. Its NPC, Lorenzo Murray (`40015`), shows Interest `32` and Favor `15`, both inside his stored ranges (`31`-`34`, `15`-`19`).
 - The topic tooltip has two parts: **Attributes**, the card's own Interest Level and Favor range, and **Interaction Effect**, the values relative to the current NPC. For Lost Lamb with Oliviero it shows Attributes `23` / `33` ~ `37` and Interaction Effect Sparking Interest `23 (77%)`, Favor `2-6`, which fits the formulas above exactly with Oliviero at Interest Level `30` (23 / 30 = 77%) and Favor `31` (33 - 31 = 2, 37 - 31 = 6).
-- My in-game readings through Oliviero (`41091`), current client, 2026-09-27 (the Attributes part), next to the stored values and the tracker dataset:
-
-  | card_id | Name | interest stored / seen | favor stored / seen | Tracker |
-  | ---: | --- | --- | --- | --- |
-  | 6059 | Al Rhundi's Journal | 100 / 100 | 1-1 / 1-1 | 100 / 1-1 |
-  | 4024 | Lost Lamb | 21 / 23 | 34-36 / 33-37 | 23 / 35-38 |
-  | 6062 | Lazy Soldiers | 10 / 12 | 35-38 / 30-38 | 12 / 34-38 |
-  | 6063 | Cruhorn's Errand | 41 / 43 | 5-7 / 2-7 | 43 / 5-6 |
-  | 6075 | Kite Flying | 29 / 28 | 22-28 / 23-26 | 25 / 25-29 |
-  | 6079 | Cannonball Master | 20 / 18 | 45-46 / 45-49 | 19 / 45-50 |
-  | 6095 | Broken Cannon | 1 / 3 | 44-48 / 40-57 | 5 / 43-60 |
-  | 102 | Ornella (via Amerigo and via Cleia) | 12 / 12 | 33-36 / 35-38 | 13 / 35-38 |
-
-  Seen interest is within 2 of the stored value on every card. Seen favor ranges contain the stored range on 6 of 7 (Kite Flying is narrower). Only the fixed `100` / `1`-`1` card matches exactly. The two sets of readings also differ from each other (interest agrees on 3 of 6 cards, favor on none), so the shown values are not a fixed function of the stored ones. Oliviero's own Interest Level stayed at 30 to 31 over several conversations (stored `30`-`34`), and his Favor stayed at `31` (stored `31`-`35`).
-- The tooltip is built by `PaGlobal_MentalGame_All:updateTooltipContext` in `luacscript/x64/widget/dialogue/panel_mentalgame_all_1.luac` (Lua 5.1 bytecode, decompiled with unluac). Attributes come from the live conversation card, not from this record: Interest Level is `card:getHit()`, Favor is `card:getMinDD()` ~ `card:getMaxDD()`. The Interaction Effect is `getHit() / npc:getCurrentDV() * 100` (clamped to 0-100) and `getMinDD() - npc:getCurrentPV()` / `getMaxDD() - npc:getCurrentPV()` (clamped at 0), so the NPC's interest is `CurrentDV` and its favor `CurrentPV`. The static record (`card:getStaticStatus()`, this file) is only used for the card key and the combo text: `getBuffType()`, `getApplyTurn()` (shown plus one, "after N turns"), `getValidTurn()` and `getVariedValue()`. How the engine turns the stored favor and interest into `getHit` / `getMinDD` / `getMaxDD` is not visible in the Lua.
-- Stored favor and interest are close to, but mostly not equal to, the readings in an amity tracker dataset. Against 62 cards, 2 match exactly, 55 are within 5 on every value, and seven differ by 6 to 44, for example `6161` Slum in the City (interest `59` stored, `15` seen) and `4333` Calpheon Giant Bee (`28` / `24`-`30` stored, `2` / `40`-`47` seen). The dataset does not say which NPC each reading came from. No NPC in the current `npcpersonality.dbss` has card `4333`'s theme (`10321`, Creatures of Northern Calpheon) as an interest group.
+- The stored Attributes equal what the game shows. On 2026-09-27 I compared readings through Oliviero (`41091`) with the pre-update fixture and found gaps of up to 2 interest and a few favor, but those readings equal client 3458 exactly (for example Lost Lamb `23` / `33`-`37`, stored `21` / `34`-`36` before the update), and so do all 19 cards read on 2026-09-28. The update rerolls many cards: Shiel (`11`) is `14` / `34`-`38` in client 3458, `10` / `33`-`38` before it and `11` / `31`-`39` in the 2024 guide above, so older readings (the guide, the tracker dataset below) differ because they come from older patches. Oliviero's own Interest Level stayed at 30 to 31 over several conversations (stored `30`-`34`), and his Favor stayed at `31` (stored `31`-`35`).
+- The tooltip is built by `PaGlobal_MentalGame_All:updateTooltipContext` in `luacscript/x64/widget/dialogue/panel_mentalgame_all_1.luac` (Lua 5.1 bytecode, decompiled with unluac). Attributes come from the live conversation card, not from this record: Interest Level is `card:getHit()`, Favor is `card:getMinDD()` ~ `card:getMaxDD()`. The Interaction Effect is `getHit() / npc:getCurrentDV() * 100` (clamped to 0-100) and `getMinDD() - npc:getCurrentPV()` / `getMaxDD() - npc:getCurrentPV()` (clamped at 0), so the NPC's interest is `CurrentDV` and its favor `CurrentPV`. The static record (`card:getStaticStatus()`, this file) is only used for the card key and the combo text: `getBuffType()`, `getApplyTurn()` (shown plus one, "after N turns"), `getValidTurn()` and `getVariedValue()`. The live values equal the stored `interest`, `min_favor` and `max_favor` on every card checked (see the previous note).
+- Stored favor and interest in the pre-update fixture are close to, but mostly not equal to, the readings in an amity tracker dataset from an older patch. Against 62 cards, 2 match exactly, 55 are within 5 on every value, and seven differ by 6 to 44, for example `6161` Slum in the City (interest `59` stored, `15` seen) and `4333` Calpheon Giant Bee (`28` / `24`-`30` stored, `2` / `40`-`47` seen). The dataset does not say which NPC each reading came from. No NPC in the current `npcpersonality.dbss` has card `4333`'s theme (`10321`, Creatures of Northern Calpheon) as an interest group.
 
 ---
 
-
 ## Open Questions
-
-### Flags And Packed Fields
-
-`flags`, `packed_a` and `packed_b` separate the 9,874 `flags == 4` cards from the rest. They probably hold the combo effect the Lua reads through `getStaticStatus()`. Ornella (`102`) shows "After 2 turns, Favor will increase by 4 for 3 turns" and stores bytes `+0x14` = `1`, `+0x19` = `4`, `+0x1D` = `3`: apply turn (shown plus one), value, duration. Lost Lamb (`4024`) shows no combo and has `flags == 4` with both packed fields zero. On the 2,628 other cards `+0x14` is `0` or `1` and `+0x19` and `+0x1D` are `1` to `4`. Bytes `+0x15` to `+0x18` read as an f32 of `1.0` to about `5.0` whose meaning is unknown, and the buff type (favor or interest, up or down) is not located. Predicted from the bytes, to check in game: Lazy Soldiers (`6062`) value 4 for 4 turns, Kite Flying (`6075`) 2 for 1 turn, Cruhorn's Errand (`6063`) 2 for 3 turns, Al Rhundi's Journal (`6059`) 2 for 4 turns, all applying on the next turn; Cannonball Master (`6079`) and Broken Cannon (`6095`) no combo.
 
 ### Body Value And Tail Fields
 
@@ -178,12 +183,4 @@ Every one of the 12,502 records parses with this layout and ends exactly at its 
 
 ### Position Meaning
 
-The position may be the card's map marker or the point where it is learned. The Iliya Island card (`3030`) sits at `159209, -7831, 292072`, next to the Velia card, which points to the acquisition point rather than the island itself. Checking card `3030` in game (where its Find/Locate marker points) would settle it.
-
-### Favor And Interest Names
-
-The field names come from bdo-data-extractor. In game, card `15879` (Despair-Consumed Blader) should show Interest 42 and Favor 4 to 8 in the amity conversation window if the names are right.
-
-### How does the game derive a card's shown values?
-
-The NPC-relative numbers follow from the base values (see Notes), but the base values seen in game, in the tracker and in a 2024 guide are still off from the stored ones by a few points (Shiel `11` / `31`-`39` seen, `10` / `33`-`38` stored). Either those readings are from an older patch, or the displayed topic values pass through another rule. Current readings through Oliviero (see Notes) are within 2 of the stored interest and around the stored favor, and differ from the tracker's readings of the same cards, so a card's Attributes are not simply the stored values. They are fixed per card: Ornella (`102`) shows `12` / `35`-`38` both through Amerigo and through Cleia, in separate conversations, and a friend of mine sees about the same ranges (2026-09-27). The shifts go both ways (interest `+2` on four cards, `-1` and `-2` on two), so it is not a fixed offset. The displayed numbers do not occur as f32 anywhere else in the card records, and `mentalcard.dbss` is the only card table in `gamecommondata/binary`. The tooltip code does not read them from this file either (see the next note), so the values come from the engine or the server.
+The position is a world point, but which one is not settled. Town and NPC cards sit on their node or NPC (see Notes). The Iliya Island card (`3030`, `159209, -7831, 292072`) sits about 22 m from the Iliya Island node (`1002`, `157320, 290939`), so it marks the island, the exploration source in its acquisition text, and not Igor Bartali in Velia, its amity source. The Velia card (`3001`, `152611, -7849, 290383`) is the odd one: it also sits on Iliya Island, about 47 m from that node, instead of on the Velia node. Among its sources, only Diega (Amity) is on Iliya Island, but Diega's own card (`387`) sits about 72 m from it.

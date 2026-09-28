@@ -65,7 +65,7 @@ CASE = HandlerCase(
             required_keys=[
                 "group_id",
                 "entry_no",
-                "unknown_08",
+                "is_record_book",
                 "journal_cat_id",
                 "journal_title",
                 "page_vol_title",
@@ -76,7 +76,7 @@ CASE = HandlerCase(
             ]
         ),
         DeclaredCountTest(declared=_offset_rows("journalquestoffset.dbss")),
-        RangeTest(col="unknown_08", min_val=0, max_val=1),
+        RangeTest(col="is_record_book", min_val=0, max_val=1),
         RangeTest(col="terminal", min_val=0, max_val=0),
         TargetTest(
             col="journal_cat_id",
@@ -100,8 +100,8 @@ CASE = HandlerCase(
                 "journal_title_text": "Shakatu Merchants' Archive",
             },
         ),
-        # Every book of journal 7 sets unknown_08.
-        TargetTest(col="group_id", value=7, expected={"unknown_08": 1}),
+        # Storybook - Donghae is a record book: its pages fill in from knowledge.
+        TargetTest(col="group_id", value=7, expected={"is_record_book": 1}),
     ],
 )
 

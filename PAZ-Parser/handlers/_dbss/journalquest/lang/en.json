@@ -15,7 +15,12 @@
     "pageTitles": "Page Titles",
     "unlockCondition": "Unlock Condition",
     "pages": "Pages",
+    "recordBook": "Record Book",
     "combineModel": "Combine Model",
     "staticModel": "Static Model"
+  },
+  "values": {
+    "yes": "Yes",
+    "no": "No"
   }
 }

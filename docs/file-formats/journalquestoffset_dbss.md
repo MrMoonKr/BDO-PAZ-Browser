@@ -66,8 +66,6 @@ for i in range(group_count):
 
 ---
 
-## Open Questions
+## Display Order
 
-### Index Order as Display Order
-
-[bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor) states that the book index order is the UI order, independent of file order. The only case where the two differ is journal 6 ("Event Logs"); whether the bookshelf shows book 10 second, as the index says, needs an in-game check.
+[bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor) states that the book index order is the UI order, independent of file order. It is neither: the journal shelf sorts books by `book_key`. The only journal where the file orders differ is journal 6 ("Event Logs"), which the offset file lists as 1, 2, 10, 7, 8, 11, 12 and the game shows as 1, 2, 7, 8, 10, 11, 12 (checked in game, 2026-09-28; see `journalquest_dbss.md`).

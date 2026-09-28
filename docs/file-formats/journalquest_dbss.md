@@ -61,7 +61,7 @@ Strings are length-prefixed: a u64 character count followed by that many UTF-16L
 | ------- | --------------------- | ---------------------- | ------------------------------------------------------------------------------------------ |
 | `+0x00` | u32                   | journal_key            | Journal group key; equals the containing group in 112 of 112 records                       |
 | `+0x04` | u32                   | book_key               | Book key within the group; equals the offset-file key in 112 of 112 records                |
-| `+0x08` | u8                    | unknown_08             | `0` or `1`; `1` in 43 records (all books of journals 7, 10, 12 and 13, plus journal 6 book 8)      |
+| `+0x08` | u8                    | is_record_book         | `1` on record books, whose pages fill in from what the player has already done; 43 records (all books of journals 7, 10, 12 and 13, plus journal 6 book 8), see Notes |
 | `+0x09` | u64 + utf16le[n]      | journal_name_kr        | Korean journal name; identical for every book in a group except journal 6                  |
 | varies  | u64 + utf16le[n]      | journal_description_kr | Korean journal description                                                                 |
 | varies  | u64 + utf16le[n]      | book_name_kr           | Korean book (volume) name; may contain a `\n` and a second line                            |
@@ -72,7 +72,7 @@ Strings are length-prefixed: a u64 character count followed by that many UTF-16L
 | varies  | u32[page_count]       | page_quest_ids         | Packed quest IDs `(quest_id << 16) \| quest_chain_id`                                      |
 | varies  | u32                   | reserved_end           | `0` in 112 of 112 records; the record ends exactly here                                   |
 
-Earlier versions of this doc called `unknown_08` `flag_08`. An even older reading of `unknown_08` as a u32 (`0x00000d00` etc.) was this byte plus the low bytes of the first string length. The "trailing `"` in `combine_model`" was the low byte of the next string's u64 length (`0x22` = 34 characters); it is not part of the stored value.
+Earlier versions of this doc called `is_record_book` `flag_08` and then `unknown_08`. An even older reading of it as a u32 (`0x00000d00` etc.) was this byte plus the low bytes of the first string length. The "trailing `"` in `combine_model`" was the low byte of the next string's u64 length (`0x22` = 34 characters); it is not part of the stored value.
 
 ### Page Quest IDs
 
@@ -86,7 +86,7 @@ Current file totals (after the 2026-09-27 update): 119 books, 901 pages, 901 dis
 
 Current client data (`files/journalquest.dbss`), offset-file order:
 
-| Journal Key | Books | Pages | English Journal Name (LOC 63, `id4=0`) | `unknown_08` set | Books with unlock text |
+| Journal Key | Books | Pages | English Journal Name (LOC 63, `id4=0`) | Record books | Books with unlock text |
 | ----------: | ----: | ----: | -------------------------------------- | ------------: | ---------------------: |
 |           1 |    15 |    71 | Igor Bartali's Adventures              |             0 |                     15 |
 |           2 |    11 |    51 | Shakatu Merchants' Archive             |             0 |                     11 |
@@ -143,6 +143,7 @@ Page text is LOC `str_type=18` keyed by the page's packed quest ID, like any que
 | Book Name           | text | LOC type=63 `id4=3`, falling back to `book_name_kr`                   |
 | Unlock Requirement  | text | LOC type=63 `id4=2`, falling back to `unlock_requirement_kr` with PAColor markup stripped |
 | Pages               | num  | `page_count`                                                          |
+| Record Book         | text | `is_record_book` as Yes or No                                         |
 | Page Titles         | text | LOC type=18 `id4=0` for each page quest ID                            |
 | Bookshelf Scene     | text | `bookshelf_scene`                                                     |
 | Book Model          | text | `book_model`                                                          |
@@ -154,20 +155,15 @@ Page text is LOC `str_type=18` keyed by the page's packed quest ID, like any que
 - All records are located through `journalquestoffset.dbss`; the book records are self-describing (length-prefixed strings, counted page list), so the file can also be walked sequentially using the per-group `book_count` words.
 - Strings are length-prefixed, so the odd byte offset of the first string (`+0x09`, after two u32 and one u8) has no alignment meaning.
 - Unlock text uses BDO rich-text markup: `<PAColor0xAARRGGBB>` to set color (e.g. `<PAColor0xFFf3d900>`), `<PAOldColor>` to reset, and backtick-delimited quest names.
-- Journal 6 ("Event Logs") is the only group whose Korean journal name differs between books (two variants: event logs and 10th anniversary event logs).
+- Journal 6 ("Event Logs") is the only group whose Korean journal name differs between books (two variants: event logs and 10th anniversary event logs). In game all seven books sit under one "Event Logs (6/7)" journal with the description "Special adventure logs available during events." (2026-09-28).
+- The journal window shows the books as a shelf sorted by `book_key`, with the key printed on each cover and "?" for a book not obtained yet. Journal 6 shows 1, 2, 7, 8, 10, 11, 12 (checked in game, 2026-09-28), although the offset file lists 1, 2, 10, 7, 8, 11, 12 and the data file stores 1, 10, 2, 7, 8, 11, 12. So neither file order is the display order; bdo-data-extractor's claim that the index order is the UI order does not hold.
+- The journals themselves are sorted by `journal_key` too: the main bookshelf fills columns of four, 1 to 4, 5 to 8 and 9 to 12, although the offset file lists journal 10 after 12. In my game (2026-09-28) the slot for journal 10 (Outer Edania) is empty and journal 13 (Inner Edania) does not show, on a family that has not started the Edania questline, so a journal probably stays off the shelf until its story starts.
+- `is_record_book` marks a record book: every page completes passively from what the player has already done, and the book reads as a story, with no Goal line, no reward and no claim button. Every page quest of a record book (448 pages, client 3458) has only a passive `action_script` check: `collectknowledge(...)` (318, Donghae and Hwanghae), `alreadyclearquest(...)` (118, the Edania journals) or `checkLevelUp(1)` (12, Event Logs book 8, objective "접속하기", log in). Other books are mostly real tasks (`meet` 134, `killmonster` 114, `gatheritem`, `exchangeitem` and others), with a few passive pages mixed in. Checked in game (2026-09-28): Event Logs book 8 reads as a long story ("An Adventurer's Story (1/4)") with no Goal line or reward, while book 2 shows "Goal: Find the note Reubens hid", "Upon Completion: Black Stone" and "This adventure log must be completed in order"; a Storybook - Donghae book has no Goal line or claim button either, and a page not earned yet shows as "???" ("Untold stories are waiting to be discovered. Embark on quests to uncover the hidden tales."). The flag does not pick the cover or the spine: book 8 has the same red cover as book 2, and Storybook - Donghae looks like Storybook - Morning Bosses (not a record book) on the shelf. bdo-data-extractor leaves the byte unnamed.
 - Each page quest has a `quest.dbss` record whose `quest_category` is `11`; that value occurs on no other quest. Page records hold the journal's permanent Family-stat rewards (see [quest.dbss](quest_dbss.md)).
 
 ---
 
 ## Open Questions
-
-### `unknown_08` Meaning
-
-The byte at `+0x08` is `1` for every book of journals 7 ("Storybook - Donghae"), 10 ("Outer Edania"), 12 ("Storybook - Hwanghae") and 13 ("Inner Edania", added 2026-09-27) and for journal 6 book 8, and `0` elsewhere, including the other storybook journal 3. bdo-data-extractor also leaves it unnamed. Its effect (UI style, story mode, reward handling) needs an in-game comparison.
-
-### Offset-Index Order vs Display Order
-
-In journal 6 the offset file lists books as 1, 2, 10, 7, 8, 11, 12 while the data file stores them as 1, 10, 2, 7, 8, 11, 12. bdo-data-extractor states that the index order is the UI order; this has not been checked in game.
 
 ### Unreferenced LOC Type 63 Rows
 

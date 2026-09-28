@@ -7,6 +7,8 @@ from typing import Any
 import pytest
 
 from _common.lookup_index import IndexKind
+from _dbss.mentalcard.combo import BuffType, combo_text
+from _dbss.mentalcard.parser import MentalCardRecord
 from tests.framework import (
     DeclaredCountTest,
     HandlerCase,
@@ -33,11 +35,13 @@ CASE = HandlerCase(
     internal_path="gamecommondata/binary/mentalcard.dbss",
     lookup_indexes={IndexKind.KNOWLEDGE_CHARACTERS: _KNOWLEDGE_CHARACTERS},
     tests=[
-        SchemaTest(required_keys=["entry_id", "entry_name", "node_id", "node_name", "min_favor", "max_favor", "interest", "icon_path", "obtain", "learned_from", "position", "position_text"]),
+        SchemaTest(required_keys=["entry_id", "entry_name", "node_id", "node_name", "min_favor", "max_favor", "interest", "combo_text", "buff_type", "combo_value", "valid_turn", "apply_turn", "icon_path", "obtain", "learned_from", "position", "position_text"]),
         DeclaredCountTest(declared=header_count()),
         RangeTest(col="min_favor", min_val=0, max_val=math.inf),
         RangeTest(col="max_favor", min_val=0, max_val=math.inf),
         RangeTest(col="interest", min_val=0, max_val=math.inf),
+        # Favor or Interest Level; cards without a combo store None.
+        RangeTest(col="buff_type", min_val=0, max_val=1),
         TargetTest(
             col="entry_id",
             value=15055,
@@ -67,6 +71,8 @@ CASE = HandlerCase(
             },
         ),
         TargetTest(col="entry_id", value=2043, expected={"learned_from": ["Goyoung"]}),
+        # Lost Lamb shows "None" as its next combo effect in game.
+        TargetTest(col="entry_id", value=4024, expected={"combo_text": None, "buff_type": None}),
         TargetTest(
             col="entry_id",
             value=3030,
@@ -91,3 +97,25 @@ def mentalcard_result(request: Any) -> HandlerResult:
 @pytest.mark.parametrize("spec", CASE.tests, ids=case_id)
 def test_mentalcard_dbss(spec: Any, mentalcard_result: HandlerResult) -> None:
     mentalcard_result.check(spec)
+
+
+def _card(buff_type: int, value: float = 0.0, valid_turn: int = 0, apply_turn: int = 0) -> MentalCardRecord:
+    return MentalCardRecord(
+        card_id=1, theme_id=1, min_favor=0.0, max_favor=0.0, interest=0.0,
+        buff_type=buff_type, varied_value=value, valid_turn=valid_turn, apply_turn=apply_turn,
+        name_kr="", icon_path="", acquisition_kr="", position=(0.0, 0.0, 0.0),
+    )
+
+
+@pytest.mark.parametrize(
+    ("card", "expected"),
+    [
+        # The tooltip shows the stored delay plus one.
+        (_card(BuffType.FAVOR, 4.0, 3, 1), "After 2 turns: Favor +4 for 3 turns"),
+        (_card(BuffType.INTEREST, 3.0, 1, 2), "After 3 turns: Interest Level +3 for 1 turns"),
+        (_card(BuffType.NONE), ""),
+        (_card(7, 2.0, 1, 1), "After 2 turns: Type 7 +2 for 1 turns"),
+    ],
+)
+def test_combo_text(card: MentalCardRecord, expected: str) -> None:
+    assert combo_text(card) == expected

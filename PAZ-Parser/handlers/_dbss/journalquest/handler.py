@@ -79,6 +79,7 @@ class JournalQuestDbssHandler(PreviewHandler):
             Column(cols.get("pageTitles", "Page Titles")),
             Column(cols.get("unlockCondition", "Unlock Condition"), sort_key="unlock_condition_text"),
             Column(cols.get("pages", "Pages"), "num", sort_key="page_count"),
+            Column(cols.get("recordBook", "Record Book"), sort_key="is_record_book"),
             Column(cols.get("combineModel", "Combine Model"), sort_key="combine_model"),
             Column(cols.get("staticModel", "Static Model"), sort_key="static_model"),
         ]
@@ -136,6 +137,8 @@ class JournalQuestDbssHandler(PreviewHandler):
     ) -> str:
         start = page * page_size
         slice_ = records[start : start + page_size]
+        values = load_handler_strings(self.lang, _LANG_DIR).get("values", {})
+        yes, no = values.get("yes", "Yes"), values.get("no", "No")
         pages = sum(r["page_count"] for r in records)
         groups = len({r["group_id"] for r in records})
         meta = f"{len(records):,} journal entries · {groups:,} groups · {pages:,} pages"
@@ -150,6 +153,7 @@ class JournalQuestDbssHandler(PreviewHandler):
                 e(join_limited(r["page_titles"], _LIST_PREVIEW_ITEMS)),
                 e(r["unlock_condition_text"]),
                 e(r["page_count"]),
+                e(yes if r["is_record_book"] else no),
                 e(r["combine_model"]),
                 e(r["static_model"]),
             ]

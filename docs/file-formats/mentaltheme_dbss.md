@@ -89,6 +89,8 @@ Earlier versions of this doc called `unknown_0e` `unknown_flag` and `unknown_0f`
 | ------- | ---- | -------- | ------------------------------------------------ |
 | `+0x00` | u32  | entry_id | Knowledge entry ID; LOC `str_type=34`, `str_id1` |
 
+The entries are stored in the order the Knowledge window lists them. Checked in game (2026-09-28) on People of Olvia Academy (`145`): all 20 entries show in stored order, from Cedrio to Gray Biants, which is not card ID order (Merv `14703` second, Justin Bartali `14675` second to last).
+
 ### Child Theme List (variable size)
 
 | Offset                 | Type  | Name        | Description                                      |

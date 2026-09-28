@@ -147,13 +147,11 @@ A parallel lookup index with one entry per main-file record.
 - `Inn`, `Alchemy`, `TerritoryTrade`, `Smuggle`, `PC`, `GuildSupplyShop` and `PcRoomStable` are set on no record.
 - An earlier version of this doc read `+0x00` as a u32 entity ID and the flags from `+0x04`. That turned the `NormalNpc` and `SkillTrainer` bytes into a fake "entity namespace" in the high 16 bits (entity `82176` is character `16640` with `NormalNpc` set) and shifted every flag index by two.
 - Records are stored in offset-table order, not sorted by `character_id`.
+- `ChurchBuff` (value `45`) marks the church buff sellers. The NPC's Chat option sells `[Blessing] Adventure's Boon` (120 or 300 minutes; see `buff_dbss.md`). Checked in game on Ottavio Ferre (`40016`, 2026-09-28), and all 16 NPCs in the [Black Desert Foundry, Church Buff Locations guide](https://www.blackdesertfoundry.com/church-buff-locations-guide/) carry `ChurchBuff` in client 3458. The six Land of the Morning Light NPCs among them (`47210`, `47244`, `47276`, `47349`, `47551`, `47596`) also sell the same buff as "Special Revitalizing Gukbap" for Sangpyeong Coins, per the guide. The other four holders are missing from the guide but sell the buff too, checked in game (2026-09-28): Gray Biants (`40606`, Elionian Priest), Bokhee (`47570`, Little Auntie), the Hashashin Statue (`47672`) and Tenochti (`47750`, Priest). So all 20 holders in client 3458 are church buff sellers.
+- Earlier versions of this doc took Zario and Resh as `ChurchBuff` examples from the pre-update fixture (the table's example `47766` is from there). The 2026-09-27 update reuses character IDs, and in client 3458 Zario (`47766`) is a Fish Vendor with `Fish` and Resh (`47764`) a Material Vendor with `Collect`, neither with `ChurchBuff`. That matches the game (2026-09-28): Zario sells Ship License: Raft and Breezy Crystal, and Resh runs a shop and an exchange (Magical Lightstone Crystal or Sharp Black Crystal Shard for Margahan's Fragment).
 
 ## Open Questions
 
 ### Value 41
 
 The client enum skips `41`, but Miles (`59279`) sets it, together with `ItemRepairer`, `ImportantNpc` and `Grocery`. In game Miles gives the Grand Prix quests, so `41` is probably a Grand Prix (horse racing) role. As far as I know he is the only Grand Prix NPC (2026-09-27), which fits a single record, but there is no second case to confirm the name.
-
-### ChurchBuff
-
-`ChurchBuff` is set on 21 NPCs such as Zario (`47766`) and Resh (`47764`), but neither appears to give a church-style buff. What the client does with this role is open.
