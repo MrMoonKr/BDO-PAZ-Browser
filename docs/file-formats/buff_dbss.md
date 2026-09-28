@@ -17,20 +17,6 @@ buff_id 48830
   description  Hunting Mastery +70      (LOC str_type=5, str_id1=48830)
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- buff
-- icon
-
-### Connections
-
-- [languagedata_en.loc](languagedata_loc.md), English buff descriptions (str_type=5, str_id1=buff_id)
-- [titlebufflist.dbss](titlebufflist_dbss.md), title effects, a separate buff-like table keyed 0 to 17
-
 ---
 
 ## Companion Files

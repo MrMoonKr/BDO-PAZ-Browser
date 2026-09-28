@@ -14,23 +14,6 @@ Faint   (501) → Morning Star:       weight 250000 = 25.0%
 Faint   (501) → Tingling Breath II: weight 0      = cannot roll
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- fairy
-- equip skill
-- drop rate
-
-### Connections
-
-- [fairyequipskill.bss](fairyequipskill_bss.md), the skill catalog; weights are indexed by its `equip_skill_id`
-- [fairyequipskillaquireoffset.dbss](#fairyequipskillaquireoffsetdbss), keyed offset index
-- [petequipskillaquire.dbss](petequipskillaquire_dbss.md), identical record layout for pets
-- [fairyskillchange.dbss](fairyskillchange_dbss.md), the Theiah's Orb cost of performing the reroll
-
 ---
 
 ## Companion Files

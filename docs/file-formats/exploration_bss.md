@@ -13,25 +13,6 @@ node_key=65 -> Wale Farm (Normal, contribution 1, manager family 40605 Wale)
 
 Field names for several head fields and the `ExplorationNodeType` mapping follow [asheimo/bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor) (`FORMATS.md`, section 12), checked against the bytes of the current client file below.
 
-## Graph
-
-### Tags
-
-- file format
-- bss
-- exploration
-- worldmap
-- node
-
-### Connections
-
-- [languagedata.loc](languagedata_loc.md) - `node_key` resolves via LOC `str_type=29`; knowledge list values via `str_type=34`; `manager_family_id` and `representative_id` via `str_type=6`
-- [plantzone.dbss](plantzone_dbss.md) - every plant zone `record_id` is a production sub-node key in this file
-- [planttown.bss](planttown_bss.md) - every `node_id` is a node key in this file
-- [mentalcard.dbss](mentalcard_dbss.md) - every value in knowledge lists 1-5 is a `mentalcard.dbss` `entry_id`
-- `mapdata_realexplore2.bwp` - waypoint records are keyed by the same node key (1002 of 1003 keys present)
-- `characterfunction.dbss` - per the reference project, lists the same manager families as `manager_family_id` (not checked here)
-
 ---
 
 ## Companion Files

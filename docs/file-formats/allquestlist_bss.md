@@ -12,26 +12,6 @@ slot 1 -> packed_quest_id 138172 -> chain 7100, quest 2  -> quest.dbss record 1
 slot 2 -> packed_quest_id 196891 -> chain 283, quest 3   -> quest.dbss record 2
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- bss
-- quest
-- index
-
-### Connections
-
-- [quest.dbss](quest_dbss.md) - quest definition table; entry `i` of this list is the packed quest ID of the `i`-th physical record in `quest.dbss`
-- [questgroup.dbss](questgroup_dbss.md) - confirms packed quest IDs are `(quest_id << 16) | quest_chain_id`
-- [acceptquest.bss](acceptquest_bss.md) - contains the same quest ID set in acceptance-related order with two side fields
-- [completequest.bss](completequest_bss.md) - contains the same quest ID set in completion-related order with two side fields
-- [mainquest.bss](mainquest_bss.md) - groups a subset of quest IDs into main-quest UI sequences
-- [newquest.bss](newquest_bss.md) - groups quest IDs into new-quest UI sequences
-- [journalquest.dbss](journalquest_dbss.md) - adventure-journal pages are packed quest IDs from this list
-- [languagedata_en.loc](languagedata_loc.md) - English quest text keyed by LOC type 18 with `str_id1=quest_chain_id` and `str_id2=quest_id`
-
 ---
 
 ## Companion Files

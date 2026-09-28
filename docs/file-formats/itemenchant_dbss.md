@@ -23,25 +23,6 @@ item 58011 ([Event] Fence)
   -> places character 2053 ([Event] Fence)
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- item
-- enchant
-- icon
-
-### Connections
-
-- [itemenchantoffset.dbss](#itemenchantoffsetdbss) - required key/offset index into this file
-- [languagedata_en.loc](languagedata_loc.md) - English item names for the record key (`str_type=0`)
-- [pet.dbss](pet_dbss.md) - another format that stores an inline icon path per record
-- [quest.dbss](quest_dbss.md) - stores inline icon paths using the same convention
-- [characterobject.dbss](characterobject_dbss.md) - `character_id` names the placed object; its icon fills gaps in the character icon index
-- [characterstatic.dbss](characterstatic_dbss.md) - `character_id` shares this key space; pet items name their pet character
-
 ---
 
 ## Companion Files

@@ -13,20 +13,6 @@ card_id: 15879  →  theme_id: 10087 "Ecology of Voidekaia"  →  "Despair-Consu
 favor 4 to 8, interest 42, icon UI_Artwork/IC_015879.dds
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- knowledge
-
-### Connections
-
-- [mentaltheme.dbss](mentaltheme_dbss.md), the category tree that `theme_id` points into; its entry lists hold the same card IDs
-- [knowledgelearning.dbss](knowledgelearning_dbss.md), maps characters and items to the `card_id` they teach
-- [languagedata_en.loc](languagedata_loc.md), card name, description and acquisition text (str_type=34) and category names (str_type=9)
-
 ---
 
 ## Companion Files

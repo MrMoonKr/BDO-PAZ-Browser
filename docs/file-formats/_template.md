@@ -10,21 +10,6 @@ Example:
 Short example of the in-game meaning, UI display, or decoded output.
 ```
 
-## Graph
-
-### Tags
-
-<!-- Tags describe the file's domain, use whatever fits, no fixed list. -->
-
-- file format
-- <!-- dbss | bss | loc | paz -->
-- <!-- additional domain tags relevant to this file, e.g. npc, title, knowledge -->
-
-### Connections
-
-- [companion-file.ext](companion_file_ext.md), brief role description
-- [offset-file.ext](offset_file_ext.md), brief role description
-
 ---
 
 ## Companion Files

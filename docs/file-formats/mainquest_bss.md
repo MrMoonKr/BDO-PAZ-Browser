@@ -11,24 +11,6 @@ group 0 -> quest 40022 / 1 -> [Special Growth] Birth of a Prestigious Family
 group 1 -> quest 285 / 1 -> [Warrior Awakening] New Weapon
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- bss
-- quest
-- main quest
-- ui
-- index
-
-### Connections
-
-- [allquestlist.bss](allquestlist_bss.md) - every decoded quest reference is a packed quest ID from the canonical quest list
-- [newquest.bss](newquest_bss.md) - same 17-byte quest reference row shape, but different group count and UI purpose
-- [quest.dbss](quest_dbss.md) - quest definitions and LOC mapping use the same `(quest_id << 16) | quest_chain_id` packed ID scheme
-- [languagedata_en.loc](languagedata_loc.md) - English quest text keyed by LOC type 18 with `str_id1=quest_chain_id` and `str_id2=quest_id`
-
 ---
 
 ## File Layout

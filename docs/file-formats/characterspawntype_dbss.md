@@ -11,21 +11,6 @@ character 47659 Alper
   -> ItemRepairer, ImportantNpc, Stable, Intimacy, Mating, Grocery
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- npc
-- spawn type
-
-### Connections
-
-- [languagedata_en.loc](languagedata_loc.md) - NPC names (`str_type=6`, `str_id1=character_id`)
-- [characterstatic.dbss](characterstatic_dbss.md) - same `character_id` key space
-- [characterobject.dbss](characterobject_dbss.md) - same `character_id` key space; shares the character icon index
-
 ---
 
 ## Companion Files

@@ -16,21 +16,6 @@ Korean: 돌멘게 공예가
 Requirement: Kill Stoneback Crabs
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- title
-
-### Connections
-
-- [titleoffset.dbss](titleoffset_dbss.md), required; provides block offset lookup
-- [titlecategory.bss](titlecategory_bss.md), redundant category source
-- [titlebufflist.dbss](titlebufflist_dbss.md), title collection bonus effects
-- [languagedata_en.loc](languagedata_loc.md), English title names and requirements
-
 ---
 
 ## Companion Files

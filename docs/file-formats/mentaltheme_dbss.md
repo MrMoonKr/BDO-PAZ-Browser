@@ -11,19 +11,6 @@ theme_id: 10319 -> parent: 10030 -> "Refugee Camp"
 entries: 4327, 4325, 4324, ... -> knowledge entries in that group
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- knowledge
-
-### Connections
-
-- [mentalcard.dbss](mentalcard_dbss.md) - maps knowledge entry IDs to the same theme IDs
-- [languagedata_en.loc](languagedata_loc.md) - English theme names (`str_type=9`) and knowledge entry names (`str_type=34`)
-
 ---
 
 ## Companion Files

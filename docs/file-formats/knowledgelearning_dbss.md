@@ -11,20 +11,6 @@ table 0: character 21207 "Valencian Lion"  →  card 4893 "Valencian Lion"
 table 1: item 8279 "Gurnard"               →  card 8579 "Gurnard"
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- knowledge
-
-### Connections
-
-- [mentalcard.dbss](mentalcard_dbss.md), defines the `card_id` each record points to
-- [characterstatic.dbss](characterstatic_dbss.md), the character IDs used as table 0 sources
-- [languagedata_en.loc](languagedata_loc.md), card names (str_type=34), character names (str_type=6) and item names (str_type=0)
-
 ---
 
 ## Companion Files

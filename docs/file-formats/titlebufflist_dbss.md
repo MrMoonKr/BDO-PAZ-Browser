@@ -12,23 +12,6 @@ Acquire x60: Luck +2
 Acquire x70: Luck +2 / Max Energy +1
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- title
-- title buff
-- title effects
-- collection bonus
-
-### Connections
-
-- [titlebufflistoffset.dbss](#titlebufflistoffsetdbss), required; provides block offsets and sizes
-- [title.dbss](title_dbss.md), source of individual title data
-- [languagedata_en.loc](languagedata_loc.md), English multiline Title Effects tooltip (str_type=37)
-
 ---
 
 ## Companion Files

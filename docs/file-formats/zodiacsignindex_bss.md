@@ -11,21 +11,6 @@ slot 0 -> zodiac_id 1 -> Hammer
 slot 11 -> zodiac_id 12 -> Goblin
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- bss
-- zodiac
-- index
-
-### Connections
-
-- [zodiacsign.dbss](zodiacsign_dbss.md) - zodiac sign definitions, names, star coordinates, and texture paths
-- [zodiacsignoffset.dbss](zodiacsign_dbss.md#zodiacsignoffsetdbss) - confirms same 12 zodiac IDs in the same order
-- [languagedata_en.loc](languagedata_loc.md) - English sign names for display
-
 ---
 
 ## Companion Files

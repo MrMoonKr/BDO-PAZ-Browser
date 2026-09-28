@@ -11,23 +11,6 @@ character_id: 47727 -> "Jackson"  -> kind: 3 (ShopMerchant) -> name: 잭슨  -> 
 character_id: 47647 -> "Neoksam"  -> kind: 25 (ItemMarket)  -> role: <거래소장> -> script: getknowledge(2387);
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- bss
-- npc
-- knowledge
-
-### Connections
-
-- [languagedata_en.loc](languagedata_loc.md) - English NPC names with `str_type=6`, `str_id1=character_id`; knowledge names with `str_type=34`
-- [characterstatic.dbss](characterstatic_dbss.md) - every row's `character_id` has a record there, with `npc_kind` low byte `2` and the identical `getknowledge(<id>);` script
-- [characterspawntype.dbss](characterspawntype_dbss.md) - `kind` is a `SpawnType` value, and that role flag is set for the same character there
-- [mentalcard.dbss](mentalcard_dbss.md) - `getknowledge(<id>);` arguments are knowledge `entry_id` values
-- [exploration.bss](exploration_bss.md) - worldmap nodes; their manager and representative fields are character IDs from this key space
-
 ---
 
 ## File Layout

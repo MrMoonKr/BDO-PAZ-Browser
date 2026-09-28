@@ -12,19 +12,6 @@ species=2 (Dog), variant=6  →  grade=1 (Classic)
 species=25 (Airiss), ...    →  grade varies
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- pet
-
-### Connections
-
-- [pet.dbss](pet_dbss.md), join on `(species << 8) | variant` to enrich pet records with grade
-- [petgradeoffset.dbss](petgrade_dbss.md#petgradeoffsetdbss), keyed offset index for this file
-
 ---
 
 ## Companion Files

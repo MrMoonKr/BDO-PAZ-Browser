@@ -11,19 +11,6 @@ title_id: 44  →  category: 1 (Combat)
 title_id: 218 →  category: 0 (World)
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- bss
-- title
-- title category
-
-### Connections
-
-- [title.dbss](title_dbss.md), title data file; also carries category inline after requirement text
-
 ---
 
 ## Record Structure

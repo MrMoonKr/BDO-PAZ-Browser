@@ -13,21 +13,6 @@ Grana -> Papu Worker, 3500
 Bukpo -> Dokkebi Worker, 3500
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- bss
-- worker
-- town
-
-### Connections
-
-- [plantworker.bss](plantworker_bss.md) - provides worker definitions, worker display names, stats, and icon paths
-- [languagedata_en.loc](languagedata_loc.md) - resolves `selection_id` through LOC type `17` and `worker_id` through LOC type `6`
-- `plantworkerpassiveskill.bss` - same-prefix worker skill data; related, not required to parse this file
-
 ---
 
 ## Companion Files

@@ -15,24 +15,6 @@ character 2101  kind 5 -> Velia 4
                           model 02_balenos/velia/balenos_velia_str_house_05.pam
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- character
-- housing
-- icon
-
-### Connections
-
-- [characterobjectoffset.dbss](#characterobjectoffsetdbss) - required offset table for `characterobject.dbss`
-- [characterstatic.dbss](characterstatic_dbss.md) - same `character_id` key space; every `characterobject.dbss` ID also appears in `characterstaticoffset.dbss`
-- [characterspawntype.dbss](characterspawntype_dbss.md) - keyed by the same character ID, so it shares the character icon index
-- [languagedata_en.loc](languagedata_loc.md) - object names with `str_type=6`, `str_id1=character_id`
-- [itemenchant.dbss](itemenchant_dbss.md) - the item that places each object names it at `+0xAA`; its icon fills gaps here
-
 ---
 
 ## Companion Files

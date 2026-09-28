@@ -18,28 +18,6 @@ class_type: 4                  -> LOC type 21 "Ranger"
 
 Field names `npcKind` and `classType` follow the notes of [bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor); this doc writes them as `npc_kind` and `class_type`.
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- character
-- npc
-- knowledge
-- class
-
-### Connections
-
-- [characterstaticoffset.dbss](#characterstaticoffsetdbss) - required offset table for `characterstatic.dbss`
-- [playercharacterstatic.bss](#playercharacterstaticbss) - lists the character IDs whose records carry a real `class_type`
-- [languagedata_en.loc](languagedata_loc.md) - character names with `str_type=6`, `str_id1=character_id`; class names with `str_type=21`, `str_id1=class_type`; knowledge names with `str_type=34`
-- [mentalcard.dbss](mentalcard_dbss.md) - `getknowledge(<id>);` arguments are `mentalcard.dbss` `entry_id` values
-- [knowledgelearning.dbss](knowledgelearning_dbss.md) - same knowledge IDs, keyed by unlock trigger
-- [npcsimply.bss](npcsimply_bss.md) - every `npcsimply.bss` character is a `characterstatic.dbss` record with `npc_kind` low byte `2` and the same `getknowledge` script
-- [characterspawntype.dbss](characterspawntype_dbss.md) - same `character_id` key space
-- [characterobject.dbss](characterobject_dbss.md) - same `character_id` key space; world-object records for placeable characters
-
 ---
 
 ## Companion Files

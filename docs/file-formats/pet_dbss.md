@@ -12,23 +12,6 @@ equip_skill_slots: 4   dds_variant: 4
 icon: New_UI_Common_forLua\Window\Stable\Pet\GoldStar_Pet_0004.dds
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- pet
-- companion
-
-### Connections
-
-- [petoffset.dbss](petoffset_dbss.md), keyed offset index for this file
-- [petgrade.dbss](petgrade_dbss.md), join on `(species, variant)` to get grade per pet type
-- [petequipskillaquire.dbss](petequipskillaquire_dbss.md), `acquire_type_id` keys into this table
-- [petequipskill.bss](petequipskill_bss.md), `equip_skill_id` keys into this file for skill name and type
-- [petexp.dbss](petexp_dbss.md), pet EXP tables; `max_level` values match this file's level counts
-
 ---
 
 ## Companion Files

@@ -14,21 +14,6 @@ group 1: sub_key 19 -> (0, 200), sub_key 20 -> (0, 300)
 group 7: sub_key 0  -> (300, 350)
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- bss
-- fairy
-- config
-
-### Connections
-
-- [fairyupgraderate.bss](fairyupgraderate_bss.md), fairy Sprouting success rates, the other fairy enchant-side table
-- [fairyequipskill.bss](fairyequipskill_bss.md), fairy skill catalog rerolled after a successful Sprout
-- [fairyskillchange.dbss](fairyskillchange_dbss.md), fairy skill reroll cost
-
 ---
 
 ## Companion Files

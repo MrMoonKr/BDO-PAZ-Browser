@@ -10,21 +10,6 @@ Example:
 PABR config: first limits = 5 / 5, value thresholds = 1000 / 50000000 / 20
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- bss
-- npc
-- gift
-- amity
-- config
-
-### Connections
-
-- [npcgift.dbss](npcgift_dbss.md) - NPC gift item table and confession dialogue records that use this file as an optional global config companion
-
 ---
 
 ## File Layout

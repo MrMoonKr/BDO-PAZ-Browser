@@ -11,26 +11,6 @@ record_id=1539 -> Teff, production key 1539 -> item subgroup 40189 -> Teff
 
 The production-key reading and the worker-species field boundaries follow [asheimo/bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor) (`FORMATS.md`, "Worker-production item tables"), checked against the current client files below.
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- plant
-- zone
-- worker
-- production
-
-### Connections
-
-- `plantzoneoffset.dbss` - required offset table for `plantzone.dbss`
-- [exploration.bss](exploration_bss.md) - `record_id` is a production sub-node key (394/394)
-- [languagedata.loc](languagedata_loc.md) - `record_id` names resolve via LOC `str_type=29`
-- [plantworker.bss](plantworker_bss.md) - `worker_species` values match the species byte at worker record `+0x38F`
-- `plantexchangegroup.bss` - `production_key` joins its `+0x00` key (394/394)
-- `itemsubgroup.dbss` - `plantexchangegroup.bss` `+0x06` joins its subgroup key, which lists the produced item IDs
-
 ---
 
 ## Companion Files

@@ -23,23 +23,6 @@ product 117722 -> Icon/New_Icon/09_Cash/03_Product/00105099.dds
                -> item 340916 ([Guardian] Shell Belle Outfit Set)
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- item
-- cash shop
-- icon
-
-### Connections
-
-- [cashproductoffset.dbss](#cashproductoffsetdbss) - required key/offset index into this file
-- [itemenchant.dbss](itemenchant_dbss.md) - the primary item ID to icon path source
-- [maincategory.dbss](maincategory_dbss.md) - Pearl Shop main category records
-- [languagedata_en.loc](languagedata_loc.md) - English item names for the linked item ID
-
 ---
 
 ## Companion Files

@@ -12,21 +12,6 @@ equip_skill_id: 91  →  S2 type=18 loc=49162  "Barter EXP +1%"
 equip_skill_id: 42  →  S1 type=20 loc=49089  "Knowledge Gain Chance Lv. 4"
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- bss
-- pet
-- equip skill
-
-### Connections
-
-- [pet.dbss](pet_dbss.md), `equip_skill_id` field keys into this file
-- Localization (`loc_id`) resolved via `loc-tool.py --type 10 --id <loc_id>`
-- Icon assets use the same numeric ID as `loc_id`: `ui_texture/icon/new_icon/08_servant_skill/02_pet/equipskill_{loc_id:08d}.dds`
-
 ---
 
 ## Companion Files

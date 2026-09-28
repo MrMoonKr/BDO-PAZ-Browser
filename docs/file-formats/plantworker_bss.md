@@ -12,21 +12,6 @@ worker 7502 -> Giant Worker, next 7551, move 200, stamina 25, luck 50000
 worker 7504 -> Goblin Worker, next 7552, move 350, stamina 8, luck 50000
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- bss
-- worker
-- icon
-
-### Connections
-
-- [languagedata_en.loc](languagedata_loc.md) - worker names resolve through LOC type `6`, keyed by `worker_id`
-- `plantworkerpassiveskill.bss` - same-prefix worker skill data; related, not required by this handler
-- `plantworkerselect.bss` - same-prefix worker selection data; related, not required by this handler
-
 ---
 
 ## Companion Files

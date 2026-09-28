@@ -13,21 +13,6 @@ objective: <악몽의 그림자> 기가고드 처치하기;
 icon: Icon/Quest/Hadum08.dds
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- quest
-
-### Connections
-
-- [languagedata_en.loc](languagedata_loc.md), English quest title/text strings, mapped to LOC `str_type=18` with `str_id1=quest_chain_id` and `str_id2=quest_id`; `str_type=39` appears to contain voice/dialogue lines and should not be used as quest title text
-- [allquestlist.bss](allquestlist_bss.md), PABR list of packed quest IDs in the same order as the records in this file; entry `i` is the ID of record `i`
-- [questgroup.dbss](questgroup_dbss.md), groups quest chains and lists child quest IDs that resolve to `quest.dbss`
-- [journalquest.dbss](journalquest_dbss.md), adventure-journal pages are quest records of this file (`quest_category = 11`)
-
 ---
 
 ## Companion Files

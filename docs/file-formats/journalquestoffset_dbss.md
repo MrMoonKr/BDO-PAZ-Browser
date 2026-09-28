@@ -4,19 +4,6 @@
 
 Index file for `journalquest.dbss`. Maps each `(journal_key, book_key)` pair to a `(byte_offset, byte_size)` location within the main file. Field names follow [bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor), re-verified against our files.
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- journal
-- offset index
-
-### Connections
-
-- [journalquest.dbss](journalquest_dbss.md), main data file; records are located using this index
-
 ---
 
 ## Companion Files

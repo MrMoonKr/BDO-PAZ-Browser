@@ -11,24 +11,6 @@ group 0 -> quest 11059 / 9 -> [Event] Love for Pets
 group 4 -> quest 6809 / 1 -> LOC type 18 title when available
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- bss
-- quest
-- new quest
-- ui
-- index
-
-### Connections
-
-- [allquestlist.bss](allquestlist_bss.md) - decoded quest references use the same packed quest ID scheme
-- [mainquest.bss](mainquest_bss.md) - same 17-byte quest reference row shape, but different group count and UI purpose
-- [quest.dbss](quest_dbss.md) - quest definitions and LOC mapping use the same `(quest_id << 16) | quest_chain_id` packed ID scheme
-- [languagedata_en.loc](languagedata_loc.md) - English quest text keyed by LOC type 18 with `str_id1=quest_chain_id` and `str_id2=quest_id`
-
 ---
 
 ## File Layout

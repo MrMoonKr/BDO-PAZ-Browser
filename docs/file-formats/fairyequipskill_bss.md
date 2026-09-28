@@ -14,22 +14,6 @@ equip_skill_id: 20  →  type=6  loc=49121  "Miraculous Cheer 10 Seconds" / "Aut
 equip_skill_id: 34  →  type=8  loc=49181  "Continuous Care V"  / "Auto-use from 30 selected items."
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- bss
-- fairy
-- equip skill
-
-### Connections
-
-- [fairyequipskillaquire.dbss](fairyequipskillaquire_dbss.md), fairy equip-skill acquisition cost tables; no confirmed key relationship to this catalog
-- [petequipskill.bss](petequipskill_bss.md), structurally the same PABR catalog format for pets
-- Localization (`loc_id`) resolved via `loc-tool.py --type 10 --id <loc_id>`
-- Icon assets use the `loc_id`: `ui_texture/icon/new_icon/08_servant_skill/02_pet/equipskill_fairy_{loc_id:08d}.dds`
-
 ---
 
 ## Companion Files

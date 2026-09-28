@@ -12,18 +12,6 @@ name: 소서러, 여정의 시작
 quests: 66558, 132094, 197630
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- quest
-
-### Connections
-
-- [quest.dbss](quest_dbss.md), child quest IDs resolve to `quest.dbss` record IDs
-
 ---
 
 ## Companion Files

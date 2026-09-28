@@ -12,20 +12,6 @@ interest_groups: Vendors of Serendia (4), Serendia Log II (4), Plants (4)
 interest: 11–37, favor: 10–35
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- npc
-- amity
-
-### Connections
-
-- [zodiacsign.dbss](zodiacsign_dbss.md), personality_type maps to zodiac_id via `major = personality_type // 100`
-- [languagedata_en.loc](languagedata_loc.md), knowledge group names (str_type=9)
-
 ---
 
 ## Companion Files

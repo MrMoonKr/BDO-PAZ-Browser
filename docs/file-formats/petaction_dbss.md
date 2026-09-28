@@ -11,21 +11,6 @@ action_id: 0
 icon_path: New_Icon/08_Servant_Skill/02_Pet/Action_0_Like.dds
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- pet
-- action
-- icon
-
-### Connections
-
-- [petactionoffset.dbss](petaction_dbss.md#petactionoffsetdbss) - keyed offset index for this file
-- [languagedata_en.loc](languagedata_loc.md) - localized action names with `str_type=19`, `str_id1=action_id`
-
 ---
 
 ## Companion Files

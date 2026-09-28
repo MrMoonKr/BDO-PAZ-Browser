@@ -11,19 +11,6 @@ count: 0
 records: none
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- quest
-- world
-
-### Connections
-
-- [quest.dbss](quest_dbss.md), related quest definition table; no direct field relationship observed in this empty file
-
 ---
 
 ## Companion Files

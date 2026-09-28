@@ -12,23 +12,6 @@ employee_name_id: 34 -> name: 필그레이브
 LOC type=71 id1=47 id3=12 -> Guile
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- employee
-- name table
-
-### Connections
-
-- [employeenameoffset.dbss](#employeenameoffsetdbss) - required byte-offset index into this file
-- `employeespawnposition.dbss` - employee spawn records use matching small IDs for observed rows `1`-`5` and `41`-`50`
-- [languagedata_en.loc](languagedata_loc.md) - English names with `str_type=71`, `str_id1=employee_name_id`, `str_id3=12`
-- `employeestaticstatus.bss` - likely shares the same employee ID/name namespace, but the exact field position is not mapped here
-- `employeeexp.bss` - likely shares the same employee ID/name namespace, but the exact field position is not mapped here
-
 ---
 
 ## Companion Files

@@ -15,24 +15,6 @@ step 2 (Brilliant -> Radiant): Sweet Honey Wine          0.2500% per item, 400 f
                                Ornette's Dark Honey Wine 4.0000% per item,  25 for 100%
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- bss
-- fairy
-- sprouting
-- upgrade
-- probability
-
-### Connections
-
-- [fairyequipskillaquire.dbss](fairyequipskillaquire_dbss.md), establishes the four fairy grades and the same parts-per-million convention; skills are rerolled from it after a successful Sprout
-- [fairyequipskill.bss](fairyequipskill_bss.md), fairy skill catalog rolled after Sprouting
-- [fairyskillchange.dbss](fairyskillchange_dbss.md), fairy skill reroll cost, the other fairy-side cost table
-- [languagedata_en.loc](languagedata_loc.md), English item names for `item_id`
-
 ---
 
 ## Companion Files

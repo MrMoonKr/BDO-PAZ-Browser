@@ -18,23 +18,6 @@ Journal 8 / Book 1, Olvia Academy Journal / Emma Bartali's Journal
   pages: 13 packed quest IDs (chain 2326, quests 1..13)
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- quest
-- journal
-- adventure log
-
-### Connections
-
-- [journalquestoffset.dbss](journalquestoffset_dbss.md), index mapping `(journal_key, book_key)` to `(byte_offset, byte_size)` in this file
-- [quest.dbss](quest_dbss.md), every page is a packed quest ID with its own `quest.dbss` record; page records carry the permanent Family-stat reward
-- [allquestlist.bss](allquestlist_bss.md), all page quest IDs are present in this list
-- [languagedata_en.loc](languagedata_loc.md), journal and book text via LOC `str_type=63`; page quest text via LOC `str_type=18` keyed by the page's packed quest ID
-
 ---
 
 ## Companion Files

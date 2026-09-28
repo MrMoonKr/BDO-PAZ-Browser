@@ -10,22 +10,6 @@ Example:
 row 0 -> quest 8500 / 4 -> [LoML] Emma's Invitation
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- bss
-- quest
-- index
-
-### Connections
-
-- [allquestlist.bss](allquestlist_bss.md) - contains the same 19,599 packed quest IDs, but in canonical/display order
-- [acceptquest.bss](acceptquest_bss.md) - same row width and quest key scheme, but acceptance-related order and side fields
-- [quest.dbss](quest_dbss.md) - quest definitions and LOC mapping use the same `(quest_id << 16) | quest_chain_id` packed ID scheme
-- [languagedata_en.loc](languagedata_loc.md) - English quest text keyed by LOC type 18 with `str_id1=quest_chain_id` and `str_id2=quest_id`
-
 ---
 
 ## File Layout

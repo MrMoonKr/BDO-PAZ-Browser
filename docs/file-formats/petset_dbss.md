@@ -11,20 +11,6 @@ Example:
 count: 0
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- pet
-- placeholder
-
-### Connections
-
-- [petsetoffset.dbss](petset_dbss.md) - empty offset companion for this table
-- [pet.dbss](pet_dbss.md) - active per-pet definition table
-
 ---
 
 ## Companion Files

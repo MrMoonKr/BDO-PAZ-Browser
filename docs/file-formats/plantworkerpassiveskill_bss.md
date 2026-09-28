@@ -12,21 +12,6 @@ Example rows:
 1012 -> 타고난 일꾼, /New_UI_Common_forLua/Skill/WorkerSkill/1012_N.dds, 작업속도 +2, 기본 이동속도의 7% 증가
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- bss
-- worker
-- skill
-
-### Connections
-
-- [plantworker.bss](plantworker_bss.md) - worker definitions that can reference worker/passive skill behavior in UI
-- [plantworkerselect.bss](plantworkerselect_bss.md) - same-prefix worker selection table; related, not required to parse this file
-- [languagedata_en.loc](languagedata_loc.md) - optional localized worker skill names and descriptions through LOC type `22`
-
 ---
 
 ## Companion Files

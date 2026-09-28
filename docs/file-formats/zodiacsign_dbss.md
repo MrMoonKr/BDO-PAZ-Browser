@@ -12,25 +12,6 @@ Traits: Brave, Conservative, Hot-Blooded.
 Stars: 5 positions, icon: Customize_Zodiac_M_Hammer.dds
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- zodiac
-- npc
-- parser
-
-### Connections
-
-- [zodiacsignoffset.dbss](#zodiacsignoffsetdbss), ID-keyed index for this file
-- [zodiacsignorder.dbss](#zodiacsignorderdbss), per-personality drawing-order sequences
-- [zodiacsignorderoffset.dbss](#zodiacsignorderoffsetdbss), index for zodiacsignorder
-- [zodiacsignindex.bss](zodiacsignindex_bss.md), compact display/index order for the 12 zodiac IDs
-- [npcpersonality.dbss](npcpersonality_dbss.md), cross-references zodiac_id via `personality_type // 100`
-- [languagedata_en.loc](languagedata_loc.md), English names and trait descriptions (str_type=7)
-
 ---
 
 ## Companion Files

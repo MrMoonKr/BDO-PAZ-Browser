@@ -12,20 +12,6 @@ max_level: 50
 level_exp[1..5]: 2055, 2260, 2599, 2989, 3437
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- pet
-- experience
-
-### Connections
-
-- [petexpoffset.dbss](petexp_dbss.md#petexpoffsetdbss) - keyed offset index for this file
-- [pet.dbss](pet_dbss.md) - pet records expose a `max_level` field that matches the level counts in this table
-
 ---
 
 ## Companion Files

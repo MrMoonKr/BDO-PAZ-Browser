@@ -12,22 +12,6 @@ level 1 raw_value_a: 3,584,000
 level 10 raw_value_a: 1,280,000
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- pet
-- skill
-- companion
-
-### Connections
-
-- [petskilloffset.dbss](petskill_dbss.md#petskilloffsetdbss), keyed offset index for this file
-- [pet.dbss](pet_dbss.md), pet records reference pet skill systems through related skill fields
-- [petequipskill.bss](petequipskill_bss.md), separate pet equip-skill catalog; not the same table
-
 ---
 
 ## Companion Files

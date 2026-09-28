@@ -13,32 +13,6 @@ str_type: 54, str_id1: 40012          →  "Thank you! I really like this."
 str_type: 71, str_id1: 47, str_id3: 12 →  "Guile"
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- loc
-- localization
-
-### Connections
-
-- [title.dbss](title_dbss.md), title names and requirements (str_type=1)
-- [zodiacsign.dbss](zodiacsign_dbss.md), zodiac sign names and traits (str_type=7)
-- [npcgift.dbss](npcgift_dbss.md), NPC gift dialogue (str_type=54)
-- [mentalcard.dbss](mentalcard_dbss.md), knowledge entries (str_type=34) and categories (str_type=9)
-- [titlebufflist.dbss](titlebufflist_dbss.md), title effects tooltip (str_type=37)
-- [journalquest.dbss](journalquest_dbss.md), journal quest adventure log metadata (str_type=63, str_id1=journal_key, str_id2=book_key) and page titles/story text (str_type=18, keyed by each page's packed quest ID)
-- [petaction.dbss](petaction_dbss.md), pet action labels (str_type=19, str_id1=action_id)
-- [employeename.dbss](employeename_dbss.md), employee names (str_type=71, str_id1=employee_name_id, str_id3=12)
-- [plantworkerselect.bss](plantworkerselect_bss.md), town/node selection names (str_type=17, str_id1=selection_id)
-- [planttown.bss](planttown_bss.md), town/node names (str_type=29, str_id1=node_id)
-- [petequipskill.bss](petequipskill_bss.md), pet passive skill names and descriptions (str_type=10, str_id1=loc_id)
-- [fairyequipskill.bss](fairyequipskill_bss.md), fairy passive skill names and descriptions (str_type=10, str_id1=loc_id)
-- [buff.dbss](buff_dbss.md), buff descriptions (str_type=5, str_id1=buff_id)
-- [mentaltheme.dbss](mentaltheme_dbss.md), knowledge category names (str_type=9, str_id1=theme_id)
-- [characterstatic.dbss](characterstatic_dbss.md), character names (str_type=6, str_id1=character_id)
-
 ---
 
 ## File Layout

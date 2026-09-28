@@ -13,23 +13,6 @@ row 25 -> node 1301 -> Valencia City
 row 42 -> node 1    -> Velia
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- bss
-- plant
-- town
-- node
-
-### Connections
-
-- [plantworkerselect.bss](plantworkerselect_bss.md) - uses a related town/worker selection concept, but stores separate selection IDs
-- [plantworker.bss](plantworker_bss.md) - worker definitions used by town worker systems
-- [plantzone.dbss](plantzone_dbss.md) - same plant-domain data family
-- [languagedata_en.loc](languagedata_loc.md) - resolves node display names with LOC type `29`
-
 ---
 
 ## Companion Files

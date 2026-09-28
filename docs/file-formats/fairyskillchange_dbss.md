@@ -16,21 +16,6 @@ level 25  → 2 Theiah's Orbs
 level 50  → 5 Theiah's Orbs
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- fairy
-- skill change
-
-### Connections
-
-- [fairyskillchangeoffset.dbss](#fairyskillchangeoffsetdbss), level-keyed offset index
-- [fairyequipskill.bss](fairyequipskill_bss.md), the fairy skill catalog whose entries a reroll draws from; no shared key
-- [fairyequipskillaquire.dbss](fairyequipskillaquire_dbss.md), fairy equip-skill acquisition costs
-
 ---
 
 ## Companion Files

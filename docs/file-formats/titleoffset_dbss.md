@@ -10,19 +10,6 @@ Example:
 title_id: 44  →  offset: 0x1A3C, size: 0x98
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- title
-- offset index
-
-### Connections
-
-- [title.dbss](title_dbss.md), main data file this index addresses
-
 ---
 
 ## File Layout

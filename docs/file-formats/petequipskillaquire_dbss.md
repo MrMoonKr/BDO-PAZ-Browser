@@ -14,23 +14,6 @@ acquire_type_id 401 → Combat EXP +5%:     weight 120000 of 700000 = 17.1%
 acquire_type_id 401 → Cooking EXP +5%:    weight  10000 of 700000 =  1.4%
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- pet
-- equip skill
-- drop rate
-
-### Connections
-
-- [pet.dbss](pet_dbss.md), `acquire_type_id` field keys into this file
-- [petequipskill.bss](petequipskill_bss.md), the skill catalog; weights are indexed by its `equip_skill_id`
-- [petequipskillaquireoffset.dbss](#petequipskillaquireoffsetdbss), keyed offset index
-- [fairyequipskillaquire.dbss](fairyequipskillaquire_dbss.md), identical record layout for fairies
-
 ---
 
 ## Companion Files

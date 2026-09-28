@@ -11,20 +11,6 @@ category_id: 1
 icon_path: new_ui_common_forlua/window/ingamecashshop/cashshopmenu/CashShopMenu_02.dds
 ```
 
-## Graph
-
-### Tags
-
-- file format
-- dbss
-- cash shop
-- category
-- icon
-
-### Connections
-
-- [maincategoryoffset.dbss](maincategory_dbss.md#maincategoryoffsetdbss) - keyed offset index for this file
-
 ---
 
 ## Companion Files
