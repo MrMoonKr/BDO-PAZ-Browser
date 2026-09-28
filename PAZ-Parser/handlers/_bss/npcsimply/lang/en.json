@@ -6,6 +6,7 @@
     "nameKr": "Name (KR)",
     "role": "Role",
     "knowledgeId": "Knowledge ID",
+    "leases": "Leases",
     "script": "Script"
   }
 }

@@ -6,6 +6,9 @@ from .title.handler import TitleDbssHandler
 from .titlebuff.handler import TitleBuffListHandler, TitleBuffListOffsetHandler
 from .titleoffset.handler import TitleOffsetHandler
 from .mentalcard.handler import MentalCardHandler, MentalCardOffsetHandler
+from .detail_dialog.handler import DetailDialogHandler, DetailDialogOffsetHandler
+from .base_dialog.handler import BaseDialogHandler
+from .dialogtext.handler import DialogTextHandler, DialogTextOffsetHandler
 from .mentaltheme.handler import MentalThemeHandler, MentalThemeOffsetHandler
 from .knowledgelearning.handler import (
     KnowledgeLearningHandler,
@@ -81,6 +84,13 @@ def register_dbss_handlers() -> None:
     register_handler("titlebufflist.dbss", TitleBuffListHandler())
     register_handler("mentalcardoffset.dbss", MentalCardOffsetHandler())
     register_handler("mentalcard.dbss", MentalCardHandler())
+    register_handler("detail_dialogoffset.dbss", DetailDialogOffsetHandler())
+    register_handler("detail_dialog.dbss", DetailDialogHandler())
+    # base_dialogoffset.dbss has the layout and keys of detail_dialogoffset.dbss.
+    register_handler("base_dialogoffset.dbss", DetailDialogOffsetHandler())
+    register_handler("base_dialog.dbss", BaseDialogHandler())
+    register_handler("dialogtextoffset.dbss", DialogTextOffsetHandler())
+    register_handler("dialogtext.dbss", DialogTextHandler())
     register_handler("mentalthemeoffset.dbss", MentalThemeOffsetHandler())
     register_handler("mentaltheme.dbss", MentalThemeHandler())
     register_handler("knowledgelearningoffset.dbss", KnowledgeLearningOffsetHandler())

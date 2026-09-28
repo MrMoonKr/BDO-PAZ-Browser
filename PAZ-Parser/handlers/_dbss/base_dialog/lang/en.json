@@ -1,0 +1,8 @@
+{
+  "columns": {
+    "characterId": "Character ID",
+    "dialog": "Dialog",
+    "character": "Character",
+    "lines": "Lines"
+  }
+}

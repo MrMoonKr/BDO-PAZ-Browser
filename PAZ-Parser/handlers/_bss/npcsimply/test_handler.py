@@ -17,11 +17,14 @@ from tests.framework import (
     run_case,
 )
 
+from _bss.npcsimply.leases import character_leases
+from _common.lookup_index import IndexKind, init_index
 from _dbss.characterspawntype.parser import ROLE_COUNT
+from _dbss.detail_dialog.lease import Lease
 
 
-# unknown_12 reads 0xFFFF on every row without an unknown_0c.
-_NO_UNKNOWN_0C = 0xFFFF
+# unknown_12 reads 0xFFFF on every row without a lease item.
+_NO_LEASE_ITEM = 0xFFFF
 
 CASE = HandlerCase(
     handler_name="npcsimply.bss",
@@ -43,15 +46,17 @@ CASE = HandlerCase(
                 "script",
                 "knowledge_id",
                 "unknown_02",
-                "unknown_0c",
-                "unknown_10",
+                "lease_item_id",
+                "leases",
+                "lease_count",
+                "lease_cost",
                 "unknown_12",
-                "unknown_14",
+                "has_lease_condition",
             ],
         ),
         DeclaredCountTest(declared=header_count(offset=4)),
         RangeTest(col="kind", min_val=0, max_val=ROLE_COUNT - 1),
-        RangeTest(col="unknown_14", min_val=0, max_val=1),
+        RangeTest(col="has_lease_condition", min_val=0, max_val=1),
         TargetTest(
             col="character_id",
             value=47791,
@@ -88,6 +93,13 @@ CASE = HandlerCase(
                 "knowledge_id": 2387,
             },
         ),
+        # Storage Keeper who leases the [CP] Container (item 3001), checked in game.
+        TargetTest(
+            col="character_id",
+            value=47008,
+            # Her lease checks that you do not own a Container yet.
+            expected={"name": "Delorence", "lease_item_id": 3001, "has_lease_condition": 1},
+        ),
         # The only script spelled `getKnowledge`.
         TargetTest(
             col="character_id",
@@ -112,10 +124,24 @@ def test_npcsimply_bss(spec: Any, npcsimply_result: HandlerResult) -> None:
     npcsimply_result.check(spec)
 
 
-def test_npcsimply_unknown_12_marks_rows_without_unknown_0c(npcsimply_result: HandlerResult) -> None:
+def test_npcsimply_unknown_12_marks_rows_without_lease_item(npcsimply_result: HandlerResult) -> None:
     mismatched = [
         record["character_id"]
         for record in npcsimply_result.records
-        if (record["unknown_12"] == _NO_UNKNOWN_0C) != (record["unknown_0c"] == 0)
+        if (record["unknown_12"] == _NO_LEASE_ITEM) != (record["lease_item_id"] is None)
     ]
-    assert not mismatched, f"unknown_12 and unknown_0c disagree on characters {mismatched[:5]}"
+    assert not mismatched, f"unknown_12 and lease_item_id disagree on characters {mismatched[:5]}"
+
+
+def test_character_leases_keeps_the_stored_cost() -> None:
+    """Dialog leases come from the index; the lease stored in npcsimply wins on cost."""
+    init_index(IndexKind.CHARACTER_LEASES, {7: (100, 1, 200, 5)})
+    try:
+        assert character_leases(7, 100, 2) == [Lease(100, 2), Lease(200, 5)]
+        assert character_leases(7, 300, 4) == [Lease(300, 4), Lease(100, 1), Lease(200, 5)]
+        assert character_leases(7, 0, 0) == [Lease(100, 1), Lease(200, 5)]
+        assert character_leases(8, 0, 0) == []
+    finally:
+        init_index(IndexKind.CHARACTER_LEASES, None)
+    # Without the index only the stored lease is known.
+    assert character_leases(7, 100, 2) == [Lease(100, 2)]

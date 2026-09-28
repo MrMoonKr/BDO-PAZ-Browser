@@ -9,7 +9,7 @@ from table_sort import TableSort, sort_order_by_values
 
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 
-from _common.html import Column, e, icon_cell, sort_keys, table
+from _common.html import Column, e, icon_cell, sort_keys, table, truncate
 from _common.lang import load_handler_strings
 from _bss.allquestlist.parser import parse_allquestlist_records
 from .model import FamilyStat
@@ -20,8 +20,11 @@ _LANG_DIR = Path(__file__).parent / "lang"
 _ORDER_FILE = "allquestlist.bss"
 
 
-def _truncate(text: str, max_len: int = 140) -> str:
-    return text if len(text) <= max_len else text[:max_len] + "..."
+_TEXT_PREVIEW_CHARS = 140
+
+
+def _truncate(text: str) -> str:
+    return truncate(text, _TEXT_PREVIEW_CHARS)
 
 
 def _quest_loc_texts(quest_chain_id: int, quest_id: int) -> list[str]:

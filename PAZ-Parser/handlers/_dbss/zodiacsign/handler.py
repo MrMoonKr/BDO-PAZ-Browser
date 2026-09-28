@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import Column, e, error, sort_keys, table
+from _common.html import Column, e, error, sort_keys, table, truncate
 from _common.lang import load_handler_strings
 from _common.zodiacsign.loc import resolve_loc_type7
 from _common.zodiacsign.parser import parse_zodiacsign_records
@@ -19,8 +19,11 @@ from .parser import (
 _LANG_DIR = Path(__file__).parent / "lang"
 
 
-def _truncate(text: str, max_len: int = 100) -> str:
-    return text if len(text) <= max_len else text[:max_len] + "…"
+_TRAIT_PREVIEW_CHARS = 100
+
+
+def _truncate(text: str, max_len: int = _TRAIT_PREVIEW_CHARS) -> str:
+    return truncate(text, max_len)
 
 
 class ZodiacSignHandler(PreviewHandler):

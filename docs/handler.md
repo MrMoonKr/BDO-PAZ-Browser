@@ -394,6 +394,14 @@ headers and sizes, not by repeating the parser's walk.
 Expected dictionaries use subset matching. Tests only check declared keys, so adding
 new fields to a handler does not break existing tests.
 
+A test module must not import a `handler.py` directly. Importing it first loads
+`bdo_preview`, which loads every registration file, which imports the same
+half-loaded handler module again and fails with a circular import; the case then
+runs against a fallback handler. Put anything a test calls outside `run_case`
+(a text or lease helper, a display table) in its own module next to the handler,
+such as `_bss/npcsimply/leases.py`, `_dbss/dialogtext/text.py` or
+`_bss/plantworkerpassiveskill/display.py`, and import that instead.
+
 A handler that reads a [lookup index](#lookup-indexes) sees none in a test
 unless the case installs it: `lookup_indexes={IndexKind.CHARACTER_ITEM: {2053:
 58011}}`. Install only the links the `TargetTest`s check, since the real index
@@ -703,15 +711,25 @@ _common/
 ├── loc.py
 ├── binary.py
 ├── html.py
-├── pabr_offset.py       # u16-keyed offset companions, with or without PABR magic
-└── prefixed_string.py   # length-prefixed strings: strict and lenient readers
+├── pabr_offset.py       # offset companions: u16 or u32 keys, with or without PABR magic
+├── prefixed_string.py   # length-prefixed strings: strict and lenient readers
+└── record_reader.py     # RecordReader: walks one variable-length record in order
 ```
 
 Read an offset companion with `parse_pabr_offset_rows()` (PABR magic, count,
-rows) or `parse_bare_offset_rows()` (count, rows), never by hand. For inline
-strings, `read_prefixed_at()` reads a prefix at a known position and returns
-the next one; `read_prefixed_utf16()` and `find_prefixed_ascii()` are for text
-whose position is only a guess.
+u16-keyed rows), `parse_pabr_u32_offset_rows()` (the same with u32 keys, e.g.
+`mentalcardoffset.dbss`) or `parse_bare_offset_rows()` (count, rows), never by
+hand. Several older parsers (`itemenchant`, `plantzone`, `cashproduct` and
+others) still read their offset rows themselves. Walk a record of fixed fields
+and u64-prefixed strings with `RecordReader(data, start, end, label)`: `unpack`,
+`text(wide=...)`, `skip`, and `at_end()` / `remaining()` for the final size
+check; it raises ValueError as soon as a field runs past the record. For inline
+strings at unknown positions, `read_prefixed_at()` reads a prefix at a known
+position and returns the next one; `read_prefixed_utf16()` and
+`find_prefixed_ascii()` are for text whose position is only a guess.
+
+`html.py` has `truncate(text, max_len)` for long text cells and
+`join_limited(values, max_items)` for list cells.
 
 Use format-specific helpers inside that format package.
 
@@ -779,6 +797,7 @@ IDs (`LookupValue`).
 | `CHARACTER_ICON` | `characterobject.dbss`, `characterobjectoffset.dbss` | icon path |
 | `CHARACTER_ITEM` | `itemenchant.dbss`, `itemenchantoffset.dbss` | item ID      |
 | `KNOWLEDGE_CHARACTERS` | `characterstatic.dbss`, `characterstaticoffset.dbss` | character IDs (tuple) |
+| `CHARACTER_LEASES` | `detail_dialog.dbss`, `detail_dialogoffset.dbss` | flat `(item_id, cost, ...)` pairs |
 
 `CHARACTER_ITEM` maps a character to the one base item that places or summons
 it (`character_id` at `+0xAA` in
@@ -788,6 +807,13 @@ or several items are left out. The `characterobject.dbss` Item column reads it.
 `KNOWLEDGE_CHARACTERS` maps a knowledge card to every character whose
 `getknowledge(<id>);` action script grants it, in ascending ID order. The
 `mentalcard.dbss` Learned From column reads it.
+
+`CHARACTER_LEASES` maps a character to every `buyItemByPoint(...)` lease
+option in its dialogs ([detail_dialog.dbss](file-formats/detail_dialog_dbss.md)),
+in dialog order and without repeats, as flat `(item_id, cost)` pairs that
+`lease_pairs()` in `_dbss/detail_dialog/parser.py` unpacks. The `npcsimply.bss`
+Leases column reads it. Its source is 27 MB, which takes about 2 s to read and
+build once per client.
 
 ---
 

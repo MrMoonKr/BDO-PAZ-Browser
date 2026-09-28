@@ -1,0 +1,13 @@
+{
+  "offsetColumns": {
+    "key": "Key",
+    "dbssOffset": "DBSS Offset",
+    "size": "Size"
+  },
+  "columns": {
+    "name": "Name",
+    "lines": "Lines",
+    "text": "Text",
+    "voice": "Voice"
+  }
+}

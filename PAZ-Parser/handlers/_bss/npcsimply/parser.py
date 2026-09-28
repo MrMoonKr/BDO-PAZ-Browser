@@ -20,7 +20,7 @@ _MAGIC = b"PABR"
 _HEADER_SIZE = 8
 
 # u16 character_id | u8 unknown_02 | u8 zero | u32 kind | u32 script_ref
-# | u32 unknown_0c | u16 unknown_10 | u16 unknown_12 | u8 unknown_14
+# | u32 lease_item_id | u16 lease_cost | u16 unknown_12 | u8 has_lease_condition
 # | u32 name_ref | u32 role_ref | u32 padding
 _RECORD = struct.Struct("<HBBIIIHHBIII")
 _RECORD_SIZE = 33
@@ -49,7 +49,7 @@ def parse_npcsimply_records(data: bytes) -> list[dict]:
     for offset in range(_HEADER_SIZE, rows_end, _RECORD_SIZE):
         (
             character_id, unknown_02, _zero, kind, script_ref,
-            unknown_0c, unknown_10, unknown_12, unknown_14,
+            lease_item_id, lease_cost, unknown_12, has_lease_condition,
             name_ref, role_ref, _padding,
         ) = _RECORD.unpack_from(data, offset)
         script = string_at(strings, script_ref)
@@ -61,9 +61,9 @@ def parse_npcsimply_records(data: bytes) -> list[dict]:
             "role_kr": string_at(strings, role_ref),
             "script": script,
             "knowledge_id": knowledge_id_of(script),
-            "unknown_0c": unknown_0c,
-            "unknown_10": unknown_10,
+            "lease_item_id": lease_item_id,
+            "lease_cost": lease_cost,
             "unknown_12": unknown_12,
-            "unknown_14": unknown_14,
+            "has_lease_condition": has_lease_condition,
         })
     return records

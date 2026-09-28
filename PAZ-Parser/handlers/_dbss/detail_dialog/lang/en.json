@@ -1,0 +1,17 @@
+{
+  "offsetColumns": {
+    "characterId": "Character ID",
+    "dialog": "Dialog",
+    "dbssOffset": "DBSS Offset",
+    "size": "Size"
+  },
+  "columns": {
+    "characterId": "Character ID",
+    "dialog": "Dialog",
+    "character": "Character",
+    "greeting": "Greeting",
+    "options": "Options",
+    "optionTitles": "Option Titles",
+    "leases": "Leases"
+  }
+}

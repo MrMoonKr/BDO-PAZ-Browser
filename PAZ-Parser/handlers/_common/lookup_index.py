@@ -30,6 +30,8 @@ class IndexKind(Enum):
     CHARACTER_ICON = "character_icon"
     CHARACTER_ITEM = "character_item"
     KNOWLEDGE_CHARACTERS = "knowledge_characters"
+    # Flat (item_id, cost, ...) pairs; see detail_dialog parser.lease_pairs.
+    CHARACTER_LEASES = "character_leases"
 
 
 # kind -> {entity_id: value}

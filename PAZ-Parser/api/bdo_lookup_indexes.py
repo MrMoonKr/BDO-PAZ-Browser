@@ -19,6 +19,7 @@ from _common.icon_index import borrow_icons
 from _common.lookup_index import IndexKind, LookupValue
 from _dbss.characterobject.parser import build_character_icon_index
 from _dbss.characterstatic.parser import build_knowledge_character_index
+from _dbss.detail_dialog.parser import build_character_lease_index
 from _dbss.itemenchant.parser import build_character_item_index, build_item_icon_index
 from _dbss.quest.parser import build_quest_icon_index
 from paz.bdo_index_cache import CachedIndexes, builder_fingerprint
@@ -32,6 +33,8 @@ CHARACTEROBJECT = f"{_BINARY}/characterobject.dbss"
 CHARACTEROBJECT_OFFSET = f"{_BINARY}/characterobjectoffset.dbss"
 CHARACTERSTATIC = f"{_BINARY}/characterstatic.dbss"
 CHARACTERSTATIC_OFFSET = f"{_BINARY}/characterstaticoffset.dbss"
+DETAIL_DIALOG = f"{_BINARY}/detail_dialog.dbss"
+DETAIL_DIALOG_OFFSET = f"{_BINARY}/detail_dialogoffset.dbss"
 
 
 @dataclass(frozen=True)
@@ -61,6 +64,11 @@ INDEX_SPECS: tuple[IndexSpec, ...] = (
         IndexKind.KNOWLEDGE_CHARACTERS,
         (CHARACTERSTATIC, CHARACTERSTATIC_OFFSET),
         build_knowledge_character_index,
+    ),
+    IndexSpec(
+        IndexKind.CHARACTER_LEASES,
+        (DETAIL_DIALOG, DETAIL_DIALOG_OFFSET),
+        build_character_lease_index,
     ),
 )
 

@@ -5,20 +5,36 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import Column, e, sort_keys, table
+from _common.html import Column, e, join_limited, sort_keys, table
 from _common.lang import load_handler_strings
-from _common.loc import loc_text
+from _common.loc import is_loc_loaded, loc_text
 from _dbss.characterspawntype.parser import SPAWN_TYPE_NAMES
+from _dbss.detail_dialog.lease import lease_text
+from .leases import character_leases
 from .parser import parse_npcsimply_records
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
 _LOC_CHARACTER_NAME = 6
 _EMPTY = "-"
+_LIST_PREVIEW_ITEMS = 3
 
 
 def _kind_name(kind: int) -> str:
     return SPAWN_TYPE_NAMES[kind] if kind < len(SPAWN_TYPE_NAMES) else str(kind)
+
+
+def _lease_fields(record: dict, has_loc: bool) -> dict:
+    """The stored lease (`None` without one, so it sorts last) and every known lease as text."""
+    item_id = record["lease_item_id"]
+    leases = character_leases(record["character_id"], item_id, record["lease_cost"])
+    return {
+        "lease_item_id": item_id or None,
+        "lease_cost": record["lease_cost"] if item_id else None,
+        "leases": [lease_text(lease, has_loc) for lease in leases],
+        # Empty sorts last.
+        "lease_count": len(leases) or None,
+    }
 
 
 class NpcSimplyBssHandler(PreviewHandler):
@@ -31,6 +47,7 @@ class NpcSimplyBssHandler(PreviewHandler):
             Column(cols.get("nameKr", "Name (KR)"), sort_key="name_kr"),
             Column(cols.get("role", "Role"), sort_key="role_kr"),
             Column(cols.get("knowledgeId", "Knowledge ID"), "num", sort_key="knowledge_id"),
+            Column(cols.get("leases", "Leases"), sort_key="lease_count"),
             Column(cols.get("script", "Script"), sort_key="script"),
         ]
 
@@ -43,9 +60,11 @@ class NpcSimplyBssHandler(PreviewHandler):
         entry: PazEntry,
         companions: dict[str, bytes],
     ) -> list[dict]:
+        has_loc = is_loc_loaded()
         return [
             {
                 **record,
+                **_lease_fields(record, has_loc),
                 "name": loc_text(_LOC_CHARACTER_NAME, record["character_id"]),
                 "kind_name": _kind_name(record["kind"]),
             }
@@ -70,6 +89,7 @@ class NpcSimplyBssHandler(PreviewHandler):
                 e(record["name_kr"] or _EMPTY),
                 e(record["role_kr"]),
                 e(_EMPTY if record["knowledge_id"] is None else record["knowledge_id"]),
+                e(join_limited(record["leases"], _LIST_PREVIEW_ITEMS) or _EMPTY),
                 e(record["script"]),
             ]
             for record in slice_

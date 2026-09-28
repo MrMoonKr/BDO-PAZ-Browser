@@ -23,6 +23,11 @@ def e(value: object) -> str:
     return _html.escape(str(value))
 
 
+def truncate(text: str, max_len: int) -> str:
+    """`text` cut to `max_len` characters plus an ellipsis, for long text cells."""
+    return text if len(text) <= max_len else text[:max_len] + "…"
+
+
 def join_limited(values: Sequence[str], max_items: int) -> str:
     """Comma-join the first `max_items` values and count the rest, for list cells."""
     if len(values) <= max_items:

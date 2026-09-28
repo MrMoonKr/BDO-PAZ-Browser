@@ -1,0 +1,99 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+from bdo_models import PazEntry
+from bdo_preview import PreviewHandler
+
+from _common.html import Column, e, join_limited, sort_keys, table
+from _common.lang import load_handler_strings
+from _common.loc import is_loc_loaded, loc_lookup, loc_text, strip_pa_tags
+from .parser import BaseDialogRecord, parse_base_dialog_records
+
+
+_LANG_DIR = Path(__file__).parent / "lang"
+_OFFSET_FILE = "base_dialogoffset.dbss"
+_LOC_CHARACTER_NAME = 6
+# Keyed (character_id, dialog_index, 0, n): n = 0 the dialog name, 1.. its lines.
+_LOC_BASE_DIALOG = 38
+_EMPTY = "-"
+_LIST_PREVIEW_ITEMS = 3
+
+
+def _dialog_text(record: BaseDialogRecord, field: int) -> str:
+    text = loc_lookup(_LOC_BASE_DIALOG, record.character_id, record.dialog_index, 0, field)
+    return strip_pa_tags(text).strip()
+
+
+def _record_dict(record: BaseDialogRecord, has_loc: bool) -> dict:
+    # English first; the character's LOC name, then the Korean source, stand in.
+    name = (
+        (_dialog_text(record, 0) or loc_text(_LOC_CHARACTER_NAME, record.character_id)) if has_loc else ""
+    ) or record.name_kr
+    lines = [
+        (_dialog_text(record, number) if has_loc else "") or line
+        for number, line in enumerate(record.lines, start=1)
+    ]
+    return {
+        "key": record.key,
+        "character_id": record.character_id,
+        "dialog_index": record.dialog_index,
+        "character": name,
+        "name_kr": record.name_kr,
+        "lines": lines,
+        "lines_kr": list(record.lines),
+        # Empty sorts last.
+        "line_count": len(record.lines) or None,
+    }
+
+
+class BaseDialogHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("characterId", "Character ID"), "num", sort_key="character_id"),
+            Column(cols.get("dialog", "Dialog"), "num", sort_key="dialog_index"),
+            Column(cols.get("character", "Character"), sort_key="character"),
+            Column(cols.get("lines", "Lines"), sort_key="line_count"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
+    def companions(self, entry: PazEntry) -> list[str]:
+        folder = entry.internal_path.rsplit("/", 1)[0]
+        return [f"{folder}/{_OFFSET_FILE}"]
+
+    def get_records(
+        self,
+        data: bytes,
+        entry: PazEntry,
+        companions: dict[str, bytes],
+    ) -> list[dict]:
+        offset_raw = companions.get(_OFFSET_FILE)
+        if offset_raw is None:
+            raise ValueError(f"{_OFFSET_FILE} companion not found.")
+
+        has_loc = is_loc_loaded()
+        return [_record_dict(record, has_loc) for record in parse_base_dialog_records(data, offset_raw)]
+
+    def render_records_page(
+        self,
+        records: list[dict],
+        page: int,
+        page_size: int,
+    ) -> str:
+        start = page * page_size
+        slice_ = records[start : start + page_size]
+        with_lines = sum(1 for r in records if r["lines"])
+        meta = f"{len(records):,} dialogs · {with_lines:,} with lines"
+        rows = [
+            [
+                e(r["character_id"]),
+                e(r["dialog_index"]),
+                e(r["character"] or _EMPTY),
+                e(join_limited(r["lines"], _LIST_PREVIEW_ITEMS) or _EMPTY),
+            ]
+            for r in slice_
+        ]
+        return table(meta, self._columns(), rows)
