@@ -76,7 +76,8 @@ def _parse_record(data: bytes, row: PabrOffsetRow) -> dict:
         "name": name,
         "level": _I16.unpack_from(data, stats + _LEVEL)[0],
         "effect_type": data[stats + _EFFECT_TYPE],
-        "group": _I16.unpack_from(data, stats + _GROUP)[0],
+        # A u16: keys from 40001 up read negative as an i16.
+        "group": u16(data, stats + _GROUP),
         "condition_type": _I16.unpack_from(data, stats + _CONDITION_TYPE)[0],
         "duration_ms": u32(data, stats + _DURATION_MS),
         "unknown_str": unknown_str,

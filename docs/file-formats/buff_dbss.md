@@ -38,11 +38,14 @@ All multi-byte values are little-endian.
 
 | Offset  | Type | Field   | Notes                                              |
 | ------- | ---- | ------- | -------------------------------------------------- |
-| `+0x00` | u32  | count   | Number of records; observed `44609`                |
+| `+0x00` | u32  | count   | Number of records; see below                       |
 | `+0x04` | ...  | records | Variable-length records, located via the offset file |
 
 The records tile the file exactly: sorted by offset, each ends where the next
 begins, and the last ends at EOF.
+
+Observed records: 44,609 in the pre-2026-09-27 test fixture, 44,645 in the
+2026-09-27 client. The row counts elsewhere in this doc are from the fixture.
 
 ---
 
@@ -72,9 +75,9 @@ Offsets are relative to the end of the name string.
 
 | Offset  | Type    | Field           | Notes                                                                 |
 | ------- | ------- | --------------- | --------------------------------------------------------------------- |
-| `+0x00` | i16     | buff_level      | 1 to 999; `1` in 32,071 rows. Staged buffs count up, e.g. boss stages 1 to 10 |
+| `+0x00` | i16     | buff_level      | 1 to 999; `1` in 32,071 rows. Ranks buffs within a `group`; staged buffs count up, e.g. boss stages 1 to 10 |
 | `+0x02` | u8[2]   | reserved        | Always `0`                                                            |
-| `+0x04` | i16     | group           | `0` in 28,199 rows. Shared by some effect families, see Notes         |
+| `+0x04` | u16     | group           | `0` in 28,199 rows. Shared by some effect families, see Notes         |
 | `+0x06` | i16     | condition_type  | `0` in 44,390 rows; selects a trigger such as on-hit recovery         |
 | `+0x08` | u8      | effect_type     | 173 distinct values; see Enum Values                                  |
 | `+0x09` | u8      | flag_09         | `1` in 44,489 rows                                                    |
@@ -127,7 +130,7 @@ it.
 | Offset  | Type  | Field | Notes                                      |
 | ------- | ----- | ----- | ------------------------------------------ |
 | `+0x00` | u8[4] | magic | ASCII `PABR`                               |
-| `+0x04` | u32   | count | Observed `44609`, matching `buff.dbss`     |
+| `+0x04` | u32   | count | Always equals the `buff.dbss` count        |
 
 ### Index Row (10 bytes, repeated `count` times)
 
@@ -244,6 +247,15 @@ Value `2` (647 rows) holds 600-minute elixir-style buffs and value `38` the Adve
   has its own (9056 to 9061 below), and the same effect in the 60 and 300
   minute variants uses 9050 and 9062. `+0x00` to `+0x07` used to be read as
   two u32 fields; bytes `+0x02` and `+0x03` are zero in every record.
+- `group` is a u16. Its keys run from `1` to `22100` and from `40001` to
+  `60016`; the upper range holds 411 keys on 1,181 rows. Earlier versions of
+  the parser read it as an i16, which turned those into negative numbers.
+- No two buffs share a `group` and a `buff_level`: the 16,410 grouped buffs
+  form 16,410 distinct pairs in the fixture, and 16,414 of 16,414 in the
+  2026-09-27 client. Within a group the level orders the variants by
+  strength, then duration: the 18 food Max HP buffs of group `5616` run from
+  level 1 (+30, 30 min) to 12 (+100, 120 min), 13 to 16 (+150) and 17 to 18
+  (+300 event foods). 1,082 buffs with no group also have a level above 1.
 - One buff record holds one effect, so a consumable with several effects
   applies a run of consecutive buffs. Only the first carries the description,
   the icon and `is_shown`, and its description opens with the display title.
@@ -320,14 +332,17 @@ and 43 `param_1` is `3`; bdo-data-extractor reads it as the target (`0` melee,
 
 Food Max HP buffs share group `5616`, but duration variants of Adventure's Boon
 each get their own value, so `group` is not simply "one effect across variants".
-What decides whether buffs share one is open.
+What decides whether buffs share one is open. The unique (`group`,
+`buff_level`) pairs suggest a group is a set of buffs that replace each other,
+the higher level winning; that needs an in-game check, for example eating a
++100 food with a +150 food active.
 
 ### Is `buff_level` a level or a category?
 
 bdo-data-extractor splits `+0x00` into `i16 Category`, `u8 CategoryLevel` and
-`u8 Level`. The two bytes are zero in every record here, and the i16 counts up
-on staged buffs such as boss stages, so it is kept as `buff_level` until the
-client names it.
+`u8 Level`. The two bytes are zero in every record here, the i16 counts up
+on staged buffs such as boss stages, and it ranks the buffs of one `group`
+(see Notes), so it is kept as `buff_level` until the client names it.
 
 ### Which table links items to their buffs?
 

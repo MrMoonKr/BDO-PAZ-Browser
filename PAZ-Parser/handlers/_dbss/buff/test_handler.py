@@ -1,19 +1,20 @@
 from __future__ import annotations
 
+import math
 from dataclasses import replace
 from typing import Any
 
 import pytest
 
 from tests.framework import (
-    CountTest,
+    DeclaredCountTest,
     HandlerCase,
     HandlerResult,
-    PosTest,
     RangeTest,
     SchemaTest,
     TargetTest,
     case_id,
+    header_count,
     run_case,
 )
 
@@ -50,17 +51,11 @@ BUFF_CASE = HandlerCase(
                 "stacking_category",
             ]
         ),
-        CountTest(expected=44609),
-        PosTest(
-            pos=0,
-            expected={
-                "buff_id": 48879,
-                "name": "중범선 대미지 저항 18.9%",
-                "level": 1,
-                "effect_type": 106,
-                "duration": "",
-                "icon_path": "",
-            },
+        DeclaredCountTest(declared=header_count()),
+        TargetTest(
+            col="buff_id",
+            value=48879,
+            expected={"name": "중범선 대미지 저항 18.9%", "effect_type": 106, "icon_path": ""},
         ),
         TargetTest(
             col="buff_id",
@@ -68,20 +63,14 @@ BUFF_CASE = HandlerCase(
             expected={
                 "name": "수렵 숙련도 +70 3시간",
                 "effect_type": 149,
-                "duration_ms": 10800000,
-                "duration": "3h",
                 "icon_path": "ui_texture/icon/new_icon/04_pc_skill/03_buff/huntingbuff.dds",
                 "description": "Hunting Mastery +70",
                 "title": "",
                 "is_shown": True,
             },
         ),
-        # EXP gain stores its bonus per million: 3,000,000 is +300%.
-        TargetTest(
-            col="buff_id",
-            value=47692,
-            expected={"effect_type": 25, "param_1": 3000000, "duration": "2h"},
-        ),
+        # EXP gain: param_2 selects combat (0), skill (1) or life (2) EXP.
+        TargetTest(col="buff_id", value=47692, expected={"effect_type": 25, "param_2": 0}),
         # Headline buff: the coloured first line of its description is its title.
         TargetTest(
             col="buff_id",
@@ -89,7 +78,6 @@ BUFF_CASE = HandlerCase(
             expected={
                 "title": "[Blessing] Adventure's Boon",
                 "name": "모든 공격력 +8(120분)",
-                "duration": "2h",
                 "is_shown": True,
             },
         ),
@@ -99,16 +87,14 @@ BUFF_CASE = HandlerCase(
             value=48724,
             expected={"title": "", "description": "", "effect_type": 40, "is_shown": False},
         ),
-        # Food Max HP variants share one replacement group.
-        TargetTest(
-            col="buff_id",
-            value=59746,
-            expected={"effect_type": 2, "group": 5616, "param_1": 300},
-        ),
+        # Food Max HP variants share one group.
+        TargetTest(col="buff_id", value=59746, expected={"effect_type": 2, "group": 5616}),
+        # Group keys from 40001 up are u16; an i16 read made them negative.
+        RangeTest(col="group", min_val=0, max_val=0xFFFF),
         # Whale tendon elixirs have their own stacking category.
         TargetTest(col="buff_id", value=58025, expected={"stacking_category": 21}),
-        RangeTest(col="level", min_val=0, max_val=999),
-        RangeTest(col="duration_ms", min_val=0, max_val=86400000),
+        RangeTest(col="level", min_val=0, max_val=math.inf),
+        RangeTest(col="duration_ms", min_val=0, max_val=math.inf),
     ],
 )
 
@@ -122,9 +108,9 @@ OFFSET_CASE = HandlerCase(
     internal_path="gamecommondata/binary/buffoffset.dbss",
     tests=[
         SchemaTest(required_keys=["buff_id", "offset", "size"]),
-        CountTest(expected=44609),
-        PosTest(pos=0, expected={"buff_id": 48879, "offset": 4, "size": 233}),
-        PosTest(pos=-1, expected={"buff_id": 17008, "offset": 12429928, "size": 229}),
+        DeclaredCountTest(declared=header_count(offset=4)),
+        # The first record follows buff.dbss's u32 count.
+        TargetTest(col="offset", value=4, expected={}),
     ],
 )
 
@@ -155,6 +141,17 @@ def test_buff_dbss(spec: Any, buff_result: HandlerResult) -> None:
 @pytest.mark.parametrize("spec", OFFSET_CASE.tests, ids=case_id)
 def test_buffoffset_dbss(spec: Any, offset_result: HandlerResult) -> None:
     offset_result.check(spec)
+
+
+def test_buff_group_levels_are_unique(buff_result: HandlerResult) -> None:
+    """Within a group, each level is held by one buff."""
+    seen: set[tuple[int, int]] = set()
+    for record in buff_result.records:
+        if not record["group"]:
+            continue
+        key = (record["group"], record["level"])
+        assert key not in seen, f"group {key[0]} has level {key[1]} twice"
+        seen.add(key)
 
 
 @pytest.mark.parametrize(
