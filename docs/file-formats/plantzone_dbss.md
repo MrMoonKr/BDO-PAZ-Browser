@@ -111,12 +111,14 @@ It counts up across consecutive Specialties node keys: 104-110 (Balenos farms su
 ### Production Item Chain
 
 ```text
-production_key -> plantexchangegroup.bss +0x00 (productionKey)
-plantexchangegroup.bss +0x06 (u32 itemSubgroupKey) -> itemsubgroup.dbss subgroup key
-itemsubgroup.dbss record -> item IDs (LOC type 0)
+production_key -> plantexchangegroup.bss production_key (+0x00)
+plantexchangegroup.bss item_subgroup_key (+0x06) -> itemsubgroup.dbss subgroup_key
+itemsubgroup.dbss entries -> item_key & 0xFFFFFF -> item name (LOC type 0)
 ```
 
-Example: zone 2050 (Lumbering) -> production key 1928 -> subgroup 42356 -> Elder Tree Timber, Bloody Tree Knot, Elder Tree Sap. 358 of the 394 zones resolve to items; the other 36 reference subgroup keys that are absent from `itemsubgroupoffset.dbss`.
+Both tables are documented in [plantexchangegroup_bss.md](plantexchangegroup_bss.md) and [itemsubgroup_dbss.md](itemsubgroup_dbss.md).
+
+Example: zone 2050 (Lumbering) -> production key 1928 -> subgroup 42356 -> Elder Tree Timber, Bloody Tree Knot, Elder Tree Sap. On the 2026-09-27 client 403 of the 439 zones resolve to items; the other 36 reference subgroup keys that are absent from `itemsubgroupoffset.dbss` (358 of 394 in the older fixture, the same 36 unresolved).
 
 ---
 
@@ -149,7 +151,7 @@ Offset rows are not sorted by `data_offset`, but sorted rows cover every byte fr
 | Zone ID        | num  | `record_id`                                         |
 | Node Name      | text | LOC type 29, `str_id1=record_id`, `str_id4=0`       |
 | Production Key | num  | `production_key`                                    |
-| Produced Items | text | Not shown yet: needs `plantexchangegroup.bss` and `itemsubgroup.dbss` parsed, see Production Item Chain |
+| Produced Items | text | Not shown yet: LOC type 0 names through the Production Item Chain; a dash for the 36 unresolved zones |
 
 ---
 
