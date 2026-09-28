@@ -74,9 +74,9 @@ def offset_result(request: Any) -> HandlerResult:
 
 @pytest.mark.parametrize("spec", EMPLOYEENAME_CASE.tests, ids=case_id)
 def test_employeename_dbss(spec: Any, employeename_result: HandlerResult) -> None:
-    spec.check(employeename_result.records)
+    employeename_result.check(spec)
 
 
 @pytest.mark.parametrize("spec", OFFSET_CASE.tests, ids=case_id)
 def test_employeenameoffset_dbss(spec: Any, offset_result: HandlerResult) -> None:
-    spec.check(offset_result.records)
+    offset_result.check(spec)

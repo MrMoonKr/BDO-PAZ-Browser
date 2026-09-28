@@ -59,4 +59,4 @@ def questgroup_result(request: Any) -> HandlerResult:
 
 @pytest.mark.parametrize("spec", CASE.tests, ids=case_id)
 def test_questgroup_dbss(spec: Any, questgroup_result: HandlerResult) -> None:
-    spec.check(questgroup_result.records)
+    questgroup_result.check(spec)

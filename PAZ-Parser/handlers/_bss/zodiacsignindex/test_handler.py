@@ -52,4 +52,4 @@ def zodiacsignindex_result(request: Any) -> HandlerResult:
 
 @pytest.mark.parametrize("spec", CASE.tests, ids=case_id)
 def test_zodiacsignindex_bss(spec: Any, zodiacsignindex_result: HandlerResult) -> None:
-    spec.check(zodiacsignindex_result.records)
+    zodiacsignindex_result.check(spec)

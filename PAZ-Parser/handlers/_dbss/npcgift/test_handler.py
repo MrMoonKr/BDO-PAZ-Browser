@@ -135,16 +135,16 @@ def gift_data_result(request: Any) -> HandlerResult:
 
 @pytest.mark.parametrize("spec", GIFT_CASE.tests, ids=case_id)
 def test_npcgift_dbss(spec: Any, gift_result: HandlerResult) -> None:
-    spec.check(gift_result.records)
+    gift_result.check(spec)
 
 
 @pytest.mark.parametrize("spec", GIFT_DATA_CASE.tests, ids=case_id)
 def test_npcgiftdata_dbss(spec: Any, gift_data_result: HandlerResult) -> None:
-    spec.check(gift_data_result.records)
+    gift_data_result.check(spec)
 
 
 @pytest.mark.parametrize("case", OFFSET_CASES, ids=lambda case: case.handler_name)
 def test_npcgift_offsets(case: HandlerCase) -> None:
     result = run_case(replace(case, tests=[]))
     for spec in case.tests:
-        spec.check(result.records)
+        result.check(spec)

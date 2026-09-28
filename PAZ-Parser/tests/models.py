@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable
 
+from .case_input import CaseInput
 from .specs import TestSpec
 
 
@@ -26,9 +27,14 @@ class HandlerResult:
     elapsed_ms: float
     loc_total_calls: int | None
     loc_fallback_count: int | None
+    source: CaseInput = field(repr=False)
     records: list[dict] = field(default_factory=list, repr=False)
     passed: list[str] = field(default_factory=list)
     failed: list[str] = field(default_factory=list)
+
+    def check(self, spec: TestSpec) -> str:
+        """Run `spec` against this result's records and the input they came from."""
+        return spec.check(self.records, self.source)
 
     @property
     def status(self) -> str:

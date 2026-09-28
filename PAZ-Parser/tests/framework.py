@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+from .case_input import CaseInput
+from .declared import DeclaredCount, fixed_rows, header_count
 from .models import HandlerCase, HandlerResult
 from .runner import run_case
-from .specs import CountTest, PosTest, RangeTest, SchemaTest, TargetTest, TestSpec
+from .specs import CountTest, DeclaredCountTest, PosTest, RangeTest, SchemaTest, TargetTest, TestSpec
 
 
 def case_id(spec: object) -> str:
+    if isinstance(spec, DeclaredCountTest):
+        return "declared row count"
     if isinstance(spec, CountTest):
         return "row count"
     if isinstance(spec, PosTest):
@@ -25,7 +29,10 @@ def case_id(spec: object) -> str:
 
 
 __all__ = [
+    "CaseInput",
     "CountTest",
+    "DeclaredCount",
+    "DeclaredCountTest",
     "HandlerCase",
     "HandlerResult",
     "PosTest",
@@ -34,5 +41,7 @@ __all__ = [
     "TargetTest",
     "TestSpec",
     "case_id",
+    "fixed_rows",
+    "header_count",
     "run_case",
 ]

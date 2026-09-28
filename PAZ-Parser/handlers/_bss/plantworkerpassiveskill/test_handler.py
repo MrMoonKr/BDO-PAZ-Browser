@@ -127,4 +127,4 @@ def test_plantworkerpassiveskill_bss(
     spec: Any,
     plantworkerpassiveskill_result: HandlerResult,
 ) -> None:
-    spec.check(plantworkerpassiveskill_result.records)
+    plantworkerpassiveskill_result.check(spec)

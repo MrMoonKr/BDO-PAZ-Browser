@@ -78,9 +78,9 @@ def offset_result(request: Any) -> HandlerResult:
 
 @pytest.mark.parametrize("spec", PERSONALITY_CASE.tests, ids=case_id)
 def test_npcpersonality_dbss(spec: Any, personality_result: HandlerResult) -> None:
-    spec.check(personality_result.records)
+    personality_result.check(spec)
 
 
 @pytest.mark.parametrize("spec", OFFSET_CASE.tests, ids=case_id)
 def test_npcpersonalityoffset_dbss(spec: Any, offset_result: HandlerResult) -> None:
-    spec.check(offset_result.records)
+    offset_result.check(spec)

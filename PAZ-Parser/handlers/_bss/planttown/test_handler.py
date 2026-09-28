@@ -84,4 +84,4 @@ def planttown_result(request: Any) -> HandlerResult:
 
 @pytest.mark.parametrize("spec", CASE.tests, ids=case_id)
 def test_planttown_bss(spec: Any, planttown_result: HandlerResult) -> None:
-    spec.check(planttown_result.records)
+    planttown_result.check(spec)

@@ -123,4 +123,4 @@ def test_petequipskill_bss(
     spec: Any,
     petequipskill_result: HandlerResult,
 ) -> None:
-    spec.check(petequipskill_result.records)
+    petequipskill_result.check(spec)

@@ -57,4 +57,4 @@ def mentaltheme_result(request: Any) -> HandlerResult:
 
 @pytest.mark.parametrize("spec", CASE.tests, ids=case_id)
 def test_mentaltheme_dbss(spec: Any, mentaltheme_result: HandlerResult) -> None:
-    spec.check(mentaltheme_result.records)
+    mentaltheme_result.check(spec)

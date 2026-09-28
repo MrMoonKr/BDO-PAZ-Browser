@@ -54,4 +54,4 @@ def allquestlist_result(request: Any) -> HandlerResult:
 
 @pytest.mark.parametrize("spec", CASE.tests, ids=case_id)
 def test_allquestlist_bss(spec: Any, allquestlist_result: HandlerResult) -> None:
-    spec.check(allquestlist_result.records)
+    allquestlist_result.check(spec)

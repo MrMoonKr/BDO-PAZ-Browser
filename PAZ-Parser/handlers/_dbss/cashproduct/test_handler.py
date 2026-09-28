@@ -87,4 +87,4 @@ def test_cashproduct_dbss(
     spec: Any,
     cashproduct_result: HandlerResult,
 ) -> None:
-    spec.check(cashproduct_result.records)
+    cashproduct_result.check(spec)

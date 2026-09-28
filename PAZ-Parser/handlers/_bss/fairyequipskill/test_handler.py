@@ -144,4 +144,4 @@ def test_fairyequipskill_bss(
     spec: Any,
     fairyequipskill_result: HandlerResult,
 ) -> None:
-    spec.check(fairyequipskill_result.records)
+    fairyequipskill_result.check(spec)

@@ -192,19 +192,19 @@ def grade_offset_result(request: Any) -> HandlerResult:
 
 @pytest.mark.parametrize("spec", PET_CASE.tests, ids=case_id)
 def test_pet_dbss(spec: Any, pet_result: HandlerResult) -> None:
-    spec.check(pet_result.records)
+    pet_result.check(spec)
 
 
 @pytest.mark.parametrize("spec", OFFSET_CASE.tests, ids=case_id)
 def test_petoffset_dbss(spec: Any, offset_result: HandlerResult) -> None:
-    spec.check(offset_result.records)
+    offset_result.check(spec)
 
 
 @pytest.mark.parametrize("spec", GRADE_CASE.tests, ids=case_id)
 def test_petgrade_dbss(spec: Any, grade_result: HandlerResult) -> None:
-    spec.check(grade_result.records)
+    grade_result.check(spec)
 
 
 @pytest.mark.parametrize("spec", GRADE_OFFSET_CASE.tests, ids=case_id)
 def test_petgradeoffset_dbss(spec: Any, grade_offset_result: HandlerResult) -> None:
-    spec.check(grade_offset_result.records)
+    grade_offset_result.check(spec)

@@ -112,4 +112,4 @@ def test_fairyfeedenchantfailcount_bss(
     spec: Any,
     fairyfeedenchantfailcount_result: HandlerResult,
 ) -> None:
-    spec.check(fairyfeedenchantfailcount_result.records)
+    fairyfeedenchantfailcount_result.check(spec)

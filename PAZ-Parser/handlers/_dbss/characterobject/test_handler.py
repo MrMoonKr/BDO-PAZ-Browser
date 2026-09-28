@@ -87,9 +87,9 @@ def offset_result(request: Any) -> HandlerResult:
 
 @pytest.mark.parametrize("spec", OBJECT_CASE.tests, ids=case_id)
 def test_characterobject(spec: Any, object_result: HandlerResult) -> None:
-    spec.check(object_result.records)
+    object_result.check(spec)
 
 
 @pytest.mark.parametrize("spec", OFFSET_CASE.tests, ids=case_id)
 def test_characterobjectoffset(spec: Any, offset_result: HandlerResult) -> None:
-    spec.check(offset_result.records)
+    offset_result.check(spec)

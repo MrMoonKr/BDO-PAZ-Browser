@@ -134,4 +134,4 @@ def test_plantworkerselect_bss(
     spec: Any,
     plantworkerselect_result: HandlerResult,
 ) -> None:
-    spec.check(plantworkerselect_result.records)
+    plantworkerselect_result.check(spec)

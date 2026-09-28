@@ -35,4 +35,4 @@ def worldquest_result(request: Any) -> HandlerResult:
 
 @pytest.mark.parametrize("spec", CASE.tests, ids=case_id)
 def test_worldquest_dbss(spec: Any, worldquest_result: HandlerResult) -> None:
-    spec.check(worldquest_result.records)
+    worldquest_result.check(spec)

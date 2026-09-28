@@ -158,7 +158,7 @@ def quest_lazy_context() -> tuple[Any, bytes, PazEntry, dict[str, bytes]]:
 
 @pytest.mark.parametrize("spec", CASE.tests, ids=case_id)
 def test_quest_dbss(spec: Any, quest_result: HandlerResult) -> None:
-    spec.check(quest_result.records)
+    quest_result.check(spec)
 
 
 def test_quest_dbss_lazy_page(quest_lazy_context: tuple[Any, bytes, PazEntry, dict[str, bytes]]) -> None:

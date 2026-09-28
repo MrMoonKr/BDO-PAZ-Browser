@@ -89,4 +89,4 @@ def plantworker_result(request: Any) -> HandlerResult:
 
 @pytest.mark.parametrize("spec", CASE.tests, ids=case_id)
 def test_plantworker_bss(spec: Any, plantworker_result: HandlerResult) -> None:
-    spec.check(plantworker_result.records)
+    plantworker_result.check(spec)

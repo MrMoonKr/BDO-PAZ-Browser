@@ -113,9 +113,9 @@ def journalquest_result(request: Any) -> HandlerResult:
 
 @pytest.mark.parametrize("spec", OFFSET_CASE.tests, ids=case_id)
 def test_journalquestoffset_dbss(spec: Any, journalquestoffset_result: HandlerResult) -> None:
-    spec.check(journalquestoffset_result.records)
+    journalquestoffset_result.check(spec)
 
 
 @pytest.mark.parametrize("spec", CASE.tests, ids=case_id)
 def test_journalquest_dbss(spec: Any, journalquest_result: HandlerResult) -> None:
-    spec.check(journalquest_result.records)
+    journalquest_result.check(spec)

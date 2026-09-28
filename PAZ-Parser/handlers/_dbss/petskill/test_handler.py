@@ -92,9 +92,9 @@ def petskill_offset_result(request: Any) -> HandlerResult:
 
 @pytest.mark.parametrize("spec", PETSKILL_CASE.tests, ids=case_id)
 def test_petskill_dbss(spec: Any, petskill_result: HandlerResult) -> None:
-    spec.check(petskill_result.records)
+    petskill_result.check(spec)
 
 
 @pytest.mark.parametrize("spec", PETSKILL_OFFSET_CASE.tests, ids=case_id)
 def test_petskilloffset_dbss(spec: Any, petskill_offset_result: HandlerResult) -> None:
-    spec.check(petskill_offset_result.records)
+    petskill_offset_result.check(spec)

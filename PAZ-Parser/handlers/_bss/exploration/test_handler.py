@@ -105,4 +105,4 @@ def test_exploration_bss(
     spec: Any,
     exploration_result: HandlerResult,
 ) -> None:
-    spec.check(exploration_result.records)
+    exploration_result.check(spec)

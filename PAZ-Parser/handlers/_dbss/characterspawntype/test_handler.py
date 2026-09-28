@@ -80,9 +80,9 @@ def offset_result(request: Any) -> HandlerResult:
 
 @pytest.mark.parametrize("spec", SPAWN_TYPE_CASE.tests, ids=case_id)
 def test_characterspawntype_dbss(spec: Any, spawn_type_result: HandlerResult) -> None:
-    spec.check(spawn_type_result.records)
+    spawn_type_result.check(spec)
 
 
 @pytest.mark.parametrize("spec", OFFSET_CASE.tests, ids=case_id)
 def test_characterspawntypeoffset_dbss(spec: Any, offset_result: HandlerResult) -> None:
-    spec.check(offset_result.records)
+    offset_result.check(spec)

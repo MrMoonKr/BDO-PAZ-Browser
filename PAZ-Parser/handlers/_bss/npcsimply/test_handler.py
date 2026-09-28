@@ -117,4 +117,4 @@ def npcsimply_result(request: Any) -> HandlerResult:
 
 @pytest.mark.parametrize("spec", CASE.tests, ids=case_id)
 def test_npcsimply_bss(spec: Any, npcsimply_result: HandlerResult) -> None:
-    spec.check(npcsimply_result.records)
+    npcsimply_result.check(spec)

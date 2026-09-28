@@ -125,4 +125,4 @@ def test_fairyupgraderate_bss(
     spec: Any,
     fairyupgraderate_result: HandlerResult,
 ) -> None:
-    spec.check(fairyupgraderate_result.records)
+    fairyupgraderate_result.check(spec)

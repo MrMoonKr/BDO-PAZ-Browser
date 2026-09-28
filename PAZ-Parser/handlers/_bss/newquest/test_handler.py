@@ -84,4 +84,4 @@ def newquest_result(request: Any) -> HandlerResult:
 
 @pytest.mark.parametrize("spec", CASE.tests, ids=case_id)
 def test_newquest_bss(spec: Any, newquest_result: HandlerResult) -> None:
-    spec.check(newquest_result.records)
+    newquest_result.check(spec)

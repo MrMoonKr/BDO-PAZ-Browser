@@ -3,17 +3,34 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Protocol
 
+from .case_input import CaseInput
+from .declared import DeclaredCount
+
 
 class TestSpec(Protocol):
-    def check(self, records: list[dict]) -> str:
+    def check(self, records: list[dict], source: CaseInput) -> str:
         ...
+
+
+@dataclass(frozen=True)
+class DeclaredCountTest:
+    """The row count equals the count the input declares (a header field or offset-table rows)."""
+
+    declared: DeclaredCount
+
+    def check(self, records: list[dict], source: CaseInput) -> str:
+        expected = self.declared(source)
+        actual = len(records)
+        if actual != expected:
+            raise AssertionError(f"DeclaredCountTest input declares {expected} rows, parsed {actual}")
+        return f"DeclaredCountTest rows == declared {expected}"
 
 
 @dataclass(frozen=True)
 class CountTest:
     expected: int
 
-    def check(self, records: list[dict]) -> str:
+    def check(self, records: list[dict], source: CaseInput) -> str:
         actual = len(records)
         if actual != self.expected:
             raise AssertionError(f"CountTest expected {self.expected}, got {actual}")
@@ -25,7 +42,7 @@ class PosTest:
     pos: int
     expected: dict[str, Any]
 
-    def check(self, records: list[dict]) -> str:
+    def check(self, records: list[dict], source: CaseInput) -> str:
         if self.pos >= len(records) or self.pos < -len(records):
             raise AssertionError(f"PosTest pos {self.pos} outside {len(records)} records")
         _assert_subset(records[self.pos], self.expected, f"records[{self.pos}]")
@@ -38,7 +55,7 @@ class TargetTest:
     value: Any
     expected: dict[str, Any] | list[dict[str, Any]]
 
-    def check(self, records: list[dict]) -> str:
+    def check(self, records: list[dict], source: CaseInput) -> str:
         if isinstance(self.value, (list, tuple, set, frozenset)):
             found = [record for record in records if record.get(self.col) in self.value]
         else:
@@ -64,7 +81,7 @@ class TargetTest:
 class SchemaTest:
     required_keys: list[str]
 
-    def check(self, records: list[dict]) -> str:
+    def check(self, records: list[dict], source: CaseInput) -> str:
         missing_by_pos: list[str] = []
         for pos, record in enumerate(records):
             missing = [key for key in self.required_keys if key not in record]
@@ -81,7 +98,7 @@ class RangeTest:
     min_val: Any
     max_val: Any
 
-    def check(self, records: list[dict]) -> str:
+    def check(self, records: list[dict], source: CaseInput) -> str:
         for pos, record in enumerate(records):
             value = record.get(self.col)
             # None is an empty cell (a 0 ID shown as a dash), not out of range.

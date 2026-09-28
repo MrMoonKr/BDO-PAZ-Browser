@@ -52,4 +52,4 @@ def npcgiftetc_result(request: Any) -> HandlerResult:
 
 @pytest.mark.parametrize("spec", CASE.tests, ids=case_id)
 def test_npcgiftetc_bss(spec: Any, npcgiftetc_result: HandlerResult) -> None:
-    spec.check(npcgiftetc_result.records)
+    npcgiftetc_result.check(spec)

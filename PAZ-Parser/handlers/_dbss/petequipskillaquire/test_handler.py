@@ -125,7 +125,7 @@ def test_petequipskillaquire_dbss(
     spec: Any,
     petequipskillaquire_result: HandlerResult,
 ) -> None:
-    spec.check(petequipskillaquire_result.records)
+    petequipskillaquire_result.check(spec)
 
 
 @pytest.mark.parametrize("spec", PET_EQUIP_SKILL_ACQUIRE_OFFSET_CASE.tests, ids=case_id)
@@ -133,4 +133,4 @@ def test_petequipskillaquireoffset_dbss(
     spec: Any,
     petequipskillaquireoffset_result: HandlerResult,
 ) -> None:
-    spec.check(petequipskillaquireoffset_result.records)
+    petequipskillaquireoffset_result.check(spec)

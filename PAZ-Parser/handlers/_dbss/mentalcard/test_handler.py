@@ -73,4 +73,4 @@ def mentalcard_result(request: Any) -> HandlerResult:
 
 @pytest.mark.parametrize("spec", CASE.tests, ids=case_id)
 def test_mentalcard_dbss(spec: Any, mentalcard_result: HandlerResult) -> None:
-    spec.check(mentalcard_result.records)
+    mentalcard_result.check(spec)

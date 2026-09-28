@@ -58,4 +58,4 @@ def knowledgelearning_result(request: Any) -> HandlerResult:
 
 @pytest.mark.parametrize("spec", CASE.tests, ids=case_id)
 def test_knowledgelearning_dbss(spec: Any, knowledgelearning_result: HandlerResult) -> None:
-    spec.check(knowledgelearning_result.records)
+    knowledgelearning_result.check(spec)

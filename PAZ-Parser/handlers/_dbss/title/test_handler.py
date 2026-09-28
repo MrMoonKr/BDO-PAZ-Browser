@@ -116,4 +116,4 @@ def title_result(request: Any) -> HandlerResult:
 
 @pytest.mark.parametrize("spec", CASE.tests, ids=case_id)
 def test_title_dbss(spec: Any, title_result: HandlerResult) -> None:
-    spec.check(title_result.records)
+    title_result.check(spec)

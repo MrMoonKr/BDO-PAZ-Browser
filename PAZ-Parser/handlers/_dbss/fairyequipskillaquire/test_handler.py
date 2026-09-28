@@ -144,7 +144,7 @@ def test_fairyequipskillaquire_dbss(
     spec: Any,
     fairyequipskillaquire_result: HandlerResult,
 ) -> None:
-    spec.check(fairyequipskillaquire_result.records)
+    fairyequipskillaquire_result.check(spec)
 
 
 @pytest.mark.parametrize(
@@ -154,4 +154,4 @@ def test_fairyequipskillaquireoffset_dbss(
     spec: Any,
     fairyequipskillaquireoffset_result: HandlerResult,
 ) -> None:
-    spec.check(fairyequipskillaquireoffset_result.records)
+    fairyequipskillaquireoffset_result.check(spec)

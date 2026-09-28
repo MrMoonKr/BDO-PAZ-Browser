@@ -107,7 +107,7 @@ def test_itemenchant_dbss(
     spec: Any,
     itemenchant_result: HandlerResult,
 ) -> None:
-    spec.check(itemenchant_result.records)
+    itemenchant_result.check(spec)
 
 
 def test_build_item_icon_index_covers_the_furniture_case() -> None:

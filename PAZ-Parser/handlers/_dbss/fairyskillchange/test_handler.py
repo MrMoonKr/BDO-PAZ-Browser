@@ -89,7 +89,7 @@ def test_fairyskillchange_dbss(
     spec: Any,
     fairyskillchange_result: HandlerResult,
 ) -> None:
-    spec.check(fairyskillchange_result.records)
+    fairyskillchange_result.check(spec)
 
 
 @pytest.mark.parametrize("spec", OFFSET_CASE.tests, ids=case_id)
@@ -97,4 +97,4 @@ def test_fairyskillchangeoffset_dbss(
     spec: Any,
     fairyskillchangeoffset_result: HandlerResult,
 ) -> None:
-    spec.check(fairyskillchangeoffset_result.records)
+    fairyskillchangeoffset_result.check(spec)

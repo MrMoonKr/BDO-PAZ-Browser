@@ -46,4 +46,4 @@ def titleoffset_result(request: Any) -> HandlerResult:
 
 @pytest.mark.parametrize("spec", CASE.tests, ids=case_id)
 def test_titleoffset_dbss(spec: Any, titleoffset_result: HandlerResult) -> None:
-    spec.check(titleoffset_result.records)
+    titleoffset_result.check(spec)

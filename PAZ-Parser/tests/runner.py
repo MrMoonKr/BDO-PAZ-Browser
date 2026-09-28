@@ -7,6 +7,7 @@ from time import perf_counter
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler, get_handler
 
+from .case_input import CaseInput
 from .fixtures import ensure_fixtures
 from .loc_counter import LOC_STATE_NAMES, null_loc_counter, patch_loc_counter, reset_loc
 from .models import HandlerCase, HandlerResult
@@ -87,11 +88,12 @@ def run_case(case: HandlerCase) -> HandlerResult:
         elapsed_ms=elapsed_ms,
         loc_total_calls=loc_stats.total,
         loc_fallback_count=loc_stats.misses,
+        source=CaseInput(loaded.data, loaded.companions),
         records=records,
     )
     for spec in case.tests:
         try:
-            result.passed.append(spec.check(records))
+            result.passed.append(result.check(spec))
         except AssertionError as exc:
             result.failed.append(str(exc))
 

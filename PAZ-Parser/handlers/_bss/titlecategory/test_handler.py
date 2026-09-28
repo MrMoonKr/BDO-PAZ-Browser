@@ -46,4 +46,4 @@ def titlecategory_result(request: Any) -> HandlerResult:
 
 @pytest.mark.parametrize("spec", CASE.tests, ids=case_id)
 def test_titlecategory_bss(spec: Any, titlecategory_result: HandlerResult) -> None:
-    spec.check(titlecategory_result.records)
+    titlecategory_result.check(spec)
