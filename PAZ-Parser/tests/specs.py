@@ -27,29 +27,6 @@ class DeclaredCountTest:
 
 
 @dataclass(frozen=True)
-class CountTest:
-    expected: int
-
-    def check(self, records: list[dict], source: CaseInput) -> str:
-        actual = len(records)
-        if actual != self.expected:
-            raise AssertionError(f"CountTest expected {self.expected}, got {actual}")
-        return f"CountTest rows == {self.expected}"
-
-
-@dataclass(frozen=True)
-class PosTest:
-    pos: int
-    expected: dict[str, Any]
-
-    def check(self, records: list[dict], source: CaseInput) -> str:
-        if self.pos >= len(records) or self.pos < -len(records):
-            raise AssertionError(f"PosTest pos {self.pos} outside {len(records)} records")
-        _assert_subset(records[self.pos], self.expected, f"records[{self.pos}]")
-        return f"PosTest records[{self.pos}] matched"
-
-
-@dataclass(frozen=True)
 class TargetTest:
     col: str
     value: Any

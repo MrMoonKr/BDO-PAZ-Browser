@@ -331,7 +331,9 @@ Example:
 PAZ-Parser/
 ├── tests/
 │   ├── framework.py          # public re-export for test helpers
-│   ├── specs.py              # CountTest, PosTest, TargetTest, SchemaTest, RangeTest
+│   ├── specs.py              # DeclaredCountTest, TargetTest, SchemaTest, RangeTest
+│   ├── declared.py           # header_count(), fixed_rows(): counts read from the input
+│   ├── case_input.py         # CaseInput: the data file and companion bytes a case parsed
 │   ├── models.py             # HandlerCase, HandlerResult
 │   ├── runner.py             # run_case(), load_case()
 │   ├── fixtures.py           # auto-fetches test inputs
@@ -346,7 +348,7 @@ PAZ-Parser/
 `HandlerCase` describes one handler input and its assertions:
 
 ```python
-from tests.framework import CountTest, HandlerCase, PosTest, TargetTest, case_id
+from tests.framework import DeclaredCountTest, HandlerCase, TargetTest, case_id, header_count
 
 CASE = HandlerCase(
     handler_name="title.dbss",
@@ -357,27 +359,36 @@ CASE = HandlerCase(
     loc_fields=["Title", "TitleRequirements"],
     internal_path="gamecommondata/binary/title.dbss",
     tests=[
-        CountTest(expected=3048),
+        DeclaredCountTest(declared=header_count(offset=0, companion="titleoffset.dbss")),
         TargetTest(col="TitleId", value=3, expected={"TitleId": 3}),
-        PosTest(pos=0, expected={"TitleId": 1}),
     ],
 )
 
 
 @pytest.mark.parametrize("spec", CASE.tests, ids=case_id)
 def test_title_dbss(spec, title_result):
-    spec.check(title_result.records)
+    title_result.check(spec)
 ```
 
 Available specs:
 
 | Spec | Purpose |
 |---|---|
-| `CountTest` | Checks total parsed row count. |
-| `PosTest` | Checks a record at a specific zero-based position. |
+| `DeclaredCountTest` | Checks the parsed row count against the count the input declares. |
 | `TargetTest` | Finds records by column value and checks one or more expected rows. |
 | `SchemaTest` | Checks required keys exist on every row. |
 | `RangeTest` | Checks every value in one column is within a min/max range. `None` (an empty cell) is skipped. |
+
+`HandlerResult.check(spec)` runs a spec against the parsed records and the input
+bytes (`CaseInput`: the data file and its companions by basename). Only
+`DeclaredCountTest` reads the bytes: its `declared` callable takes the `CaseInput`
+and returns the count the file states about itself. `tests.framework` has two
+builders, `header_count(offset, fmt="<I", companion=None)` for a count field and
+`fixed_rows(row_size, header_size=0, companion=None)` for a table of fixed rows
+that must fill the file exactly. A format whose count needs more (a grouped
+offset table, a count spread over blocks) defines its own callable in its test
+module, like `_offset_rows` in `journalquest/test_handler.py`. Derive it from
+headers and sizes, not by repeating the parser's walk.
 
 Expected dictionaries use subset matching. Tests only check declared keys, so adding
 new fields to a handler does not break existing tests.
@@ -403,16 +414,19 @@ balance values while the layout stays the same. So assert what stays true:
 
 Avoid:
 
-- Literal row counts (`CountTest(expected=19599)`): new content changes them.
-- `PosTest` on a position: inserted records shift every later row. Use a
-  keyed `TargetTest` instead.
+- Literal row counts: new content changes them. Use `DeclaredCountTest`.
+- Record positions (`records[0]`, the last row): inserted records shift every
+  later row. Use a keyed `TargetTest` instead.
 - Balance values: favor, interest, prices, stats, rewards and costs are
   retuned by patches. Assert their type or range, not the number.
 - Totals and "N of M" counts from the current client; put those in the
   format doc as observations, dated, where a patch can make them stale.
 
-Existing tests still pin counts and positions; converting them is tracked in
-`todo.md` under Tests.
+Check a converted test against freshly extracted fixtures as well as the
+frozen ones: point `PAZ_PARSER_FIXTURES_DIR` at an empty folder and the run
+fetches every fixture from the configured client. English LOC text changes too
+(journal book titles were renamed between clients), so keep a LOC-text
+assertion only if it holds on both.
 
 If `get_records()` returns raw snake_case fields but the test should assert the
 user-facing table contract, add a `record_mapper` to `HandlerCase`. The mapper
@@ -446,15 +460,14 @@ Pytest expands each spec into a separate test item and parses each handler once:
 Use `case_id` from `tests.framework` for `pytest.mark.parametrize(..., ids=case_id)`
 so test output names stay readable instead of pytest's default `spec0`, `spec1`, `spec2`.
 
-| Spec type   | ID format                              | Example                          |
-|-------------|----------------------------------------|----------------------------------|
-| `CountTest` | `row count`                            | `row count`                      |
-| `PosTest`   | `position = {pos}`                     | `position = 0`                   |
-| `SchemaTest`| `schema: {key1}, {key2}, ...`          | `schema: id, name, kind`         |
-| `RangeTest` | `{col} in [{min}, {max}]`              | `kind in [1, 13]`                |
-| `TargetTest`| `{col} = {value}`                      | `TitleId = 3`                    |
-| `TargetTest`| `{col} in {a}-{b}` (2-value collection)| `slot in 0-19598`                |
-| `TargetTest`| `{col} in {v1}, {v2}, ...` (3+)        | `kind in 1, 2, 5`                |
+| Spec type           | ID format                               | Example                  |
+|---------------------|-----------------------------------------|--------------------------|
+| `DeclaredCountTest` | `declared row count`                    | `declared row count`     |
+| `SchemaTest`        | `schema: {key1}, {key2}, ...`           | `schema: id, name, kind` |
+| `RangeTest`         | `{col} in [{min}, {max}]`               | `kind in [1, 13]`        |
+| `TargetTest`        | `{col} = {value}`                       | `TitleId = 3`            |
+| `TargetTest`        | `{col} in {a}-{b}` (2-value collection) | `slot in 0-19598`        |
+| `TargetTest`        | `{col} in {v1}, {v2}, ...` (3+)         | `kind in 1, 2, 5`        |
 
 ```text
 title.dbss
@@ -462,9 +475,8 @@ title.dbss
   parse:  64 ms
   loc:    0 misses / 6,096 lookups
 
-PAZ-Parser/handlers/_dbss/title/test_handler.py::test_title_dbss[row count] PASSED
+PAZ-Parser/handlers/_dbss/title/test_handler.py::test_title_dbss[declared row count] PASSED
 PAZ-Parser/handlers/_dbss/title/test_handler.py::test_title_dbss[TitleId = 3] PASSED
-PAZ-Parser/handlers/_dbss/title/test_handler.py::test_title_dbss[position = 0] PASSED
 ```
 
 ---

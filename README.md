@@ -177,7 +177,9 @@ PAZ-Parser/
 │
 ├── tests/                  # Unit test framework and gitignored fixtures
 │   ├── framework.py        # Public re-export for test helpers
-│   ├── specs.py            # CountTest, PosTest, TargetTest, SchemaTest, RangeTest
+│   ├── specs.py            # DeclaredCountTest, TargetTest, SchemaTest, RangeTest
+│   ├── declared.py         # Row counts read from the input for DeclaredCountTest
+│   ├── case_input.py       # CaseInput: the bytes a case parsed
 │   ├── models.py           # HandlerCase, HandlerResult
 │   ├── runner.py           # run_case()
 │   ├── fixtures.py         # Auto-fetches test inputs from PAZ folder

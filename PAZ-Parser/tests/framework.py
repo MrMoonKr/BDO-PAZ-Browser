@@ -4,16 +4,12 @@ from .case_input import CaseInput
 from .declared import DeclaredCount, fixed_rows, header_count
 from .models import HandlerCase, HandlerResult
 from .runner import run_case
-from .specs import CountTest, DeclaredCountTest, PosTest, RangeTest, SchemaTest, TargetTest, TestSpec
+from .specs import DeclaredCountTest, RangeTest, SchemaTest, TargetTest, TestSpec
 
 
 def case_id(spec: object) -> str:
     if isinstance(spec, DeclaredCountTest):
         return "declared row count"
-    if isinstance(spec, CountTest):
-        return "row count"
-    if isinstance(spec, PosTest):
-        return f"position = {spec.pos}"
     if isinstance(spec, SchemaTest):
         return f"schema: {', '.join(spec.required_keys)}"
     if isinstance(spec, RangeTest):
@@ -30,12 +26,10 @@ def case_id(spec: object) -> str:
 
 __all__ = [
     "CaseInput",
-    "CountTest",
     "DeclaredCount",
     "DeclaredCountTest",
     "HandlerCase",
     "HandlerResult",
-    "PosTest",
     "RangeTest",
     "SchemaTest",
     "TargetTest",
