@@ -14,7 +14,7 @@ from .specs import TestSpec
 class HandlerCase:
     handler_name: str
     data_file: str | Path
-    companion_files: dict[str, str | Path]
+    companion_files: Mapping[str, str | Path]
     loc_file: str | Path | None
     uses_loc: bool
     loc_fields: list[str]

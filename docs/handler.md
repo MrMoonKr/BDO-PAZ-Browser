@@ -522,6 +522,9 @@ PAZ-Parser/handlers/_dbss/title/test_handler.py::test_title_dbss[declared row co
 PAZ-Parser/handlers/_dbss/title/test_handler.py::test_title_dbss[TitleId = 3] PASSED
 ```
 
+`pytest --clean` leaves out the per-handler blocks and prints only failed tests
+and a pass/total line; run without it to see them.
+
 ---
 
 ## Checking a Handler from the Command Line

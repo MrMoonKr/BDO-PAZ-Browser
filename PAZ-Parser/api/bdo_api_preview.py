@@ -8,6 +8,7 @@ from pathlib import Path
 import webview
 
 from .bdo_api_helpers import _DISK_VIRTUAL_PREFIX, _norm
+from .bdo_api_state import ApiState
 from .bdo_config import load_table_sort, save_table_sort, table_sort_file_key
 from bdo_models import PazEntry
 from paz.bdo_payload_cache import cached_read_entry_payload
@@ -52,7 +53,7 @@ def _icon_sibling_paths(norm: str) -> list[str]:
     ]
 
 
-class PreviewMixin:
+class PreviewMixin(ApiState):
     """Preview assembly, entry loading, hex/parsed paging, and export methods."""
 
     def _resolve_icon_entry(self, icon_path: str) -> PazEntry | None:
@@ -60,32 +61,28 @@ class PreviewMixin:
         if not norm:
             return None
 
-        cache = getattr(self, "_icon_entry_cache", None)
-        if cache is not None and norm in cache:
+        cache = self._icon_entry_cache
+        if norm in cache:
             return cache[norm]
 
         entry = self._entry_map.get(norm)
         if entry is None:
-            lower_map = getattr(self, "_entry_map_lower", {})
-            entry = lower_map.get(norm.lower())
+            entry = self._entry_map_lower.get(norm.lower())
 
         if entry is None:
-            lower_map = getattr(self, "_entry_map_lower", {})
             for sibling in _icon_sibling_paths(norm):
-                entry = self._entry_map.get(sibling) or lower_map.get(sibling.lower())
+                entry = self._entry_map.get(sibling) or self._entry_map_lower.get(sibling.lower())
                 if entry is not None:
                     break
 
         if entry is None:
             suffix = norm.lower()
-            lower_map = getattr(self, "_entry_map_lower", {})
-            for key, candidate in lower_map.items():
+            for key, candidate in self._entry_map_lower.items():
                 if key.endswith(suffix):
                     entry = candidate
                     break
 
-        if cache is not None:
-            cache[norm] = entry
+        cache[norm] = entry
         return entry
 
     def get_icon_data_url(self, icon_path: str) -> dict:
@@ -93,8 +90,8 @@ class PreviewMixin:
         if not norm:
             return {"error": "Icon path is empty"}
 
-        cache = getattr(self, "_icon_data_url_cache", None)
-        if cache is not None and norm in cache:
+        cache = self._icon_data_url_cache
+        if norm in cache:
             return {"url": cache[norm]}
 
         entry = self._resolve_icon_entry(norm)
@@ -125,8 +122,7 @@ class PreviewMixin:
         except Exception as ex:
             return {"error": str(ex)}
 
-        if cache is not None:
-            cache[norm] = url
+        cache[norm] = url
         return {"url": url}
 
     def _build_entry_response(

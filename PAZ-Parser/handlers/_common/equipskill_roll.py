@@ -9,6 +9,7 @@ skill cannot be rolled by that acquire type.
 from __future__ import annotations
 
 import struct
+from collections.abc import Callable
 
 
 HEADER_SIZE = 4
@@ -132,7 +133,7 @@ def read_skill_loc_ids(catalog_data: bytes, max_records: int = WEIGHT_COUNT) -> 
 def flatten_roll_rows(
     records: list[dict],
     loc_ids: dict[int, int],
-    skill_name: "callable[[int], str]",
+    skill_name: Callable[[int], str],
 ) -> list[dict]:
     """Expand weight arrays into one row per (acquire type, rollable skill)."""
     rows: list[dict] = []

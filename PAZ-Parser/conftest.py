@@ -30,7 +30,10 @@ def load_handlers():
 
 
 def pytest_collection_finish(session: pytest.Session) -> None:
-    reporter = session.config.pluginmanager.get_plugin("terminalreporter")
+    # --clean keeps the output to failures and the pass/total line.
+    reporter = None
+    if not session.config.getoption("--clean"):
+        reporter = session.config.pluginmanager.get_plugin("terminalreporter")
     modules: set[Any] = set()
 
     for item in session.items:
@@ -59,6 +62,7 @@ def pytest_collection_finish(session: pytest.Session) -> None:
             reporter.write_line(f"rows:   {result.row_count:,}")
             reporter.write_line(f"parse:  {result.elapsed_ms:.0f} ms")
             reporter.write_line(f"loc:    {loc}")
+
 
 def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
     items.sort(key=lambda item: (item.path.name if item.path else "", item.name))

@@ -21,7 +21,6 @@ from bdo_models import PazEntry
 from paz.bdo_paz_extract import extract_entry, find_single_meta_file, parse_meta_file
 from paz.bdo_payload_cache import cached_read_entry_payload, clear_payload_cache
 from bdo_preview import StreamPreviewHandler, get_handler, set_handler_lang
-from table_sort import TableSort
 
 _COMPANION_POOL = ThreadPoolExecutor(max_workers=4, thread_name_prefix="companion")
 
@@ -60,26 +59,7 @@ def _table_row_height(value: object) -> int:
 
 
 class Api(PreviewMixin, SearchMixin):
-    def __init__(self, profile: bool = False, server: Any | None = None) -> None:
-        self._profile = profile
-        self._server = server
-        self._window: webview.Window | None = None
-        self._paz_root: Path | None = None
-        self._entries: list[PazEntry] = []
-        self._entry_map: dict[str, PazEntry] = {}
-        self._entry_map_lower: dict[str, PazEntry] = {}
-        self._icon_entry_cache: dict[str, PazEntry | None] = {}
-        self._icon_data_url_cache: dict[str, str] = {}
-        self._tree_data: dict = {}
-        self._disk_companions: dict[str, bytes] = {}
-        self._status = "Open a PAZ folder to begin."
-        self._cached_path: str | None = None
-        self._cached_data: bytes | None = None
-        self._cached_handler = None
-        self._cached_entry: PazEntry | None = None
-        self._cached_companions: dict[str, bytes] = {}
-        self._cached_sort: TableSort | None = None
-        self._global_search_cancel: threading.Event = threading.Event()
+    """Backend the UI calls through pywebview; the CLI loads folders through it too."""
 
     @property
     def entries(self) -> list[PazEntry]:
@@ -93,28 +73,6 @@ class Api(PreviewMixin, SearchMixin):
     def set_window(self, window: webview.Window) -> None:
         self._window = window
         set_handler_lang(load_config().get("language", "en"))
-
-    # ── Internal helpers ──────────────────────────────────────────────────────
-
-    def _ts(self) -> float:
-        return time.perf_counter() if self._profile else 0.0
-
-    def _te(self, profile: dict, key: str, start: float) -> None:
-        if self._profile:
-            profile[key] = (time.perf_counter() - start) * 1000
-
-    def _push_js(self, js: str) -> None:
-        if self._window is not None:
-            try:
-                self._window.evaluate_js(js)
-            except Exception:
-                pass
-
-    def _push_status(self, msg: str | dict, progress: tuple[int, int] | None = None) -> None:
-        self._status = msg if isinstance(msg, str) else msg.get("key", "")
-        data: dict = msg if isinstance(msg, dict) else {"message": msg}
-        data["progress"] = list(progress) if progress else None
-        self._push_js(f"app.setStatus({json.dumps(data)})")
 
     # ── Folder ────────────────────────────────────────────────────────────────
 

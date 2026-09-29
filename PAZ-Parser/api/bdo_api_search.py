@@ -6,6 +6,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from .bdo_api_helpers import _DISK_VIRTUAL_PREFIX, _file_icon, _norm
+from .bdo_api_state import ApiState
 from paz.bdo_payload_reader import read_entry_payload
 from table_sort import positions_in_order
 
@@ -42,7 +43,7 @@ _SEARCH_WORKERS = 8
 _RESULT_BATCH = 20
 
 
-class SearchMixin:
+class SearchMixin(ApiState):
     """Content search methods, single-file and cross-file, for Api."""
 
     def search_content(self, path: str, query: str, mode: str, tab: str) -> dict:

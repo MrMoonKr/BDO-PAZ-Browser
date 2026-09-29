@@ -98,14 +98,16 @@ class QuestDbssHandler(PreviewHandler):
         return self._data_cache(data, "index", build)
 
     def _record_at(self, data: bytes, index: QuestIndex, row: int) -> dict:
-        record = dict(parse_quest_record(data, index, row))
-        loc_texts = _quest_loc_texts(record["quest_chain_id"], record["quest_id"])
-        record["loc_texts_en"] = loc_texts
-        record["title"] = _title(loc_texts)
-        record["objective"] = _objective(loc_texts) or record["objective_text_kr"]
-        # Empty sorts last and exports as an empty cell.
-        record["family_stat_text"] = _family_stat_text(record["family_stats"]) or None
-        return record
+        parsed = parse_quest_record(data, index, row)
+        loc_texts = _quest_loc_texts(parsed["quest_chain_id"], parsed["quest_id"])
+        return {
+            **parsed,
+            "loc_texts_en": loc_texts,
+            "title": _title(loc_texts),
+            "objective": _objective(loc_texts) or parsed["objective_text_kr"],
+            # Empty sorts last and exports as an empty cell.
+            "family_stat_text": _family_stat_text(parsed["family_stats"]) or None,
+        }
 
     def _records_at(self, data: bytes, companions: dict[str, bytes], rows: Iterable[int]) -> list[dict]:
         index = self._get_index(data, companions)

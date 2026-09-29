@@ -1,3 +1,4 @@
 {
+  "include": ["PAZ-Parser", "browser.py"],
   "extraPaths": ["PAZ-Parser", "PAZ-Parser/handlers"]
 }

@@ -90,14 +90,10 @@ class NpcGiftHandler(PreviewHandler):
         entry: PazEntry,
         companions: dict[str, bytes],
     ) -> list[dict]:
-        records: list[dict] = []
-
-        for record in parse_npcgift_records(data):
-            row = dict(record)
-            row["icon_path"] = icon_path(IconKind.ITEM, row["item_id"])
-            records.append(row)
-
-        return records
+        return [
+            {**record, "icon_path": icon_path(IconKind.ITEM, record["item_id"])}
+            for record in parse_npcgift_records(data)
+        ]
 
     def render_records_page(
         self,

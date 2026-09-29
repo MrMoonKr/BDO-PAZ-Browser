@@ -113,21 +113,27 @@ Install dev dependencies:
 python -m pip install -r PAZ-Parser/requirements-dev.txt
 ```
 
-Run all unit tests:
+Run all unit tests with the full output (a rows / parse time / LOC summary per handler):
 
 ```bash
 python -m pytest -v -s
 ```
 
-Open a PAZ folder once in the GUI if fixture fetching has no saved game path yet.
-
-Type-check the files you changed (from the repo root, so `pyrightconfig.json` applies):
+Or print only failed tests and a pass/total line:
 
 ```bash
-python -m pyright PAZ-Parser/api/bdo_lookup_indexes.py PAZ-Parser/handlers/_common/lookup_index.py
+python -m pytest --clean
 ```
 
-A full `python -m pyright` still reports older errors, mostly the API mixins reaching `Api` attributes, so check only the files you touched for now.
+Open a PAZ folder once in the GUI if fixture fetching has no saved game path yet.
+
+Type-check `PAZ-Parser/` and `browser.py` (from the repo root, so `pyrightconfig.json` applies):
+
+```bash
+python -m pyright
+```
+
+Run both the tests and pyright before committing a Python change; both should pass with no errors.
 
 ---
 
