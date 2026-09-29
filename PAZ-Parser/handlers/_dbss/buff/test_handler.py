@@ -20,7 +20,7 @@ from tests.framework import (
 
 from _common.duration import format_duration
 
-from .handler import extract_title
+from _dbss.buff.title import extract_title
 
 
 BUFF_CASE = HandlerCase(

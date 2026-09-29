@@ -13,6 +13,7 @@ from __future__ import annotations
 import struct
 
 from _common.binary import u16, u32
+from _common.buff import buff_icon_path
 from _common.pabr_offset import PabrOffsetRow
 from _common.prefixed_string import read_prefixed_at
 
@@ -20,11 +21,6 @@ from _common.prefixed_string import read_prefixed_at
 STATS_BLOCK_SIZE = 133
 TAIL_BLOCK_SIZE = 27
 PARAM_COUNT = 10
-
-# Stored paths start at "New_Icon/", which lives under ui_texture/icon/.
-ICON_ROOT = "ui_texture/icon/"
-# 221 records store this literal instead of leaving the path empty.
-_ICON_PLACEHOLDER = "unknown"
 
 # Field offsets inside the stats block.
 _LEVEL = 0x00
@@ -39,14 +35,6 @@ _STACKING_CATEGORY = 0x18
 
 _I16 = struct.Struct("<h")
 _PARAMS_STRUCT = struct.Struct(f"<{PARAM_COUNT}q")
-
-
-def _icon_paz_path(stored: str) -> str:
-    """PAZ path for a stored icon, or an empty string when there is none."""
-    path = stored.strip().replace("\\", "/").lower()
-    if not path or path == _ICON_PLACEHOLDER:
-        return ""
-    return f"{ICON_ROOT}{path}"
 
 
 def _parse_record(data: bytes, row: PabrOffsetRow) -> dict:
@@ -81,7 +69,7 @@ def _parse_record(data: bytes, row: PabrOffsetRow) -> dict:
         "condition_type": _I16.unpack_from(data, stats + _CONDITION_TYPE)[0],
         "duration_ms": u32(data, stats + _DURATION_MS),
         "unknown_str": unknown_str,
-        "icon_path": _icon_paz_path(icon),
+        "icon_path": buff_icon_path(icon),
         "is_shown": bool(is_shown),
         "apply_rate": apply_rate,
         "description_kr": description,

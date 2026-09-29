@@ -1,0 +1,88 @@
+"""`buffsimply.bss`: a compact copy of `buff.dbss`, one fixed row per buff.
+
+    PABR | u32 count | count x 30-byte row | string table | u32 string_table_start | u32 0
+
+Each row holds the buff ID, string-table indices for the icon path and
+`unknown_str`, `is_shown` and a few bytes copied from the `buff.dbss` stats and
+tail blocks. Full layout in docs/file-formats/buffsimply_bss.md.
+"""
+
+from __future__ import annotations
+
+import struct
+
+from _common.binary import u32
+from _common.buff import buff_icon_path
+from _common.pabr_strings import TRAILER_SIZE, read_string_table, string_at, string_table_start
+
+
+_MAGIC = b"PABR"
+_HEADER_SIZE = 8
+
+# u16 buff_id | u8 unknown_02 | 2x | u8 unknown_05 | u8 unknown_06
+# | u8 unknown_07 | x | u8 unknown_09 | u8 unknown_0a | u32 unknown_str_ref
+# | u8 unknown_0f | u8 unknown_10 | 3x | u8 unknown_14 | u8 is_shown
+# | u32 unknown_16 | u32 icon_ref
+_ROW = struct.Struct("<HB2xBBBxBBIBB3xBBII")
+_ROW_SIZE = 30
+assert _ROW.size == _ROW_SIZE
+
+
+def _row_offsets(data: bytes) -> range:
+    """Start of every row. Raises ValueError when the rows do not fill the file."""
+    if len(data) < _HEADER_SIZE + TRAILER_SIZE or data[:4] != _MAGIC:
+        raise ValueError("buffsimply.bss has invalid magic.")
+
+    rows_end = _HEADER_SIZE + u32(data, 4) * _ROW_SIZE
+    if rows_end != string_table_start(data):
+        raise ValueError(
+            f"buffsimply.bss rows end at 0x{rows_end:X} but its string table "
+            f"starts at 0x{string_table_start(data):X}"
+        )
+    return range(_HEADER_SIZE, rows_end, _ROW_SIZE)
+
+
+def parse_buffsimply_records(data: bytes) -> list[dict]:
+    """Every buff row in file order, with its strings resolved.
+
+    Raises ValueError on a bad magic, or when the rows do not end where the
+    string table starts: then the row size has changed and every field is suspect.
+    """
+    offsets = _row_offsets(data)
+    strings = read_string_table(data)
+    records: list[dict] = []
+    for offset in offsets:
+        (
+            buff_id, unknown_02, unknown_05, unknown_06, unknown_07,
+            unknown_09, unknown_0a, unknown_str_ref, unknown_0f, unknown_10,
+            unknown_14, is_shown, unknown_16, icon_ref,
+        ) = _ROW.unpack_from(data, offset)
+        records.append({
+            "buff_id": buff_id,
+            "icon_path": buff_icon_path(string_at(strings, icon_ref)),
+            "is_shown": bool(is_shown),
+            "unknown_str": string_at(strings, unknown_str_ref),
+            "unknown_02": unknown_02,
+            "unknown_05": unknown_05,
+            "unknown_06": unknown_06,
+            "unknown_07": unknown_07,
+            "unknown_09": unknown_09,
+            "unknown_0a": unknown_0a,
+            "unknown_0f": unknown_0f,
+            "unknown_10": unknown_10,
+            "unknown_14": unknown_14,
+            "unknown_16": unknown_16,
+        })
+    return records
+
+
+def build_buff_icon_index(data: bytes) -> dict[int, str]:
+    """Icon path by buff ID, for `IndexKind.BUFF_ICON`.
+
+    Buffs without an icon, or with the `UNKNOWN` placeholder, are left out.
+    """
+    return {
+        record["buff_id"]: record["icon_path"]
+        for record in parse_buffsimply_records(data)
+        if record["icon_path"]
+    }

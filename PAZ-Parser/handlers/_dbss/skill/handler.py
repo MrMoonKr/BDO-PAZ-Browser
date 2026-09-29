@@ -5,11 +5,12 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
+from _common.buff import buff_loc_description
 from _common.duration import format_duration
 from _common.html import Column, e, icon_cell, join_limited, sort_keys, table, truncate
 from _common.icon_index import IconKind, icon_path
 from _common.lang import load_handler_strings
-from _common.loc import loc_text
+from _common.loc import strip_pa_tags
 from _common.pabr_offset import parse_pabr_u32_offset_rows
 from _common.skill import skill_name, split_skill_key
 from .parser import SkillRecord, parse_skill_records
@@ -17,9 +18,6 @@ from .parser import SkillRecord, parse_skill_records
 
 _LANG_DIR = Path(__file__).parent / "lang"
 _OFFSET_FILE = "skilloffset.dbss"
-_LOC_BUFF_DESCRIPTION = 5
-# LOC type 5 stores this for buffs without a description.
-_LOC_NULL = "<null>"
 _EMPTY = "-"
 _LIST_PREVIEW_ITEMS = 3
 _SCRIPT_PREVIEW_CHARS = 80
@@ -27,8 +25,8 @@ _SCRIPT_PREVIEW_CHARS = 80
 
 def _buff_label(buff_id: int) -> str:
     """Buff ID and the first line of its LOC type 5 text."""
-    text = loc_text(_LOC_BUFF_DESCRIPTION, buff_id)
-    first_line = "" if text == _LOC_NULL else text.split("\n", 1)[0].strip()
+    text = strip_pa_tags(buff_loc_description(buff_id))
+    first_line = text.split("\n", 1)[0].strip()
     return f"{buff_id} {first_line}" if first_line else str(buff_id)
 
 

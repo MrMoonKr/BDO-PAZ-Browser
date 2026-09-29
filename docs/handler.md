@@ -714,6 +714,7 @@ Examples:
 _common/
 ├── loc.py
 ├── binary.py
+├── buff.py              # buff icon paths and LOC type 5 buff text
 ├── duration.py          # format_duration(): milliseconds as "1h 30m", "45s", "1.5s"
 ├── html.py
 ├── pabr_offset.py       # offset companions: u16 or u32 keys, with or without PABR magic
@@ -813,6 +814,7 @@ IDs (`LookupValue`).
 | `CHARACTER_LEASES` | `detail_dialog.dbss`, `detail_dialogoffset.dbss` | flat `(item_id, cost, ...)` pairs |
 | `SKILL_ICON`     | `skilltype.dbss`, `skilltypeoffset.dbss`   | icon path      |
 | `SKILL_NAME_KR`  | `skilltype.dbss`, `skilltypeoffset.dbss`   | Korean name    |
+| `BUFF_ICON`      | `buffsimply.bss`                           | icon path      |
 
 `CHARACTER_ITEM` maps a character to the one base item that places or summons
 it (`character_id` at `+0xAA` in
@@ -839,6 +841,15 @@ first rank's icon) and the `ui_skillgroup_*.bss` skill windows read it through
 `skill_name()` in `_common/skill.py` falls back to it when LOC type 10 has no
 name, which on client 3458 names 1,920 `skill.dbss` ranks (set effects, event
 skills) that would otherwise show only an ID.
+
+`BUFF_ICON` maps a buff ID to its icon. It reads
+[buffsimply.bss](file-formats/buffsimply_bss.md), which stores the same icon
+paths as `buff.dbss` in fixed 30-byte rows (1.4 MB against 12 MB of
+variable-length records). Buffs without an icon or with the `UNKNOWN`
+placeholder are left out. Read it through `IconKind.BUFF`; nothing does yet,
+the Buffs column of `skill.dbss` and a future item to buff link are the
+intended readers. `buff_icon_path()` in `_common/buff.py` normalizes the
+stored paths for both buff tables.
 
 ---
 
@@ -885,6 +896,7 @@ exists. The cached `CHARACTER_ICON` index already holds the borrowed icons.
 | `PET_EQUIP_SKILL`   | none                    | 0       | `08_servant_skill/02_pet` |
 | `FAIRY_EQUIP_SKILL` | none                    | 0       | `08_servant_skill/02_pet` |
 | `SKILL`             | `skilltype.dbss`        | 9,402   | none                      |
+| `BUFF`              | `buffsimply.bss`        | 15,076  | none                      |
 
 ### Fixing an icon by hand
 
@@ -925,6 +937,7 @@ icon column will look populated. Measured against the live PAZ:
 | `ITEM`      | 73,790         | 93.8%                  |
 | `QUEST`     | 19,486         | 83.9%                  |
 | `CHARACTER` | 24,418         | 24.9%                  |
+| `BUFF`      | 44,645         | 33.3%                  |
 
 `CHARACTER` is low because only placeable world objects (mostly house
 furniture) and the characters an item places or summons (fences, crops, pets)
@@ -936,6 +949,11 @@ routing them through the registry keeps every icon template in one module and
 lets `icon_overrides.json` correct them like any other kind. Quest and character icons are named after
 assets far more often than after their ID, so a guess would be wrong more often
 than right; those kinds return an empty path and the cell renders a placeholder.
+
+`BUFF` is low for the same reason: only 15,076 of 44,645 buffs store an icon,
+mostly the shown buffs and the runs of hidden effects behind them. Of those,
+14,884 files exist; the other 192 buffs point at 22 paths the client does not
+ship.
 
 The index matters because most item icons are not reachable from the ID. Of
 ~77,000 files under `ui_texture/icon`, the ID-named ones live in dozens of
@@ -954,9 +972,9 @@ it. Its icons differ from the item's own in every overlapping case, and it adds
 no items that `itemenchant.dbss` does not already cover.
 
 Handlers that read an icon path stored in their own records, such as `pet.dbss`,
-`petaction.dbss`, `quest.dbss`, `plantworker.bss`, `itemenchant.dbss` and
-`cashproduct.dbss`, keep using that path directly. It is already authoritative,
-and for `itemenchant` and `quest` the index is built from it, so routing those
+`petaction.dbss`, `quest.dbss`, `plantworker.bss`, `itemenchant.dbss`,
+`cashproduct.dbss`, `buff.dbss` and `buffsimply.bss`, keep using that path directly. It is already authoritative,
+and for `itemenchant`, `quest` and `buffsimply` the index is built from it, so routing those
 through `icon_path()` would be circular.
 
 ---

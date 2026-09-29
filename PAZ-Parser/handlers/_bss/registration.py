@@ -3,6 +3,7 @@ from __future__ import annotations
 from bdo_preview import register_handler
 
 from .allquestlist.handler import AllQuestListBssHandler
+from .buffsimply.handler import BuffSimplyBssHandler
 from .exploration.handler import ExplorationBssHandler
 from .fairyequipskill.handler import FairyEquipSkillBssHandler
 from .fairyfeedenchantfailcount.handler import (
@@ -25,6 +26,7 @@ from .zodiacsignindex.handler import ZodiacSignIndexHandler
 
 def register_bss_handlers() -> None:
     register_handler("allquestlist.bss", AllQuestListBssHandler())
+    register_handler("buffsimply.bss", BuffSimplyBssHandler())
     register_handler("exploration.bss", ExplorationBssHandler())
     register_handler("fairyequipskill.bss", FairyEquipSkillBssHandler())
     register_handler(

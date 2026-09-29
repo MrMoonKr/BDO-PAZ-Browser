@@ -35,6 +35,7 @@ class IndexKind(Enum):
     SKILL_ICON = "skill_icon"
     # Korean skilltype.dbss names, the fallback when LOC type 10 has none.
     SKILL_NAME_KR = "skill_name_kr"
+    BUFF_ICON = "buff_icon"
 
 
 # kind -> {entity_id: value}
