@@ -1,0 +1,12 @@
+{
+  "offsetColumns": {
+    "subgroupKey": "Subgroup Key",
+    "dataOffset": "Data Offset",
+    "size": "Size"
+  },
+  "columns": {
+    "subgroupKey": "Subgroup Key",
+    "entryCount": "Items",
+    "items": "Item Names"
+  }
+}

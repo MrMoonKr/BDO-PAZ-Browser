@@ -40,6 +40,7 @@ from .zodiacsign.handler import (
     ZodiacSignOrderOffsetHandler,
 )
 from .plantzone.handler import PlantZoneOffsetHandler, PlantZoneHandler
+from .itemsubgroup.handler import ItemSubgroupHandler, ItemSubgroupOffsetHandler
 from .characterspawntype.handler import (
     CharacterSpawnTypeOffsetHandler,
     CharacterSpawnTypeHandler,
@@ -111,6 +112,8 @@ def register_dbss_handlers() -> None:
     register_handler("cashproductoffset.dbss", CashProductOffsetHandler())
     register_handler("itemenchant.dbss", ItemEnchantHandler())
     register_handler("itemenchantoffset.dbss", ItemEnchantOffsetHandler())
+    register_handler("itemsubgroupoffset.dbss", ItemSubgroupOffsetHandler())
+    register_handler("itemsubgroup.dbss", ItemSubgroupHandler())
     register_handler("journalquestoffset.dbss", JournalQuestOffsetHandler())
     register_handler("journalquest.dbss", JournalQuestDbssHandler())
     register_handler("npcgiftoffset.dbss", NpcGiftOffsetHandler())
