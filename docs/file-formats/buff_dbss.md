@@ -188,7 +188,7 @@ These are also confirmed against the English LOC type 5 text of their buffs. Per
 | 105   | 123  | Ignore resistance             | `param_1` = resistance kind (`8` all), `param_2` per million      |
 | 128   | 78   | Weather resistance            | `param_1` = `0` heatstroke, `1` hypothermia; `param_2` per million |
 
-[bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor/blob/HEAD/FORMATS.md) also names these, unconfirmed here because their buffs have no English text: 29 Weight Limit, 50 Mount EXP, 57 Drop Rate, 63 worker stamina recovery, 67 potential ranks, 79 Energy recovery, 89 Breath/Strength/Health EXP, 90 Death Penalty Resistance, 95 underwater breathing. It gives 149 as life-skill mastery with `param_1` the life skill, but `Hunting Mastery +100` stores `param_1 = 15`, which that source reads as "all life skills".
+[bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor/blob/HEAD/FORMATS.md) also names these, unconfirmed here because their buffs have no English text: 29 Weight Limit, 50 Mount EXP, 57 Drop Rate, 63 worker stamina recovery, 67 potential ranks, 79 Energy recovery, 89 Breath/Strength/Health EXP, 90 Death Penalty Resistance, 95 underwater breathing. It gives 149 as life-skill mastery with `param_1` the life skill, but `Hunting Mastery +100` stores `param_1 = 15`, which that source reads as "all life skills".
 
 ### `stacking_category` (tail block `+0x18`)
 

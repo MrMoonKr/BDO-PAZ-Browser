@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Index file for `journalquest.dbss`. Maps each `(journal_key, book_key)` pair to a `(byte_offset, byte_size)` location within the main file. Field names follow [bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor), re-verified against our files.
+Index file for `journalquest.dbss`. Maps each `(journal_key, book_key)` pair to a `(byte_offset, byte_size)` location within the main file. Field names follow [bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor), re-verified against our files.
 
 ---
 
@@ -68,4 +68,4 @@ for i in range(group_count):
 
 ## Display Order
 
-[bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor) states that the book index order is the UI order, independent of file order. It is neither: the journal shelf sorts books by `book_key`. The only journal where the file orders differ is journal 6 ("Event Logs"), which the offset file lists as 1, 2, 10, 7, 8, 11, 12 and the game shows as 1, 2, 7, 8, 10, 11, 12 (checked in game, 2026-09-28; see `journalquest_dbss.md`).
+[bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor) states that the book index order is the UI order, independent of file order. It is neither: the journal shelf sorts books by `book_key`. The only journal where the file orders differ is journal 6 ("Event Logs"), which the offset file lists as 1, 2, 10, 7, 8, 11, 12 and the game shows as 1, 2, 7, 8, 10, 11, 12 (checked in game, 2026-09-28; see `journalquest_dbss.md`).

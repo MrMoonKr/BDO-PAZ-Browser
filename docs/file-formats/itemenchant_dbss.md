@@ -150,7 +150,7 @@ Checked on Balacs Lunchbox (`9359`): `item_type` 2, `grade` 3, `weight`
 
 The fixed part of this layout, and the names of `item_type`, `category`,
 `grade`, `dye_parts` and the skill keys, come from
-[bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor/blob/HEAD/FORMATS.md),
+[bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor/blob/HEAD/FORMATS.md),
 which decodes the whole header from `+0x00` to `+0xD4` (class mask, stack
 size, market category, durability and more). The offsets above were checked
 against this file; the names `category` and `dye_parts` were not. Its

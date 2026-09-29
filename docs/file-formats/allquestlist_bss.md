@@ -103,7 +103,7 @@ The older fixture starts with `1050655` (chain `2079`, quest `16`, `[Elvia Weekl
 
 - Current file: `75,972` bytes, `18,988` entries, `end_of_entries = 75,960`. After the 2026-09-27 update: `77,328` bytes, `19,327` entries, `end_of_entries = 77,316`. Fixture: `78,416` bytes, `19,599` entries, `end_of_entries = 78,404` (`0x13244`). All three match `8 + count × 4 + 12`.
 - `count` equals the `quest.dbss` header count in all three versions, and all entries are distinct.
-- Physical order: walking `quest.dbss` sequentially, record `i` carries packed quest ID `entry[i]` at the start of its fixed block (after its objective text) and again in its trailing echo. The walk succeeds for all `18,988` current, `19,327` updated and `19,599` fixture records, so this list is the record-order index for `quest.dbss` (as stated by [bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor)). See [quest_dbss.md](quest_dbss.md) for the record layout.
+- Physical order: walking `quest.dbss` sequentially, record `i` carries packed quest ID `entry[i]` at the start of its fixed block (after its objective text) and again in its trailing echo. The walk succeeds for all `18,988` current, `19,327` updated and `19,599` fixture records, so this list is the record-order index for `quest.dbss` (as stated by [bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor)). See [quest_dbss.md](quest_dbss.md) for the record layout.
 - The list is not a byte offset table; it stores IDs only, so record offsets still have to be found by walking `quest.dbss`.
 - The entry encoding matches the packed quest ID relationship documented in `questgroup.dbss`.
 - All 827 adventure-journal page quests from `journalquest.dbss` are in the current list.

@@ -44,7 +44,7 @@ Each record in the decompressed stream:
 Next record starts at: `+0x10 + str_size * 2 + 4`
 
 The four bytes at `+0x0C` can also be read as one u32 selector, as
-[bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor) does (their
+[bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor) does (their
 `key1`): the high byte is `str_id4`, the field or column, and the low 24 bits
 are `str_id2 | str_id3 << 16`. Their `key0` is `str_type` and their `id` is
 `str_id1`. The current English file holds 1,421,290 strings in 116 types.
@@ -481,7 +481,7 @@ record key (87 of the 93 IDs; 89 are also skill numbers in `skill.dbss`).
 | 2       | Set group title           | `"Agris Set Effect"`             |
 
 The selector split follows the notes of
-[bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor).
+[bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor).
 
 ### Type 63, journal quest metadata (`journalquest.dbss`)
 

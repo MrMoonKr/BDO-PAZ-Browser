@@ -11,7 +11,7 @@ node_key=1  -> Velia (City, contribution 0, representative 40017 Igor Bartali)
 node_key=65 -> Wale Farm (Normal, contribution 1, manager family 40605 Wale)
 ```
 
-Field names for several head fields and the `ExplorationNodeType` mapping follow [asheimo/bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor) (`FORMATS.md`, section 12), checked against the bytes of the current client file below.
+Field names for several head fields and the `ExplorationNodeType` mapping follow [iDevelopThings/bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor) (`FORMATS.md`, section 12), checked against the bytes of the current client file below.
 
 ---
 

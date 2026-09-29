@@ -16,7 +16,7 @@ character_id: 2 -> "Ranger"
 class_type: 4                  -> LOC type 21 "Ranger"
 ```
 
-Field names `npcKind` and `classType` follow the notes of [bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor); this doc writes them as `npc_kind` and `class_type`.
+Field names `npcKind` and `classType` follow the notes of [bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor); this doc writes them as `npc_kind` and `class_type`.
 
 ---
 

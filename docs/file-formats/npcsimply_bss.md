@@ -50,7 +50,7 @@ All multi-byte values are little-endian unless noted otherwise.
 
 An earlier version of this doc read `+0x00` as a u32 `npc_id`. The high half is `unknown_02`: as a u32 only 20 of 2237 values resolve through LOC, as a u16 all of them do. Earlier versions of this doc also called `lease_item_id` `unknown_id` and then `unknown_0c`, `lease_cost` `unknown_value` and then `unknown_10`, `unknown_12` `sentinel` and `has_lease_condition` `unknown_flag` and then `unknown_14`.
 
-`script_ref`, `name_ref`, and `role_ref` are unaligned u32 values inside the 33-byte row. bdo-data-extractor ([asheimo/bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor)) reads the same references as aligned u32s at `+0x14` and `+0x18` shifted right by 8 (`packedNameRef`, `packedTitleRef`); both readings give the same index on every row, because the byte after each unaligned reference is always 0. `name_ref` is usually `script_ref + 1` (2045 rows).
+`script_ref`, `name_ref`, and `role_ref` are unaligned u32 values inside the 33-byte row. bdo-data-extractor ([iDevelopThings/bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor)) reads the same references as aligned u32s at `+0x14` and `+0x18` shifted right by 8 (`packedNameRef`, `packedTitleRef`); both readings give the same index on every row, because the byte after each unaligned reference is always 0. `name_ref` is usually `script_ref + 1` (2045 rows).
 
 The `script_ref` string equals the `characterstatic.dbss` action script of the same character on all 2237 rows.
 

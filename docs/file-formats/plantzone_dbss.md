@@ -9,7 +9,7 @@ Observed records: 394 in the pre-2026-09-27 fixture, 439 in the 2026-09-27 clien
 record_id=1539 -> Teff, production key 1539 -> item subgroup 40189 -> Teff
 ```
 
-The production-key reading and the worker-species field boundaries follow [asheimo/bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor) (`FORMATS.md`, "Worker-production item tables"), checked against the current client files below.
+The production-key reading and the worker-species field boundaries follow [iDevelopThings/bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor) (`FORMATS.md`, "Worker-production item tables"), checked against the current client files below.
 
 ---
 

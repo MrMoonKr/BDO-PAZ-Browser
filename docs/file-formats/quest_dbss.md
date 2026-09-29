@@ -82,7 +82,7 @@ Strings are a u64 character count (equivalently a u32 count plus a u32 zero) fol
 
 Earlier versions of this doc called `unknown_00`, `unknown_04` and `unknown_08` `lead_a`, `lead_b` and `lead_zero` (and before that `packed_quest_id_a` and `packed_quest_id_b`), and `unknown_q08` `reserved_q08`.
 
-The split between the 13-byte `trailer` and the next record's 12-byte lead is inferred from record 0 (12 bytes before its first string at `+0x0C`) and from the last record (13 bytes after its echo to end of file). [bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor) groups `packed_quest_id_echo`, the trailer and the next record's lead, scripts and objective into one "condition tail" of the earlier quest; our data shows those scripts belong to the next quest: in 8,066 of 11,672 such blocks with a `clearquest` call it names the previous step of the next quest, versus 170 for the earlier quest.
+The split between the 13-byte `trailer` and the next record's 12-byte lead is inferred from record 0 (12 bytes before its first string at `+0x0C`) and from the last record (13 bytes after its echo to end of file). [bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor) groups `packed_quest_id_echo`, the trailer and the next record's lead, scripts and objective into one "condition tail" of the earlier quest; our data shows those scripts belong to the next quest: in 8,066 of 11,672 such blocks with a `clearquest` call it names the previous step of the next quest, versus 170 for the earlier quest.
 
 ### Quest Category
 
@@ -118,7 +118,7 @@ The earlier "magic marker `0x003BAE30`" is not a marker: `30 AE 3B 00` is the UT
 
 ### Family-Stat Union
 
-Offsets relative to the union start `U = Q+0x80 + 178 × k`, for `k < reward_entry_count`. Field names from [bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor). The union is byte-packed (`inventory` is one byte), so later fields are unaligned.
+Offsets relative to the union start `U = Q+0x80 + 178 × k`, for `k < reward_entry_count`. Field names from [bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor). The union is byte-packed (`inventory` is one byte), so later fields are unaligned.
 
 | Offset    | Type | Field             | Notes                                           |
 | --------- | ---- | ----------------- | ----------------------------------------------- |

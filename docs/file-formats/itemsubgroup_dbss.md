@@ -9,7 +9,7 @@ subgroup 42356 -> Elder Tree Timber (4611), Bloody Tree Knot (5005), Elder Tree 
 subgroup 40189 -> Teff (7022)
 ```
 
-The record header and the item ID position match [asheimo/bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor) (`FORMATS.md`, "Worker-production item tables"), which leaves the rest of each 135-byte entry unmapped. Their "0-100 items" range does not hold: subgroup 52001 has 11,560 entries.
+The record header and the item ID position match [iDevelopThings/bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor) (`FORMATS.md`, "Worker-production item tables"), which leaves the rest of each 135-byte entry unmapped. Their "0-100 items" range does not hold: subgroup 52001 has 11,560 entries.
 
 ---
 

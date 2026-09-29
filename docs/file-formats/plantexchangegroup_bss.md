@@ -10,7 +10,7 @@ zone 2050 (Lumbering) -> production_key=1928 "플라테르 산맥 - 벌목" -> i
 zone 1539 (Teff) -> production_key=1539 "포할람 농장 - 테프" -> item subgroup 40189 -> Teff (7022)
 ```
 
-The row size and the join fields match [asheimo/bdo-data-extractor](https://github.com/asheimo/bdo-data-extractor) (`FORMATS.md`, "Worker-production item tables"), which leaves the `+0x5A` tail unmapped; it is the label's string table index.
+The row size and the join fields match [iDevelopThings/bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor) (`FORMATS.md`, "Worker-production item tables"), which leaves the `+0x5A` tail unmapped; it is the label's string table index.
 
 ---
 
