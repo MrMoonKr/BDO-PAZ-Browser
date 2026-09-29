@@ -5,9 +5,10 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.loc import is_loc_loaded, loc_lookup, loc_text, strip_pa_tags
+from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 from _common.html import Column, e, error, icon_cell, sort_keys, table
 from _common.icon_index import IconKind, icon_path
+from _common.item_key import item_name
 from _common.lang import load_handler_strings
 from _common.lookup_index import IndexKind, lookup
 from _common.pabr_offset import parse_pabr_offset_rows
@@ -15,7 +16,6 @@ from .parser import parse_characterobject_records
 
 _LANG_DIR = Path(__file__).parent / "lang"
 _OFFSET_FILE = "characterobjectoffset.dbss"
-_LOC_ITEM_NAME = 0
 _LOC_CHARACTER_NAME = 6
 _EMPTY = "-"
 
@@ -112,7 +112,7 @@ class CharacterObjectHandler(PreviewHandler):
                 "icon_path": icon_path(IconKind.CHARACTER, r.character_id),
                 "name_en": _character_name(r.character_id) if has_loc else "",
                 "item_id": item_id,
-                "item_name": loc_text(_LOC_ITEM_NAME, item_id) if has_loc and item_id is not None else "",
+                "item_name": item_name(item_id) if has_loc and item_id is not None else "",
                 "object_kind": r.object_kind,
                 "model_path": r.model_path,
             })

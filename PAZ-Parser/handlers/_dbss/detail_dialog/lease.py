@@ -10,9 +10,8 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from _common.loc import loc_text
+from _common.item_key import item_name
 
-_LOC_ITEM_NAME = 0
 _LEASE_ACTION = re.compile(r"buyItemByPoint\((\d+),\s*\d+,\s*\d+,\s*\d+,\s*(\d+)\)", re.IGNORECASE)
 
 
@@ -32,5 +31,5 @@ def parse_lease(action: str) -> Lease | None:
 
 def lease_text(lease: Lease, has_loc: bool) -> str:
     """`[CP] Small Fence (3 CP)`; the item ID stands in for a missing name."""
-    name = (loc_text(_LOC_ITEM_NAME, lease.item_id) if has_loc else "") or str(lease.item_id)
+    name = (item_name(lease.item_id) if has_loc else "") or str(lease.item_id)
     return f"{name} ({lease.cost} CP)"

@@ -740,6 +740,7 @@ _common/
 ├── pabr_offset.py       # offset companions: u16 or u32 keys, with or without PABR magic
 ├── prefixed_string.py   # length-prefixed strings: strict and lenient readers
 ├── inline_text.py       # decode_inline_text(): the stored \n escape of inline text
+├── item_key.py          # item keys (enchant_level << 24 | item_id) and LOC type 0 names
 ├── record_reader.py     # RecordReader: walks one variable-length record in order
 └── skill.py             # skill keys (skill_no << 16 | level) and LOC type 10 names
 ```

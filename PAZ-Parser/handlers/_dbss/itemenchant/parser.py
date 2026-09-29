@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from _common.binary import u16, u32
+from _common.item_key import split_item_key
 from _common.prefixed_string import find_prefixed_ascii
 
 
@@ -9,10 +10,9 @@ _OFFSET_HEADER_SIZE = 8
 _OFFSET_ROW_SIZE = 12
 _TRAILER_SIZE = 12
 
-# key = (enchant_level << 24) | item_id. Level 0 is the base item and there is
-# exactly one per item ID; an item has one record per level up to its maximum.
-_ITEM_ID_MASK = 0x00FFFFFF
-_ENCHANT_LEVEL_SHIFT = 24
+# Keys are packed item keys (`_common/item_key.py`). Level 0 is the base item
+# and there is exactly one per item ID; an item has one record per level up to
+# its maximum.
 
 # Stored icon paths are relative to this folder.
 ICON_ROOT = "ui_texture/icon/"
@@ -39,10 +39,11 @@ def parse_itemenchantoffset_records(data: bytes) -> list[dict]:
     for index in range(count):
         pos = _OFFSET_HEADER_SIZE + index * _OFFSET_ROW_SIZE
         key = u32(data, pos)
+        item_id, enchant_level = split_item_key(key)
         records.append({
             "key": key,
-            "item_id": key & _ITEM_ID_MASK,
-            "enchant_level": key >> _ENCHANT_LEVEL_SHIFT,
+            "item_id": item_id,
+            "enchant_level": enchant_level,
             "data_offset": u32(data, pos + 0x04),
             "data_size": u32(data, pos + 0x08),
         })
