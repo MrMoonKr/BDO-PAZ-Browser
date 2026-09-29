@@ -140,7 +140,7 @@ fields that are not yet decoded.
 | `+0xAC` | u8   | dye_parts    | `0` on all 3,960 object links; across base items `0` (61,650), `1` (4,786), `2` (2,165), `5` (1,052), `10` (218) |
 | `+0xAD` | u8   | unknown_ad   | `0` in 69,875 base items                                     |
 | `+0xAE` | ...  | unknown      | Numeric fields                                               |
-| `+0xCC` | u32  | skill_key_1  | Skill a consumable casts; see bdo-data-extractor below       |
+| `+0xCC` | u32  | skill_key_1  | Skill a consumable casts, a [`skill.dbss`](skill_dbss.md) key; its `buff_ids` are the item's buffs |
 | `+0xD0` | u32  | skill_key_2  | Second skill, used by composite meals                        |
 | `+0xD4` | ...  | unknown      | Numeric fields up to the first string                        |
 

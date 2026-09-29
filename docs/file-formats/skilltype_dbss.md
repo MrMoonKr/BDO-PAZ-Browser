@@ -1,0 +1,141 @@
+# `skilltype.dbss` Format
+
+## Purpose
+
+The presentation record of every skill: the Korean skill name, its family
+name, whether it is active or passive, the skill icon, and a long action
+configuration (animation, targeting and combat behaviour) that is not decoded.
+This is where a skill's icon comes from.
+
+```text
+skill 62380  칼페온 - 낚시 경험치 획득량 +20%  (LOC 10: "Calpheon - Fishing EXP +20%")
+  kind 2 (passive)
+  icon New_Icon/04_PC_Skill/07_Guild_Skill/00062366.dds
+```
+
+---
+
+## Companion Files
+
+| File                   | Required | Role                                                             |
+| ---------------------- | -------- | ---------------------------------------------------------------- |
+| `skilltypeoffset.dbss` | Required | `skill_key → (offset, size)` index into this file                |
+| `languagedata_en.loc`  | Optional | English names, LOC type `10`, `str_id1 = skill_no`               |
+
+The skill key is the one shared by the whole skill cluster, see
+[`skill.dbss` Skill Keys](skill_dbss.md#skill-keys). All multi-byte values are
+little-endian.
+
+---
+
+## File Layout
+
+### skilltypeoffset.dbss
+
+Same layout as [`skilloffset.dbss`](skill_dbss.md#skilloffsetdbss): `PABR`,
+u32 count (`30352` on client 3458), 12-byte rows of u32 `skill_key`, u32
+`offset`, u32 `size`, and the 12-byte empty string table trailer. Read it with
+`parse_pabr_u32_offset_rows()`.
+
+### skilltype.dbss
+
+| Offset  | Type | Field   | Notes                                                    |
+| ------- | ---- | ------- | -------------------------------------------------------- |
+| `+0x00` | u32  | count   | Number of records; matches the offset file               |
+| `+0x04` | ...  | records | Each record is preceded by a repeated copy of its key   |
+
+The records tile the file like `skill.dbss`: each starts 4 bytes after the
+previous one ends, the first at `8`, and the last ends at end of file. Strings
+are a `u64` count followed by UTF-16LE units (text) or ASCII bytes (paths).
+
+Every key is level `1`. 30,342 of the 30,352 keys are also in `skill.dbss`;
+the 82 `skill.dbss` keys above level 1 have no record here.
+
+---
+
+## Record Structure
+
+### Skill Type Record (variable, `size` bytes from `offset`)
+
+| Order | Type   | Field       | Notes                                                                 |
+| ----- | ------ | ----------- | --------------------------------------------------------------------- |
+| 1     | u32    | skill_key   | Equals the index key                                                  |
+| 2     | string | name        | Korean skill name, UTF-16, e.g. `거대한 진노 III`                      |
+| 3     | string | group_name  | Korean family name, see below                                         |
+| 4     | u32    | kind        | `0` other, `1` active, `2` passive; see below                         |
+| 5     | bytes  | config      | Action configuration, not decoded; holds `icon_path`                  |
+
+### `group_name`
+
+Equal to `name` on 16,847 records. On the other 13,505 it is the name without
+the rank or a qualifier: `거대한 진노 III` -> `거대한 진노`, `탈것 속도 증가 1.0%`
+-> `속도 +1.0%`. Some are cut mid-phrase (`극 : 매화의 정신` -> `극 : 매화의`), so it
+reads like a short label rather than a clean family name.
+
+### `kind`
+
+| Value | Meaning | Records | Example                                  |
+| ----- | ------- | ------- | ---------------------------------------- |
+| 0     | Other   | 14,382  | Item and event skills, "[Event] Energy of Happiness" (57005) |
+| 1     | Active  | 10,219  | "Seismic Strike", "Fist Fury I"          |
+| 2     | Passive | 5,751   | "Mountain Aura IX" to "XVI"              |
+
+### `icon_path`
+
+The skill icon is the first length-prefixed ASCII string in `config`, a `.dds`
+path relative to `ui_texture/icon/`. `find_prefixed_ascii()` finds it, as for
+`itemenchant.dbss`. Its position is not fixed: it follows a variable part of
+the configuration, 49 to 69 bytes after `kind`.
+
+| Kind    | With icon | Without |
+| ------- | --------- | ------- |
+| Other   | 186       | 14,196  |
+| Active  | 7,654     | 2,565   |
+| Passive | 1,562     | 4,189   |
+
+9,402 records have an icon, never more than one, over 3,530 distinct paths.
+Lower-cased under `ui_texture/icon/`, 3,452 of those paths exist in the
+client's PAZ files on client 3458; the other 78 point at missing files
+(for example `new_icon/04_pc_skill/01_pc_skill/31_prsa_skill/prsa_skill_8827.dds`).
+
+`config` also holds 7,355 `.png` paths such as
+`Real_ETC/Scroll/Icon_ETC_Scroll_00000000.png`; what they are for is not
+known.
+
+---
+
+## Suggested UI Layout
+
+Opens sorted by `skill_key` (Skill No); the index order is arbitrary.
+
+| Column   | Type | Notes                                                                  |
+| -------- | ---- | ---------------------------------------------------------------------- |
+| Skill No | num  | `skill_key >> 16`                                                      |
+| Icon     | icon | `icon_path` under `ui_texture/icon/`                                   |
+| Name     | text | LOC type `10`, `str_id1 = skill_no`, `str_id4 = 0`; else `name`        |
+| Kind     | text | `kind` as Other / Active / Passive                                     |
+
+---
+
+## Notes
+
+- The first keys (`0xDEAD0001`, `0xDEAC0001`) look like sentinels but are
+  real skills, see [`skill.dbss` Skill Keys](skill_dbss.md#skill-keys).
+- The record layout of the first four fields and the `kind` meaning come from
+  bdo-data-extractor; the counts, the icon rule and the `group_name` reading
+  were checked against client 3458.
+- LOC type `10` covers 28,343 of its 29,398 IDs with a skill number from this
+  table or `skill.dbss`; 2,009 skill numbers have no type `10` row and 1,055
+  type `10` IDs have no skill.
+
+---
+
+## Open Questions
+
+### How is `config` laid out?
+
+The configuration opens with small counts and lists (a run of `ff ff ff ff ff
+7f`, the skill key again, and skill numbers and keys on class skills) before
+the icon, which is why the icon moves between 49 and 69 bytes after `kind`.
+Decoding it would give the icon a fixed place and expose the animation and
+targeting fields, but nothing that is needed so far depends on it.

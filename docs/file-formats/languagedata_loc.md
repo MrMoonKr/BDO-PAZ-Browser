@@ -145,16 +145,16 @@ label.
 
 ### Type 10, skill names and descriptions
 
-Type 10 holds 86,679 rows over 29,393 IDs, each a name with a description.
-`str_id1` is the skill number (`skillNo`). `skill.dbss` and `skilltype.dbss`
-key their records with a u32 `skillNo << 16 | skillLevel` (the offset index
-row stores it as u16 level, u16 skillNo), and 28,316 of the 29,393 type 10 IDs
-are skill numbers there. The Korean `skilltype.dbss` names match the English
+Type 10 holds 86,692 rows over 29,398 IDs, each a name with a description.
+`str_id1` is the skill number (`skillNo`). [`skill.dbss`](skill_dbss.md) and
+[`skilltype.dbss`](skilltype_dbss.md) key their records with a u32
+`skillNo << 16 | skillLevel`, and on client 3458 28,343 of the 29,398 type 10
+IDs are skill numbers there. The Korean `skilltype.dbss` names match the English
 text: skill `62480` is `칼페온 - 가공 경험치 획득량 +20%` and type 10 `62480` is
 `"Calpheon - Processing EXP +20%"`; skill `47059` is `[칭호] 제일 큰 흑새치를 낚은`
 and type 10 is `"[Title] The Biggest Black Marlin"`. Type 10 has no level
 dimension: every row has `str_id2 = str_id3 = 0`, so all ranks of one
-`skillNo` share one name. 2,002 skill numbers have no type 10 row, and 1,077
+`skillNo` share one name. 2,009 skill numbers have no type 10 row, and 1,055
 type 10 IDs (for example `16626` to `16635`) have no skill record.
 
 `petequipskill.bss` and `fairyequipskill.bss` resolve their pet and fairy

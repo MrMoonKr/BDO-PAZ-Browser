@@ -303,7 +303,10 @@ Value `2` (647 rows) holds 600-minute elixir-style buffs and value `38` the Adve
   The inline Korean description and LOC type 5 always agree with each other,
   so this is drift in the game data, not a parsing or translation error.
 - Item IDs do not appear in this file: 761880 is not stored anywhere in it as
-  a u32 or i64, so the item-to-buff link lives in another table.
+  a u32 or i64. The item-to-buff link runs through a skill: the item's
+  `itemenchant.dbss` skill keys name [`skill.dbss`](skill_dbss.md) records,
+  whose `buff_ids` are the buffs (item 761880 -> skill 47683 -> buffs 48723
+  to 48728).
 
 ---
 
@@ -344,8 +347,3 @@ bdo-data-extractor splits `+0x00` into `i16 Category`, `u8 CategoryLevel` and
 on staged buffs such as boss stages, and it ranks the buffs of one `group`
 (see Notes), so it is kept as `buff_level` until the client names it.
 
-### Which table links items to their buffs?
-
-Consumable items such as 761880 apply buff groups, but the item ID is not in
-`buff.dbss`. The link is likely in an item table or runs through a skill the
-item triggers.

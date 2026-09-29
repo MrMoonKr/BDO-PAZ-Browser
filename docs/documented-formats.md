@@ -6,10 +6,10 @@ All formats are little-endian. Unknown fields are named `unknown_*`.
 | ---------------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | -------------- |
 | `acceptquest.bss`                  | PABR quest ID list in acceptance-related order with two side fields                                            | [acceptquest](file-formats/acceptquest_bss.md)                      | 1              |
 | `allquestlist.bss`                 | PABR list of canonical/display packed quest IDs linked to quest LOC keys                                       | [allquestlist](file-formats/allquestlist_bss.md)                    | 0              |
-| `base_dialog.dbss` | Base record of every NPC dialog: Korean display name and the speech bubble lines shown over the NPC, keyed like `detail_dialog.dbss` | [base_dialog](file-formats/base_dialog_dbss.md) | 1 |
-| `base_dialogoffset.dbss` | PABR index into `base_dialog.dbss`, same layout and keys as `detail_dialogoffset.dbss` | [base_dialog](file-formats/base_dialog_dbss.md) | 1 |
-| `buff.dbss` | Master buff table, internal Korean names, level, effect type, ten parameters, duration, icon and description | [buff](file-formats/buff_dbss.md) | 6 |
-| `buffoffset.dbss` | PABR index into `buff.dbss`, maps buff_id → offset/size | [buff](file-formats/buff_dbss.md) | 6 |
+| `base_dialog.dbss` | Base record of every NPC dialog: Korean display name and the speech bubble lines shown over the NPC, keyed like `detail_dialog.dbss` | [base_dialog](file-formats/base_dialog_dbss.md) | 0 |
+| `base_dialogoffset.dbss` | PABR index into `base_dialog.dbss`, same layout and keys as `detail_dialogoffset.dbss` | [base_dialog](file-formats/base_dialog_dbss.md) | 0 |
+| `buff.dbss` | Master buff table, internal Korean names, level, effect type, ten parameters, duration, icon and description | [buff](file-formats/buff_dbss.md) | 5 |
+| `buffoffset.dbss` | PABR index into `buff.dbss`, maps buff_id → offset/size | [buff](file-formats/buff_dbss.md) | 5 |
 | `cashproduct.dbss` | Pearl Shop product catalog, Korean names, inline icon path, and the granted item ID | [cashproduct](file-formats/cashproduct_dbss.md) | 4 |
 | `cashproductoffset.dbss` | Index into `cashproduct.dbss`, maps product ID → offset/size; no PABR magic and no trailer | [cashproduct](file-formats/cashproduct_dbss.md) | 4 |
 | `characterobject.dbss` | Placeable world-object records (mostly house furniture) with model path and inline icon path | [characterobject](file-formats/characterobject_dbss.md) | 3 |
@@ -82,12 +82,22 @@ All formats are little-endian. Unknown fields are named `unknown_*`.
 | `plantzoneoffset.dbss`             | Offset index into `plantzone.dbss`, maps record ID → offset/size                                              | [plantzone](file-formats/plantzone_dbss.md)                         | 4              |
 | `quest.dbss`                       | Variable-length quest definitions with scripts, objectives, and icon paths                                     | [quest](file-formats/quest_dbss.md)                                 | 9              |
 | `questgroup.dbss`                  | Quest chain/group table with Korean names and child quest ID links                                             | [questgroup](file-formats/questgroup_dbss.md)                       | 1              |
+| `skill.dbss` | Rule record of every skill rank: cooldown, applied buff IDs, effect script, next ranks and Core base skill | [skill](file-formats/skill_dbss.md) | 2 |
+| `skillgroup.bss` | Skill window groups, each listing the skill keys of its ranks in order | [skillgroup](file-formats/skillgroup_bss.md) | 0 |
+| `skilloffset.dbss` | PABR index into `skill.dbss`, maps skill_key (skill_no << 16 \| level) → offset/size | [skill](file-formats/skill_dbss.md) | 2 |
+| `skillsimply.dbss` | Compact per-rank skill record with the `skill.dbss` keys; only framing and first fields decoded | [skillsimply](file-formats/skillsimply_dbss.md) | 1 |
+| `skillsimplyoffset.dbss` | Bare u32-keyed index into `skillsimply.dbss` (no magic, no trailer) | [skillsimply](file-formats/skillsimply_dbss.md) | 1 |
+| `skilltype.dbss` | Presentation record of every skill: Korean name and family name, active/passive kind, icon path | [skilltype](file-formats/skilltype_dbss.md) | 1 |
+| `skilltypeoffset.dbss` | PABR index into `skilltype.dbss`, same layout as `skilloffset.dbss` | [skilltype](file-formats/skilltype_dbss.md) | 1 |
 | `stringtable.bss` | Korean source of the keyed UI strings in eight sheets; each key's hash is the LOC type 37 `str_id1` | [stringtable](file-formats/stringtable_bss.md) | 2 |
 | `title.dbss`                       | Title record table (multiple layouts, embedded PAColor text)                                                   | [title](file-formats/title_dbss.md)                                 | 2              |
 | `titlebufflist.dbss`               | Title collection buff rewards (KR text + LOC tooltip match)                                                    | [titlebufflist](file-formats/titlebufflist_dbss.md)                 | 1              |
 | `titlebufflistoffset.dbss`         | Offset index into `titlebufflist.dbss`, maps entry ID → offset/size                                           | [titlebufflist](file-formats/titlebufflist_dbss.md)                 | 1              |
 | `titlecategory.bss`                | Groups titles into display categories                                                                          | [titlecategory](file-formats/titlecategory_bss.md)                  | 0              |
 | `titleoffset.dbss`                 | Index into `title.dbss`, maps title ID → offset/size                                                          | [titleoffset](file-formats/titleoffset_dbss.md)                     | 0              |
+| `ui_skillgroup_awakening.bss` | Awakening skill window grid per class, same format as `ui_skillgroup_combat.bss` | [ui_skillgroup](file-formats/ui_skillgroup_bss.md) | 1 |
+| `ui_skillgroup_combat.bss` | Combat skill window grid per class: placed skill groups, drawing cells and named tabs | [ui_skillgroup](file-formats/ui_skillgroup_bss.md) | 1 |
+| `ui_skillgroup_succession.bss` | Succession skill window grids, same format; empty on client 3458 | [ui_skillgroup](file-formats/ui_skillgroup_bss.md) | 1 |
 | `worldquest.dbss`                  | Empty world quest table placeholder with a zero record count                                                   | [worldquest](file-formats/worldquest_dbss.md)                       | 1              |
 | `zodiacsign.dbss`                  | Zodiac sign definitions, star coords, names, texture paths                                                    | [zodiacsign](file-formats/zodiacsign_dbss.md)                       | 0              |
 | `zodiacsignindex.bss`              | PABR display-order index mapping slot → zodiac ID for the 12 horoscope signs                                   | [zodiacsignindex](file-formats/zodiacsignindex_bss.md)              | 0              |
