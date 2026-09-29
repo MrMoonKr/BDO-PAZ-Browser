@@ -173,6 +173,7 @@ Two main nodes have `contribution > 0` but no family: Duvencrune 1651 (1 CP, the
 - The reference project reports 1037 records, 494 families with 914 nodes and a third CP-without-manager record (2055); the current client file has 1003 records, 494 families with 883 nodes, and no node 2055.
 - LOC type 34 also has entries for 987 of the 1003 keys, but they are unrelated knowledge entries (key 65 is `Cron Castle Altar` in type 34, while the inline Korean name `웨일 농장` matches type 29 `Wale Farm`).
 - All 45 `planttown.bss` node IDs and all 394 `plantzone.dbss` record IDs are keys in this file; every plant zone is a sub-node.
+- The node links are not in this file; they are in [`mapdata_realexplore2.bwp`](waypoint_bwp.md), keyed by the same node keys. There each plant zone has exactly one link, its parent node, which is not always the `manager_family_id` main node: Specialties 1563 links to Arehaza (1380), its family's main node is Areha Palm Forest (1379).
 - The record anchor used by older tooling (`node_key` repeated at `+0x06`) still finds the correct 1003 offsets, but the exact layout above makes the scan unnecessary.
 
 ---

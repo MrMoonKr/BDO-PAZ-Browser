@@ -34,7 +34,6 @@ _FORMATS_IGNORE: frozenset[str] = frozenset({
     ".bk2",
     ".bkd",
     ".bnk",
-    ".bwp",
     ".chroma",
     ".cl",
     ".col",

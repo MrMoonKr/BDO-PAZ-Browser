@@ -4,6 +4,7 @@ All formats are little-endian. Unknown fields are named `unknown_*`.
 
 | File                               | Description                                                                                                    | Docs                                                                | Open Questions |
 | ---------------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | -------------- |
+| `*.bwp` (`mapdata_realexplore2.bwp`) | Waypoint graphs: keyed 3D waypoints with names and movement flags, directed links, groups and routes; `mapdata_realexplore2.bwp` is the worldmap node graph | [waypoint](file-formats/waypoint_bwp.md) | 1 |
 | `acceptquest.bss`                  | PABR quest ID list in acceptance-related order with two side fields                                            | [acceptquest](file-formats/acceptquest_bss.md)                      | 1              |
 | `allquestlist.bss`                 | PABR list of canonical/display packed quest IDs linked to quest LOC keys                                       | [allquestlist](file-formats/allquestlist_bss.md)                    | 0              |
 | `base_dialog.dbss` | Base record of every NPC dialog: Korean display name and the speech bubble lines shown over the NPC, keyed like `detail_dialog.dbss` | [base_dialog](file-formats/base_dialog_dbss.md) | 0 |

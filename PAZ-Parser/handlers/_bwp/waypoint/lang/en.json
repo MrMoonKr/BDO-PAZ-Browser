@@ -1,0 +1,19 @@
+{
+  "columns": {
+    "key": "Key",
+    "name": "Name",
+    "x": "X",
+    "y": "Y",
+    "z": "Z",
+    "property": "Property",
+    "subWaypoint": "Sub Waypoint",
+    "links": "Links"
+  },
+  "messages": {
+    "oldLayout": "Old instance dungeon template without PABR magic; not read"
+  },
+  "values": {
+    "yes": "Yes",
+    "no": "No"
+  }
+}
