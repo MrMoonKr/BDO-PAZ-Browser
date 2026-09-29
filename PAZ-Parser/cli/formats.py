@@ -28,6 +28,7 @@ _FORMATS_IGNORE: frozenset[str] = frozenset({
     ".luac", # Compiled Lua, not sure i cba
     ".lnk", # Windows shortcut, not a game format
     ".fxo", # Shader cache, not a game format
+    ".dxil", # Compiled DirectX shader, not a game format
     # skip for now/I have not checked these:
     ".barrier",
     ".bk2",
