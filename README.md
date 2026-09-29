@@ -31,6 +31,8 @@ BDO has hundreds of undocumented binary formats, contributions and corrections a
 
 **Translate the UI**, UI strings live in [`PAZ-Parser/ui/lang/`](PAZ-Parser/ui/lang/) as small JSON files, one per language. Missing keys fall back to English automatically, so partial translations are fine. See [`TRANSLATING.md`](PAZ-Parser/ui/lang/TRANSLATING.md) for instructions.
 
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for setup, the checks to run before a pull request, and project conventions.
+
 ---
 
 ## Writing a Preview Handler

@@ -11,6 +11,7 @@ files/
 json/
 tools/*
 todo.md
+planner.md
 test-scripts/
 tests/fixtures/unpacked/
 docs/paz_tree.md
