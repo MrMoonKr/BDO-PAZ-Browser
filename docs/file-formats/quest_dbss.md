@@ -60,7 +60,7 @@ Strings are a u64 character count (equivalently a u32 count plus a u32 zero) fol
 | `+0x0C` | u64 + utf16le[n] | condition_script  | Accept/prerequisite expression, e.g. `getLevel()>30;<or>clearquest(654,4);`             |
 | varies  | u64 + utf16le[n] | action_script     | Completion expression, e.g. `killmonster(20007,10);`, `meet(npc_id,count)`              |
 | varies  | u8[]             | objective_gap     | 24 zero bytes in 18,209 records; 26 to 100+ bytes in the rest (content not decoded)     |
-| varies  | u64 + utf16le[n] | objective_text_kr | Korean objective text shown in the quest UI                                             |
+| varies  | u64 + utf16le[n] | objective_text_kr | Korean objective text shown in the quest UI; line breaks are stored as `\n` (28 on client 3458) and decoded by the parser |
 | varies  | u32              | quest_category    | Formerly `link_type`; see Quest Category below                                          |
 
 **Part 2: fixed block**, offsets relative to `Q`, the position of `packed_quest_id`:

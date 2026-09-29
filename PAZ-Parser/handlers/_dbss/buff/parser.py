@@ -14,6 +14,7 @@ import struct
 
 from _common.binary import u16, u32
 from _common.buff import buff_icon_path
+from _common.inline_text import decode_inline_text
 from _common.pabr_offset import PabrOffsetRow
 from _common.prefixed_string import read_prefixed_at
 
@@ -72,7 +73,7 @@ def _parse_record(data: bytes, row: PabrOffsetRow) -> dict:
         "icon_path": buff_icon_path(icon),
         "is_shown": bool(is_shown),
         "apply_rate": apply_rate,
-        "description_kr": description,
+        "description_kr": decode_inline_text(description),
         "stacking_category": data[pos + _STACKING_CATEGORY],
     }
     record.update({f"param_{index}": value for index, value in enumerate(params, 1)})

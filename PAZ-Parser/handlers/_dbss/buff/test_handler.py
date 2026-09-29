@@ -19,8 +19,13 @@ from tests.framework import (
 )
 
 from _common.duration import format_duration
+from _common.inline_text import decode_inline_text
 
 from _dbss.buff.title import extract_title
+
+
+# Backslash and `n`, how the tables store a line break in inline text.
+_ESCAPED_NEWLINE = "\\n"
 
 
 BUFF_CASE = HandlerCase(
@@ -185,3 +190,27 @@ def test_format_duration(duration_ms: int, expected: str) -> None:
 )
 def test_extract_title(raw: str, expected: str) -> None:
     assert extract_title(raw) == expected
+
+
+def test_inline_descriptions_hold_no_newline_escapes(buff_result: HandlerResult) -> None:
+    """The stored two-character escape is decoded, so the Korean text breaks lines like LOC."""
+    escaped = [r["buff_id"] for r in buff_result.records if _ESCAPED_NEWLINE in r["description_kr"]]
+    assert not escaped, f"descriptions still hold a newline escape: {escaped[:5]}"
+
+
+@pytest.mark.parametrize(
+    ("stored", "expected"),
+    [
+        (f"모든 공격력 +8{_ESCAPED_NEWLINE}모든 적중력 +8", "모든 공격력 +8\n모든 적중력 +8"),
+        (_ESCAPED_NEWLINE * 2, "\n\n"),
+        ("no escape", "no escape"),
+        ("", ""),
+    ],
+)
+def test_decode_inline_text(stored: str, expected: str) -> None:
+    assert decode_inline_text(stored) == expected
+
+
+def test_korean_title_survives_without_loc() -> None:
+    stored = f"<PAColor0xffe9bd23>[축복] 모험의 가호<PAOldColor>{_ESCAPED_NEWLINE * 2}모든 공격력 +8"
+    assert extract_title(decode_inline_text(stored)) == "[축복] 모험의 가호"

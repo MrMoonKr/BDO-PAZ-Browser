@@ -101,7 +101,7 @@ empty name `N` is `17`.
 | `N+4`   | u8[74]     | unknown_n04         | Not decoded                                                     |
 | `N+78`  | u32        | cooldown_ms         | Cooldown in milliseconds; `0` on 22,798 records, see Notes      |
 | `N+82`  | u16[10]    | buff_ids            | `buff.dbss` IDs, zero-padded; see below                          |
-| `N+102` | string     | description         | Korean effect text, UTF-16; empty on 21,114 records, `UNKNOWN` on 1,284 |
+| `N+102` | string     | description         | Korean effect text, UTF-16; empty on 21,114 records, `UNKNOWN` on 1,284. Line breaks are stored as the two characters `\n` (873 on client 3458) and decoded by the parser |
 | next    | string     | script              | UTF-16 effect script such as `DAM_ATT_2(...)`, `AWAKEN();`, `BATH();`; empty on 21,594 records |
 | next    | u8[36]     | unknown_tail        | Not decoded                                                     |
 | next    | u32        | next_skill_count    | `0` on 25,209 records, `1` on 4,560; up to `75`, see below       |

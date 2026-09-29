@@ -17,6 +17,7 @@ from __future__ import annotations
 import struct
 from dataclasses import dataclass
 
+from _common.inline_text import decode_inline_text
 from _common.pabr_offset import PabrOffsetRow, parse_pabr_u32_offset_rows
 from _common.record_reader import RecordReader
 from _common.skill import split_skill_key
@@ -87,7 +88,7 @@ def parse_skill_record(data: bytes, row: PabrOffsetRow) -> SkillRecord:
         name=name,
         cooldown_ms=cooldown_ms,
         buff_ids=buff_ids,
-        description_kr=description_kr,
+        description_kr=decode_inline_text(description_kr),
         script=script,
         next_skill_keys=next_skill_keys,
         base_skill_keys=base_skill_keys,

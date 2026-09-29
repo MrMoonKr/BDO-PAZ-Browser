@@ -289,7 +289,10 @@ Value `2` (647 rows) holds 600-minute elixir-style buffs and value `38` the Adve
   421 titles equal an item name once its `(120 min)`-style suffix is dropped.
   A few are flavour lines rather than names
   (`Time in Sycraia surges forward.`). The inline Korean description uses the
-  same convention, so the title survives when LOC is not loaded.
+  same convention, so the title survives when LOC is not loaded. It writes
+  each line break as the two characters `\n` (6,580 in 2,264 descriptions
+  on client 3458, where LOC has real newlines); the parser decodes them
+  (`_common/inline_text.py`), or the title would not split off.
 - The parameters are the only reliable effect value; the name and the
   description can each be stale. Of 11,766 buffs whose name and description
   both hold numbers, about 500 disagree beyond a change of scale, and either

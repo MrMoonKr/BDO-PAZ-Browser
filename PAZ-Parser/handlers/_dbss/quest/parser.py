@@ -23,6 +23,7 @@ from dataclasses import dataclass
 
 from _bss.allquestlist.parser import parse_allquestlist_records
 from _common.binary import u32
+from _common.inline_text import decode_inline_text
 from .model import FamilyStat, QuestRecord
 
 
@@ -253,7 +254,7 @@ def parse_quest_record(data: bytes, index: QuestIndex, row: int) -> QuestRecord:
         block_kind=data[quest_offset + _BLOCK_KIND],
         condition_script=condition_script,
         action_script=action_script,
-        objective_text_kr=objective_text_kr,
+        objective_text_kr=decode_inline_text(objective_text_kr),
         icon_path=_icon_path(data, quest_offset, echo),
         family_stats=_family_stats(data, quest_offset, echo),
         loc_texts_en=[],
