@@ -679,6 +679,10 @@ Example:
 from _common.html import error, icon_cell, table
 ```
 
+Give number columns the `"num"` class (`Column("Buff ID", "num", ...)`). The
+table CSS right-aligns them and shrinks them to their content, so text columns
+take the spare width of the pane.
+
 Use `icon_cell(path)` for icon path columns so DBSS/BSS table previews keep
 consistent spacing and escaping. The frontend lazy-loads matching PAZ image
 entries into those cells, while parsed CSV export keeps the raw icon path field.

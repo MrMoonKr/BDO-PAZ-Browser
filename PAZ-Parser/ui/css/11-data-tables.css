@@ -78,9 +78,11 @@ th.sort-pending::after {
   pointer-events: none;
 }
 
+/* Number columns hug their content; text columns share the spare width. */
 .data-table th.num,
 .data-table td.num {
   text-align: right;
+  width: 1%;
 }
 
 .data-table td {
