@@ -17,7 +17,9 @@ from .plantworker.handler import PlantWorkerBssHandler
 from .plantworkerpassiveskill.handler import PlantWorkerPassiveSkillBssHandler
 from .plantworkerselect.handler import PlantWorkerSelectBssHandler
 from .planttown.handler import PlantTownBssHandler
+from .skillgroup.handler import SkillGroupBssHandler
 from .titlecategory.handler import TitleCategoryBssHandler
+from .ui_skillgroup.handler import UiSkillGroupBssHandler
 from .zodiacsignindex.handler import ZodiacSignIndexHandler
 
 
@@ -41,5 +43,9 @@ def register_bss_handlers() -> None:
     )
     register_handler("plantworkerselect.bss", PlantWorkerSelectBssHandler())
     register_handler("planttown.bss", PlantTownBssHandler())
+    register_handler("skillgroup.bss", SkillGroupBssHandler())
     register_handler("titlecategory.bss", TitleCategoryBssHandler())
+    # One layout for the three skill windows.
+    for window in ("combat", "awakening", "succession"):
+        register_handler(f"ui_skillgroup_{window}.bss", UiSkillGroupBssHandler())
     register_handler("zodiacsignindex.bss", ZodiacSignIndexHandler())

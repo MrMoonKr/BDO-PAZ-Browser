@@ -75,6 +75,8 @@ from .fairyskillchange.handler import (
 )
 from .employeename.handler import EmployeeNameHandler, EmployeeNameOffsetHandler
 from .buff.handler import BuffHandler, BuffOffsetHandler
+from .skill.handler import SkillHandler, SkillOffsetHandler
+from .skilltype.handler import SkillTypeHandler
 
 
 def register_dbss_handlers() -> None:
@@ -89,6 +91,11 @@ def register_dbss_handlers() -> None:
     # base_dialogoffset.dbss has the layout and keys of detail_dialogoffset.dbss.
     register_handler("base_dialogoffset.dbss", DetailDialogOffsetHandler())
     register_handler("base_dialog.dbss", BaseDialogHandler())
+    register_handler("skilloffset.dbss", SkillOffsetHandler())
+    register_handler("skill.dbss", SkillHandler())
+    # skilltypeoffset.dbss has the layout and keys of skilloffset.dbss.
+    register_handler("skilltypeoffset.dbss", SkillOffsetHandler())
+    register_handler("skilltype.dbss", SkillTypeHandler())
     register_handler("dialogtextoffset.dbss", DialogTextOffsetHandler())
     register_handler("dialogtext.dbss", DialogTextHandler())
     register_handler("mentalthemeoffset.dbss", MentalThemeOffsetHandler())

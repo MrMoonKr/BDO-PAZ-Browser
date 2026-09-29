@@ -1,0 +1,53 @@
+"""`stringtable.bss`: the client's named UI string sheets.
+
+A PABR file of sheets, then the shared counted string table and trailer:
+
+    PABR | u32 sheet_count | sheet_count x sheet | string table | trailer
+    sheet: u32 sheet_hash | u32 name_ref | u32 row_count
+           | row_count x (u32 key_hash | u32 key_ref | u32 value_ref | u32 0)
+
+`key_hash` is the LOC type 37 `str_id1` of the key, and the sheet fixes
+`str_id2` (`GAME` = 1). Full layout in docs/file-formats/stringtable_bss.md.
+"""
+
+from __future__ import annotations
+
+import struct
+
+from _common.pabr_strings import read_string_table, string_at
+
+_MAGIC = b"PABR"
+_U32 = struct.Struct("<I")
+_SHEET_HEADER = struct.Struct("<III")
+_ROW = struct.Struct("<IIII")
+
+GAME_SHEET = "GAME"
+# LOC type 37 str_id2 of the GAME sheet's keys.
+GAME_SHEET_LOC_ID2 = 1
+
+
+def parse_key_hashes(data: bytes, sheet_name: str) -> dict[str, int]:
+    """`key -> key_hash` for every row of one sheet; empty when it is absent.
+
+    Raises ValueError when the file is not a PABR string table or a sheet runs
+    past the string table.
+    """
+    if data[:4] != _MAGIC:
+        raise ValueError("stringtable.bss does not start with PABR")
+
+    strings = read_string_table(data)
+    (sheet_count,) = _U32.unpack_from(data, 4)
+    pos = 8
+    for _ in range(sheet_count):
+        _, name_ref, row_count = _SHEET_HEADER.unpack_from(data, pos)
+        pos += _SHEET_HEADER.size
+        rows_end = pos + row_count * _ROW.size
+        if rows_end > len(data):
+            raise ValueError(f"stringtable sheet at 0x{pos:X} runs past the file")
+        if string_at(strings, name_ref) == sheet_name:
+            return {
+                string_at(strings, key_ref): key_hash
+                for key_hash, key_ref, _, _ in _ROW.iter_unpack(data[pos:rows_end])
+            }
+        pos = rows_end
+    return {}

@@ -1,0 +1,13 @@
+{
+  "columns": {
+    "skillNo": "Skill No",
+    "icon": "Icon",
+    "name": "Name",
+    "kind": "Kind"
+  },
+  "kind": {
+    "0": "Other",
+    "1": "Active",
+    "2": "Passive"
+  }
+}

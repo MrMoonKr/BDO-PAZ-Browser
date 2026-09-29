@@ -710,10 +710,12 @@ Examples:
 _common/
 ├── loc.py
 ├── binary.py
+├── duration.py          # format_duration(): milliseconds as "1h 30m", "45s", "1.5s"
 ├── html.py
 ├── pabr_offset.py       # offset companions: u16 or u32 keys, with or without PABR magic
 ├── prefixed_string.py   # length-prefixed strings: strict and lenient readers
-└── record_reader.py     # RecordReader: walks one variable-length record in order
+├── record_reader.py     # RecordReader: walks one variable-length record in order
+└── skill.py             # skill keys (skill_no << 16 | level) and LOC type 10 names
 ```
 
 Read an offset companion with `parse_pabr_offset_rows()` (PABR magic, count,
@@ -727,6 +729,13 @@ check; it raises ValueError as soon as a field runs past the record. For inline
 strings at unknown positions, `read_prefixed_at()` reads a prefix at a known
 position and returns the next one; `read_prefixed_utf16()` and
 `find_prefixed_ascii()` are for text whose position is only a guess.
+
+Tables in the skill cluster split a skill key with `split_skill_key()` and name
+a skill with `skill_name(skill_no)` from `skill.py`: LOC type 10 first, then
+the Korean `skilltype.dbss` name from the `SKILL_NAME_KR` lookup index, so no
+skill table needs `skilltype.dbss` as a companion. A `GAME` sheet UI key
+(`LUA_SKILLTREE_PANEL_NAME0`) gets its LOC type 37 hash from
+`parse_key_hashes()` in `_bss/stringtable/parser.py`.
 
 `html.py` has `truncate(text, max_len)` for long text cells and
 `join_limited(values, max_items)` for list cells.
@@ -798,6 +807,8 @@ IDs (`LookupValue`).
 | `CHARACTER_ITEM` | `itemenchant.dbss`, `itemenchantoffset.dbss` | item ID      |
 | `KNOWLEDGE_CHARACTERS` | `characterstatic.dbss`, `characterstaticoffset.dbss` | character IDs (tuple) |
 | `CHARACTER_LEASES` | `detail_dialog.dbss`, `detail_dialogoffset.dbss` | flat `(item_id, cost, ...)` pairs |
+| `SKILL_ICON`     | `skilltype.dbss`, `skilltypeoffset.dbss`   | icon path      |
+| `SKILL_NAME_KR`  | `skilltype.dbss`, `skilltypeoffset.dbss`   | Korean name    |
 
 `CHARACTER_ITEM` maps a character to the one base item that places or summons
 it (`character_id` at `+0xAA` in
@@ -814,6 +825,16 @@ in dialog order and without repeats, as flat `(item_id, cost)` pairs that
 `lease_pairs()` in `_dbss/detail_dialog/parser.py` unpacks. The `npcsimply.bss`
 Leases column reads it. Its source is 27 MB, which takes about 2 s to read and
 build once per client.
+
+`SKILL_ICON` maps a skill number to the icon its `skilltype.dbss` record
+stores; skills without one are left out. `skill.dbss`, `skillgroup.bss` (the
+first rank's icon) and the `ui_skillgroup_*.bss` skill windows read it through
+`IconKind.SKILL`; `skilltype.dbss` shows its own stored path.
+
+`SKILL_NAME_KR` maps a skill number to its Korean `skilltype.dbss` name.
+`skill_name()` in `_common/skill.py` falls back to it when LOC type 10 has no
+name, which on client 3458 names 1,920 `skill.dbss` ranks (set effects, event
+skills) that would otherwise show only an ID.
 
 ---
 
@@ -859,6 +880,7 @@ exists. The cached `CHARACTER_ICON` index already holds the borrowed icons.
 | `CHARACTER`         | `characterobject.dbss`, gaps from `itemenchant.dbss` | 6,165 | none |
 | `PET_EQUIP_SKILL`   | none                    | 0       | `08_servant_skill/02_pet` |
 | `FAIRY_EQUIP_SKILL` | none                    | 0       | `08_servant_skill/02_pet` |
+| `SKILL`             | `skilltype.dbss`        | 9,402   | none                      |
 
 ### Fixing an icon by hand
 

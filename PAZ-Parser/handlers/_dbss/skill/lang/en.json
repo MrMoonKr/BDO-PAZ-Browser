@@ -1,0 +1,19 @@
+{
+  "columns": {
+    "skillNo": "Skill No",
+    "level": "Level",
+    "icon": "Icon",
+    "name": "Name",
+    "cooldown": "Cooldown",
+    "buffs": "Buffs",
+    "nextSkills": "Next Skills",
+    "baseSkill": "Base Skill",
+    "script": "Script"
+  },
+  "offsetColumns": {
+    "skillNo": "Skill No",
+    "level": "Level",
+    "dbssOffset": "DBSS Offset",
+    "size": "Size"
+  }
+}

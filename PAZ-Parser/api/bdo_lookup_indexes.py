@@ -22,6 +22,7 @@ from _dbss.characterstatic.parser import build_knowledge_character_index
 from _dbss.detail_dialog.parser import build_character_lease_index
 from _dbss.itemenchant.parser import build_character_item_index, build_item_icon_index
 from _dbss.quest.parser import build_quest_icon_index
+from _dbss.skilltype.parser import build_skill_icon_index, build_skill_name_index
 from paz.bdo_index_cache import CachedIndexes, builder_fingerprint
 
 _BINARY = "gamecommondata/binary"
@@ -35,6 +36,8 @@ CHARACTERSTATIC = f"{_BINARY}/characterstatic.dbss"
 CHARACTERSTATIC_OFFSET = f"{_BINARY}/characterstaticoffset.dbss"
 DETAIL_DIALOG = f"{_BINARY}/detail_dialog.dbss"
 DETAIL_DIALOG_OFFSET = f"{_BINARY}/detail_dialogoffset.dbss"
+SKILLTYPE = f"{_BINARY}/skilltype.dbss"
+SKILLTYPE_OFFSET = f"{_BINARY}/skilltypeoffset.dbss"
 
 
 @dataclass(frozen=True)
@@ -70,6 +73,8 @@ INDEX_SPECS: tuple[IndexSpec, ...] = (
         (DETAIL_DIALOG, DETAIL_DIALOG_OFFSET),
         build_character_lease_index,
     ),
+    IndexSpec(IndexKind.SKILL_ICON, (SKILLTYPE, SKILLTYPE_OFFSET), build_skill_icon_index),
+    IndexSpec(IndexKind.SKILL_NAME_KR, (SKILLTYPE, SKILLTYPE_OFFSET), build_skill_name_index),
 )
 
 

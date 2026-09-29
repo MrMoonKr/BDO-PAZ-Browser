@@ -1,0 +1,17 @@
+{
+  "columns": {
+    "class": "Class",
+    "tab": "Tab",
+    "cardColumn": "Card Column",
+    "row": "Row",
+    "column": "Column",
+    "group": "Group",
+    "icon": "Icon",
+    "skill": "Skill"
+  },
+  "cardColumn": {
+    "0": "Left",
+    "1": "Middle",
+    "2": "Right"
+  }
+}

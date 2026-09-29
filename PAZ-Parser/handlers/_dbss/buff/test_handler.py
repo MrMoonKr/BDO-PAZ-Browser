@@ -18,7 +18,9 @@ from tests.framework import (
     run_case,
 )
 
-from .handler import extract_title, format_duration
+from _common.duration import format_duration
+
+from .handler import extract_title
 
 
 BUFF_CASE = HandlerCase(

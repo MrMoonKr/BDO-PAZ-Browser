@@ -32,6 +32,9 @@ class IndexKind(Enum):
     KNOWLEDGE_CHARACTERS = "knowledge_characters"
     # Flat (item_id, cost, ...) pairs; see detail_dialog parser.lease_pairs.
     CHARACTER_LEASES = "character_leases"
+    SKILL_ICON = "skill_icon"
+    # Korean skilltype.dbss names, the fallback when LOC type 10 has none.
+    SKILL_NAME_KR = "skill_name_kr"
 
 
 # kind -> {entity_id: value}

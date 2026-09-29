@@ -33,6 +33,7 @@ class IconKind(Enum):
     CHARACTER = "character"
     PET_EQUIP_SKILL = "pet_equip_skill"
     FAIRY_EQUIP_SKILL = "fairy_equip_skill"
+    SKILL = "skill"
 
 
 ITEM_ICON_DIR = "ui_texture/icon/new_icon/product_icon_png"
@@ -68,6 +69,7 @@ ICON_INDEXES: dict[IconKind, IndexKind] = {
     IconKind.ITEM: IndexKind.ITEM_ICON,
     IconKind.QUEST: IndexKind.QUEST_ICON,
     IconKind.CHARACTER: IndexKind.CHARACTER_ICON,
+    IconKind.SKILL: IndexKind.SKILL_ICON,
 }
 
 # Hand-curated fixes, checked into the repo rather than built from the PAZ.

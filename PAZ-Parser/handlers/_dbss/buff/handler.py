@@ -6,6 +6,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
+from _common.duration import format_duration
 from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
@@ -26,26 +27,6 @@ _TITLE_LINE = re.compile(r"<PAColor0x[0-9a-fA-F]{8}>([^<\r\n]+)<PAOldColor>[ \t]
 
 _EMPTY = "-"
 _SHOWN_PARAMS = 3
-
-
-def format_duration(duration_ms: int) -> str:
-    """Render milliseconds as "1h 30m", "45s" or "1.5s"; empty for zero."""
-    if duration_ms <= 0:
-        return ""
-
-    seconds, millis = divmod(duration_ms, 1000)
-    hours, remainder = divmod(seconds, 3600)
-    minutes, secs = divmod(remainder, 60)
-
-    parts: list[str] = []
-    if hours:
-        parts.append(f"{hours}h")
-    if minutes:
-        parts.append(f"{minutes}m")
-    if secs or millis:
-        text = f"{secs}.{millis:03d}".rstrip("0").rstrip(".")
-        parts.append(f"{text}s")
-    return " ".join(parts)
 
 
 def extract_title(raw_description: str) -> str:
