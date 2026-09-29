@@ -10,6 +10,7 @@ All formats are little-endian. Unknown fields are named `unknown_*`.
 | `base_dialogoffset.dbss` | PABR index into `base_dialog.dbss`, same layout and keys as `detail_dialogoffset.dbss` | [base_dialog](file-formats/base_dialog_dbss.md) | 0 |
 | `buff.dbss` | Master buff table, internal Korean names, level, effect type, ten parameters, duration, icon and description | [buff](file-formats/buff_dbss.md) | 5 |
 | `buffoffset.dbss` | PABR index into `buff.dbss`, maps buff_id → offset/size | [buff](file-formats/buff_dbss.md) | 5 |
+| `buffsimply.bss` | PABR compact buff table, 30-byte rows with buff ID, icon path and `unknown_str` string indices, `is_shown` and flags | [buffsimply](file-formats/buffsimply_bss.md) | 1 |
 | `cashproduct.dbss` | Pearl Shop product catalog, Korean names, inline icon path, and the granted item ID | [cashproduct](file-formats/cashproduct_dbss.md) | 4 |
 | `cashproductoffset.dbss` | Index into `cashproduct.dbss`, maps product ID → offset/size; no PABR magic and no trailer | [cashproduct](file-formats/cashproduct_dbss.md) | 4 |
 | `characterobject.dbss` | Placeable world-object records (mostly house furniture) with model path and inline icon path | [characterobject](file-formats/characterobject_dbss.md) | 3 |

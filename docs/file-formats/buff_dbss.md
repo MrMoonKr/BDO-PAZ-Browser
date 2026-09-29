@@ -26,9 +26,9 @@ buff_id 48830
 | `buffoffset.dbss`     | Required | `buff_id → (offset, size)` index into this file   |
 | `languagedata_en.loc` | Optional | English descriptions, `str_type=5`                |
 
-`buffsimply.bss` holds the same 44,609 buff IDs in fixed 30-byte rows followed
-by an icon path string table. It is not needed to read this file and is not yet
-documented.
+[`buffsimply.bss`](buffsimply_bss.md) holds the same buff IDs in fixed 30-byte
+rows with the icon path, `unknown_str`, `is_shown` and a few stats bytes. It is
+not needed to read this file.
 
 All multi-byte values are little-endian.
 
@@ -226,8 +226,9 @@ Value `2` (647 rows) holds 600-minute elixir-style buffs and value `38` the Adve
 ## Notes
 
 - `icon_path` is set in 15,272 records over 1,017 distinct paths. 221 of those
-  hold the literal placeholder `UNKNOWN`, and a few use backslash separators.
-  Resolve by lowercasing, normalizing `\` to `/` and prefixing
+  hold the literal placeholder `UNKNOWN`, a few use backslash separators and
+  three double a separator (`04_PC_Skill//04_Debuff`). Resolve by
+  lowercasing, normalizing `\` to `/`, collapsing repeated `/` and prefixing
   `ui_texture/icon/`, e.g. `ui_texture/icon/new_icon/04_pc_skill/03_buff/huntingbuff.dds`.
 - `is_shown` looks like a "visible in the buff bar" flag: 11,882 of its 12,746
   set rows have both an icon and a description, against 312 of the 31,863
@@ -257,8 +258,9 @@ Value `2` (647 rows) holds 600-minute elixir-style buffs and value `38` the Adve
   level 1 (+30, 30 min) to 12 (+100, 120 min), 13 to 16 (+150) and 17 to 18
   (+300 event foods). 1,082 buffs with no group also have a level above 1.
 - One buff record holds one effect, so a consumable with several effects
-  applies a run of consecutive buffs. Only the first carries the description,
-  the icon and `is_shown`, and its description opens with the display title.
+  applies a run of consecutive buffs. Only the first carries the description
+  and `is_shown`, and its description opens with the display title. The icon
+  can repeat on the others: all six below store `SilverBless.dds`.
   Example: item 761880, `[Blessing] Adventure's Boon (120 min)` (LOC type 0),
   applies buffs 48723 to 48728:
 
