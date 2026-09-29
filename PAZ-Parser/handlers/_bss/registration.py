@@ -14,6 +14,7 @@ from .newquest.handler import NewQuestBssHandler
 from .npcgiftetc.handler import NpcGiftEtcBssHandler
 from .npcsimply.handler import NpcSimplyBssHandler
 from .petequipskill.handler import PetEquipSkillBssHandler
+from .plantexchangegroup.handler import PlantExchangeGroupBssHandler
 from .plantworker.handler import PlantWorkerBssHandler
 from .plantworkerpassiveskill.handler import PlantWorkerPassiveSkillBssHandler
 from .plantworkerselect.handler import PlantWorkerSelectBssHandler
@@ -38,6 +39,7 @@ def register_bss_handlers() -> None:
     register_handler("npcgiftetc.bss", NpcGiftEtcBssHandler())
     register_handler("npcsimply.bss", NpcSimplyBssHandler())
     register_handler("petequipskill.bss", PetEquipSkillBssHandler())
+    register_handler("plantexchangegroup.bss", PlantExchangeGroupBssHandler())
     register_handler("plantworker.bss", PlantWorkerBssHandler())
     register_handler(
         "plantworkerpassiveskill.bss",

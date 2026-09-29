@@ -16,7 +16,14 @@ The row size and the join fields match [iDevelopThings/bdo-data-extractor](https
 
 ## Companion Files
 
-None required. The subgroup key is resolved through [`itemsubgroup.dbss`](itemsubgroup_dbss.md).
+| File                   | Required | Role                                                              |
+| ---------------------- | -------- | ----------------------------------------------------------------- |
+| `plantzone.dbss`       | Optional | The zones that use each production key, for the English name      |
+| `plantzoneoffset.dbss` | Optional | Index into `plantzone.dbss`                                       |
+| `mapdata_realexplore2.bwp` | Optional | Worldmap links, in `gamecommondata/waypoint_binary/`: each zone's parent node, for the English name |
+| `languagedata_en.loc`  | Optional | Node names (LOC type 29) and item names (LOC type 0)              |
+
+The subgroup key is resolved through [`itemsubgroup.dbss`](itemsubgroup_dbss.md); the preview reads those items from the `PRODUCTION_ITEMS` lookup index (see `docs/handler.md`) instead of opening the 13 MB table as a companion.
 
 All multi-byte values are little-endian unless noted otherwise.
 
@@ -69,6 +76,18 @@ Rows are not sorted by key; the file opens with key 1775 and ends with keys 1, 3
 
 37 subgroup keys are absent from `itemsubgroupoffset.dbss`. 36 of them are the unresolved `plantzone.dbss` zones (see its Open Questions); the 37th is subgroup 45019 of key 1931, which no zone uses.
 
+### English Names
+
+No LOC type holds the labels, and the EU client ships no Korean LOC to match them against. The worker manager (`new_worldmap_workmanager_plant.luac`) reads a per-group description through `ToClient_getPlantWorkableItemExchangeDescriptionByIndex` into `_workName` but never shows it; the panel shows the product's item name. The two halves of the label can be rebuilt in English from the worldmap nodes:
+
+```text
+production_key -> plantzone.dbss zone record_id (a sub-node) -> LOC type 29 "Lumbering"
+zone -> its one link in mapdata_realexplore2.bwp, the parent node -> LOC type 29 "Platerra Mountains"
+1928 -> "Platerra Mountains - Lumbering"  (Korean: 플라테르 산맥 - 벌목)
+```
+
+Every one of the 439 zones has exactly one worldmap link (see [`*.bwp`](waypoint_bwp.md)). A key gets a name only when every zone using it gives the same one; on client 3458 that is 365 of the 403 keys. The rest keep the Korean label: keys no zone uses (1931 and seven more), and keys shared by zones under different nodes, where the Korean label names a region instead (1231 칼페온 채집, Calpheon gathering, over Karanda Ridge and Longleaf Tree Sentry Post). The `exploration.bss` manager family was used before the links and named 324: it has no main node for some families (Godu Village, 1880) and the wrong one for Specialties 1563 (Areha Palm Forest instead of Arehaza, key 992 아레하자 마을 - 특산품). Investment banks read "Altinova - Gulabi Investment Bank" where the Korean label is only the bank name (928 굴라비 자산 관리소). The English halves follow the worldmap names, not the Korean wording: 1545 "가비냐 대분화구 - 티타늄" (titanium) becomes "Gavinya Great Crater - Mining", and 1203 "칼페온 파프리카 재배" (Calpheon paprika farming) becomes "Northern Wheat Plantation - Paprika Farming".
+
 ---
 
 ## Suggested UI Layout
@@ -76,7 +95,7 @@ Rows are not sorted by key; the file opens with key 1775 and ends with keys 1, 3
 | Column             | Type | Notes                                                                 |
 | ------------------ | ---- | --------------------------------------------------------------------- |
 | Production Key     | num  | `production_key`                                                      |
-| Name               | text | `name_ref` string (Korean); no English LOC entry is known              |
+| Name               | text | English "parent node - sub-node" name (see English Names), else the Korean `name_ref` string |
 | Item Subgroup      | num  | `item_subgroup_key`                                                   |
 | Items              | text | LOC type 0 names of the subgroup's items; a dash when the subgroup is missing |
 
@@ -86,7 +105,7 @@ Rows are not sorted by key; the file opens with key 1775 and ends with keys 1, 3
 
 - All 439 `plantzone.dbss` zones on the 2026-09-27 client resolve to a row. 8 keys are not used by any zone: 1503, 1675, 1676, 1931, 2015, 2021, 2036, 2037.
 - `production_key` equals the zone's `record_id` for 157 of the 439 zones; the two are separate key spaces, and several zones share one key (1521 and 1934 are used by four zones each).
-- LOC type 29 at `str_id1=production_key` gives a node name only by coincidence, when the key equals a node key; use the zone's `record_id` for the node name.
+- LOC type 29 at `str_id1=production_key` gives a node name only by coincidence, when the key equals a node key; use the zone's `record_id` for the node name. That name is the sub-node, the work-type half of the label ("Lumbering", "Teff"); see English Names for the node half.
 - bdo-data-extractor calls `+0x06` the "normal-output subgroup". No second subgroup key (for example luck drops) was found in `unknown_0a`, which is zero on every row.
 </content>
 </invoke>

@@ -36,6 +36,8 @@ class IndexKind(Enum):
     # Korean skilltype.dbss names, the fallback when LOC type 10 has none.
     SKILL_NAME_KR = "skill_name_kr"
     BUFF_ICON = "buff_icon"
+    # Packed item keys a worker production key produces.
+    PRODUCTION_ITEMS = "production_items"
 
 
 # kind -> {entity_id: value}

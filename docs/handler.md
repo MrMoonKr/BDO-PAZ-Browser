@@ -837,6 +837,7 @@ IDs (`LookupValue`).
 | `SKILL_ICON`     | `skilltype.dbss`, `skilltypeoffset.dbss`   | icon path      |
 | `SKILL_NAME_KR`  | `skilltype.dbss`, `skilltypeoffset.dbss`   | Korean name    |
 | `BUFF_ICON`      | `buffsimply.bss`                           | icon path      |
+| `PRODUCTION_ITEMS` | `plantexchangegroup.bss`, `itemsubgroup.dbss`, `itemsubgroupoffset.dbss` | item keys (tuple) |
 
 `CHARACTER_ITEM` maps a character to the one base item that places or summons
 it (`character_id` at `+0xAA` in
@@ -872,6 +873,18 @@ placeholder are left out. Read it through `IconKind.BUFF`; nothing does yet,
 the Buffs column of `skill.dbss` and a future item to buff link are the
 intended readers. `buff_icon_path()` in `_common/buff.py` normalizes the
 stored paths for both buff tables.
+
+`PRODUCTION_ITEMS` maps a worker production key to the packed item keys
+(`enchant_level << 24 | item_id`) of its
+[itemsubgroup.dbss](file-formats/itemsubgroup_dbss.md) subgroup, through the
+subgroup key in [plantexchangegroup.bss](file-formats/plantexchangegroup_bss.md).
+Only the few hundred production subgroups are read, so no table needs the
+13 MB `itemsubgroup.dbss` as a companion to show production items. Production
+keys whose subgroup is missing from `itemsubgroupoffset.dbss` are left out.
+Read it through `production_item_keys()` in
+`_bss/plantexchangegroup/production_items.py` and name each key with
+`item_key_text()` from `_common/item_key.py`, as the `plantexchangegroup.bss`
+Items column does.
 
 ---
 

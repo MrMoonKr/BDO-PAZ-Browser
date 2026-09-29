@@ -17,6 +17,7 @@ from typing import cast
 
 from _common.icon_index import borrow_icons
 from _bss.buffsimply.parser import build_buff_icon_index
+from _bss.plantexchangegroup.production_items import build_production_item_index
 from _common.lookup_index import IndexKind, LookupValue
 from _dbss.characterobject.parser import build_character_icon_index
 from _dbss.characterstatic.parser import build_knowledge_character_index
@@ -40,6 +41,9 @@ DETAIL_DIALOG_OFFSET = f"{_BINARY}/detail_dialogoffset.dbss"
 SKILLTYPE = f"{_BINARY}/skilltype.dbss"
 SKILLTYPE_OFFSET = f"{_BINARY}/skilltypeoffset.dbss"
 BUFFSIMPLY = f"{_BINARY}/buffsimply.bss"
+PLANTEXCHANGEGROUP = f"{_BINARY}/plantexchangegroup.bss"
+ITEMSUBGROUP = f"{_BINARY}/itemsubgroup.dbss"
+ITEMSUBGROUP_OFFSET = f"{_BINARY}/itemsubgroupoffset.dbss"
 
 
 @dataclass(frozen=True)
@@ -79,6 +83,12 @@ INDEX_SPECS: tuple[IndexSpec, ...] = (
     IndexSpec(IndexKind.SKILL_NAME_KR, (SKILLTYPE, SKILLTYPE_OFFSET), build_skill_name_index),
     # buffsimply.bss holds the buff.dbss icon paths in fixed rows, 1.4 MB against 12 MB.
     IndexSpec(IndexKind.BUFF_ICON, (BUFFSIMPLY,), build_buff_icon_index),
+    # A few hundred production subgroups out of the 13 MB itemsubgroup.dbss.
+    IndexSpec(
+        IndexKind.PRODUCTION_ITEMS,
+        (PLANTEXCHANGEGROUP, ITEMSUBGROUP, ITEMSUBGROUP_OFFSET),
+        build_production_item_index,
+    ),
 )
 
 
