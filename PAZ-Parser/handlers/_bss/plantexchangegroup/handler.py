@@ -6,14 +6,13 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, join_limited, sort_keys, table
-from _common.item_key import item_key_text
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded
+from _common.production_items import production_item_fields
 from _bwp.waypoint.parser import is_waypoint_graph, neighbours, parse_waypoint_graph
 from _dbss.plantzone.parser import parse_plantzone_records
 from .node_names import english_group_names
 from .parser import parse_plantexchangegroup_records
-from .production_items import production_item_keys
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
@@ -39,17 +38,6 @@ def _english_names(companions: dict[str, bytes]) -> dict[int, str]:
         parse_plantzone_records(zones, zone_offsets),
         neighbours(parse_waypoint_graph(worldmap)),
     )
-
-
-def _item_fields(production_key: int) -> dict:
-    """Item keys and names from the `PRODUCTION_ITEMS` index; `None` when unknown."""
-    item_keys = production_item_keys(production_key)
-    if item_keys is None:
-        return {"item_keys": None, "items": []}
-    return {
-        "item_keys": list(item_keys),
-        "items": [item_key_text(key) for key in item_keys],
-    }
 
 
 class PlantExchangeGroupBssHandler(PreviewHandler):
@@ -87,7 +75,7 @@ class PlantExchangeGroupBssHandler(PreviewHandler):
             name_en = english.get(record["production_key"], "")
             records.append({
                 **record,
-                **_item_fields(record["production_key"]),
+                **production_item_fields(record["production_key"]),
                 "name_en": name_en,
                 # The Korean label stands in where no English name is unique.
                 "name": name_en or record["name_kr"],

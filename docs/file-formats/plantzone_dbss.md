@@ -151,7 +151,9 @@ Offset rows are not sorted by `data_offset`, but sorted rows cover every byte fr
 | Zone ID        | num  | `record_id`                                         |
 | Node Name      | text | LOC type 29, `str_id1=record_id`, `str_id4=0`       |
 | Production Key | num  | `production_key`                                    |
-| Produced Items | text | Not shown yet: LOC type 0 names through the Production Item Chain; a dash for the 36 unresolved zones |
+| Produced Items | text | LOC type 0 names through the Production Item Chain, read from the `PRODUCTION_ITEMS` lookup index; a dash for the 36 unresolved zones |
+
+The table meta line counts the zones that resolve to items (403 of 439 on client 3458). The preview needs no `plantexchangegroup.bss` or `itemsubgroup.dbss` companion: `production_item_fields()` in `_common/production_items.py` gives the item keys and names, the same helper the `plantexchangegroup.bss` Items column uses.
 
 ---
 

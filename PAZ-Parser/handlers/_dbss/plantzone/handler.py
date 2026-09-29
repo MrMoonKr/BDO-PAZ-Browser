@@ -5,15 +5,17 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import Column, e, sort_keys, table
+from _common.html import Column, e, join_limited, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import loc_text
+from _common.production_items import production_item_fields
 from .parser import WORKER_SPECIES_NAMES, parse_offset_records, parse_plantzone_records
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
 _LOC_NODE_NAME = 29
 _EMPTY = "-"
+_LIST_PREVIEW_ITEMS = 8
 
 
 def _species_name(species: int) -> str:
@@ -67,6 +69,8 @@ class PlantZoneHandler(PreviewHandler):
             Column(cols.get("zoneId", "Zone ID"), "num", sort_key="record_id"),
             Column(cols.get("nodeName", "Node Name"), sort_key="node_name"),
             Column(cols.get("productionKey", "Production Key"), "num", sort_key="production_key"),
+            # A list column: it would only sort by its string form.
+            Column(cols.get("producedItems", "Produced Items")),
         ]
 
     def sortable_fields(self) -> frozenset[str]:
@@ -89,6 +93,7 @@ class PlantZoneHandler(PreviewHandler):
         return [
             {
                 **record,
+                **production_item_fields(record["production_key"]),
                 "node_name": loc_text(_LOC_NODE_NAME, record["record_id"]),
                 # Not shown: the list is not a worker lock and its use is
                 # unknown. Kept for search and export.
@@ -107,12 +112,14 @@ class PlantZoneHandler(PreviewHandler):
     ) -> str:
         start = page * page_size
         slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} plant zone records"
+        resolved = sum(1 for record in records if record["item_keys"] is not None)
+        meta = f"{len(records):,} plant zone records · {resolved:,} with items"
         rows = [
             [
                 e(r["record_id"]),
                 e(r["node_name"] or _EMPTY),
                 e(r["production_key"]),
+                e(join_limited(r["items"], _LIST_PREVIEW_ITEMS) or _EMPTY),
             ]
             for r in slice_
         ]

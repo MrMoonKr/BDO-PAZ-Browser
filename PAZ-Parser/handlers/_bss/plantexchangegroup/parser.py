@@ -13,6 +13,7 @@ import struct
 
 from _common.binary import u32
 from _common.pabr_strings import TRAILER_SIZE, read_string_table, string_at, string_table_start
+from _dbss.itemsubgroup.parser import subgroups_by_key
 
 
 _MAGIC = b"PABR"
@@ -56,3 +57,24 @@ def parse_plantexchangegroup_records(data: bytes) -> list[dict]:
             "name_kr": string_at(strings, name_ref),
         })
     return records
+
+
+def build_production_item_index(
+    groups: bytes,
+    subgroups: bytes,
+    subgroup_offsets: bytes,
+) -> dict[int, tuple[int, ...]]:
+    """The `PRODUCTION_ITEMS` index: each production key to its subgroup's packed item keys.
+
+    Only a few hundred of the 16,000+ subgroups are production subgroups, so the
+    index holds just those instead of every table that shows production items
+    opening the 13 MB `itemsubgroup.dbss`. Keys whose subgroup is missing from
+    `itemsubgroupoffset.dbss` are left out.
+    """
+    rows = parse_plantexchangegroup_records(groups)
+    found = subgroups_by_key(subgroups, subgroup_offsets, {row["item_subgroup_key"] for row in rows})
+    return {
+        row["production_key"]: found[row["item_subgroup_key"]].item_keys
+        for row in rows
+        if row["item_subgroup_key"] in found
+    }

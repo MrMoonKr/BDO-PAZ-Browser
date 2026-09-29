@@ -5,6 +5,7 @@ from typing import Any
 
 import pytest
 
+from _common.lookup_index import IndexKind
 from tests.framework import (
     DeclaredCountTest,
     HandlerCase,
@@ -18,6 +19,9 @@ from tests.framework import (
 
 
 _ALL_BASE_SPECIES = [0, 1, 2, 3, 4, 5]
+# Zone 2050, Platerra Mountains lumbering: Elder Tree Timber, Bloody Tree Knot, Elder Tree Sap.
+_LUMBERING_KEY = 1928
+_LUMBERING_ITEMS = (4611, 5005, 5014)
 
 PLANTZONE_CASE = HandlerCase(
     handler_name="plantzone.dbss",
@@ -25,8 +29,9 @@ PLANTZONE_CASE = HandlerCase(
     companion_files={"plantzoneoffset.dbss": "plantzoneoffset.dbss"},
     loc_file="languagedata_en.loc",
     uses_loc=True,
-    loc_fields=["Node Name"],
+    loc_fields=["Node Name", "Produced Items"],
     internal_path="gamecommondata/binary/plantzone.dbss",
+    lookup_indexes={IndexKind.PRODUCTION_ITEMS: {_LUMBERING_KEY: _LUMBERING_ITEMS}},
     tests=[
         SchemaTest(
             required_keys=[
@@ -37,6 +42,8 @@ PLANTZONE_CASE = HandlerCase(
                 "unknown_19",
                 "worker_species",
                 "worker_species_text",
+                "item_keys",
+                "items",
                 "data_size",
             ]
         ),
@@ -64,6 +71,22 @@ PLANTZONE_CASE = HandlerCase(
             col="record_id",
             value=110,
             expected={"production_key": 977, "unknown_19": 7},
+        ),
+        TargetTest(
+            col="record_id",
+            value=2050,
+            expected={
+                "production_key": _LUMBERING_KEY,
+                "item_keys": list(_LUMBERING_ITEMS),
+                "items": ["Elder Tree Timber", "Bloody Tree Knot", "Elder Tree Sap"],
+            },
+        ),
+        # Fish Drying Yard; not in the installed index, so no items (on the
+        # client its subgroup 45018 is missing from itemsubgroupoffset.dbss).
+        TargetTest(
+            col="record_id",
+            value=2051,
+            expected={"production_key": 1929, "item_keys": None, "items": []},
         ),
     ],
 )

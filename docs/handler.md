@@ -881,10 +881,13 @@ subgroup key in [plantexchangegroup.bss](file-formats/plantexchangegroup_bss.md)
 Only the few hundred production subgroups are read, so no table needs the
 13 MB `itemsubgroup.dbss` as a companion to show production items. Production
 keys whose subgroup is missing from `itemsubgroupoffset.dbss` are left out.
-Read it through `production_item_keys()` in
-`_bss/plantexchangegroup/production_items.py` and name each key with
-`item_key_text()` from `_common/item_key.py`, as the `plantexchangegroup.bss`
-Items column does.
+It is built by `build_production_item_index()` in
+`_bss/plantexchangegroup/parser.py`. Read it through `production_item_keys()`
+in `_common/production_items.py`, or through `production_item_fields()`
+there, which adds the `item_keys` and `items`
+record fields (names from `item_key_text()` in `_common/item_key.py`). The
+`plantexchangegroup.bss` Items column and the `plantzone.dbss` Produced Items
+column read it that way.
 
 ---
 

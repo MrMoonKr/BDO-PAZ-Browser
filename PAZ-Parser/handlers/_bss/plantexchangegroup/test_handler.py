@@ -6,7 +6,7 @@ from typing import Any
 import pytest
 
 from _bss.plantexchangegroup.node_names import english_group_names
-from _bss.plantexchangegroup.production_items import build_production_item_index
+from _bss.plantexchangegroup.parser import build_production_item_index
 from _bwp.waypoint.parser import neighbours, parse_waypoint_graph
 from _dbss.plantzone.parser import parse_plantzone_records
 from _common.lookup_index import IndexKind

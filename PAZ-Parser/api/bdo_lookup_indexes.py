@@ -17,7 +17,7 @@ from typing import cast
 
 from _common.icon_index import borrow_icons
 from _bss.buffsimply.parser import build_buff_icon_index
-from _bss.plantexchangegroup.production_items import build_production_item_index
+from _bss.plantexchangegroup.parser import build_production_item_index
 from _common.lookup_index import IndexKind, LookupValue
 from _dbss.characterobject.parser import build_character_icon_index
 from _dbss.characterstatic.parser import build_knowledge_character_index
