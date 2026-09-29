@@ -5,6 +5,7 @@ from typing import Any
 
 import pytest
 
+from _bss.exploration.connections import connection_fields
 from tests.framework import (
     DeclaredCountTest,
     HandlerCase,
@@ -21,10 +22,10 @@ from tests.framework import (
 CASE = HandlerCase(
     handler_name="exploration.bss",
     data_file="exploration.bss",
-    companion_files={},
+    companion_files={"mapdata_realexplore2.bwp": "mapdata_realexplore2.bwp"},
     loc_file="languagedata_en.loc",
     uses_loc=True,
-    loc_fields=["Node Name"],
+    loc_fields=["Node Name", "Connected Nodes"],
     internal_path="gamecommondata/binary/exploration.bss",
     tests=[
         SchemaTest(
@@ -47,6 +48,10 @@ CASE = HandlerCase(
                 "knowledge_count",
                 "knowledge_names",
                 "knowledge_text",
+                "connection_keys",
+                "connection_count",
+                "connection_names",
+                "connection_text",
             ],
         ),
         DeclaredCountTest(declared=header_count(offset=4)),
@@ -103,3 +108,56 @@ def test_exploration_bss(
     exploration_result: HandlerResult,
 ) -> None:
     exploration_result.check(spec)
+
+
+def _record(result: HandlerResult, node_key: int) -> dict:
+    return next(record for record in result.records if record["node_key"] == node_key)
+
+
+@pytest.mark.parametrize(
+    ("node_key", "linked_key", "linked_name"),
+    [
+        (1, 21, "Bartali Farm"),  # Velia
+        (2, 45, "Toscani Farm"),  # Western Guard Camp
+        (65, 61, "Olvia"),  # Wale Farm
+    ],
+)
+def test_node_lists_its_worldmap_link(
+    exploration_result: HandlerResult,
+    node_key: int,
+    linked_key: int,
+    linked_name: str,
+) -> None:
+    record = _record(exploration_result, node_key)
+    assert linked_key in record["connection_keys"]
+    assert record["connection_names"][record["connection_keys"].index(linked_key)] == linked_name
+
+
+def test_connections_are_symmetric(exploration_result: HandlerResult) -> None:
+    """The worldmap stores every link both ways, so each node lists the other."""
+    by_key = {record["node_key"]: record for record in exploration_result.records}
+    one_way = [
+        (record["node_key"], key)
+        for record in exploration_result.records
+        for key in record["connection_keys"]
+        if key in by_key and record["node_key"] not in by_key[key]["connection_keys"]
+    ]
+    assert one_way == []
+
+
+def test_connection_fields_agree(exploration_result: HandlerResult) -> None:
+    for record in exploration_result.records:
+        assert record["connection_count"] == len(record["connection_keys"]) == len(record["connection_names"])
+        assert record["connection_text"] == ", ".join(record["connection_names"])
+
+
+def test_connection_names_fall_back_to_loc_then_the_key() -> None:
+    links = {1: frozenset({4, 3, 2})}
+    fields = connection_fields(1, links, {2: "Farm"}, lambda key: "Sea" if key == 3 else "")
+    assert fields["connection_keys"] == [2, 3, 4]
+    assert fields["connection_names"] == ["Farm", "Sea", "4"]
+
+
+def test_node_without_links_has_no_connections() -> None:
+    fields = connection_fields(1, {}, {}, lambda key: "")
+    assert (fields["connection_keys"], fields["connection_count"], fields["connection_text"]) == ([], 0, "")

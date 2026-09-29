@@ -8,11 +8,12 @@ from bdo_preview import PreviewHandler
 from _common.html import Column, e, join_limited, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_text
+from _bwp.waypoint.worldmap import worldmap_companion, worldmap_links
+from .connections import LOC_NODE_NAME, connection_fields
 from .parser import NODE_KIND_NAMES, parse_exploration_records
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
-_LOC_NODE_NAME = 29
 _LOC_CHARACTER_NAME = 6
 _LOC_KNOWLEDGE_NAME = 34
 _LIST_PREVIEW_ITEMS = 6
@@ -53,10 +54,15 @@ class ExplorationBssHandler(PreviewHandler):
             Column(cols.get("radius", "Radius"), "num", sort_key="radius"),
             Column(cols.get("knowledge", "Knowledge"), "num", sort_key="knowledge_count"),
             Column(cols.get("knowledgeEntries", "Knowledge Entries")),
+            Column(cols.get("connections", "Connections"), "num", sort_key="connection_count"),
+            Column(cols.get("connectedNodes", "Connected Nodes")),
         ]
 
     def sortable_fields(self) -> frozenset[str]:
         return sort_keys(self._columns())
+
+    def companions(self, entry: PazEntry) -> list[str]:
+        return [worldmap_companion(entry)]
 
     def get_records(
         self,
@@ -75,7 +81,7 @@ class ExplorationBssHandler(PreviewHandler):
                 **record,
                 # LOC type 29 is the display name; the Korean source name
                 # stands in when LOC is not loaded or has no entry.
-                "node_name": (loc_text(_LOC_NODE_NAME, record["node_key"]) if has_loc else "")
+                "node_name": (loc_text(LOC_NODE_NAME, record["node_key"]) if has_loc else "")
                 or record["name_kr"],
                 "kind": _kind_name(record["node_kind"]),
                 "main_sub": sub if record["is_sub_node"] else main,
@@ -87,7 +93,14 @@ class ExplorationBssHandler(PreviewHandler):
                 # Full list as text, so tab search and CSV export see every name.
                 "knowledge_text": ", ".join(knowledge_names),
             })
-        return records
+
+        # Links name their nodes the way the Node Name column does.
+        links = worldmap_links(companions)
+        node_names = {record["node_key"]: record["node_name"] for record in records}
+        return [
+            {**record, **connection_fields(record["node_key"], links, node_names)}
+            for record in records
+        ]
 
     def render_records_page(
         self,
@@ -111,6 +124,8 @@ class ExplorationBssHandler(PreviewHandler):
                 e(f"{record['radius']:.2f}"),
                 e(record["knowledge_count"]),
                 e(join_limited(record["knowledge_names"], _LIST_PREVIEW_ITEMS) or _EMPTY),
+                e(record["connection_count"]),
+                e(join_limited(record["connection_names"], _LIST_PREVIEW_ITEMS) or _EMPTY),
             ]
             for record in slice_
         ]

@@ -9,7 +9,9 @@
     "representative": "Representative",
     "radius": "Radius",
     "knowledge": "Knowledge",
-    "knowledgeEntries": "Knowledge Entries"
+    "knowledgeEntries": "Knowledge Entries",
+    "connections": "Connections",
+    "connectedNodes": "Connected Nodes"
   },
   "values": {
     "main": "Main",

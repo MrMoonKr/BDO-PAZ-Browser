@@ -162,18 +162,21 @@ Two main nodes have `contribution > 0` but no family: Duvencrune 1651 (1 CP, the
 | Radius         | num  | Formatted float                              |
 | Knowledge      | num  | Number of knowledge IDs in lists 1-5         |
 | Knowledge Entries | text | LOC type 34 card names, first six then `... (+N)`; bare ID when unnamed |
+| Connections    | num  | Number of worldmap links in `mapdata_realexplore2.bwp` |
+| Connected Nodes | text | Linked node names as in Node Name, first six then `... (+N)`; LOC type 29 or the bare key for a waypoint with no record here |
 
 ---
 
 ## Notes
 
 - Cross-checked against an independent node dataset (849 nodes, keyed by the same `node_key`): `contribution` matches the node's CP cost on all 849, `is_sub_node` matches on 847, and every node that dataset marks as a city has `node_kind` `1` or `2`. The exceptions are Mining site 156 and Fish Drying Yard 2 (1044), which the file flags as sub-nodes, and Oquilla's Eye 1727, which is kind `City` there but not a city in the dataset.
-- The file has no same-stem companion in the current PAZ listing.
+- The file has no same-stem companion in the current PAZ listing. The handler loads `waypoint_binary/mapdata_realexplore2.bwp` for the Connections columns.
 - Counts in this doc are from the pre-2026-09-27 fixture. The 2026-09-27 client has 1080 records: 615 main nodes and 465 sub-nodes (was 583 and 420). Velia (`1`) lists 46 knowledge IDs in both.
 - The reference project reports 1037 records, 494 families with 914 nodes and a third CP-without-manager record (2055); the current client file has 1003 records, 494 families with 883 nodes, and no node 2055.
 - LOC type 34 also has entries for 987 of the 1003 keys, but they are unrelated knowledge entries (key 65 is `Cron Castle Altar` in type 34, while the inline Korean name `웨일 농장` matches type 29 `Wale Farm`).
 - All 45 `planttown.bss` node IDs and all 394 `plantzone.dbss` record IDs are keys in this file; every plant zone is a sub-node.
 - The node links are not in this file; they are in [`mapdata_realexplore2.bwp`](waypoint_bwp.md), keyed by the same node keys. There each plant zone has exactly one link, its parent node, which is not always the `manager_family_id` main node: Specialties 1563 links to Arehaza (1380), its family's main node is Areha Palm Forest (1379).
+- On client 3458, 1,076 of the 1,080 nodes have links. The four without are Tiamat Sea (2114), Oceanus Sea (2113), Red Battlefield (1378) and Pit of the Undying (1745). Five links go to waypoints with no record here, for example Runn Gateway Intersection (1313) to 1320 and 1323 (`field(shakatu_area)`, `field(atumach)`); they have no LOC type 29 name either. The links match the in-game worldmap for the nodes I checked: Velia links to Bartali, Finto and Loggia Farms, Forest of Plunder, Coastal Cave, the two investment banks, Luivano Island and Velia Beach; Western Guard Camp to Western Gateway, Bandit's Den Byway, Imp Cave and Toscani Farm.
 - The record anchor used by older tooling (`node_key` repeated at `+0x06`) still finds the correct 1003 offsets, but the exact layout above makes the scan unnecessary.
 
 ---

@@ -123,6 +123,7 @@ One row per waypoint.
 ## Notes
 
 - Checked against the XML exports: in `mapdata_realexplore2`, every waypoint (key, name, position, property, both flags) and all 2,498 links match in file order; all 899 routes of `mapdata_realnpc_route` match (key, name, waypoint keys). The two one-waypoint graphs `mapdata_realexplore2___town(hausher)` and `mapdata_realexplore2___blazing_battlefield` each hold one group and match too.
+- The `exploration.bss` Connections columns list each node's worldmap links from this graph, through `worldmap_links()` in `_bwp/waypoint/worldmap.py`.
 - Every one of the 439 `plantzone.dbss` zones has exactly one link in `mapdata_realexplore2.bwp`, to a main node. `plantexchangegroup.bss` takes that node as the parent for its English names; it names zones the `exploration.bss` manager family misses (Godu Village 1879-1882, whose family has no main node) and corrects one it gets wrong (Specialties 1563 links to Arehaza 1380, as the Korean label says, not to Areha Palm Forest 1379 of its family).
 - Checked in game 2026-09-29, all as the links say: the Specialties node that makes Box of Flesh-rich Coconuts (1563) hangs off Arehaza, the four Godu Village farms (1879-1882) off Godu Village, and four investment banks off Altinova (Zigmund 1189, Gulabi 1190, Quina 1191, Neruda Shen 1192).
 - Every route ends in a u32 that is `0` on all 899 routes. The XML `Route` element has nothing besides `Key`, `Name` and `RouteWaypointList` that could map to it, so it stays `unknown`.

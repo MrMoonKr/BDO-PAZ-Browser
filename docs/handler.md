@@ -661,6 +661,11 @@ offset_raw = companions.get("titleoffset.dbss")
 loc_raw = companions.get("languagedata_en.loc")
 ```
 
+A companion can live in another folder. Tables under `gamecommondata/binary/`
+that need the worldmap node graph use `worldmap_companion(entry)` for its path
+and `worldmap_links(companions)` for its links (node key -> linked node keys,
+empty when the file is missing), both from `_bwp/waypoint/worldmap.py`.
+
 Disk files pre-loaded by the browser may also be merged into `companions`.
 
 For example:
