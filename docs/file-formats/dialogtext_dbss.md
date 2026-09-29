@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Stores named pools of NPC lines. A dialog greeting in `detail_dialog.dbss` can be the tag `{GetRandomText(<name>)}`, and the client then shows one line from the pool with that name. Most lines start with an `{AudioVoice(...)}` tag that names the voice file.
+Stores named pools of NPC lines. A dialog greeting in `detail_dialog.dbss` can be the tag `{GetRandomText(<name>)}`, and the client then shows a random line from the pool with that name each time the dialog opens. Most lines start with an `{AudioVoice(...)}` tag that names the voice file.
 
 Example (pool `PEDU_47759_1`, three lines):
 
@@ -85,6 +85,7 @@ All 1,043 records of client 3458 walk with this layout and end exactly at their 
 
 ## Notes
 
+- Checked in game 2026-09-29: Ganin Arth (`47744`) has the greeting `{GetRandomText(PEDU_47744_1)}`, and talking to her three times showed all three pool lines: `1` ("It has been some time, Adventurer..."), `2` ("If you seek to hone your skills, say the word...") and `3` ("I am here to oversee the Hashashin..."). A random line is picked each time the dialog opens, not only on the first talk.
 - 82 of the first 200 pool names occur in `detail_dialog.dbss` greetings as `{GetRandomText(<name>)}`.
 - The names mostly start with a region or content prefix: `Morning` (290, Land of the Morning Light), `SnowyMountain` (163), `PEDU` (149), `Ulukita` (143), `MediaS` (100), `Olvia` (49).
 - 2,931 of the 3,645 lines carry an `{AudioVoice(...)}` tag. The last number of the voice name equals `text_id` on only 553 of them.

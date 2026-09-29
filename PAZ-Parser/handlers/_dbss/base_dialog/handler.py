@@ -54,7 +54,7 @@ class BaseDialogHandler(PreviewHandler):
             Column(cols.get("characterId", "Character ID"), "num", sort_key="character_id"),
             Column(cols.get("dialog", "Dialog"), "num", sort_key="dialog_index"),
             Column(cols.get("character", "Character"), sort_key="character"),
-            Column(cols.get("lines", "Lines"), sort_key="line_count"),
+            Column(cols.get("lines", "Bubble Lines"), sort_key="line_count"),
         ]
 
     def sortable_fields(self) -> frozenset[str]:

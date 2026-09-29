@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Stores a short base record for every NPC dialog in `detail_dialog.dbss`: the Korean display name the dialog shows for the character, and a list of short Korean lines. The lines read like ambient chatter (a pilgrim saying `아이고. 배야.` ("Ouch, my stomach.")), but where the client shows them is not checked.
+Stores a short base record for every NPC dialog in `detail_dialog.dbss`: the Korean display name the dialog shows for the character, and a list of short Korean lines. The lines are ambient chatter that the client shows in a speech bubble over the NPC's head (a pilgrim saying `아이고. 배야.` ("Ouch, my stomach.")).
 
 Example (Martina Finto, character `40024`, dialog index `1`):
 
@@ -66,7 +66,7 @@ Every record of client 3458 walks with this layout and ends exactly at its index
 | Character ID | num  | `key & 0xFFFF` |
 | Dialog       | num  | `key >> 16` |
 | Character    | text | LOC type `38` field `0`, then LOC type `6` for the character ID, then `name_kr` |
-| Lines        | list | LOC type `38` field `1`, `2`, ... for each line, fallback to the Korean line; first few then a count |
+| Bubble Lines | list | LOC type `38` field `1`, `2`, ... for each line, fallback to the Korean line; first few then a count |
 
 ---
 
@@ -74,11 +74,5 @@ Every record of client 3458 walks with this layout and ends exactly at its index
 
 - The name and lines are localized in LOC type `38`: `str_id1 = character_id`, `str_id2 = dialog_index`, `str_id3 = 0`, and `str_id4` `0` for the name and `1`, `2`, ... for the lines in order. In client 3458 all 10,165 lines and 59,686 of the 59,776 names have a row; Martina Finto's first line reads "Oh David... Maybe I should open up a restaurant here at the farm...".
 - `name_kr` is the dialog's own name: copies of a generic NPC such as `순례자` (pilgrim) share it, and it may differ from the LOC type `6` name of the character ID.
-
----
-
-## Open Questions
-
-### Where does the client show the lines?
-
-They read like ambient chatter above an NPC's head or in its speech bubble, but no in-game check has tied a line to a place in the UI yet.
+- The lines are the speech bubbles over the NPC's head, checked in game 2026-09-29: Martina Finto showed "Oh David... Maybe I should open up a restaurant here at the farm..." in a bubble, and a villager beside her "The commander said I was the best!" (character `506`, dialog `210`, line `2`). The bubble is `UI_Data/Actor/UI_Actor_BubbleBox.XML` (`OverheadUIType_BubbleBox`, a `bubble.dds` frame around a 120 px auto-wrapping text box), which is why the lines carry hand-placed `\n` breaks. The Lua only creates the bubble panel pool (`ToClient_InitializeBubbleBoxPanelPool`); the client code picks and sets the text.
+- The lines never show in the dialog window: that opens with the `detail_dialog.dbss` greeting (Martina: "It's so lonely here, all by myself... David doesn't seem to know.").
