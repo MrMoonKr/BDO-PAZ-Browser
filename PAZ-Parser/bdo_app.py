@@ -1,42 +1,134 @@
 from __future__ import annotations
 
 import argparse
-import fnmatch
 import sys
+from collections.abc import Callable
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
 import webview
 
-from api.bdo_api import Api, _norm
-from api.bdo_config import load_config
-from paz.bdo_cache import load_cache, read_meta_version, save_cache
-from bdo_models import PazEntry
-from paz.bdo_paz_extract import extract_entry, find_single_meta_file, parse_meta_file
+from api.bdo_api import Api
+from cli.files import run_extract, run_list
+from cli.formats import run_formats
+from cli.index import run_index
+from cli.records import run_records
+from cli.render import run_render
+from cli.stdio import close_stdout_quietly, configure_logging, is_closed_pipe, use_utf8_stdio
+
+# Options that only mean something with one command, checked in _check_options.
+_RECORDS_ONLY = ("where", "fields")
+_OUTPUT_OPTIONS = ("json", "csv", "limit")
 
 
 def main() -> None:
+    parser = _build_parser()
+    args = parser.parse_args()
+    _check_options(parser, args)
+
+    command = _command(args)
+    if command is None:
+        _launch_gui(profile=args.profile)
+        return
+
+    use_utf8_stdio()
+    configure_logging()
+    try:
+        code = command(args)
+    except OSError as ex:
+        if not is_closed_pipe(ex):
+            raise
+        code = 0
+    close_stdout_quietly()
+    sys.exit(code)
+
+
+def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="browser",
-        description="BDO PAZ Browser, omit --file/--list to open the GUI.",
+        description="BDO PAZ Browser, omit a command to open the GUI.",
     )
     parser.add_argument("--paz-folder", metavar="DIR", help="Path to the PAZ folder (default: last used)")
-    parser.add_argument("--file", metavar="PATTERN", help="File name or glob pattern to extract, e.g. title.dbss or *title*.dbss")
-    parser.add_argument("--list", metavar="PATTERN", help="List matching file paths without extracting, e.g. title*.dbss")
-    parser.add_argument("--output", metavar="DIR", help="Output directory for --file (default: current working directory)")
-    parser.add_argument("--formats", action="store_true", help="Show supported file formats and exit")
-    parser.add_argument("--profile", action="store_true", help="Enable backend timing and browser-side JS profiling for the GUI")
-    args = parser.parse_args()
 
+    commands = parser.add_mutually_exclusive_group()
+    commands.add_argument("--file", metavar="PATTERN", help="File name or glob pattern to extract, e.g. title.dbss or *title*.dbss")
+    commands.add_argument("--list", metavar="PATTERN", help="List matching file paths without extracting, e.g. title*.dbss")
+    commands.add_argument("--formats", action="store_true", help="Show supported file formats and exit")
+    commands.add_argument("--records", metavar="FILE", help="Print the parsed records of one file, e.g. buffsimply.bss")
+    commands.add_argument("--render", metavar="FILE", help="Write one parsed page of FILE as standalone HTML to stdout")
+    commands.add_argument(
+        "--index", metavar="KIND", nargs="?", const="",
+        help="Print a lookup index, e.g. character_item; without KIND, list every kind",
+    )
+
+    parser.add_argument("--output", metavar="DIR", help="Output directory for --file (default: current working directory)")
+    parser.add_argument(
+        "--where", metavar="EXPR", action="append", default=[],
+        help="--records filter: field=value, field=a..b or field*=text; repeat to combine",
+    )
+    parser.add_argument("--fields", metavar="A,B,C", help="--records: only these fields, in this order")
+    parser.add_argument(
+        "--sort",
+        metavar="FIELD[:desc]",
+        help="--records: sort by FIELD as the GUI table does, ascending or with :desc",
+    )
+    output = parser.add_mutually_exclusive_group()
+    output.add_argument("--json", action="store_true", help="--records / --index: JSON with full values")
+    output.add_argument("--csv", action="store_true", help="--records / --index: CSV like the app's export")
+    parser.add_argument("--limit", metavar="N", type=_positive_int, help="--records / --index: print at most N rows")
+    parser.add_argument("--no-loc", action="store_true", help="--records / --render: do not load LOC text")
+    parser.add_argument("--page", metavar="N", type=int, default=1, help="--render: page number, from 1 (default: 1)")
+    parser.add_argument("--id", metavar="N", help="--index: one ID, decimal or 0x hex")
+    parser.add_argument("--profile", action="store_true", help="Enable backend timing and browser-side JS profiling for the GUI")
+    return parser
+
+
+def _positive_int(text: str) -> int:
+    value = int(text)
+    if value < 1:
+        raise argparse.ArgumentTypeError("must be at least 1")
+    return value
+
+
+def _command(args: argparse.Namespace) -> Callable[[argparse.Namespace], int] | None:
     if args.file:
-        sys.exit(_cli_extract(args))
-    elif args.list:
-        sys.exit(_cli_list(args))
-    elif args.formats:
-        sys.exit(_cli_formats(args))
-    else:
-        _launch_gui(profile=args.profile)
+        return run_extract
+    if args.list:
+        return run_list
+    if args.formats:
+        return run_formats
+    if args.records:
+        return run_records
+    if args.render:
+        return run_render
+    if args.index is not None:
+        return run_index
+    return None
+
+
+def _check_options(parser: argparse.ArgumentParser, args: argparse.Namespace) -> None:
+    """Reject options given without the command they belong to."""
+    is_records = bool(args.records)
+    is_index = args.index is not None
+    if not is_records:
+        for name in _RECORDS_ONLY:
+            if getattr(args, name):
+                parser.error(f"--{name} needs --records")
+    if not (is_records or is_index):
+        for name in _OUTPUT_OPTIONS:
+            if getattr(args, name):
+                parser.error(f"--{name} needs --records or --index")
+    if args.no_loc and not (is_records or args.render):
+        parser.error("--no-loc needs --records or --render")
+    if args.page != 1 and not args.render:
+        parser.error("--page needs --render")
+    if args.id is not None and not is_index:
+        parser.error("--id needs --index")
+    if args.id is not None and not args.index:
+        parser.error("--id needs an index kind, e.g. --index character_item --id 40024")
+    if args.output and not args.file:
+        parser.error("--output needs --file")
 
 def _set_app_user_model_id() -> None:
     import ctypes
@@ -93,230 +185,6 @@ def _launch_gui(profile: bool = False) -> None:
         webview.start(debug=profile)
     finally:
         server.stop()
-
-
-def _resolve_paz_root(paz_folder: str | None) -> Path | None:
-    folder = paz_folder or load_config().get("last_folder")
-    if not folder:
-        print("Error: use --paz-folder or open a folder in the GUI first.", file=sys.stderr)
-        return None
-    p = Path(folder)
-    if not p.is_dir():
-        print(f"Error: PAZ folder not found: {p}", file=sys.stderr)
-        return None
-    return p
-
-
-def _load_all_entries(paz_root: Path) -> list[PazEntry] | None:
-    print("Loading PAZ entries…")
-    try:
-        meta_path = find_single_meta_file(paz_root)
-        current_version = read_meta_version(meta_path)
-        cached = load_cache(paz_root)
-
-        if cached and cached[0] == current_version:
-            _, entries = cached
-            print(f"Loaded {len(entries):,} entries from cache.")
-        else:
-            print("Parsing PAZ files (first run, this may take a while)…")
-            entries = parse_meta_file(meta_path)
-            save_cache(paz_root, current_version, entries)
-            print(f"Parsed and cached {len(entries):,} entries.")
-        return entries
-    except Exception as ex:
-        print(f"Error loading PAZ folder: {ex}", file=sys.stderr)
-        return None
-
-
-def _match_entries(entries: list[PazEntry], pattern: str) -> list[PazEntry]:
-    q = pattern.replace("\\", "/").lower()
-    is_glob = any(c in q for c in ("*", "?", "["))
-
-    matches = []
-    for entry in entries:
-        path = _norm(entry.internal_path)
-        name = path.rsplit("/", 1)[-1]
-        if is_glob:
-            hit = fnmatch.fnmatch(path.lower(), q) or fnmatch.fnmatch(name.lower(), q)
-        else:
-            hit = q in path.lower()
-        if hit:
-            matches.append(entry)
-    return matches
-
-
-_FORMATS_IGNORE: frozenset[str] = frozenset({
-    # Add extensions or filenames to hide from --formats output
-    # e.g. ".pac", "x_y.bss"
-    ".zip",
-    ".temp",
-    ".exe",
-    ".wr",
-    ".woff", # Font
-    ".wem",
-    ".volumefog",
-    ".volumedecal",
-    ".vnm",
-    ".ttf", # Font
-    ".otf", # Font
-    ".ani", # Cursor/animation, not a game format
-    ".bin", # Generic binary, too common to be useful without more context
-    ".luac", # Compiled Lua, not sure i cba
-    ".lnk", # Windows shortcut, not a game format
-    ".fxo", # Shader cache, not a game format
-    # skip for now/I have not checked these:
-    ".barrier",
-    ".bk2",
-    ".bkd",
-    ".bnk",
-    ".bwp",
-    ".chroma",
-    ".cl",
-    ".col",
-    ".collisiondata2",
-    ".combine",
-    ".data",
-    ".db",
-    ".fcb",
-    ".fxo10",
-    ".fxo11",
-    ".gnf",
-    ".hdr",
-    ".hlod",
-    ".house",
-    ".ifl",
-    ".ipam",
-    ".light",
-    ".lightlist",
-    ".lod",
-    ".mapdata",
-    ".namelist",
-    ".object",
-    ".pa",
-    ".paa",
-    ".paac",
-    ".paach",
-    ".paap",
-    ".pab",
-    ".pabav",
-    ".pac",
-    ".pad",
-    ".pae",
-    ".paem",
-    ".pah",
-    ".pam",
-    ".pami",
-    ".pas",
-    ".paseqfe",
-    ".pat",
-    ".pc",
-    ".pcm",
-    ".ph",
-    ".pm",
-    ".probe",
-    ".procedural",
-    ".r3m",
-    ".rid",
-    ".tome",
-    ".tree",
-    ".treelist",
-    ".treelist2",
-    ".vnl",
-})
-
-
-def _cli_formats(args: argparse.Namespace) -> int:
-    from bdo_preview import _BUILTIN_KEYS, _REGISTRY, unique_format_keys
-
-    paz_root = _resolve_paz_root(args.paz_folder)
-    if paz_root is None:
-        return 1
-
-    entries = _load_all_entries(paz_root)
-    if entries is None:
-        return 1
-
-    all_keys = [k for k in unique_format_keys(entries) if k not in _FORMATS_IGNORE]
-    generic  = [k for k in all_keys if k in _BUILTIN_KEYS]
-    binary   = [k for k in all_keys if k not in _BUILTIN_KEYS]
-
-    registered_handlers = {k for k in _REGISTRY if k not in _BUILTIN_KEYS and k not in _FORMATS_IGNORE}
-    supported_binary   = sorted({k for k in binary if k in _REGISTRY} | registered_handlers)
-    unsupported_binary = [k for k in binary if k not in _REGISTRY and k not in registered_handlers]
-
-    supported   = sorted(generic + supported_binary)
-    unsupported = sorted(unsupported_binary)
-    n_supported = len(supported)
-    n_total     = n_supported + len(unsupported)
-
-    print(f"File formats: {n_supported}/{n_total} supported")
-    print()
-    print(f"Supported ({n_supported}):")
-    for k in supported:
-        print(f"  {k}")
-    print()
-    print(f"Unsupported ({len(unsupported)}):")
-    for k in unsupported:
-        print(f"  {k}")
-    return 0
-
-
-def _cli_list(args: argparse.Namespace) -> int:
-    paz_root = _resolve_paz_root(args.paz_folder)
-    if paz_root is None:
-        return 1
-
-    entries = _load_all_entries(paz_root)
-    if entries is None:
-        return 1
-
-    matches = _match_entries(entries, args.list)
-    if not matches:
-        print(f"No files found matching '{args.list}'.", file=sys.stderr)
-        return 1
-
-    print(f"\n{len(matches):,} file(s) matching '{args.list}':\n")
-    for entry in matches:
-        size_kb = entry.uncompressed_size / 1024
-        print(f"  {entry.internal_path}  ({size_kb:,.1f} KB)")
-    return 0
-
-
-def _cli_extract(args: argparse.Namespace) -> int:
-    paz_root = _resolve_paz_root(args.paz_folder)
-    if paz_root is None:
-        return 1
-
-    entries = _load_all_entries(paz_root)
-    if entries is None:
-        return 1
-
-    output_root = Path(args.output) if args.output else Path.cwd()
-
-    matches = _match_entries(entries, args.file)
-    if not matches:
-        print(f"No files found matching '{args.file}'.", file=sys.stderr)
-        return 1
-
-    print(f"Found {len(matches):,} file(s). Extracting to {output_root} …\n")
-
-    extracted = skipped = failed = 0
-    for i, entry in enumerate(matches, 1):
-        label = f"[{i}/{len(matches)}]"
-        try:
-            result = extract_entry(paz_root=paz_root, output_root=output_root, entry=entry, overwrite=False, flat=True)
-            if result == "skipped":
-                skipped += 1
-                print(f"  {label} SKIP  {entry.internal_path}")
-            else:
-                extracted += 1
-                print(f"  {label} OK    {entry.internal_path}")
-        except Exception as ex:
-            failed += 1
-            print(f"  {label} FAIL  {entry.internal_path}: {ex}", file=sys.stderr)
-
-    print(f"\nDone, {extracted} extracted, {skipped} skipped, {failed} failed.")
-    return 1 if failed else 0
 
 
 if __name__ == "__main__":

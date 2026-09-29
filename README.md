@@ -152,9 +152,43 @@ python browser.py --paz-folder "C:/Games/Black Desert/Paz" --file "title.dbss" -
 
 # Glob extraction
 python browser.py --paz-folder "C:/Games/Black Desert/Paz" --file "*title*" --output ./out
+
+# Parsed records, as the GUI table has them (LOC and lookup indexes loaded)
+python browser.py --records buffsimply.bss --where buff_id=48723..48728
+python browser.py --records skill.dbss --where buff_ids=48723 --fields skill_no,name,buff_ids --json
+python browser.py --records languagedata_en.loc --where "text*=Adventure's Boon" --limit 5
+
+# One parsed page as a standalone HTML file with the app's CSS and icons
+python browser.py --render buffsimply.bss --page 2 > page.html
+
+# Lookup indexes: every kind with its size, all entries of one kind, or one ID
+python browser.py --index
+python browser.py --index knowledge_characters --limit 20
+python browser.py --index buff_icon --id 48724
 ```
 
 If `--paz-folder` is omitted, the CLI reuses the last folder opened in the GUI.
+LOC follows the language picked in the GUI settings. Output is UTF-8 whatever
+the console code page, and progress messages go to stderr, so redirected
+output holds only the result.
+
+`--records <file>` runs the file's handler `get_records()` with its companions,
+the rows behind the GUI table and its CSV export. The file is a PAZ path, a
+file name, or a pattern that matches one file. Options:
+
+| Option | Meaning |
+|---|---|
+| `--where field=value` | Equal. Numbers compare as numbers (`0x` hex allowed), text ignores case, `true` / `false` / `yes` / `no` match flags, `none` (or nothing after `=`) matches an empty cell: no value, blank text or an empty list. A list field matches when any item does |
+| `--where field=a..b` | Number in the inclusive range; `a..` and `..b` leave one side open |
+| `--where field*=text` | Text contains `text`, ignoring case. Text fields are searched as stored, so `*=\n` finds the two-character newline escape |
+| `--fields a,b,c` | Only these fields, in this order |
+| `--sort field[:desc]` | Sort as the GUI table does (empty values last, text ignoring case, ties in file order), before `--limit` |
+| `--json` / `--csv` | Full values as JSON, or CSV like the app's export. The default is an aligned text table; long cells are cut in the middle so both ends stay (a path keeps its file name), and a single row is shown whole |
+| `--limit N` | At most N rows, after filtering |
+| `--no-loc` | Skip loading LOC (faster; text columns fall back to inline text) |
+
+Several `--where` options must all match. `--index` takes `--json`, `--csv`
+and `--limit` too.
 
 ---
 
@@ -162,11 +196,21 @@ If `--paz-folder` is omitted, the CLI reuses the last folder opened in the GUI.
 
 ```
 PAZ-Parser/
-├── bdo_app.py              # Entry point, GUI + CLI
+├── bdo_app.py              # Entry point, GUI launch + CLI argument parsing
 ├── bdo_models.py           # Data models (shared by all handlers)
 ├── bdo_preview.py          # Preview handler registry + built-in handlers
 ├── bdo_server.py           # Local HTTP server for stream preview
 ├── conftest.py             # pytest setup and handler test summary output
+├── record_export.py        # Records as CSV (GUI export and --records --csv)
+│
+├── cli/                    # Command-line commands, one module each
+│   ├── session.py          # Loads the PAZ folder headless through Api
+│   ├── parsed_file.py      # Resolves a file name to handler, payload, companions
+│   ├── files.py            # --list, --file
+│   ├── formats.py          # --formats
+│   ├── records.py          # --records (record_filter.py, record_output.py)
+│   ├── render.py           # --render
+│   └── index.py            # --index
 │
 ├── api/                    # pywebview JS API bridge
 │   ├── bdo_api.py          # Routing and dispatch

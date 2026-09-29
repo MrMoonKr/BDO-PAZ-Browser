@@ -64,6 +64,11 @@ def index_size(kind: IndexKind) -> int:
     return len(_INDEXES.get(kind, ()))
 
 
+def index_entries(kind: IndexKind) -> Mapping[int, LookupValue]:
+    """Every entry of one kind, empty when the index is not loaded. Read only."""
+    return _INDEXES.get(kind, {})
+
+
 def lookup(kind: IndexKind, entity_id: int) -> LookupValue | None:
     """The stored value, or None when the index is not loaded or lacks the ID."""
     return _INDEXES.get(kind, {}).get(entity_id)

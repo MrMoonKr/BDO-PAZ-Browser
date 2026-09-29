@@ -12,15 +12,15 @@ from .bdo_config import load_table_sort, save_table_sort, table_sort_file_key
 from bdo_models import PazEntry
 from paz.bdo_payload_cache import cached_read_entry_payload
 from paz.bdo_payload_reader import can_range_read, read_entry_range
+from record_export import records_to_csv
 from bdo_preview import (
     AltViewHandler,
-    DdsHandler,
     HEX_ROWS_PER_PAGE,
     HexHandler,
     PARSED_RECORDS_PER_PAGE,
     StreamPreviewHandler,
-    TextHandler,
     get_handler,
+    has_parsed_view,
 )
 from table_sort import TableSort
 
@@ -141,8 +141,7 @@ class PreviewMixin:
         import html as _html_mod
         profile: dict[str, float] = {}
         is_alt   = isinstance(handler, AltViewHandler)
-        is_plain = isinstance(handler, (HexHandler, TextHandler, DdsHandler))
-        has_parsed = not is_plain and not is_alt
+        has_parsed = has_parsed_view(handler)
 
         self._cached_path = _norm(internal_path)
         self._cached_data = data
@@ -281,11 +280,11 @@ class PreviewMixin:
             "hex_paging": "range",
         }
 
-    def _load_disk_entry(self, internal_path: str) -> dict:
-        name = internal_path[len(_DISK_VIRTUAL_PREFIX) + 1:]
+    def disk_entry(self, name: str) -> tuple[PazEntry, bytes] | None:
+        """A loaded disk file (the LOC file) as an entry, or None when not loaded."""
         data = self._disk_companions.get(name)
         if data is None:
-            return {"error": f"Disk file not loaded: {name}"}
+            return None
 
         fake_entry = PazEntry(
             archive_name="<disk>",
@@ -296,6 +295,19 @@ class PreviewMixin:
             compression_type=0,
             encryption_type=0,
         )
+        return fake_entry, data
+
+    def entry_companions(self, handler, entry: PazEntry) -> dict[str, bytes]:
+        """The disk files plus every companion the handler asks for, by file name."""
+        return {**self._disk_companions, **self._load_companions_parallel(handler, entry)}
+
+    def _load_disk_entry(self, internal_path: str) -> dict:
+        name = internal_path[len(_DISK_VIRTUAL_PREFIX) + 1:]
+        disk = self.disk_entry(name)
+        if disk is None:
+            return {"error": f"Disk file not loaded: {name}"}
+
+        fake_entry, data = disk
         meta = {
             "archive":      "<disk>",
             "path":         name,
@@ -365,7 +377,7 @@ class PreviewMixin:
         read_payload_ms = (time.perf_counter() - start) * 1000 if self._profile else 0.0
 
         start = self._ts()
-        companions: dict[str, bytes] = {**self._disk_companions, **self._load_companions_parallel(handler, entry)}
+        companions = self.entry_companions(handler, entry)
         load_companions_ms = (time.perf_counter() - start) * 1000 if self._profile else 0.0
 
         response = self._build_entry_response(data, internal_path, entry, handler, companions, meta)
@@ -467,8 +479,6 @@ class PreviewMixin:
             and self._cached_entry is not None
             and self._cached_handler is not None
         ):
-            import csv
-            import io
             # File order on purpose: it is the cheapest to produce and ignores
             # the active table sort, which would only add a reorder pass.
             records = self._cached_handler.get_records(
@@ -476,12 +486,7 @@ class PreviewMixin:
                 self._cached_entry,
                 self._cached_companions,
             )
-            buf = io.StringIO()
-            if records:
-                writer = csv.DictWriter(buf, fieldnames=list(records[0].keys()))
-                writer.writeheader()
-                writer.writerows(records)
-            data = buf.getvalue().encode("utf-8-sig")
+            data = records_to_csv(records).encode("utf-8-sig")
             save_filename = Path(filename).stem + ".csv"
             file_types = ("CSV files (*.csv)", "All files (*.*)")
         else:

@@ -75,7 +75,9 @@ def _fetch_fixture(fixture_name: str, output_dir: Path) -> None:
     result = subprocess.run(
         command,
         cwd=REPO_ROOT,
-        text=True,
+        # The CLI writes UTF-8 whatever the console code page.
+        encoding="utf-8",
+        errors="replace",
         capture_output=True,
         check=False,
     )

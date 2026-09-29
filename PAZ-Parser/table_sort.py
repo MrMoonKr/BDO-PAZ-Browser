@@ -65,6 +65,11 @@ def _sort_key(value: object) -> tuple[int, object] | None:
     return (_RANK_OTHER, str(value).casefold())
 
 
+def is_empty(value: object) -> bool:
+    """True for the values an empty cell holds: None, blank text, an empty list, NaN."""
+    return _sort_key(value) is None
+
+
 def sort_order(records: list[dict], field: str, descending: bool) -> list[int]:
     """Record indices in sorted order. See `sort_order_by_values`."""
     return sort_order_by_values([record.get(field) for record in records], descending)
@@ -79,7 +84,8 @@ def sort_order_by_values(values: Sequence[object], descending: bool) -> list[int
     # Most sortable columns are plain integer IDs. Sorting those directly
     # skips building a key tuple per row, which matters at a million rows.
     if all(type(value) is int for value in values):
-        return sorted(range(len(values)), key=values.__getitem__, reverse=descending)
+        ints = cast("Sequence[int]", values)
+        return sorted(range(len(ints)), key=ints.__getitem__, reverse=descending)
     if all(type(value) is str for value in values):
         return _sort_order_text(cast("Sequence[str]", values), descending)
 

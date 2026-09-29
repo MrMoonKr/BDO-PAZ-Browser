@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import fnmatch
 import json
 import logging
 import threading
 import time
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
@@ -12,7 +12,7 @@ from typing import Any
 import webview
 
 from .bdo_config import load_config, save_config
-from .bdo_api_helpers import _DISK_VIRTUAL_PREFIX, _ICON_MAP, _file_icon, _norm
+from .bdo_api_helpers import _DISK_VIRTUAL_PREFIX, _file_icon, _norm, path_matcher
 from .bdo_api_preview import PreviewMixin
 from .bdo_api_search import SearchMixin
 from paz.bdo_cache import load_cache, read_meta_version, save_cache
@@ -80,6 +80,15 @@ class Api(PreviewMixin, SearchMixin):
         self._cached_companions: dict[str, bytes] = {}
         self._cached_sort: TableSort | None = None
         self._global_search_cancel: threading.Event = threading.Event()
+
+    @property
+    def entries(self) -> list[PazEntry]:
+        """Every entry of the loaded folder, in meta file order."""
+        return self._entries
+
+    @property
+    def paz_root(self) -> Path | None:
+        return self._paz_root
 
     def set_window(self, window: webview.Window) -> None:
         self._window = window
@@ -187,50 +196,75 @@ class Api(PreviewMixin, SearchMixin):
 
     def _load_entries(self) -> None:
         assert self._paz_root is not None
-        clear_payload_cache()
         try:
-            meta_path = find_single_meta_file(self._paz_root)
-            current_version = read_meta_version(meta_path)
-            cached = load_cache(self._paz_root)
-
-            if cached and cached[0] == current_version:
-                _, entries = cached
-                msg = {"key": "status.loadedFromCache", "args": {"count": f"{len(entries):,}", "version": current_version}}
-            else:
-                stop_ticker = threading.Event()
-                start = time.monotonic()
-
-                def _ticker(stop: threading.Event, t0: float) -> None:
-                    while not stop.is_set():
-                        elapsed = int(time.monotonic() - t0)
-                        self._push_status(
-                            {"key": "status.parsing", "args": {"elapsed": elapsed}}
-                        )
-                        stop.wait(0.5)
-
-                threading.Thread(target=_ticker, args=(stop_ticker, start), daemon=True).start()
-                try:
-                    entries = parse_meta_file(meta_path)
-                finally:
-                    stop_ticker.set()
-
-                save_cache(self._paz_root, current_version, entries)
-                msg = {"key": "status.parsedAndCached", "args": {"count": f"{len(entries):,}", "version": current_version}}
-
-            self._entries = entries
-            self._entry_map = {_norm(e.internal_path): e for e in entries}
-            self._entry_map_lower = {path.lower(): entry for path, entry in self._entry_map.items()}
-            self._icon_entry_cache.clear()
-            self._icon_data_url_cache.clear()
-            self._tree_data = self._build_tree_data(entries)
-            self._load_disk_companions()
-            self._load_lookup_indexes(current_version)
+            msg = self.load_folder(self._paz_root, parse=self._parse_with_ticker)
             self._push_status(msg)
             self._push_js("app.onFolderLoaded()")
 
         except Exception as ex:
             self._push_status({"key": "status.error", "args": {"message": str(ex)}})
             self._push_js(f"app.showError({json.dumps(str(ex))})")
+
+    def load_folder(
+        self,
+        paz_root: Path,
+        *,
+        parse: Callable[[Path], list[PazEntry]] = parse_meta_file,
+        load_loc: bool = True,
+        load_indexes: bool = True,
+    ) -> dict:
+        """Load the entry list, LOC and lookup indexes of `paz_root`, blocking.
+
+        The GUI runs this on a worker thread; the CLI calls it directly, so a
+        command sees the same data the app shows. `parse` reads the meta file
+        when the entry cache is stale. Raises when the folder cannot be read,
+        and returns the status message to show.
+        """
+        self._paz_root = paz_root
+        clear_payload_cache()
+        meta_path = find_single_meta_file(paz_root)
+        current_version = read_meta_version(meta_path)
+        cached = load_cache(paz_root)
+
+        if cached and cached[0] == current_version:
+            _, entries = cached
+            msg = {"key": "status.loadedFromCache", "args": {"count": f"{len(entries):,}", "version": current_version}}
+        else:
+            entries = parse(meta_path)
+            save_cache(paz_root, current_version, entries)
+            msg = {"key": "status.parsedAndCached", "args": {"count": f"{len(entries):,}", "version": current_version}}
+
+        self._entries = entries
+        self._entry_map = {_norm(e.internal_path): e for e in entries}
+        self._entry_map_lower = {path.lower(): entry for path, entry in self._entry_map.items()}
+        self._icon_entry_cache.clear()
+        self._icon_data_url_cache.clear()
+        self._tree_data = self._build_tree_data(entries)
+        self._disk_companions = {}
+        if load_loc:
+            self._load_disk_companions()
+        if load_indexes:
+            self._load_lookup_indexes(current_version)
+        return msg
+
+    def _parse_with_ticker(self, meta_path: Path) -> list[PazEntry]:
+        """Parse the meta file while pushing the elapsed time to the status bar."""
+        stop_ticker = threading.Event()
+        start = time.monotonic()
+
+        def _ticker(stop: threading.Event, t0: float) -> None:
+            while not stop.is_set():
+                elapsed = int(time.monotonic() - t0)
+                self._push_status(
+                    {"key": "status.parsing", "args": {"elapsed": elapsed}}
+                )
+                stop.wait(0.5)
+
+        threading.Thread(target=_ticker, args=(stop_ticker, start), daemon=True).start()
+        try:
+            return parse_meta_file(meta_path)
+        finally:
+            stop_ticker.set()
 
     def _load_lookup_indexes(self, version: int) -> None:
         """Install every lookup index, from cache or by building it.
@@ -260,6 +294,7 @@ class Api(PreviewMixin, SearchMixin):
                     self._load_companion_sync, self._entry_map_lower.__contains__
                 )
             except Exception as ex:
+                logging.warning("Could not build the lookup indexes", exc_info=True)
                 self._push_status(
                     {"key": "status.indexFailed", "args": {"message": str(ex)}}
                 )
@@ -296,7 +331,8 @@ class Api(PreviewMixin, SearchMixin):
                     from _common.loc import init_loc  # noqa: PLC0415
                     init_loc(raw)
                 except Exception:
-                    pass
+                    # Not fatal: tables fall back to their inline text.
+                    logging.warning("Could not load LOC file %s", path, exc_info=True)
 
     def _load_companion_sync(self, internal_path: str) -> bytes | None:
         entry = self._entry_map.get(_norm(internal_path))
@@ -427,19 +463,12 @@ class Api(PreviewMixin, SearchMixin):
         Glob patterns (containing *, ?, or [) are matched against the full
         path and against the filename alone.  Plain strings do substring match.
         """
-        q = query.replace("\\", "/").lower()
-        is_glob = any(c in q for c in ("*", "?", "["))
+        is_hit = path_matcher(query)
         results: list[dict] = []
         for entry in self._entries:
             path = _norm(entry.internal_path)
             name = path.rsplit("/", 1)[-1]
-            path_lc = path.lower()
-            name_lc = name.lower()
-            if is_glob:
-                hit = fnmatch.fnmatch(path_lc, q) or fnmatch.fnmatch(name_lc, q)
-            else:
-                hit = q in path_lc
-            if hit:
+            if is_hit(path):
                 results.append({
                     "id":   path,
                     "name": name,

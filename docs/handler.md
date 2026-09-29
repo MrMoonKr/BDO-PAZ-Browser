@@ -524,6 +524,23 @@ PAZ-Parser/handlers/_dbss/title/test_handler.py::test_title_dbss[TitleId = 3] PA
 
 ---
 
+## Checking a Handler from the Command Line
+
+`browser.py` runs a handler the way the GUI does, with LOC and the lookup
+indexes loaded, so most checks need no script in `test-scripts/`:
+
+```bash
+# The rows get_records() returns, filtered and cut down to a few fields
+python browser.py --records buffsimply.bss --where buff_id=48723..48728 --fields buff_id,icon_path
+# One rendered page, with the app's CSS and icons inlined, to check the cells
+python browser.py --render buffsimply.bss --page 1 > page.html
+# What a lookup index holds for one ID
+python browser.py --index buff_icon --id 48724
+```
+
+See the CLI section of the README for every option. `--records --csv` gives
+the same columns as the GUI's CSV export (`record_export.py`).
+
 ## Lazy Parsed Handlers
 
 All handlers are lazy by default. The base class caches the result of `get_records()`

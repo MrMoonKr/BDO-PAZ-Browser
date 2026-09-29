@@ -38,7 +38,7 @@ class PreviewHandler(ABC):
             def _my_index(self, data):
                 return self._data_cache(data, "index", lambda: build_index(data))
         """
-        cache: dict = getattr(self, "_handler_caches", None)
+        cache: dict | None = getattr(self, "_handler_caches", None)
         if cache is None:
             self._handler_caches: dict = {}
             cache = self._handler_caches
@@ -416,6 +416,14 @@ def get_handler(name: str, ext: str) -> PreviewHandler:
         _REGISTRY.get(name.lower())
         or _REGISTRY.get(ext.lower())
         or _hex_handler
+    )
+
+
+def has_parsed_view(handler: PreviewHandler) -> bool:
+    """True when the handler builds records, so get_records() may be called."""
+    return not isinstance(
+        handler,
+        (HexHandler, TextHandler, DdsHandler, AltViewHandler, StreamPreviewHandler),
     )
 
 

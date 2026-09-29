@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import html as _html
+import re
 from collections.abc import Sequence
 from typing import NamedTuple
 
@@ -51,13 +52,25 @@ def color_cell(colors: list[str]) -> str:
     return " ".join(parts)
 
 
+# The swatch an icon cell shows until the GUI (ui/js/features/table.js) or
+# `browser.py --render` swaps in the image.
+_ICON_PLACEHOLDER = '<span class="icon-cell-thumb icon-cell-placeholder" aria-hidden="true"></span>'
+
+# An `icon_cell` still waiting for its image; group 1 is the escaped path.
+PENDING_ICON_CELL_RE = re.compile(
+    r'<span class="icon-cell" title="([^"]*)" data-icon-path="\1">'
+    + re.escape(_ICON_PLACEHOLDER)
+    + r'<span class="icon-cell-path">\1</span></span>'
+)
+
+
 def icon_cell(path: object, image_src: str | None = None) -> str:
     icon_path = str(path).strip()
     if not icon_path:
         return "-"
 
     escaped_path = e(icon_path)
-    thumb = '<span class="icon-cell-thumb icon-cell-placeholder" aria-hidden="true"></span>'
+    thumb = _ICON_PLACEHOLDER
     if image_src:
         thumb = f'<img class="icon-cell-thumb" src="{e(image_src)}" alt="" loading="lazy">'
 
@@ -66,6 +79,18 @@ def icon_cell(path: object, image_src: str | None = None) -> str:
         f'{thumb}'
         f'<span class="icon-cell-path">{escaped_path}</span>'
         f'</span>'
+    )
+
+
+def missing_icon_cell(path: object) -> str:
+    """An icon cell whose file the client does not ship: a dash, path in the tooltip.
+
+    Matches what the GUI turns an unresolved `icon_cell` into.
+    """
+    escaped_path = e(str(path).strip())
+    return (
+        f'<span class="icon-cell icon-cell-missing" title="{escaped_path}" '
+        f'data-icon-path="{escaped_path}">-</span>'
     )
 
 
@@ -104,7 +129,7 @@ def table(
 ) -> str:
     """Render a parsed table. Plain ``(label, css_class, extra_attrs)`` tuples
     are accepted as unsortable columns."""
-    columns = [Column(*header) for header in headers]
+    columns = [header if isinstance(header, Column) else Column(*header) for header in headers]
     head = "".join(header_cell(column) for column in columns)
 
     body = "".join(
