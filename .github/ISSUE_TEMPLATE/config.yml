@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Handler guide
+    url: https://github.com/iSayZes/BDO-PAZ-Browser/blob/main/docs/handler.md
+    about: How to write a preview handler, with tests, companions, icons and localization.
+  - name: Report a security vulnerability
+    url: https://github.com/iSayZes/BDO-PAZ-Browser/security/advisories/new
+    about: Report security problems or Code of Conduct issues privately instead of opening an issue.
