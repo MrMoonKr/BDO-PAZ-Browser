@@ -104,6 +104,8 @@ All formats are little-endian. Unknown fields are named `unknown_*`.
 | `ui_skillgroup_awakening.bss` | Awakening skill window grid per class, same format as `ui_skillgroup_combat.bss` | [ui_skillgroup](file-formats/ui_skillgroup_bss.md) | 1 |
 | `ui_skillgroup_combat.bss` | Combat skill window grid per class: placed skill groups, drawing cells and named tabs | [ui_skillgroup](file-formats/ui_skillgroup_bss.md) | 1 |
 | `ui_skillgroup_succession.bss` | Succession skill window grids, same format; empty on client 3458 | [ui_skillgroup](file-formats/ui_skillgroup_bss.md) | 1 |
+| `worldmapmonster.dbss` | World map monster markers: Korean label lines and name (LOC type 40), world position, marker illustration and condition script | [worldmapmonster](file-formats/worldmapmonster_dbss.md) | 2 |
+| `worldmapmonsteroffset.dbss` | Bare u16-keyed index into `worldmapmonster.dbss` (no magic, no trailer), maps marker key → offset/size | [worldmapmonster](file-formats/worldmapmonster_dbss.md) | 2 |
 | `worldquest.dbss`                  | Empty world quest table placeholder with a zero record count                                                   | [worldquest](file-formats/worldquest_dbss.md)                       | 1              |
 | `zodiacsign.dbss`                  | Zodiac sign definitions, star coords, names, texture paths                                                    | [zodiacsign](file-formats/zodiacsign_dbss.md)                       | 0              |
 | `zodiacsignindex.bss`              | PABR display-order index mapping slot → zodiac ID for the 12 horoscope signs                                   | [zodiacsignindex](file-formats/zodiacsignindex_bss.md)              | 0              |
