@@ -35,6 +35,8 @@ class IconKind(Enum):
     FAIRY_EQUIP_SKILL = "fairy_equip_skill"
     SKILL = "skill"
     BUFF = "buff"
+    # Packed item keys (`enchant_level << 24 | item_id`), for per-level icons.
+    ITEM_KEY = "item_key"
 
 
 ITEM_ICON_DIR = "ui_texture/icon/new_icon/product_icon_png"
@@ -72,6 +74,7 @@ ICON_INDEXES: dict[IconKind, IndexKind] = {
     IconKind.CHARACTER: IndexKind.CHARACTER_ICON,
     IconKind.SKILL: IndexKind.SKILL_ICON,
     IconKind.BUFF: IndexKind.BUFF_ICON,
+    IconKind.ITEM_KEY: IndexKind.ITEM_KEY_ICON,
 }
 
 # Hand-curated fixes, checked into the repo rather than built from the PAZ.

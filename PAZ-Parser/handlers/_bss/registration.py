@@ -20,6 +20,7 @@ from .plantworkerpassiveskill.handler import PlantWorkerPassiveSkillBssHandler
 from .plantworkerselect.handler import PlantWorkerSelectBssHandler
 from .planttown.handler import PlantTownBssHandler
 from .skillgroup.handler import SkillGroupBssHandler
+from .specialenchantitem.handler import SpecialEnchantItemBssHandler
 from .titlecategory.handler import TitleCategoryBssHandler
 from .ui_skillgroup.handler import UiSkillGroupBssHandler
 from .zodiacsignindex.handler import ZodiacSignIndexHandler
@@ -48,6 +49,7 @@ def register_bss_handlers() -> None:
     register_handler("plantworkerselect.bss", PlantWorkerSelectBssHandler())
     register_handler("planttown.bss", PlantTownBssHandler())
     register_handler("skillgroup.bss", SkillGroupBssHandler())
+    register_handler("specialenchantitem.bss", SpecialEnchantItemBssHandler())
     register_handler("titlecategory.bss", TitleCategoryBssHandler())
     # One layout for the three skill windows.
     for window in ("combat", "awakening", "succession"):

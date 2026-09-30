@@ -63,8 +63,9 @@ def max_enchant_levels(offset_rows: list[dict]) -> dict[int, int]:
 def parse_itemenchant_records(data: bytes, offset_data: bytes) -> list[dict]:
     """Parse one row per item from its level-0 block, with its highest level.
 
-    Higher levels repeat the base item's icon, and what else differs per level
-    is not decoded, so they only contribute `max_enchant_level`. The first
+    Higher levels mostly repeat the base item's icon (the items of
+    `specialenchantitem.bss` store their own per level), and what else differs
+    per level is not decoded, so they only contribute `max_enchant_level`. The first
     string in a block is always the icon path; what the optional second string
     (e.g. `ITEM_BIC_HIT_1`) means is unconfirmed.
     """
@@ -101,8 +102,9 @@ def parse_itemenchant_records(data: bytes, offset_data: bytes) -> list[dict]:
 def build_item_icon_index(data: bytes, offset_data: bytes) -> dict[int, str]:
     """Map item ID to icon path using only the level-0 (base item) records.
 
-    Higher levels repeat the base item's icon, so skipping them cuts the
-    work to a third without losing an entry.
+    Higher levels mostly repeat the base item's icon, so skipping them cuts
+    the work to a third. The per-level icons of the items that change icon come
+    from `specialenchantitem.bss` instead (`IndexKind.ITEM_KEY_ICON`).
     """
     index: dict[int, str] = {}
 

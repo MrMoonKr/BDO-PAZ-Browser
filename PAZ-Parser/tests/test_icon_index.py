@@ -9,6 +9,7 @@ from _common.icon_index import (
     icon_path,
     indexed_icon_path,
 )
+from _common.item_key import item_key_icon_path
 from _common.lookup_index import IndexKind, clear_indexes, init_index
 
 _KING_CLAM = 24626
@@ -178,3 +179,29 @@ def test_borrow_leaves_the_input_untouched() -> None:
     _borrow(own, {_FENCE_ICON})
 
     assert own == {}
+
+
+# Sovereign Longsword: the level-10 key has an icon of its own, level 3 does not.
+_SOVEREIGN_LONGSWORD = 747201
+_SOVEREIGN_LEVEL_10 = 10 << 24 | _SOVEREIGN_LONGSWORD
+_SOVEREIGN_LEVEL_3 = 3 << 24 | _SOVEREIGN_LONGSWORD
+_WEAPON_DIR = "ui_texture/icon/new_icon/06_pc_equipitem/00_common/01_weapon"
+
+
+def test_item_key_icon_prefers_the_level_icon() -> None:
+    init_index(IndexKind.ITEM_ICON, {_SOVEREIGN_LONGSWORD: f"{_WEAPON_DIR}/00747201.dds"})
+    init_index(IndexKind.ITEM_KEY_ICON, {_SOVEREIGN_LEVEL_10: f"{_WEAPON_DIR}/00747201_02.dds"})
+
+    assert item_key_icon_path(_SOVEREIGN_LEVEL_10) == f"{_WEAPON_DIR}/00747201_02.dds"
+
+
+def test_item_key_icon_falls_back_to_the_item_icon() -> None:
+    init_index(IndexKind.ITEM_ICON, {_SOVEREIGN_LONGSWORD: f"{_WEAPON_DIR}/00747201.dds"})
+    init_index(IndexKind.ITEM_KEY_ICON, {_SOVEREIGN_LEVEL_10: f"{_WEAPON_DIR}/00747201_02.dds"})
+
+    assert item_key_icon_path(_SOVEREIGN_LEVEL_3) == f"{_WEAPON_DIR}/00747201.dds"
+    assert item_key_icon_path(_SOVEREIGN_LONGSWORD) == f"{_WEAPON_DIR}/00747201.dds"
+
+
+def test_item_key_icon_without_indexes_derives_from_the_item_id() -> None:
+    assert item_key_icon_path(_SOVEREIGN_LEVEL_3) == f"{ITEM_ICON_DIR}/00747201.png"

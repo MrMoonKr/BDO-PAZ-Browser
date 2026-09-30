@@ -745,7 +745,7 @@ _common/
 ├── pabr_offset.py       # offset companions: u16 or u32 keys, with or without PABR magic
 ├── prefixed_string.py   # length-prefixed strings: strict and lenient readers
 ├── inline_text.py       # decode_inline_text(): the stored \n escape of inline text
-├── item_key.py          # item keys (enchant_level << 24 | item_id) and LOC type 0 names
+├── item_key.py          # item keys (enchant_level << 24 | item_id), LOC type 0 names, per-level icons
 ├── record_reader.py     # RecordReader: walks one variable-length record in order
 └── skill.py             # skill keys (skill_no << 16 | level) and LOC type 10 names
 ```
@@ -842,6 +842,7 @@ IDs (`LookupValue`).
 | `SKILL_ICON`     | `skilltype.dbss`, `skilltypeoffset.dbss`   | icon path      |
 | `SKILL_NAME_KR`  | `skilltype.dbss`, `skilltypeoffset.dbss`   | Korean name    |
 | `BUFF_ICON`      | `buffsimply.bss`                           | icon path      |
+| `ITEM_KEY_ICON`  | `specialenchantitem.bss`                   | icon path      |
 | `PRODUCTION_ITEMS` | `plantexchangegroup.bss`, `itemsubgroup.dbss`, `itemsubgroupoffset.dbss` | item keys (tuple) |
 
 `CHARACTER_ITEM` maps a character to the one base item that places or summons
@@ -878,6 +879,17 @@ placeholder are left out. Read it through `IconKind.BUFF`; nothing does yet,
 the Buffs column of `skill.dbss` and a future item to buff link are the
 intended readers. `buff_icon_path()` in `_common/buff.py` normalizes the
 stored paths for both buff tables.
+
+`ITEM_KEY_ICON` maps a packed item key (`enchant_level << 24 | item_id`) to
+the icon of that level, for the 551 items whose icon or name changes with
+their level (Sovereign weapons, Fallen God armor, PEN Nouver sub-weapons). It
+reads [specialenchantitem.bss](file-formats/specialenchantitem_bss.md), which
+copies those per-level icons out of `itemenchant.dbss` in fixed 19-byte rows
+(175 KB); `ITEM_ICON` reads level-0 blocks only and cannot reach them. Read it
+through `item_key_icon_path(item_key)` in `_common/item_key.py`, which falls
+back to the item's own `IconKind.ITEM` icon for every other key. Nothing reads
+it yet: item key lists (the `itemsubgroup.dbss` and production item columns)
+show names only, and a list cell needs a way to show an icon per entry first.
 
 `PRODUCTION_ITEMS` maps a worker production key to the packed item keys
 (`enchant_level << 24 | item_id`) of its
@@ -940,6 +952,7 @@ exists. The cached `CHARACTER_ICON` index already holds the borrowed icons.
 | `FAIRY_EQUIP_SKILL` | none                    | 0       | `08_servant_skill/02_pet` |
 | `SKILL`             | `skilltype.dbss`        | 9,402   | none                      |
 | `BUFF`              | `buffsimply.bss`        | 15,076  | none                      |
+| `ITEM_KEY`          | `specialenchantitem.bss` | 3,081  | none; `item_key_icon_path()` falls back to `ITEM` |
 
 ### Fixing an icon by hand
 
@@ -1016,8 +1029,8 @@ no items that `itemenchant.dbss` does not already cover.
 
 Handlers that read an icon path stored in their own records, such as `pet.dbss`,
 `petaction.dbss`, `quest.dbss`, `plantworker.bss`, `itemenchant.dbss`,
-`cashproduct.dbss`, `buff.dbss` and `buffsimply.bss`, keep using that path directly. It is already authoritative,
-and for `itemenchant`, `quest` and `buffsimply` the index is built from it, so routing those
+`cashproduct.dbss`, `buff.dbss`, `buffsimply.bss` and `specialenchantitem.bss`, keep using that path directly. It is already authoritative,
+and for `itemenchant`, `quest`, `buffsimply` and `specialenchantitem` the index is built from it, so routing those
 through `icon_path()` would be circular.
 
 ---

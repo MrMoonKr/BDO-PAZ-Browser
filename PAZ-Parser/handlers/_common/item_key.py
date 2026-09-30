@@ -7,10 +7,15 @@ pack an item and its enhancement level into one key:
 
 Level 0 is the base item. LOC type 0 names an item by its ID alone, so every
 level of one item shares a name. See docs/file-formats/itemenchant_dbss.md.
+
+A few hundred items also change icon with their level (Sovereign weapons,
+Fallen God armor); `item_key_icon_path()` picks that icon when there is one.
+See docs/file-formats/specialenchantitem_bss.md.
 """
 
 from __future__ import annotations
 
+from _common.icon_index import IconKind, icon_path
 from _common.loc import loc_text
 
 LOC_ITEM_NAME = 0
@@ -27,6 +32,12 @@ def split_item_key(item_key: int) -> tuple[int, int]:
 def item_name(item_id: int) -> str:
     """LOC type 0 name of an item, or '' when it has none or LOC is not loaded."""
     return loc_text(LOC_ITEM_NAME, item_id)
+
+
+def item_key_icon_path(item_key: int) -> str:
+    """Icon of an item at its level: that level's own icon, else the item's icon."""
+    item_id, _ = split_item_key(item_key)
+    return icon_path(IconKind.ITEM_KEY, item_key) or icon_path(IconKind.ITEM, item_id)
 
 
 def item_key_text(item_key: int) -> str:

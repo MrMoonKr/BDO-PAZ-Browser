@@ -36,6 +36,8 @@ class IndexKind(Enum):
     # Korean skilltype.dbss names, the fallback when LOC type 10 has none.
     SKILL_NAME_KR = "skill_name_kr"
     BUFF_ICON = "buff_icon"
+    # Per-level icons of the items whose icon changes with their level.
+    ITEM_KEY_ICON = "item_key_icon"
     # Packed item keys a worker production key produces.
     PRODUCTION_ITEMS = "production_items"
 
