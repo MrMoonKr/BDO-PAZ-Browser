@@ -1,0 +1,114 @@
+# `submenu.bss` Format
+
+## Purpose
+
+The entries of the main menu (Esc menu) categories in
+[`menu.bss`](menu_bss.md): one 49-byte entry per menu item, grouped by
+category, with its title as a UI string key and its icon as a region of a
+shared sprite sheet.
+
+Example:
+
+```text
+entry 2, category 2 (Information), position 2
+  title  GAME / LUA_MENU_REMAKE_MENU_HELP -> "Adventurer's Guide (Help)"
+  icon   Combine/Icon/Combine_Title_Icon_00.dds, region (2, 457) to (57, 512)
+```
+
+---
+
+## Companion Files
+
+| File                  | Required | Role                                                                     |
+| --------------------- | -------- | ------------------------------------------------------------------------ |
+| `menu.bss`            | Optional | Category titles; `menu_id` names its row                                 |
+| `stringtable.bss`     | Optional | Hash of the title key in its sheet, for the LOC lookup                   |
+| `languagedata_en.loc` | Optional | Title text, LOC type 37 (`str_id1` = key hash, `str_id2` = sheet)        |
+
+All multi-byte values are little-endian.
+
+---
+
+## File Layout
+
+Groups of entries instead of fixed rows, then the shared PABR string table
+(`_common/pabr_strings.py`).
+
+| Offset  | Type    | Field        | Notes                                                            |
+| ------- | ------- | ------------ | ---------------------------------------------------------------- |
+| `+0x00` | char[4] | magic        | ASCII `PABR`                                                     |
+| `+0x04` | u32     | group_count  | Number of groups; 12 on client 3458, the same as `menu.bss` rows |
+| `+0x08` | group[] | groups       | Each is a u32 entry count, then that many 49-byte entries        |
+| ...     | table   | string_table | u32 count, then `count` x (u8 is_wide, u32 byte length, payload) |
+| EOF - 8 | u32     | table_start  | Offset of the string table, where the groups end                 |
+| EOF - 4 | u32     | zero         | Always 0                                                         |
+
+The groups follow the `menu.bss` categories from Information (menu 2) on;
+the last group is empty. Recently Used (menu 1) has no group of its own, so
+group `i` holds the entries of menu `i + 2`.
+
+---
+
+## Record Structure
+
+### Menu Entry (49 bytes)
+
+Fields are unaligned.
+
+| Offset  | Type | Field       | Notes                                                                 |
+| ------- | ---- | ----------- | --------------------------------------------------------------------- |
+| `+0x00` | u32  | entry_id    | Unique; 155 values on client 3458, not in group order                 |
+| `+0x04` | u32  | menu_id     | The `menu.bss` category                                               |
+| `+0x08` | u32  | position    | Position in the category, from 1                                      |
+| `+0x0C` | u64  | unknown_0c  | `0` on 111 entries; see Open Questions                                |
+| `+0x14` | u8   | unknown_14  | Always `0`                                                            |
+| `+0x15` | u32  | icon_ref    | String table index of the sprite sheet, relative to `ui_texture/`     |
+| `+0x19` | u32  | icon_x1     | Left edge of the icon region in the sheet, in pixels                  |
+| `+0x1D` | u32  | icon_y1     | Top edge                                                              |
+| `+0x21` | u32  | icon_x2     | Right edge; 151 of 155 regions are 55 x 55                            |
+| `+0x25` | u32  | icon_y2     | Bottom edge                                                           |
+| `+0x29` | u32  | sheet_ref   | String table index of the title key's sheet (`GAME` or `RESOURCE`)   |
+| `+0x2D` | u32  | key_ref     | String table index of the title key (`LUA_MENU_REMAKE_MENU_HELP`)    |
+
+### String Table
+
+159 strings on client 3458: the two sprite sheets of `menu.bss`, the sheet
+names `GAME` (91 entries) and `RESOURCE` (64), and one title key per entry.
+
+---
+
+## Suggested UI Layout
+
+| Column   | Type | Notes                                                                           |
+| -------- | ---- | ------------------------------------------------------------------------------- |
+| Entry ID | num  | `entry_id`; right-aligned                                                       |
+| Category | text | The `menu.bss` title of `menu_id`, else the ID                                  |
+| Position | num  | `position`                                                                      |
+| Icon     | text | The `icon_x1`/`icon_y1`/`icon_x2`/`icon_y2` region of the sheet                 |
+| Title    | text | LOC type 37 of the title key (see [stringtable.bss](stringtable_bss.md)), else the key |
+
+`unknown_0c` and `unknown_14` stay on the record but out of the table.
+
+---
+
+## Notes
+
+- The groups end exactly where the string table starts, and each group's
+  entry count equals the `submenu_count` of its `menu.bss` category.
+- 152 of the 155 title keys have LOC type 37 text on client 3458 through
+  their sheet's `str_id2` (`GAME` = 1, `RESOURCE` = 2).
+- Both sprite sheets ship under `ui_texture/combine/icon/`; four regions are
+  not 55 x 55 (55 x 57 twice, 55 x 49, 56 x 55).
+
+---
+
+## Open Questions
+
+### What does `unknown_0c` hold?
+
+It is `0` on 111 entries. On the other 44 the high word is a small number
+(96 to 120) and the low word looks random (`0x8E80E004` on Guild,
+`0xEF7A4404` on Settings). The set entries include newer or event windows
+(Solare rankings, Black Spirit Adventure, Special Pass, Ticket Shop), so it
+may mark a "new" badge or a content switch, but no value decodes as a date and
+nothing in the client files seen so far reads it.
