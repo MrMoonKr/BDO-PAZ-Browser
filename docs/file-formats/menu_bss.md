@@ -93,5 +93,7 @@ The shared PABR string table layout of `buffsimply.bss` and
 - The icons are 55 x 55 regions of two 1.5 MB sprite sheets, both shipped
   under `ui_texture/combine/icon/`, so a table needs to crop the region to
   show one.
-- No lookup index is built from this file: only `submenu.bss` names the menu
-  IDs.
+- The app indexes the icons by menu ID as a sprite kind: `IndexKind.MENU_ICON`
+  holds the sheet path and `IndexKind.MENU_ICON_REGION` the
+  `(x1, y1, x2, y2)` region, read through `icon_path()` and `icon_region()`
+  with `IconKind.MENU`.

@@ -61,3 +61,17 @@ def parse_mansionpartinfo_records(data: bytes) -> list[dict]:
             "unknown_str": string_at(strings, unknown_str_ref),
         })
     return records
+
+
+def manor_part_key(character_id: int, part_index: int) -> int:
+    """`IndexKind.MANOR_PART_ICON` key: the part above the u16 manor character."""
+    return part_index << 16 | character_id
+
+
+def build_manor_part_icon_index(data: bytes) -> dict[int, str]:
+    """Part icon path by `manor_part_key()`, for `IndexKind.MANOR_PART_ICON`."""
+    return {
+        manor_part_key(record["character_id"], record["part_index"]): record["icon_path"]
+        for record in parse_mansionpartinfo_records(data)
+        if record["icon_path"]
+    }

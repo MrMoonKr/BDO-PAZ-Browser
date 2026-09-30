@@ -40,6 +40,21 @@ def ensure_fixtures(case: HandlerCase) -> dict[str, Path]:
     return fixture_paths
 
 
+def load_binary_fixture(name: str) -> bytes:
+    """A `gamecommondata/binary` fixture, for a parser test without a handler."""
+    case = HandlerCase(
+        handler_name=name,
+        data_file=name,
+        companion_files={},
+        loc_file=None,
+        uses_loc=False,
+        loc_fields=[],
+        internal_path=f"gamecommondata/binary/{name}",
+        tests=[],
+    )
+    return ensure_fixtures(case)[name].read_bytes()
+
+
 def resolve_fixture_paths(case: HandlerCase) -> dict[str, Path]:
     paths: dict[str, Path] = {str(case.data_file): FIXTURES_DIR / case.data_file}
     for relative_path in case.companion_files.values():

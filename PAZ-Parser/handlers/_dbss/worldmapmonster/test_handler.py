@@ -17,6 +17,8 @@ from tests.framework import (
     run_case,
 )
 
+from _dbss.worldmapmonster.parser import build_worldmap_marker_icon_index
+
 
 _OFFSET_FILE = "worldmapmonsteroffset.dbss"
 _BOSS_DIR = "ui_texture/combine/etc/worldmapboss"
@@ -120,3 +122,11 @@ def test_worldmapmonsteroffset_dbss(spec: Any, offset_result: HandlerResult) -> 
 def test_every_marker_has_a_name(marker_result: HandlerResult) -> None:
     for record in marker_result.records:
         assert record["name_kr"], record["key"]
+
+
+def test_marker_icon_index_matches_the_icon_column(marker_result: HandlerResult) -> None:
+    """IndexKind.WORLDMAP_MARKER_ICON is this table's icons by key, without the empty ones."""
+    source = marker_result.source
+    index = build_worldmap_marker_icon_index(source.data, source.file(_OFFSET_FILE))
+
+    assert index == {r["key"]: r["icon_path"] for r in marker_result.records if r["icon_path"]}

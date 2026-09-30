@@ -99,6 +99,10 @@ names `GAME` (91 entries) and `RESOURCE` (64), and one title key per entry.
   their sheet's `str_id2` (`GAME` = 1, `RESOURCE` = 2).
 - Both sprite sheets ship under `ui_texture/combine/icon/`; four regions are
   not 55 x 55 (55 x 57 twice, 55 x 49, 56 x 55).
+- The app indexes the icons by entry ID as a sprite kind:
+  `IndexKind.SUBMENU_ICON` holds the sheet path and
+  `IndexKind.SUBMENU_ICON_REGION` the `(x1, y1, x2, y2)` region, read through
+  `icon_path()` and `icon_region()` with `IconKind.SUBMENU`.
 
 ---
 

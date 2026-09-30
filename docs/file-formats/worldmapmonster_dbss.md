@@ -114,7 +114,9 @@ stay on the record but out of the table.
   (17), `3` the keys from 10001 (20, Pilgrim's Sanctum and the Offering Site
   markers, whose icons are named `Combine_WorldMap_HardcoreServer_*`; the drop
   item window checks `ToClient_HardCoreChannelWithContensOption`), `4` world, field and hunting field bosses (15).
-- No lookup index is built from this file: no other table names these keys.
+- The app indexes the marker illustrations by key
+  (`IndexKind.WORLDMAP_MARKER_ICON`, read through `IconKind.WORLDMAP_MARKER`);
+  the 16 Abyssal Wells store none and are left out.
 
 ---
 

@@ -70,3 +70,15 @@ def parse_worldmapmonster_records(data: bytes, offset_data: bytes) -> list[dict]
     key other than its offset row's: then the layout has changed.
     """
     return [_parse_record(data, row) for row in parse_worldmapmonster_offset_rows(offset_data)]
+
+
+def build_worldmap_marker_icon_index(data: bytes, offset_data: bytes) -> dict[int, str]:
+    """Marker illustration by key, for `IndexKind.WORLDMAP_MARKER_ICON`.
+
+    The Abyssal Wells store no icon and are left out.
+    """
+    return {
+        record["key"]: record["icon_path"]
+        for record in parse_worldmapmonster_records(data, offset_data)
+        if record["icon_path"]
+    }

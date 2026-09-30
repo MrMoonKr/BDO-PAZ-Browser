@@ -15,6 +15,8 @@ from tests.framework import (
     run_case,
 )
 
+from _bss.mansionpartinfo.parser import build_manor_part_icon_index, manor_part_key
+
 
 _HOUSING_DIR = "ui_texture/icon/new_icon/03_etc/06_housing"
 # Shimhyangje, a Land of the Morning Light manor with a wall and a floor blueprint.
@@ -71,3 +73,20 @@ def test_shimhyangje_has_its_wall_and_floor(mansionpartinfo_result: HandlerResul
 def test_parts_are_unique_per_manor(mansionpartinfo_result: HandlerResult) -> None:
     keys = [(r["character_id"], r["part_index"]) for r in mansionpartinfo_result.records]
     assert len(keys) == len(set(keys))
+
+
+def test_manor_part_icon_index_matches_the_icon_column(
+    mansionpartinfo_result: HandlerResult,
+) -> None:
+    """IndexKind.MANOR_PART_ICON is this table's icons by manor_part_key()."""
+    index = build_manor_part_icon_index(mansionpartinfo_result.source.data)
+
+    assert index == {
+        manor_part_key(r["character_id"], r["part_index"]): r["icon_path"]
+        for r in mansionpartinfo_result.records
+    }
+
+
+def test_manor_part_key_keeps_the_character_in_the_low_word() -> None:
+    assert manor_part_key(_SHIMHYANGJE, 1) & 0xFFFF == _SHIMHYANGJE
+    assert manor_part_key(_SHIMHYANGJE, 1) >> 16 == 1

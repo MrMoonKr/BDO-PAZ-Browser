@@ -37,6 +37,14 @@ class IconKind(Enum):
     BUFF = "buff"
     # Packed item keys (`enchant_level << 24 | item_id`), for per-level icons.
     ITEM_KEY = "item_key"
+    # Kinds whose icons only their own table shows today, indexed for later use.
+    QUEST_ARTWORK = "quest_artwork"
+    MANOR_PART = "manor_part"
+    CUTSCENE = "cutscene"
+    WORLDMAP_MARKER = "worldmap_marker"
+    # Sprite kinds: icon_path() gives the sheet, icon_region() the region.
+    MENU = "menu"
+    SUBMENU = "submenu"
 
 
 ITEM_ICON_DIR = "ui_texture/icon/new_icon/product_icon_png"
@@ -75,7 +83,22 @@ ICON_INDEXES: dict[IconKind, IndexKind] = {
     IconKind.SKILL: IndexKind.SKILL_ICON,
     IconKind.BUFF: IndexKind.BUFF_ICON,
     IconKind.ITEM_KEY: IndexKind.ITEM_KEY_ICON,
+    IconKind.QUEST_ARTWORK: IndexKind.QUEST_ARTWORK_ICON,
+    IconKind.MANOR_PART: IndexKind.MANOR_PART_ICON,
+    IconKind.CUTSCENE: IndexKind.CUTSCENE_ICON,
+    IconKind.WORLDMAP_MARKER: IndexKind.WORLDMAP_MARKER_ICON,
+    IconKind.MENU: IndexKind.MENU_ICON,
+    IconKind.SUBMENU: IndexKind.SUBMENU_ICON,
 }
+
+# The sprite region of each sprite kind, as (x1, y1, x2, y2) pixels in the
+# sheet icon_path() returns. Kinds absent here are whole-file icons.
+ICON_REGION_INDEXES: dict[IconKind, IndexKind] = {
+    IconKind.MENU: IndexKind.MENU_ICON_REGION,
+    IconKind.SUBMENU: IndexKind.SUBMENU_ICON_REGION,
+}
+
+IconRegion = tuple[int, int, int, int]
 
 # Hand-curated fixes, checked into the repo rather than built from the PAZ.
 # They win over the index, because they exist precisely to correct it.
@@ -165,6 +188,19 @@ def indexed_icon_path(kind: IconKind, entity_id: int) -> str:
 
     stored = lookup(index_kind, entity_id)
     return stored if isinstance(stored, str) else ""
+
+
+def icon_region(kind: IconKind, entity_id: int) -> IconRegion | None:
+    """The sprite region of an icon, or None for whole-file icons and misses."""
+    index_kind = ICON_REGION_INDEXES.get(kind)
+    if index_kind is None:
+        return None
+
+    stored = lookup(index_kind, entity_id)
+    if not isinstance(stored, tuple) or len(stored) != 4:
+        return None
+    x1, y1, x2, y2 = stored
+    return x1, y1, x2, y2
 
 
 def derive_icon_path(kind: IconKind, entity_id: int) -> str:

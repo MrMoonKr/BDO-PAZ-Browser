@@ -91,5 +91,5 @@ title. The four icons are stored once each.
   `SymbolIcon_AbyssOne.dds` (The Magnus, 19), `SymbolIcon_Valenos.dds`
   (Balenos, 18) and `SymbolIcon_Feather.dds` (Atoraxxion, 15). All four
   exist under `ui_texture/combine/icon/symbolicon/`.
-- No lookup index is built from this file: no other table names these scene
-  IDs.
+- The app indexes the region icons by scene ID (`IndexKind.CUTSCENE_ICON`,
+  read through `IconKind.CUTSCENE`).

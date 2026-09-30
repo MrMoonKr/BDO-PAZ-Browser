@@ -70,3 +70,12 @@ def parse_questjournalvideoinfo_records(data: bytes) -> list[dict]:
             "unknown_0c": unknown_0c,
         })
     return records
+
+
+def build_quest_artwork_index(data: bytes) -> dict[int, str]:
+    """Journal artwork path by packed quest ID, for `IndexKind.QUEST_ARTWORK_ICON`."""
+    return {
+        record["packed_quest_id"]: record["artwork_path"]
+        for record in parse_questjournalvideoinfo_records(data)
+        if record["artwork_path"]
+    }

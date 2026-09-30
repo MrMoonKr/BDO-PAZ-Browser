@@ -96,9 +96,10 @@ used once.
   added (`morningland_boss_03_02.dds` -> `MorningLand_Boss_03_02_Full.dds`).
   The other six use a different name (8551/3 shows `8551_4_Full.dds`;
   8543/9 has the icon `morninglandpt2_boss_8543_1.dds` but the artwork
-  `MorningLandPT2_Boss_8534_1_Full.dds`). No lookup index is built from this file: the quests
-  already have their icon, and the artwork is a page illustration, not an
-  icon.
+  `MorningLandPT2_Boss_8534_1_Full.dds`). The app indexes the artwork by packed quest ID
+  (`IndexKind.QUEST_ARTWORK_ICON`, read through `IconKind.QUEST_ARTWORK`),
+  apart from the quest icons: it is a page illustration, not the quest's
+  icon, so `QUEST_ICON` keeps its own paths.
 - On client 3458 all 80 videos exist as `ui_movie/pc/<video>.bk2` (lowercased),
   each with a `.srt` subtitle file beside it and `_de_`, `_fr_` and `_sp_`
   subtitle variants; the voice banks are `sound2022/windows/<language>/bink_<name>.bnk`.

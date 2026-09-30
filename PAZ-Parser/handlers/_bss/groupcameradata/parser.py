@@ -61,3 +61,12 @@ def parse_groupcameradata_records(data: bytes) -> list[dict]:
             "quote_kr": string_at(strings, quote_ref),
         })
     return records
+
+
+def build_cutscene_icon_index(data: bytes) -> dict[int, str]:
+    """Region symbol path by scene ID, for `IndexKind.CUTSCENE_ICON`."""
+    return {
+        record["scene_id"]: record["icon_path"]
+        for record in parse_groupcameradata_records(data)
+        if record["icon_path"]
+    }

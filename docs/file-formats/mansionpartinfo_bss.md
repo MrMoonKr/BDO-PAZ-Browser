@@ -93,7 +93,10 @@ string that every `unknown_str_ref` points at.
   by kind: Shimhyangje's part 0 is its wall, the other two start with the
   floor. Blue Maned Lion's Manor highlights one wing per picture instead.
 - All nine icons exist once resolved under `ui_texture/` and lowercased.
-- No lookup index is built from this file: no other table names manor parts.
+- The app indexes the part icons (`IndexKind.MANOR_PART_ICON`, read through
+  `IconKind.MANOR_PART`) by `manor_part_key()`, `part_index << 16 |
+  character_id`. They are blueprints of a part, so they never replace the
+  manor's own `characterstatic.dbss` icon.
 
 ---
 

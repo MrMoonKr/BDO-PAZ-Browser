@@ -17,6 +17,8 @@ from tests.framework import (
     run_case,
 )
 
+from _bss.questjournalvideoinfo.parser import build_quest_artwork_index
+
 
 # [Storybook] Tale of the Mudang Wraith, the first journal video page.
 _MUDANG_CHAIN = 8700
@@ -84,3 +86,14 @@ def test_every_row_names_a_video_and_an_artwork(
 def test_each_quest_has_one_page(questjournalvideoinfo_result: HandlerResult) -> None:
     keys = [record["packed_quest_id"] for record in questjournalvideoinfo_result.records]
     assert len(keys) == len(set(keys))
+
+
+def test_quest_artwork_index_matches_the_artwork_column(
+    questjournalvideoinfo_result: HandlerResult,
+) -> None:
+    """IndexKind.QUEST_ARTWORK_ICON is this table's artwork by packed quest ID."""
+    index = build_quest_artwork_index(questjournalvideoinfo_result.source.data)
+
+    assert index == {
+        r["packed_quest_id"]: r["artwork_path"] for r in questjournalvideoinfo_result.records
+    }

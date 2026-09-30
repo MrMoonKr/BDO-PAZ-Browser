@@ -17,8 +17,13 @@ from typing import cast
 
 from _common.icon_index import borrow_icons
 from _bss.buffsimply.parser import build_buff_icon_index
+from _bss.groupcameradata.parser import build_cutscene_icon_index
+from _bss.mansionpartinfo.parser import build_manor_part_icon_index
+from _bss.menu.parser import build_menu_icon_index, build_menu_icon_region_index
 from _bss.plantexchangegroup.parser import build_production_item_index
+from _bss.questjournalvideoinfo.parser import build_quest_artwork_index
 from _bss.specialenchantitem.parser import build_item_key_icon_index
+from _bss.submenu.parser import build_submenu_icon_index, build_submenu_icon_region_index
 from _common.lookup_index import IndexKind, LookupValue
 from _dbss.characterobject.parser import build_character_icon_index
 from _dbss.characterstatic.parser import build_knowledge_character_index
@@ -26,6 +31,7 @@ from _dbss.detail_dialog.parser import build_character_lease_index
 from _dbss.itemenchant.parser import build_character_item_index, build_item_icon_index
 from _dbss.quest.parser import build_quest_icon_index
 from _dbss.skilltype.parser import build_skill_icon_index, build_skill_name_index
+from _dbss.worldmapmonster.parser import build_worldmap_marker_icon_index
 from paz.bdo_index_cache import CachedIndexes, builder_fingerprint
 
 _BINARY = "gamecommondata/binary"
@@ -43,6 +49,13 @@ SKILLTYPE = f"{_BINARY}/skilltype.dbss"
 SKILLTYPE_OFFSET = f"{_BINARY}/skilltypeoffset.dbss"
 BUFFSIMPLY = f"{_BINARY}/buffsimply.bss"
 SPECIALENCHANTITEM = f"{_BINARY}/specialenchantitem.bss"
+QUESTJOURNALVIDEOINFO = f"{_BINARY}/questjournalvideoinfo.bss"
+MANSIONPARTINFO = f"{_BINARY}/mansionpartinfo.bss"
+GROUPCAMERADATA = f"{_BINARY}/groupcameradata.bss"
+WORLDMAPMONSTER = f"{_BINARY}/worldmapmonster.dbss"
+WORLDMAPMONSTER_OFFSET = f"{_BINARY}/worldmapmonsteroffset.dbss"
+MENU = f"{_BINARY}/menu.bss"
+SUBMENU = f"{_BINARY}/submenu.bss"
 PLANTEXCHANGEGROUP = f"{_BINARY}/plantexchangegroup.bss"
 ITEMSUBGROUP = f"{_BINARY}/itemsubgroup.dbss"
 ITEMSUBGROUP_OFFSET = f"{_BINARY}/itemsubgroupoffset.dbss"
@@ -87,6 +100,19 @@ INDEX_SPECS: tuple[IndexSpec, ...] = (
     IndexSpec(IndexKind.BUFF_ICON, (BUFFSIMPLY,), build_buff_icon_index),
     # The per-level icons of itemenchant.dbss for the items that change icon, 175 KB.
     IndexSpec(IndexKind.ITEM_KEY_ICON, (SPECIALENCHANTITEM,), build_item_key_icon_index),
+    # Icons only their own tables show today, a few KB each, indexed for later use.
+    IndexSpec(IndexKind.QUEST_ARTWORK_ICON, (QUESTJOURNALVIDEOINFO,), build_quest_artwork_index),
+    IndexSpec(IndexKind.MANOR_PART_ICON, (MANSIONPARTINFO,), build_manor_part_icon_index),
+    IndexSpec(IndexKind.CUTSCENE_ICON, (GROUPCAMERADATA,), build_cutscene_icon_index),
+    IndexSpec(
+        IndexKind.WORLDMAP_MARKER_ICON,
+        (WORLDMAPMONSTER, WORLDMAPMONSTER_OFFSET),
+        build_worldmap_marker_icon_index,
+    ),
+    IndexSpec(IndexKind.MENU_ICON, (MENU,), build_menu_icon_index),
+    IndexSpec(IndexKind.MENU_ICON_REGION, (MENU,), build_menu_icon_region_index),
+    IndexSpec(IndexKind.SUBMENU_ICON, (SUBMENU,), build_submenu_icon_index),
+    IndexSpec(IndexKind.SUBMENU_ICON_REGION, (SUBMENU,), build_submenu_icon_region_index),
     # A few hundred production subgroups out of the 13 MB itemsubgroup.dbss.
     IndexSpec(
         IndexKind.PRODUCTION_ITEMS,

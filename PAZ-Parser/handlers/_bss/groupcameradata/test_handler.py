@@ -16,6 +16,8 @@ from tests.framework import (
     run_case,
 )
 
+from _bss.groupcameradata.parser import build_cutscene_icon_index
+
 
 _SYMBOL_DIR = "ui_texture/combine/icon/symbolicon"
 # Send Off, the Balenos scene after the Cron Period Journal.
@@ -79,3 +81,10 @@ def test_every_scene_has_korean_text_and_an_icon(groupcameradata_result: Handler
     for record in groupcameradata_result.records:
         assert record["title_kr"] and record["description_kr"], record["scene_id"]
         assert record["icon_path"].startswith(f"{_SYMBOL_DIR}/"), record["scene_id"]
+
+
+def test_cutscene_icon_index_matches_the_icon_column(groupcameradata_result: HandlerResult) -> None:
+    """IndexKind.CUTSCENE_ICON is this table's icons by scene ID."""
+    index = build_cutscene_icon_index(groupcameradata_result.source.data)
+
+    assert index == {r["scene_id"]: r["icon_path"] for r in groupcameradata_result.records}

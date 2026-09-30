@@ -7,6 +7,7 @@ from _common.icon_index import (
     IconKind,
     derive_icon_path,
     icon_path,
+    icon_region,
     indexed_icon_path,
 )
 from _common.item_key import item_key_icon_path
@@ -205,3 +206,22 @@ def test_item_key_icon_falls_back_to_the_item_icon() -> None:
 
 def test_item_key_icon_without_indexes_derives_from_the_item_id() -> None:
     assert item_key_icon_path(_SOVEREIGN_LEVEL_3) == f"{ITEM_ICON_DIR}/00747201.png"
+
+
+_TITLE_SHEET = "ui_texture/combine/icon/combine_title_icon_00.dds"
+
+
+def test_sprite_kinds_give_the_sheet_and_the_region() -> None:
+    init_index(IndexKind.MENU_ICON, {2: _TITLE_SHEET})
+    init_index(IndexKind.MENU_ICON_REGION, {2: (2, 457, 57, 512)})
+
+    assert icon_path(IconKind.MENU, 2) == _TITLE_SHEET
+    assert icon_region(IconKind.MENU, 2) == (2, 457, 57, 512)
+
+
+def test_region_is_none_for_whole_file_kinds_and_misses() -> None:
+    init_index(IndexKind.MENU_ICON_REGION, {2: (2, 457, 57, 512)})
+
+    assert icon_region(IconKind.MENU, 3) is None
+    assert icon_region(IconKind.SUBMENU, 2) is None
+    assert icon_region(IconKind.ITEM, 2) is None

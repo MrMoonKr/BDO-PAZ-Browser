@@ -38,6 +38,17 @@ class IndexKind(Enum):
     BUFF_ICON = "buff_icon"
     # Per-level icons of the items whose icon changes with their level.
     ITEM_KEY_ICON = "item_key_icon"
+    # Journal page artwork by packed quest ID, not the quest's own icon.
+    QUEST_ARTWORK_ICON = "quest_artwork_icon"
+    # Manor part blueprints by manor_part_key(character_id, part).
+    MANOR_PART_ICON = "manor_part_icon"
+    CUTSCENE_ICON = "cutscene_icon"
+    WORLDMAP_MARKER_ICON = "worldmap_marker_icon"
+    # Sprite sheet paths; the *_REGION kinds hold (x1, y1, x2, y2) in the sheet.
+    MENU_ICON = "menu_icon"
+    MENU_ICON_REGION = "menu_icon_region"
+    SUBMENU_ICON = "submenu_icon"
+    SUBMENU_ICON_REGION = "submenu_icon_region"
     # Packed item keys a worker production key produces.
     PRODUCTION_ITEMS = "production_items"
 

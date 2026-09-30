@@ -843,6 +843,12 @@ IDs (`LookupValue`).
 | `SKILL_NAME_KR`  | `skilltype.dbss`, `skilltypeoffset.dbss`   | Korean name    |
 | `BUFF_ICON`      | `buffsimply.bss`                           | icon path      |
 | `ITEM_KEY_ICON`  | `specialenchantitem.bss`                   | icon path      |
+| `QUEST_ARTWORK_ICON` | `questjournalvideoinfo.bss`            | artwork path   |
+| `MANOR_PART_ICON` | `mansionpartinfo.bss`                     | icon path      |
+| `CUTSCENE_ICON`  | `groupcameradata.bss`                      | icon path      |
+| `WORLDMAP_MARKER_ICON` | `worldmapmonster.dbss`, `worldmapmonsteroffset.dbss` | icon path |
+| `MENU_ICON`, `SUBMENU_ICON` | `menu.bss`, `submenu.bss`       | sprite sheet path |
+| `MENU_ICON_REGION`, `SUBMENU_ICON_REGION` | `menu.bss`, `submenu.bss` | `(x1, y1, x2, y2)` |
 | `PRODUCTION_ITEMS` | `plantexchangegroup.bss`, `itemsubgroup.dbss`, `itemsubgroupoffset.dbss` | item keys (tuple) |
 
 `CHARACTER_ITEM` maps a character to the one base item that places or summons
@@ -890,6 +896,26 @@ through `item_key_icon_path(item_key)` in `_common/item_key.py`, which falls
 back to the item's own `IconKind.ITEM` icon for every other key. Nothing reads
 it yet: item key lists (the `itemsubgroup.dbss` and production item columns)
 show names only, and a list cell needs a way to show an icon per entry first.
+
+Six small tables are indexed although only their own handlers show their
+icons today, so a later table can reuse them without opening the source
+file. Each has its own icon kind, apart from the entity's real icon, so none
+of them changes an icon an existing table shows:
+
+- `QUEST_ARTWORK_ICON` (`IconKind.QUEST_ARTWORK`): the journal page artwork of
+  80 Land of the Morning Light quests by packed quest ID; mostly the `_Full`
+  version of the `QUEST_ICON` path.
+- `MANOR_PART_ICON` (`IconKind.MANOR_PART`): manor part blueprints (the building with one part highlighted) by
+  `manor_part_key(character_id, part_index)` from
+  `_bss/mansionpartinfo/parser.py`.
+- `CUTSCENE_ICON` (`IconKind.CUTSCENE`): the region symbol of each cutscene
+  skip summary by scene ID.
+- `WORLDMAP_MARKER_ICON` (`IconKind.WORLDMAP_MARKER`): world map marker art by
+  marker key; the Abyssal Wells store none.
+- `MENU_ICON` / `SUBMENU_ICON` (`IconKind.MENU` / `IconKind.SUBMENU`): the
+  main menu sprite sheet by menu or entry ID, with the region in
+  `MENU_ICON_REGION` / `SUBMENU_ICON_REGION` (see [Sprite Icons](#sprite-icons)).
+  `menu.bss` and `submenu.bss` have parsers but no handler yet.
 
 `PRODUCTION_ITEMS` maps a worker production key to the packed item keys
 (`enchant_level << 24 | item_id`) of its
@@ -953,6 +979,21 @@ exists. The cached `CHARACTER_ICON` index already holds the borrowed icons.
 | `SKILL`             | `skilltype.dbss`        | 9,402   | none                      |
 | `BUFF`              | `buffsimply.bss`        | 15,076  | none                      |
 | `ITEM_KEY`          | `specialenchantitem.bss` | 3,081  | none; `item_key_icon_path()` falls back to `ITEM` |
+| `QUEST_ARTWORK`     | `questjournalvideoinfo.bss` | 80  | none                      |
+| `MANOR_PART`        | `mansionpartinfo.bss`   | 9       | none                      |
+| `CUTSCENE`          | `groupcameradata.bss`   | 92      | none                      |
+| `WORLDMAP_MARKER`   | `worldmapmonster.dbss`  | 213     | none                      |
+| `MENU`              | `menu.bss` (sprite)     | 12      | none                      |
+| `SUBMENU`           | `submenu.bss` (sprite)  | 155     | none                      |
+
+### Sprite Icons
+
+Some icons are a region of a shared sprite sheet rather than a file of their
+own. For those kinds (`MENU`, `SUBMENU`) `icon_path()` returns the sheet and
+`icon_region(kind, id)` the `(x1, y1, x2, y2)` pixel region in it, from the
+kind's entry in `ICON_REGION_INDEXES`; it returns `None` for whole-file kinds
+and missing IDs. `icon_cell()` draws the whole file, so a table cannot show a
+sprite icon yet.
 
 ### Fixing an icon by hand
 
