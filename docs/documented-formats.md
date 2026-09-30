@@ -91,6 +91,7 @@ All formats are little-endian. Unknown fields are named `unknown_*`.
 | `skillsimplyoffset.dbss` | Bare u32-keyed index into `skillsimply.dbss` (no magic, no trailer) | [skillsimply](file-formats/skillsimply_dbss.md) | 1 |
 | `skilltype.dbss` | Presentation record of every skill: Korean name and family name, active/passive kind, icon path | [skilltype](file-formats/skilltype_dbss.md) | 1 |
 | `skilltypeoffset.dbss` | PABR index into `skilltype.dbss`, same layout as `skilloffset.dbss` | [skilltype](file-formats/skilltype_dbss.md) | 1 |
+| `specialenchantitem.bss` | PABR per-level table of the items whose name or icon changes with enhancement: item key, shown level, icon path and Korean name string indices | [specialenchantitem](file-formats/specialenchantitem_bss.md) | 1 |
 | `stringtable.bss` | Korean source of the keyed UI strings in eight sheets; each key's hash is the LOC type 37 `str_id1` | [stringtable](file-formats/stringtable_bss.md) | 2 |
 | `title.dbss`                       | Title record table (multiple layouts, embedded PAColor text)                                                   | [title](file-formats/title_dbss.md)                                 | 2              |
 | `titlebufflist.dbss`               | Title collection buff rewards (KR text + LOC tooltip match)                                                    | [titlebufflist](file-formats/titlebufflist_dbss.md)                 | 1              |

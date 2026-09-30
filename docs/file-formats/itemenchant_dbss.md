@@ -253,7 +253,7 @@ only approach that covers items whose icon is named after a 3D asset
 
 ## Suggested UI Layout
 
-One row per item, read from its level-0 block. Higher levels only feed Max Level: they repeat the icon, and nothing else in them is decoded yet. The offset table keeps one row per key, with an Enchant Level column.
+One row per item, read from its level-0 block. Higher levels only feed Max Level: most repeat the base icon, and nothing else in them is decoded yet. The 551 items of [specialenchantitem.bss](specialenchantitem_bss.md) are the exception: their level blocks store the icon of that level, which differs from the base icon in 1,356 of their 3,081 keys on client 3458, and that file holds the same paths in fixed rows. The offset table keeps one row per key, with an Enchant Level column.
 
 | Column        | Type | Notes                                             |
 | ------------- | ---- | ------------------------------------------------- |
