@@ -84,6 +84,7 @@ All formats are little-endian. Unknown fields are named `unknown_*`.
 | `plantzoneoffset.dbss`             | Offset index into `plantzone.dbss`, maps record ID → offset/size                                              | [plantzone](file-formats/plantzone_dbss.md)                         | 4              |
 | `quest.dbss`                       | Variable-length quest definitions with scripts, objectives, and icon paths                                     | [quest](file-formats/quest_dbss.md)                                 | 9              |
 | `questgroup.dbss`                  | Quest chain/group table with Korean names and child quest ID links                                             | [questgroup](file-formats/questgroup_dbss.md)                       | 1              |
+| `questjournalvideoinfo.bss` | PABR list of the Morning Light journal video pages: quest ID, Bink video name and full-size artwork path | [questjournalvideoinfo](file-formats/questjournalvideoinfo_bss.md) | 1 |
 | `skill.dbss` | Rule record of every skill rank: cooldown, applied buff IDs, effect script, next ranks and Core base skill | [skill](file-formats/skill_dbss.md) | 2 |
 | `skillgroup.bss` | Skill window groups, each listing the skill keys of its ranks in order | [skillgroup](file-formats/skillgroup_bss.md) | 0 |
 | `skilloffset.dbss` | PABR index into `skill.dbss`, maps skill_key (skill_no << 16 \| level) → offset/size | [skill](file-formats/skill_dbss.md) | 2 |
