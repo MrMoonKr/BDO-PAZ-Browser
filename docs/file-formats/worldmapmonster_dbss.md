@@ -72,7 +72,7 @@ for the wide ones, ASCII for the icon path (`RecordReader`).
 | 6     | string      | icon         | Marker illustration relative to `ui_texture/`; empty on the 16 Abyssal Wells |
 | 7     | wide string | condition    | Condition script, empty on 165 records (`getknowledge(10497);`, `!checkFieldType(hadumField);`, `getlevel()>59;`) |
 | 8     | wide string | unknown_str  | Always empty                                                          |
-| 9     | i32         | unknown_ref  | `-1` on 120 records, else a small number; see Open Questions          |
+| 9     | i32         | unknown_ref  | `-1` on 120 records; on hunting zones the drop window hunting ground ID, see Notes |
 | 10    | u8          | unknown_kind | 0 to 4, groups the markers; see Open Questions                        |
 | 11    | u8          | unknown_flag | Always `1`                                                            |
 | 12    | u8          | reserved     | Always `0`                                                            |
@@ -114,6 +114,29 @@ stay on the record but out of the table.
   (17), `3` the keys from 10001 (20, Pilgrim's Sanctum and the Offering Site
   markers, whose icons are named `Combine_WorldMap_HardcoreServer_*`; the drop
   item window checks `ToClient_HardCoreChannelWithContensOption`), `4` world, field and hunting field bosses (15).
+- On hunting zones (`unknown_kind` 0) `unknown_ref` is the hunting ground ID
+  of `dropuihuntinggroundinfo.bss`, the drop item window's hunting ground
+  table. All 92 hunting zones that set it point at the row of the same place
+  on client 3458: 87 by name (`바실리스크 소굴` -> hunting ground 35,
+  `바실리스크 소굴`), the other five under another name for that place
+  (`하스라 고대 유적` -> `하스라 절벽`, `트롤 서식지` -> `귄트 언덕 [엘비아]`,
+  `시크라이아 해저 유적` -> `시크라이아 유적 상층부`, `카드리 무리` ->
+  `카드리 폐허`, `외눈박이 거인` -> `외눈박이 땅 [데키아의 등불]`). The other 69
+  hunting zones store `-1`: the older level-range markers that a newer AP
+  marker replaced (Biraghi Den is key 8 with `-1` and key 115 with hunting
+  ground 62), the sea zones (Margoria, sea monster habitats), the god and
+  demonlord markers, and a few single zones such as Lyngbakr Habitat and the
+  Griffon Stations. Field name kept as `unknown_ref` because it means something else
+  on the Black Shrine markers (`unknown_kind` 2): `1` to `9` on the nine
+  Black Shrine bosses and `0` on the eight Land of the Morning Light world
+  and party bosses.
+- The drop window groups those hunting grounds the way Garmoth's grind spot
+  list does: a region tab per row (13 tabs, Balenos to Inner Edania) and the
+  filters of `dropuisubcategoryinfo.bss` (`파티 사냥터` party, `엘비아의 영역`
+  Elvia, `마르니의 밀실` Marni's Realm, `데키아의 등불` and `데키아의 등불 II`
+  Dehkia, `추천` recommended, `지역 의뢰` regional requests). Every Garmoth
+  grind spot found here by name (58 of its 95) is an `unknown_kind` 0 marker
+  with a hunting ground.
 - The app indexes the marker illustrations by key
   (`IndexKind.WORLDMAP_MARKER_ICON`, read through `IconKind.WORLDMAP_MARKER`);
   the 16 Abyssal Wells store none and are left out.
@@ -122,14 +145,17 @@ stay on the record but out of the table.
 
 ## Open Questions
 
-### What does `unknown_ref` point at?
+### What does `unknown_ref` hold on Black Shrine markers?
 
-It is `-1` on 120 records. The 92 hunting zones that set it use distinct
-values from 1 to 119, and the 17 Black Shrine bosses use 0 to 9. It may be the
-hunting ground index of the drop item window, which links to these markers, but
-nothing in the client files seen so far names it.
+On hunting zones it is the drop window hunting ground (see Notes). The 17
+Black Shrine markers use `0` to `9` instead, `0` on the Land of the Morning
+Light world and party bosses and `1` to `9` once each on the Black Shrine
+bosses, which reads like a boss order or difficulty step; nothing names it.
 
 ### What names the `unknown_kind` values?
 
-The five values line up with the marker groups in Notes, but no Lua enum or
-string names them; the world map code that reads the file is engine side.
+The five values line up with the marker groups in Notes, and `0` is at least
+the hunting zones: every marker with a drop window hunting ground is `0`. No
+Lua enum or string names the values, and the world map code that reads the
+file is engine side. Garmoth's grind spot list only covers hunting zones, so
+it names none of the others.
