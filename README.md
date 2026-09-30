@@ -223,6 +223,7 @@ PAZ-Parser/
 ├── api/                    # pywebview JS API bridge
 │   ├── bdo_api.py          # Routing and dispatch
 │   ├── bdo_api_helpers.py  # Shared constants and utilities (_norm, _file_icon)
+│   ├── bdo_icon_thumbnail.py# Icon cell thumbnails, fast path for raw BGRA DDS
 │   ├── bdo_api_preview.py  # Preview assembly and entry loading (PreviewMixin)
 │   └── bdo_api_search.py   # File content search, single-file and cross-file (SearchMixin)
 │
@@ -232,6 +233,7 @@ PAZ-Parser/
 │   ├── bdo_meta_reader.py  # Meta file reader
 │   ├── bdo_payload_cache.py# LRU payload cache
 │   ├── bdo_payload_reader.py# Payload decompression + ICE decryption
+│   ├── bdo_thumbnail_cache.py# Icon thumbnail cache (SQLite, next to the PAZ files)
 │   ├── bdo_paz_extract.py  # File extraction logic
 │   └── bdo_paz_reader.py   # PAZ archive parser
 │

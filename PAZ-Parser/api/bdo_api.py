@@ -16,6 +16,7 @@ from .bdo_api_helpers import _DISK_VIRTUAL_PREFIX, _file_icon, _norm, path_match
 from .bdo_api_preview import PreviewMixin
 from .bdo_api_search import SearchMixin
 from paz.bdo_cache import load_cache, read_meta_version, save_cache
+from paz.bdo_thumbnail_cache import ThumbnailCache
 from paz.bdo_index_cache import load_index_cache, save_index_cache
 from bdo_models import PazEntry
 from paz.bdo_paz_extract import extract_entry, find_single_meta_file, parse_meta_file
@@ -197,6 +198,7 @@ class Api(PreviewMixin, SearchMixin):
         self._entry_map_lower = {path.lower(): entry for path, entry in self._entry_map.items()}
         self._icon_entry_cache.clear()
         self._icon_data_url_cache.clear()
+        self._open_thumbnail_cache(paz_root, current_version)
         self._tree_data = self._build_tree_data(entries)
         self._disk_companions = {}
         if load_loc:
@@ -204,6 +206,11 @@ class Api(PreviewMixin, SearchMixin):
         if load_indexes:
             self._load_lookup_indexes(current_version)
         return msg
+
+    def _open_thumbnail_cache(self, paz_root: Path, meta_version: int) -> None:
+        if self._thumbnail_cache is not None:
+            self._thumbnail_cache.close()
+        self._thumbnail_cache = ThumbnailCache(paz_root, meta_version)
 
     def _parse_with_ticker(self, meta_path: Path) -> list[PazEntry]:
         """Parse the meta file while pushing the elapsed time to the status bar."""

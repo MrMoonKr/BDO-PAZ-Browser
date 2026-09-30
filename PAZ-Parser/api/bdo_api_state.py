@@ -10,6 +10,7 @@ import webview
 
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
+from paz.bdo_thumbnail_cache import ThumbnailCache
 from table_sort import TableSort
 
 
@@ -30,6 +31,8 @@ class ApiState:
         self._entry_map_lower: dict[str, PazEntry] = {}
         self._icon_entry_cache: dict[str, PazEntry | None] = {}
         self._icon_data_url_cache: dict[str, str] = {}
+        self._icon_decode_lock = threading.Lock()
+        self._thumbnail_cache: ThumbnailCache | None = None
         self._tree_data: dict = {}
         self._disk_companions: dict[str, bytes] = {}
         self._status = "Open a PAZ folder to begin."

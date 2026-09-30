@@ -940,6 +940,17 @@ column read it that way.
 the UI lazily resolves it against the PAZ entry map when the cell scrolls into
 view, so a handler only has to emit a correct path string.
 
+The backend turns the file into a 64 x 64 PNG thumbnail
+(`api/bdo_icon_thumbnail.py`). Uncompressed 32-bit BGRA DDS files are wrapped
+straight into an image, because Pillow's own decoder takes seconds on the
+full-size art some tables use as icons (the 2560 x 1440 journal artwork).
+Thumbnails are built one at a time, since each JS call runs on its own thread
+and a screen of large textures would otherwise starve the window thread, and
+each finished one is stored in `paz_browser_thumbnails.sqlite` next to the PAZ
+files (`paz/bdo_thumbnail_cache.py`), cleared when the meta version changes. A
+large texture therefore costs its read (about 5 s for a 14 MB file, mostly ICE
+decryption) once per client version, not once per session.
+
 Icons are looked up by **kind and entity ID** through `_common/icon_index.py`,
 never by hand-written template:
 

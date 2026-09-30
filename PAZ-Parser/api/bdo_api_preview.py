@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import base64
-import io
 import time
 from pathlib import Path
 
@@ -9,6 +7,7 @@ import webview
 
 from .bdo_api_helpers import _DISK_VIRTUAL_PREFIX, _norm
 from .bdo_api_state import ApiState
+from .bdo_icon_thumbnail import thumbnail_data_url
 from .bdo_config import load_table_sort, save_table_sort, table_sort_file_key
 from bdo_models import PazEntry
 from paz.bdo_payload_cache import cached_read_entry_payload
@@ -27,12 +26,6 @@ from table_sort import TableSort
 
 _hex_handler = HexHandler()
 _HEX_BYTES_PER_PAGE = HEX_ROWS_PER_PAGE * 16
-_IMAGE_DATA_MIME_BY_EXT = {
-    ".gif": "image/gif",
-    ".jpg": "image/jpeg",
-    ".jpeg": "image/jpeg",
-    ".png": "image/png",
-}
 
 # Some icons exist only under a prefixed filename in the same folder. Handlers
 # emit the canonical unprefixed path, so try these siblings before the much
@@ -90,40 +83,43 @@ class PreviewMixin(ApiState):
         if not norm:
             return {"error": "Icon path is empty"}
 
-        cache = self._icon_data_url_cache
-        if norm in cache:
-            return {"url": cache[norm]}
+        url = self._cached_icon_url(norm)
+        if url is not None:
+            return {"url": url}
 
-        entry = self._resolve_icon_entry(norm)
-        if entry is None:
-            # The UI renders a dash for a miss, so report it rather than
-            # substituting art for an icon the client does not ship.
-            return {"error": f"Icon entry not found: {icon_path}"}
+        # One decode at a time. Every JS call runs in its own thread, and a
+        # screen of large textures would otherwise start dozens of pure-Python
+        # decrypts at once and starve the window thread of the GIL.
+        with self._icon_decode_lock:
+            url = self._cached_icon_url(norm)
+            if url is not None:
+                return {"url": url}
 
-        try:
-            data = self.read_entry(entry.internal_path)
-            ext = Path(entry.internal_path).suffix.lower()
-            mime = _IMAGE_DATA_MIME_BY_EXT.get(ext)
-            if mime is not None:
-                b64 = base64.b64encode(data).decode("ascii")
-                url = f"data:{mime};base64,{b64}"
-            else:
-                try:
-                    from PIL import Image
-                except ImportError:
-                    return {"error": "Pillow not installed"}
+            entry = self._resolve_icon_entry(norm)
+            if entry is None:
+                # The UI renders a dash for a miss, so report it rather than
+                # substituting art for an icon the client does not ship.
+                return {"error": f"Icon entry not found: {icon_path}"}
 
-                img = Image.open(io.BytesIO(data)).convert("RGBA")
-                img.thumbnail((64, 64))
-                buf = io.BytesIO()
-                img.save(buf, format="PNG")
-                b64 = base64.b64encode(buf.getvalue()).decode("ascii")
-                url = f"data:image/png;base64,{b64}"
-        except Exception as ex:
-            return {"error": str(ex)}
+            try:
+                data = self.read_entry(entry.internal_path)
+                url = thumbnail_data_url(data, Path(entry.internal_path).suffix)
+            except Exception as ex:
+                return {"error": str(ex)}
 
-        cache[norm] = url
+            self._icon_data_url_cache[norm] = url
+            if self._thumbnail_cache is not None:
+                self._thumbnail_cache.put(norm, url)
         return {"url": url}
+
+    def _cached_icon_url(self, norm: str) -> str | None:
+        """A finished thumbnail from this session or the disk cache, else None."""
+        url = self._icon_data_url_cache.get(norm)
+        if url is None and self._thumbnail_cache is not None:
+            url = self._thumbnail_cache.get(norm)
+            if url is not None:
+                self._icon_data_url_cache[norm] = url
+        return url
 
     def _build_entry_response(
         self,
