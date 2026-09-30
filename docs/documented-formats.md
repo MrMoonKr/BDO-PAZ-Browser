@@ -35,6 +35,7 @@ All formats are little-endian. Unknown fields are named `unknown_*`.
 | `fairyskillchange.dbss`            | Fairy skill reroll cost, maps fairy level 1–50 to the Theiah's Orbs required (1–5)                            | [fairyskillchange](file-formats/fairyskillchange_dbss.md)           | 2              |
 | `fairyskillchangeoffset.dbss`      | Level-keyed offset index into `fairyskillchange.dbss`, maps fairy level → offset/size                          | [fairyskillchange](file-formats/fairyskillchange_dbss.md)           | 2              |
 | `fairyupgraderate.bss` | Fairy Sprouting success rates, per-item chance and guaranteed-success item count for each grade upgrade | [fairyupgraderate](file-formats/fairyupgraderate_bss.md) | 2 |
+| `groupcameradata.bss` | PABR cutscene skip summaries: scene ID, Korean title, recap and quote, and region symbol icon path (LOC type 97) | [groupcameradata](file-formats/groupcameradata_bss.md) | 0 |
 | `itemenchant.dbss` | Per-item enchant blocks keyed by item ID + enchant level; carries the inline icon path that maps item ID to icon, and the character the item places or summons | [itemenchant](file-formats/itemenchant_dbss.md) | 3 |
 | `itemenchantoffset.dbss` | Key/offset index into `itemenchant.dbss`, maps packed `(enchant_level << 24) \| item_id` → offset/size | [itemenchant](file-formats/itemenchant_dbss.md) | 3 |
 | `itemsubgroup.dbss` | Item subgroups: variable-length lists of 135-byte item entries used by worker production, trade goods and more | [itemsubgroup](file-formats/itemsubgroup_dbss.md) | 2 |
