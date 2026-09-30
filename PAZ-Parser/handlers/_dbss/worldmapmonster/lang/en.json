@@ -1,0 +1,15 @@
+{
+  "offsetColumns": {
+    "key": "Key",
+    "byteOffset": "Byte Offset",
+    "size": "Size"
+  },
+  "columns": {
+    "key": "Key",
+    "icon": "Icon",
+    "name": "Name",
+    "label": "Label",
+    "detail": "Detail",
+    "condition": "Condition"
+  }
+}

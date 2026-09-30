@@ -1,0 +1,132 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+from bdo_models import PazEntry
+from bdo_preview import PreviewHandler
+
+from _common.html import Column, e, icon_cell, sort_keys, table
+from _common.lang import load_handler_strings
+from _common.loc import loc_text
+from .parser import parse_worldmapmonster_offset_rows, parse_worldmapmonster_records
+
+
+_LANG_DIR = Path(__file__).parent / "lang"
+_OFFSET_FILE = "worldmapmonsteroffset.dbss"
+_EMPTY = "-"
+
+# Keyed by marker key; str_id4 picks the string.
+_LOC_MARKER = 40
+_LOC_NAME = 0
+_LOC_LINE1 = 1
+_LOC_LINE2 = 2
+
+
+def _text(key: int, str_id4: int, korean: str) -> str:
+    """LOC type 40 text of one marker string, else the stored Korean text."""
+    return loc_text(_LOC_MARKER, key, str_id4) or korean.strip()
+
+
+class WorldMapMonsterOffsetHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
+        return [
+            Column(cols.get("key", "Key"), "num", sort_key="key"),
+            Column(cols.get("byteOffset", "Byte Offset"), "num", sort_key="offset"),
+            Column(cols.get("size", "Size"), "num", sort_key="size"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
+    def get_records(
+        self,
+        data: bytes,
+        entry: PazEntry,
+        companions: dict[str, bytes],
+    ) -> list[dict]:
+        return [
+            {"key": row.entry_id, "offset": row.offset, "size": row.size}
+            for row in parse_worldmapmonster_offset_rows(data)
+        ]
+
+    def render_records_page(
+        self,
+        records: list[dict],
+        page: int,
+        page_size: int,
+    ) -> str:
+        start = page * page_size
+        slice_ = records[start : start + page_size]
+        meta = f"{len(records):,} offset records"
+        rows = [
+            [e(r["key"]), e(f"0x{r['offset']:08X}"), e(r["size"])]
+            for r in slice_
+        ]
+        return table(meta, self._columns(), rows)
+
+
+class WorldMapMonsterHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("key", "Key"), "num", sort_key="key"),
+            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
+            Column(cols.get("name", "Name"), sort_key="name"),
+            Column(cols.get("label", "Label"), sort_key="label"),
+            Column(cols.get("detail", "Detail"), sort_key="detail"),
+            Column(cols.get("condition", "Condition"), sort_key="condition"),
+        ]
+
+    def sortable_fields(self) -> frozenset[str]:
+        return sort_keys(self._columns())
+
+    def companions(self, entry: PazEntry) -> list[str]:
+        folder = entry.internal_path.rsplit("/", 1)[0]
+        return [f"{folder}/{_OFFSET_FILE}"]
+
+    def get_records(
+        self,
+        data: bytes,
+        entry: PazEntry,
+        companions: dict[str, bytes],
+    ) -> list[dict]:
+        offset_raw = companions.get(_OFFSET_FILE)
+        if offset_raw is None:
+            raise ValueError(f"{_OFFSET_FILE} companion not found.")
+
+        records: list[dict] = []
+        for record in parse_worldmapmonster_records(data, offset_raw):
+            key = record["key"]
+            label = _text(key, _LOC_LINE1, record["line1_kr"])
+            detail = _text(key, _LOC_LINE2, record["line2_kr"])
+            records.append({
+                **record,
+                "name": _text(key, _LOC_NAME, record["name_kr"]),
+                "label": label,
+                # Many markers repeat the label on the second line.
+                "detail": "" if detail == label else detail,
+            })
+        return records
+
+    def render_records_page(
+        self,
+        records: list[dict],
+        page: int,
+        page_size: int,
+    ) -> str:
+        start = page * page_size
+        slice_ = records[start : start + page_size]
+        meta = f"{len(records):,} world map markers"
+        rows = [
+            [
+                e(r["key"]),
+                icon_cell(r["icon_path"]) if r["icon_path"] else _EMPTY,
+                e(r["name"] or _EMPTY),
+                e(r["label"] or _EMPTY),
+                e(r["detail"] or _EMPTY),
+                e(r["condition"] or _EMPTY),
+            ]
+            for r in slice_
+        ]
+        return table(meta, self._columns(), rows)

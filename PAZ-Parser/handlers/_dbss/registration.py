@@ -18,6 +18,7 @@ from .npcpersonality.handler import NpcPersonalityHandler, NpcPersonalityOffsetH
 from .quest.handler import QuestDbssHandler
 from .questgroup.handler import QuestGroupDbssHandler
 from .worldquest.handler import WorldQuestDbssHandler
+from .worldmapmonster.handler import WorldMapMonsterHandler, WorldMapMonsterOffsetHandler
 from .cashproduct.handler import (
     CashProductHandler,
     CashProductOffsetHandler,
@@ -161,3 +162,5 @@ def register_dbss_handlers() -> None:
     register_handler("employeename.dbss", EmployeeNameHandler())
     register_handler("buffoffset.dbss", BuffOffsetHandler())
     register_handler("buff.dbss", BuffHandler())
+    register_handler("worldmapmonsteroffset.dbss", WorldMapMonsterOffsetHandler())
+    register_handler("worldmapmonster.dbss", WorldMapMonsterHandler())
