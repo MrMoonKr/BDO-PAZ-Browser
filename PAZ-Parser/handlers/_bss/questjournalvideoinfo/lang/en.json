@@ -1,0 +1,9 @@
+{
+  "columns": {
+    "mainId": "Main ID",
+    "subId": "Sub ID",
+    "artwork": "Artwork",
+    "title": "Title",
+    "video": "Video"
+  }
+}

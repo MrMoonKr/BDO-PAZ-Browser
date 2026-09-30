@@ -19,6 +19,7 @@ from .plantworker.handler import PlantWorkerBssHandler
 from .plantworkerpassiveskill.handler import PlantWorkerPassiveSkillBssHandler
 from .plantworkerselect.handler import PlantWorkerSelectBssHandler
 from .planttown.handler import PlantTownBssHandler
+from .questjournalvideoinfo.handler import QuestJournalVideoInfoBssHandler
 from .skillgroup.handler import SkillGroupBssHandler
 from .specialenchantitem.handler import SpecialEnchantItemBssHandler
 from .titlecategory.handler import TitleCategoryBssHandler
@@ -48,6 +49,7 @@ def register_bss_handlers() -> None:
     )
     register_handler("plantworkerselect.bss", PlantWorkerSelectBssHandler())
     register_handler("planttown.bss", PlantTownBssHandler())
+    register_handler("questjournalvideoinfo.bss", QuestJournalVideoInfoBssHandler())
     register_handler("skillgroup.bss", SkillGroupBssHandler())
     register_handler("specialenchantitem.bss", SpecialEnchantItemBssHandler())
     register_handler("titlecategory.bss", TitleCategoryBssHandler())
