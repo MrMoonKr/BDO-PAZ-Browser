@@ -10,6 +10,7 @@ from .fairyfeedenchantfailcount.handler import (
     FairyFeedEnchantFailCountBssHandler,
 )
 from .fairyupgraderate.handler import FairyUpgradeRateBssHandler
+from .mansionpartinfo.handler import MansionPartInfoBssHandler
 from .newquest.handler import NewQuestBssHandler
 from .npcgiftetc.handler import NpcGiftEtcBssHandler
 from .npcsimply.handler import NpcSimplyBssHandler
@@ -37,6 +38,7 @@ def register_bss_handlers() -> None:
         FairyFeedEnchantFailCountBssHandler(),
     )
     register_handler("fairyupgraderate.bss", FairyUpgradeRateBssHandler())
+    register_handler("mansionpartinfo.bss", MansionPartInfoBssHandler())
     register_handler("newquest.bss", NewQuestBssHandler())
     register_handler("npcgiftetc.bss", NpcGiftEtcBssHandler())
     register_handler("npcsimply.bss", NpcSimplyBssHandler())

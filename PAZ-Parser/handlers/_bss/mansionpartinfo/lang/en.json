@@ -1,0 +1,8 @@
+{
+  "columns": {
+    "manorId": "Manor ID",
+    "manor": "Manor",
+    "part": "Part",
+    "icon": "Icon"
+  }
+}
