@@ -80,3 +80,4 @@ def build_menu_icon_index(data: bytes) -> dict[int, str]:
 def build_menu_icon_region_index(data: bytes) -> dict[int, tuple[int, ...]]:
     """Sprite region by menu ID, for `IndexKind.MENU_ICON_REGION`."""
     return {r["menu_id"]: r["icon_region"] for r in parse_menu_records(data) if r["icon_path"]}
+

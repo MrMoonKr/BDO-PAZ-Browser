@@ -82,6 +82,29 @@ def icon_cell(path: object, image_src: str | None = None) -> str:
     )
 
 
+# A sprite cell loads nothing: the sheet is shared by many rows and the sprite
+# only shows in the icon popup a click opens (ui/js/features/icon-preview.js).
+_SPRITE_PLACEHOLDER = '<span class="icon-cell-thumb sprite-cell-placeholder" aria-hidden="true"></span>'
+
+
+def sprite_icon_cell(path: object, region: Sequence[int] | None) -> str:
+    """An icon that is the (x1, y1, x2, y2) region of a sprite sheet; a dash without one."""
+    sheet = str(path).strip()
+    if not sheet or region is None or len(region) != 4:
+        return "-"
+
+    x1, y1, x2, y2 = (int(v) for v in region)
+    escaped_sheet = e(sheet)
+    title = e(f"{sheet} ({x1}, {y1}) to ({x2}, {y2})")
+    return (
+        f'<span class="icon-cell sprite-cell" title="{title}" data-sprite-path="{escaped_sheet}" '
+        f'data-sprite-region="{x1},{y1},{x2},{y2}">'
+        f'{_SPRITE_PLACEHOLDER}'
+        f'<span class="icon-cell-path">{escaped_sheet}</span>'
+        f'</span>'
+    )
+
+
 def missing_icon_cell(path: object) -> str:
     """An icon cell whose file the client does not ship: a dash, path in the tooltip.
 

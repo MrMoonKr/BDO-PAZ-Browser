@@ -12,6 +12,7 @@ from .fairyfeedenchantfailcount.handler import (
 from .fairyupgraderate.handler import FairyUpgradeRateBssHandler
 from .groupcameradata.handler import GroupCameraDataBssHandler
 from .mansionpartinfo.handler import MansionPartInfoBssHandler
+from .menu.handler import MenuBssHandler
 from .newquest.handler import NewQuestBssHandler
 from .npcgiftetc.handler import NpcGiftEtcBssHandler
 from .npcsimply.handler import NpcSimplyBssHandler
@@ -24,6 +25,7 @@ from .planttown.handler import PlantTownBssHandler
 from .questjournalvideoinfo.handler import QuestJournalVideoInfoBssHandler
 from .skillgroup.handler import SkillGroupBssHandler
 from .specialenchantitem.handler import SpecialEnchantItemBssHandler
+from .submenu.handler import SubmenuBssHandler
 from .titlecategory.handler import TitleCategoryBssHandler
 from .ui_skillgroup.handler import UiSkillGroupBssHandler
 from .zodiacsignindex.handler import ZodiacSignIndexHandler
@@ -41,6 +43,7 @@ def register_bss_handlers() -> None:
     register_handler("fairyupgraderate.bss", FairyUpgradeRateBssHandler())
     register_handler("groupcameradata.bss", GroupCameraDataBssHandler())
     register_handler("mansionpartinfo.bss", MansionPartInfoBssHandler())
+    register_handler("menu.bss", MenuBssHandler())
     register_handler("newquest.bss", NewQuestBssHandler())
     register_handler("npcgiftetc.bss", NpcGiftEtcBssHandler())
     register_handler("npcsimply.bss", NpcSimplyBssHandler())
@@ -56,6 +59,7 @@ def register_bss_handlers() -> None:
     register_handler("questjournalvideoinfo.bss", QuestJournalVideoInfoBssHandler())
     register_handler("skillgroup.bss", SkillGroupBssHandler())
     register_handler("specialenchantitem.bss", SpecialEnchantItemBssHandler())
+    register_handler("submenu.bss", SubmenuBssHandler())
     register_handler("titlecategory.bss", TitleCategoryBssHandler())
     # One layout for the three skill windows.
     for window in ("combat", "awakening", "succession"):

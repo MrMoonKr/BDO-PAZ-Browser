@@ -1,4 +1,8 @@
-"""Icon cell thumbnails: an image payload turned into a small PNG data URL.
+"""Icon images: the small PNG an icon cell shows and the larger icon preview.
+
+`thumbnail_data_url()` builds the icon cell thumbnail. `open_image()` and the
+preview helpers serve the popup a click on an icon opens: the image scaled to
+fit, and for a sprite the cropped region of its sheet.
 
 Most icons are 44 x 44 DXT textures, but some tables show full-size art as
 icons: the 2560 x 1440 journal artwork of `questjournalvideoinfo.bss` is a
@@ -14,6 +18,12 @@ import io
 import struct
 
 THUMBNAIL_SIZE = (64, 64)
+# The popup shows at most this many pixels on the long side, so the 2560 x 1440
+# artwork does not cross the JS bridge as a 10 MB data URL.
+PREVIEW_MAX_SIDE = 1280
+
+# (x1, y1, x2, y2) in pixels, as the sprite region indexes store it.
+Region = tuple[int, int, int, int]
 
 _IMAGE_DATA_MIME_BY_EXT = {
     ".gif": "image/gif",
@@ -55,7 +65,8 @@ def _raw_bgra_mode(data: bytes) -> str | None:
     return "BGRX"
 
 
-def _open_image(data: bytes):
+def open_image(data: bytes):
+    """A Pillow RGBA image of an image payload, with the fast path for raw BGRA DDS."""
     from PIL import Image
 
     mode = _raw_bgra_mode(data)
@@ -86,10 +97,49 @@ def thumbnail_data_url(data: bytes, extension: str) -> str:
         raise ThumbnailError("Pillow not installed") from ex
 
     try:
-        img = _open_image(data)
+        img = open_image(data)
         img.thumbnail(THUMBNAIL_SIZE)
         buf = io.BytesIO()
         img.save(buf, format="PNG")
     except Exception as ex:
         raise ThumbnailError(str(ex)) from ex
     return f"data:image/png;base64,{base64.b64encode(buf.getvalue()).decode('ascii')}"
+
+
+def png_data_url(img) -> str:
+    buf = io.BytesIO()
+    # Level 1 keeps a full-size preview quick to encode; the size difference is small.
+    img.save(buf, format="PNG", compress_level=1)
+    return f"data:image/png;base64,{base64.b64encode(buf.getvalue()).decode('ascii')}"
+
+
+def preview_data_url(img) -> str:
+    """The image scaled down to PREVIEW_MAX_SIDE when larger, as a PNG data URL."""
+    if max(img.size) <= PREVIEW_MAX_SIDE:
+        return png_data_url(img)
+    scaled = img.copy()
+    scaled.thumbnail((PREVIEW_MAX_SIDE, PREVIEW_MAX_SIDE))
+    return png_data_url(scaled)
+
+
+def checked_region(region: object, size: tuple[int, int]) -> Region:
+    """`region` as four ints inside an image of `size`.
+
+    Raises ValueError for anything else: the region comes from the page, and a
+    crop outside the sheet would silently pad with black.
+    """
+    if not isinstance(region, (list, tuple)) or len(region) != 4:
+        raise ValueError(f"Sprite region must be four numbers, got {region!r}")
+    if not all(isinstance(v, int) and not isinstance(v, bool) for v in region):
+        raise ValueError(f"Sprite region must be whole numbers, got {region!r}")
+
+    x1, y1, x2, y2 = region
+    width, height = size
+    if not (0 <= x1 < x2 <= width and 0 <= y1 < y2 <= height):
+        raise ValueError(f"Sprite region {tuple(region)} is outside the {width} x {height} sheet")
+    return x1, y1, x2, y2
+
+
+def sprite_data_url(img, region: Region) -> str:
+    """The sprite at its own size, cropped from its sheet."""
+    return png_data_url(img.crop(region))

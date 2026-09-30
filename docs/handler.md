@@ -915,7 +915,7 @@ of them changes an icon an existing table shows:
 - `MENU_ICON` / `SUBMENU_ICON` (`IconKind.MENU` / `IconKind.SUBMENU`): the
   main menu sprite sheet by menu or entry ID, with the region in
   `MENU_ICON_REGION` / `SUBMENU_ICON_REGION` (see [Sprite Icons](#sprite-icons)).
-  `menu.bss` and `submenu.bss` have parsers but no handler yet.
+  The `menu.bss` and `submenu.bss` tables show them with `sprite_icon_cell()`.
 
 `PRODUCTION_ITEMS` maps a worker production key to the packed item keys
 (`enchant_level << 24 | item_id`) of its
@@ -941,7 +941,7 @@ the UI lazily resolves it against the PAZ entry map when the cell scrolls into
 view, so a handler only has to emit a correct path string.
 
 The backend turns the file into a 64 x 64 PNG thumbnail
-(`api/bdo_icon_thumbnail.py`). Uncompressed 32-bit BGRA DDS files are wrapped
+(`api/bdo_icon_images.py`). Uncompressed 32-bit BGRA DDS files are wrapped
 straight into an image, because Pillow's own decoder takes seconds on the
 full-size art some tables use as icons (the 2560 x 1440 journal artwork).
 Thumbnails are built one at a time, since each JS call runs on its own thread
@@ -1003,8 +1003,22 @@ Some icons are a region of a shared sprite sheet rather than a file of their
 own. For those kinds (`MENU`, `SUBMENU`) `icon_path()` returns the sheet and
 `icon_region(kind, id)` the `(x1, y1, x2, y2)` pixel region in it, from the
 kind's entry in `ICON_REGION_INDEXES`; it returns `None` for whole-file kinds
-and missing IDs. `icon_cell()` draws the whole file, so a table cannot show a
-sprite icon yet.
+and missing IDs.
+
+A table shows one with `sprite_icon_cell(sheet_path, region)` from
+`_common/html.py`: a sheet placeholder that loads nothing, since every row
+shares the sheet. `icon_cell()` would draw the whole sheet.
+
+### Icon Popup
+
+A click on any icon cell opens a popup (`ui/js/features/icon-preview.js`)
+with the image at its own size: scaled down to fit when larger than 1280
+pixels, drawn larger with crisp pixels when small. For a sprite cell it also
+shows the cropped sprite and outlines the region on the sheet. The backend is
+`get_icon_preview(path, region)` in `api/bdo_api_preview.py`; it keeps the last
+four decoded images, so every sprite of one sheet reuses a single decode, and
+it runs under its own lock, so a click is not queued behind the icon cells
+still loading. Thumbnails are unchanged: the popup reads the file itself.
 
 ### Fixing an icon by hand
 

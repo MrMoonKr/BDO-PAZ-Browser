@@ -81,5 +81,14 @@
     "copiedRow": "Copied selected row.",
     "searchError": "Search error: {message}",
     "pageError": "Could not load page: {message}"
+  },
+  "iconPreview": {
+    "title": "Icon",
+    "loading": "Loading…",
+    "sprite": "Sprite",
+    "sheet": "Sprite sheet",
+    "size": "{width} × {height} px",
+    "region": "Region ({x1}, {y1}) to ({x2}, {y2})",
+    "close": "Close"
   }
 }

@@ -6,7 +6,17 @@ import struct
 
 import pytest
 
-from api.bdo_icon_thumbnail import THUMBNAIL_SIZE, ThumbnailError, _raw_bgra_mode, thumbnail_data_url
+from api.bdo_icon_images import (
+    PREVIEW_MAX_SIDE,
+    THUMBNAIL_SIZE,
+    ThumbnailError,
+    _raw_bgra_mode,
+    checked_region,
+    open_image,
+    preview_data_url,
+    sprite_data_url,
+    thumbnail_data_url,
+)
 
 Image = pytest.importorskip("PIL.Image")
 
@@ -72,3 +82,42 @@ def test_web_images_are_passed_through() -> None:
 def test_unreadable_payload_raises() -> None:
     with pytest.raises(ThumbnailError):
         thumbnail_data_url(b"not an image", ".dds")
+
+
+def test_small_images_preview_at_their_own_size() -> None:
+    img = open_image(_dds(2, 1, _PIXELS))
+
+    size, pixels = _png_pixels(preview_data_url(img))
+
+    assert size == (2, 1)
+    assert pixels == img.tobytes()
+
+
+def test_large_images_preview_scaled_to_fit() -> None:
+    img = open_image(_dds(PREVIEW_MAX_SIDE * 2, 4, bytes(PREVIEW_MAX_SIDE * 2 * 4 * 4)))
+
+    size, _ = _png_pixels(preview_data_url(img))
+
+    assert size[0] == PREVIEW_MAX_SIDE
+
+
+def test_sprite_is_cropped_at_its_own_size() -> None:
+    img = open_image(_dds(2, 1, _PIXELS))
+
+    size, pixels = _png_pixels(sprite_data_url(img, (1, 0, 2, 1)))
+
+    assert size == (1, 1)
+    assert pixels == bytes([0, 0, 255, 128])
+
+
+@pytest.mark.parametrize(
+    "region",
+    [None, (0, 0, 1), (0, 0, 3, 1), (1, 0, 1, 1), (0, 0, 1.5, 1), (True, 0, 1, 1), "0,0,1,1"],
+)
+def test_bad_regions_are_rejected(region: object) -> None:
+    with pytest.raises(ValueError):
+        checked_region(region, (2, 1))
+
+
+def test_a_region_inside_the_sheet_is_accepted() -> None:
+    assert checked_region([0, 0, 2, 1], (2, 1)) == (0, 0, 2, 1)

@@ -1,0 +1,84 @@
+/* ── Icon preview popup ─────────────────────────────────────────────────────── */
+/* Opened by a click on any icon cell; the overlay and header reuse the settings modal. */
+
+.icon-preview-modal {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  max-width: 90vw;
+  min-width: 320px;
+}
+
+.icon-preview-body {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: auto;
+  padding: 16px;
+}
+
+.icon-preview-status {
+  color: var(--fg-muted);
+  font-size: 13px;
+}
+
+.icon-preview-figure {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.icon-preview-figure figcaption {
+  color: var(--fg-muted);
+  font-size: 11px;
+}
+
+/* The region box is positioned in percent of this frame, which hugs the image. */
+.icon-preview-frame {
+  line-height: 0;
+  position: relative;
+}
+
+.icon-preview-image {
+  display: block;
+  max-height: 70vh;
+  max-width: 80vw;
+}
+
+.icon-preview-pixelated {
+  image-rendering: pixelated;
+}
+
+.icon-preview-region {
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.8);
+  pointer-events: auto;
+  position: absolute;
+}
+
+.icon-preview-path {
+  color: var(--fg-dim);
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 11px;
+  word-break: break-all;
+}
+
+/* Table cells: icons open the popup, sprites show a sheet placeholder until then. */
+.icon-cell[data-icon-path]:not(.icon-cell-missing),
+.sprite-cell {
+  cursor: zoom-in;
+}
+
+.sprite-cell-placeholder {
+  background:
+    linear-gradient(var(--border3) 1px, transparent 1px) 0 0 / 50% 50%,
+    linear-gradient(90deg, var(--border3) 1px, transparent 1px) 0 0 / 50% 50%,
+    var(--accent-d);
+  border: 1px solid var(--accent);
+}

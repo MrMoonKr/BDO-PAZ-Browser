@@ -1,0 +1,9 @@
+{
+  "columns": {
+    "menuId": "Menu ID",
+    "icon": "Icon",
+    "title": "Title",
+    "hotkey": "Hotkey",
+    "entries": "Entries"
+  }
+}

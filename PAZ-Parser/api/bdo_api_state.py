@@ -32,6 +32,9 @@ class ApiState:
         self._icon_entry_cache: dict[str, PazEntry | None] = {}
         self._icon_data_url_cache: dict[str, str] = {}
         self._icon_decode_lock = threading.Lock()
+        self._icon_preview_lock = threading.Lock()
+        # norm path -> (decoded image, preview data URL), oldest first.
+        self._icon_preview_images: dict[str, tuple[Any, str]] = {}
         self._thumbnail_cache: ThumbnailCache | None = None
         self._tree_data: dict = {}
         self._disk_companions: dict[str, bytes] = {}

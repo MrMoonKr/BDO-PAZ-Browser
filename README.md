@@ -76,7 +76,7 @@ See [docs/handler.md](docs/handler.md) for the full guide, including companion f
 
 ## Supported Formats
 
-- Handler Supported 25/403 .bss formats.
+- Handler Supported 27/403 .bss formats.
 - Handler Supported 71/374 .dbss formats.
 - Handler Supported 24 other formats.
 
@@ -223,7 +223,7 @@ PAZ-Parser/
 ├── api/                    # pywebview JS API bridge
 │   ├── bdo_api.py          # Routing and dispatch
 │   ├── bdo_api_helpers.py  # Shared constants and utilities (_norm, _file_icon)
-│   ├── bdo_icon_thumbnail.py# Icon cell thumbnails, fast path for raw BGRA DDS
+│   ├── bdo_icon_images.py  # Icon thumbnails, the icon popup image and sprite crops
 │   ├── bdo_api_preview.py  # Preview assembly and entry loading (PreviewMixin)
 │   └── bdo_api_search.py   # File content search, single-file and cross-file (SearchMixin)
 │

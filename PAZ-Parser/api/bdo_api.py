@@ -198,6 +198,7 @@ class Api(PreviewMixin, SearchMixin):
         self._entry_map_lower = {path.lower(): entry for path, entry in self._entry_map.items()}
         self._icon_entry_cache.clear()
         self._icon_data_url_cache.clear()
+        self._icon_preview_images.clear()
         self._open_thumbnail_cache(paz_root, current_version)
         self._tree_data = self._build_tree_data(entries)
         self._disk_companions = {}

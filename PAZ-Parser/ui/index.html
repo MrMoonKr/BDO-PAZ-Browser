@@ -143,6 +143,30 @@
       </div>
     </div>
 
+    <div id="icon-preview-overlay" class="settings-overlay" hidden>
+      <div class="icon-preview-modal" role="dialog" aria-labelledby="icon-preview-title">
+        <div class="settings-header">
+          <span id="icon-preview-title" data-i18n="iconPreview.title">Icon</span>
+          <button class="settings-close" onclick="app.closeIconPreview()" data-i18n-title="iconPreview.close" title="Close">✕</button>
+        </div>
+        <div class="icon-preview-body">
+          <div id="icon-preview-status" class="icon-preview-status"></div>
+          <figure id="icon-preview-sprite" class="icon-preview-figure" hidden>
+            <img id="icon-preview-sprite-image" class="icon-preview-image" alt="" />
+            <figcaption data-i18n="iconPreview.sprite">Sprite</figcaption>
+          </figure>
+          <figure id="icon-preview-full" class="icon-preview-figure" hidden>
+            <div class="icon-preview-frame">
+              <img id="icon-preview-image" class="icon-preview-image" alt="" />
+              <div id="icon-preview-region" class="icon-preview-region" hidden></div>
+            </div>
+            <figcaption id="icon-preview-caption"></figcaption>
+          </figure>
+          <div id="icon-preview-path" class="icon-preview-path"></div>
+        </div>
+      </div>
+    </div>
+
     <script type="module" src="app.js"></script>
   </body>
 </html>

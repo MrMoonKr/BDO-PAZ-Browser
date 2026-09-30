@@ -105,6 +105,12 @@ export const tableMethods = {
     const previewContent = document.getElementById("preview-content");
 
     previewContent.addEventListener("click", (event) => {
+      // A click on an icon opens it in the popup and still selects its row.
+      const iconCell = this._iconPreviewTarget(event.target);
+      if (iconCell) {
+        this.openIconPreviewFromCell(iconCell);
+      }
+
       const row = event.target.closest(".data-table tbody tr");
 
       if (!row || !previewContent.contains(row)) {

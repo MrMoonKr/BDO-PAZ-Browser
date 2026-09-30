@@ -20,6 +20,7 @@ export const initMethods = {
     this._setupDividers();
     this._setupOutputPathSave();
     this._setupPreviewTableSelection();
+    this._setupIconPreview();
     this._setupEscapeClear();
     this._setupImageZoom();
     this._initTabSearch();

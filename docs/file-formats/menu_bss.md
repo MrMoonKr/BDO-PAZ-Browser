@@ -90,9 +90,9 @@ The shared PABR string table layout of `buffsimply.bss` and
   keys are not in row order: F3 Reward is `LUA_MENU_REMAKE_CATEGORY_5`.
 - `submenu_count` equals the entry count of the matching `submenu.bss` group
   in every row.
-- The icons are 55 x 55 regions of two 1.5 MB sprite sheets, both shipped
-  under `ui_texture/combine/icon/`, so a table needs to crop the region to
-  show one.
+- The icons are 55 x 55 regions of two 1.5 MB, 632 x 632 sprite sheets, both
+  shipped under `ui_texture/combine/icon/`. The table shows a sprite
+  placeholder; a click opens the sprite and its place on the sheet.
 - The app indexes the icons by menu ID as a sprite kind: `IndexKind.MENU_ICON`
   holds the sheet path and `IndexKind.MENU_ICON_REGION` the
   `(x1, y1, x2, y2)` region, read through `icon_path()` and `icon_region()`

@@ -1,13 +1,20 @@
 from __future__ import annotations
 
 import time
+from typing import Any
 from pathlib import Path
 
 import webview
 
 from .bdo_api_helpers import _DISK_VIRTUAL_PREFIX, _norm
 from .bdo_api_state import ApiState
-from .bdo_icon_thumbnail import thumbnail_data_url
+from .bdo_icon_images import (
+    checked_region,
+    open_image,
+    preview_data_url,
+    sprite_data_url,
+    thumbnail_data_url,
+)
 from .bdo_config import load_table_sort, save_table_sort, table_sort_file_key
 from bdo_models import PazEntry
 from paz.bdo_payload_cache import cached_read_entry_payload
@@ -25,6 +32,8 @@ from bdo_preview import (
 from table_sort import TableSort
 
 _hex_handler = HexHandler()
+# Decoded images kept for the icon popup; a sprite sheet serves every sprite on it.
+_PREVIEW_CACHE_SIZE = 4
 _HEX_BYTES_PER_PAGE = HEX_ROWS_PER_PAGE * 16
 
 # Some icons exist only under a prefixed filename in the same folder. Handlers
@@ -111,6 +120,52 @@ class PreviewMixin(ApiState):
             if self._thumbnail_cache is not None:
                 self._thumbnail_cache.put(norm, url)
         return {"url": url}
+
+    def get_icon_preview(self, icon_path: str, region: list[int] | None = None) -> dict:
+        """The popup a click on an icon opens: the image scaled to fit, and the sprite.
+
+        `region` is the (x1, y1, x2, y2) sprite region for sprite cells; the
+        answer then also carries the cropped sprite, and the page outlines the
+        region on the sheet.
+        """
+        norm = _norm(icon_path).strip()
+        if not norm:
+            return {"error": "Icon path is empty"}
+
+        # Its own lock, so a click is not queued behind a screen of thumbnails.
+        with self._icon_preview_lock:
+            try:
+                cached = self._preview_image(norm)
+                if cached is None:
+                    return {"error": f"Icon entry not found: {icon_path}"}
+                img, url = cached
+                answer: dict = {"path": norm, "url": url, "width": img.width, "height": img.height}
+                if region is not None:
+                    box = checked_region(region, img.size)
+                    answer["sprite"] = sprite_data_url(img, box)
+                    answer["region"] = list(box)
+            except Exception as ex:
+                return {"error": str(ex)}
+        return answer
+
+    def _preview_image(self, norm: str) -> tuple[Any, str] | None:
+        """(decoded image, preview data URL) of an icon path, kept for the last few.
+
+        None when the client does not ship the path.
+        """
+        cache = self._icon_preview_images
+        if norm in cache:
+            cache[norm] = cache.pop(norm)
+            return cache[norm]
+
+        entry = self._resolve_icon_entry(norm)
+        if entry is None:
+            return None
+        img = open_image(self.read_entry(entry.internal_path))
+        cache[norm] = (img, preview_data_url(img))
+        while len(cache) > _PREVIEW_CACHE_SIZE:
+            cache.pop(next(iter(cache)))
+        return cache[norm]
 
     def _cached_icon_url(self, norm: str) -> str | None:
         """A finished thumbnail from this session or the disk cache, else None."""

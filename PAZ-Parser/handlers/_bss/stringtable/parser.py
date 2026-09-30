@@ -13,6 +13,7 @@ A PABR file of sheets, then the shared counted string table and trailer:
 from __future__ import annotations
 
 import struct
+from collections.abc import Iterable
 
 from _common.pabr_strings import read_string_table, string_at
 
@@ -25,9 +26,21 @@ GAME_SHEET = "GAME"
 # LOC type 37 str_id2 of the GAME sheet's keys.
 GAME_SHEET_LOC_ID2 = 1
 
+# LOC type 37 str_id2 of every sheet's keys, by sheet name (stringtable_bss.md).
+SHEET_LOC_ID2 = {
+    "CUTSCENE": 0,
+    "GAME": GAME_SHEET_LOC_ID2,
+    "RESOURCE": 2,
+    "ACTIONCHART": 3,
+    "TOOL": 4,
+    "WEB": 5,
+    "SymbolNo": 6,
+    "IMAGESLIDE": 7,
+}
 
-def parse_key_hashes(data: bytes, sheet_name: str) -> dict[str, int]:
-    """`key -> key_hash` for every row of one sheet; empty when it is absent.
+
+def parse_sheet_key_hashes(data: bytes, sheet_names: Iterable[str]) -> dict[str, dict[str, int]]:
+    """`sheet -> {key -> key_hash}` for the named sheets; absent sheets map to {}.
 
     Raises ValueError when the file is not a PABR string table or a sheet runs
     past the string table.
@@ -35,6 +48,8 @@ def parse_key_hashes(data: bytes, sheet_name: str) -> dict[str, int]:
     if data[:4] != _MAGIC:
         raise ValueError("stringtable.bss does not start with PABR")
 
+    wanted = set(sheet_names)
+    found: dict[str, dict[str, int]] = {name: {} for name in wanted}
     strings = read_string_table(data)
     (sheet_count,) = _U32.unpack_from(data, 4)
     pos = 8
@@ -44,10 +59,16 @@ def parse_key_hashes(data: bytes, sheet_name: str) -> dict[str, int]:
         rows_end = pos + row_count * _ROW.size
         if rows_end > len(data):
             raise ValueError(f"stringtable sheet at 0x{pos:X} runs past the file")
-        if string_at(strings, name_ref) == sheet_name:
-            return {
+        name = string_at(strings, name_ref)
+        if name in wanted:
+            found[name] = {
                 string_at(strings, key_ref): key_hash
                 for key_hash, key_ref, _, _ in _ROW.iter_unpack(data[pos:rows_end])
             }
         pos = rows_end
-    return {}
+    return found
+
+
+def parse_key_hashes(data: bytes, sheet_name: str) -> dict[str, int]:
+    """`key -> key_hash` for every row of one sheet; empty when it is absent."""
+    return parse_sheet_key_hashes(data, (sheet_name,))[sheet_name]
