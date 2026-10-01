@@ -4,7 +4,7 @@ from __future__ import annotations
 import pytest
 
 from bdo_models import PazEntry
-from paz.bdo_payload_reader import can_range_read, read_entry_range
+from paz.bdo_payload_reader import can_range_read, read_entry_payload, read_entry_range
 from bdo_preview import HEX_ROWS_PER_PAGE, HexHandler
 
 
@@ -150,3 +150,23 @@ def test_page_count_for_size_matches_page_count() -> None:
         assert HexHandler.page_count_for_size(size) == HexHandler.page_count(data), (
             f"mismatch at size={size}"
         )
+
+
+# ── read_entry_payload, padding ──────────────────────────────────────────────
+
+def test_read_entry_payload_trims_zero_padding(tmp_path: pytest.TempPathFactory) -> None:
+    payload = bytes(range(1, 101))
+    archive = tmp_path / "test.paz" # type: ignore
+    archive.write_bytes(payload + bytes(4))
+
+    entry = _entry(path="foo.dbss", compressed=104, uncompressed=100)
+    assert read_entry_payload(archive, entry) == payload
+
+
+def test_read_entry_payload_keeps_non_zero_surplus(tmp_path: pytest.TempPathFactory) -> None:
+    stored = bytes(range(1, 105))
+    archive = tmp_path / "test.paz" # type: ignore
+    archive.write_bytes(stored)
+
+    entry = _entry(path="foo.dbss", compressed=104, uncompressed=100)
+    assert read_entry_payload(archive, entry) == stored

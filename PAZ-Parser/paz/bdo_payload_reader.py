@@ -232,6 +232,8 @@ def read_entry_payload(archive_path: Path, entry: PazEntry) -> bytes:
     Encryption is skipped for .dbss files.
     Decompression is applied when original_size > compressed_size OR when the
     first byte of the decrypted data is 0x6E.
+    Zero padding past the recorded size (the 8-byte ICE block of a stored
+    entry) is trimmed, as extraction does.
     """
     with archive_path.open("rb") as paz_stream:
         paz_stream.seek(entry.offset)
@@ -273,9 +275,22 @@ def read_entry_payload(archive_path: Path, entry: PazEntry) -> bytes:
                 file=sys.stderr,
             )
             return decrypted
-        return decompressed
+        return _trim_zero_padding(decompressed, entry.uncompressed_size)
 
-    return decrypted
+    return _trim_zero_padding(decrypted, entry.uncompressed_size)
+
+
+def _trim_zero_padding(payload: bytes, expected_size: int) -> bytes:
+    """`payload` cut to `expected_size` when everything past it is zero.
+
+    A stored entry is padded to the 8-byte ICE block (a 631-byte file reads as
+    632), and a trailer read from the end of the file would land in that
+    padding. Unlike extraction, a short payload or non-zero surplus is returned
+    as it is, so the preview still shows what was decoded.
+    """
+    if len(payload) <= expected_size or any(payload[expected_size:]):
+        return payload
+    return payload[:expected_size]
 
 
 # ── Range / page read ─────────────────────────────────────────────────────────

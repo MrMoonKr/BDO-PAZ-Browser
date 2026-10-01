@@ -654,6 +654,12 @@ companions: dict[str, bytes]
 
 The dictionary is keyed by basename.
 
+`data` and every companion hold exactly the file's recorded size: a stored
+(uncompressed) `.bss` is padded to the 8-byte ICE block in the archive, and the
+reader trims that zero padding, as extraction does. A trailer read from the end
+of the file, such as the PABR string table offset (`_common/pabr_strings.py`),
+is therefore safe.
+
 Example:
 
 ```python
