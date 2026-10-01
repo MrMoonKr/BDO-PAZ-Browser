@@ -20,12 +20,20 @@ from tests.framework import (
 
 from _common.duration import format_duration
 from _common.inline_text import decode_inline_text
+from _common.lookup_index import IndexKind
 
-from _dbss.buff.title import extract_title
+from _dbss.buff.effect import effect_text
+from _dbss.buff.title import extract_title, title_leaders
 
 
 # Backslash and `n`, how the tables store a line break in inline text.
 _ESCAPED_NEWLINE = "\\n"
+# Item 761880, [Blessing] Adventure's Boon (120 min), casts skill 47683 level 1,
+# which applies buffs 48723 to 48728; 48723 is the headline buff with the title.
+_BOON_ITEM = 761880
+_BOON_SKILL_KEY = 47683 << 16 | 1
+_BOON_BUFFS = (48723, 48724, 48725, 48726, 48727, 48728)
+_BOON_TITLE = "[Blessing] Adventure's Boon"
 
 
 BUFF_CASE = HandlerCase(
@@ -36,6 +44,10 @@ BUFF_CASE = HandlerCase(
     uses_loc=True,
     loc_fields=["description"],
     internal_path="gamecommondata/binary/buff.dbss",
+    lookup_indexes={
+        IndexKind.SKILL_BUFFS: {_BOON_SKILL_KEY: _BOON_BUFFS},
+        IndexKind.BUFF_ITEMS: {buff_id: (_BOON_ITEM,) for buff_id in _BOON_BUFFS},
+    },
     tests=[
         SchemaTest(
             required_keys=[
@@ -47,7 +59,12 @@ BUFF_CASE = HandlerCase(
                 "duration",
                 "icon_path",
                 "title",
+                "title_buff_id",
                 "description",
+                "effect",
+                "applied_by_item_ids",
+                "applied_by",
+                "applied_by_count",
                 "description_kr",
                 "param_1",
                 "param_10",
@@ -83,16 +100,34 @@ BUFF_CASE = HandlerCase(
             col="buff_id",
             value=48723,
             expected={
-                "title": "[Blessing] Adventure's Boon",
+                "title": _BOON_TITLE,
+                "title_buff_id": 48723,
                 "name": "모든 공격력 +8(120분)",
                 "is_shown": True,
+                "effect": "All AP +8",
+                "applied_by_item_ids": [_BOON_ITEM],
             },
         ),
-        # The rest of the same item's buff group is hidden and has no text.
+        # The rest of the same item's buffs are hidden and have no text; they
+        # take the headline buff's title through the skill that applies them.
         TargetTest(
             col="buff_id",
             value=48724,
-            expected={"title": "", "description": "", "effect_type": 40, "is_shown": False},
+            expected={
+                "title": _BOON_TITLE,
+                "title_buff_id": 48723,
+                "description": "",
+                "effect_type": 40,
+                "effect": "All Accuracy +8",
+                "is_shown": False,
+            },
+        ),
+        TargetTest(col="buff_id", value=48727, expected={"effect": "Combat EXP +15%"}),
+        # Applied by no item in the installed index: an empty list, None to sort last.
+        TargetTest(
+            col="buff_id",
+            value=48830,
+            expected={"applied_by_item_ids": [], "applied_by_count": None, "title_buff_id": None},
         ),
         # Food Max HP variants share one group.
         TargetTest(col="buff_id", value=59746, expected={"effect_type": 2, "group": 5616}),
@@ -214,3 +249,47 @@ def test_decode_inline_text(stored: str, expected: str) -> None:
 def test_korean_title_survives_without_loc() -> None:
     stored = f"<PAColor0xffe9bd23>[축복] 모험의 가호<PAOldColor>{_ESCAPED_NEWLINE * 2}모든 공격력 +8"
     assert extract_title(decode_inline_text(stored)) == "[축복] 모험의 가호"
+
+
+@pytest.mark.parametrize(
+    ("effect_type", "params", "expected"),
+    [
+        (2, [150, 0], "Max HP +150"),
+        (8, [-150, 0], "Max Stamina -150"),
+        # Per-million percentages keep their decimals and drop trailing zeros.
+        (9, [25000, 0], "Movement Speed +2.5%"),
+        (25, [150000, 2], "Life EXP +15%"),
+        (39, [3, 8], "All AP +8"),
+        (43, [3, -2], "All Damage Reduction -2"),
+        (80, [4, 2560350], "Alchemy EXP +2,560,350"),
+        (93, [4, 50000], "Critical Hit Extra Damage +5%"),
+        (105, [8, 100000], "Ignore All Resistance +10%"),
+        # Targets other than 3 (all) have no confirmed label.
+        (39, [0, 8], ""),
+        # A kind outside the confirmed ones.
+        (80, [10, 100], ""),
+        # An effect type that is not decoded.
+        (45, [1, 2], ""),
+    ],
+)
+def test_effect_text(effect_type: int, params: list[int], expected: str) -> None:
+    assert effect_text(effect_type, params) == expected
+
+
+def test_title_leaders_follow_the_skill_that_applies_them() -> None:
+    titles = {1: "Boon", 10: "Meal", 11: "Meal", 20: "Draught A", 21: "Draught B"}
+    buff_lists = [
+        (1, 2, 3),
+        # Two headline buffs with one title: the lower ID leads.
+        (11, 10, 12),
+        # Two titles: the members are ambiguous and get none.
+        (20, 21, 22),
+        # No headline buff at all.
+        (30, 31),
+    ]
+    assert title_leaders(buff_lists, titles) == {2: 1, 3: 1, 12: 10}
+
+
+def test_title_leaders_drop_a_buff_reached_by_two_titles() -> None:
+    titles = {1: "Boon", 5: "Meal"}
+    assert title_leaders([(1, 2), (5, 2)], titles) == {}

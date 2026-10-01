@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+import struct
+from collections.abc import Iterator
+
 from _common.binary import u16, u32
 from _common.item_key import split_item_key
 from _common.prefixed_string import find_prefixed_ascii
+from _dbss.skill.parser import build_skill_buff_index
 
 
 _MAGIC = b"PABR"
@@ -20,6 +24,12 @@ ICON_ROOT = "ui_texture/icon/"
 # The character this item places or summons (furniture, fences, pets), keyed
 # like characterstatic.dbss and characterobject.dbss; 0 when there is none.
 _CHARACTER_ID = 0xAA
+
+# skill_key_1 and skill_key_2: the skills a consumable casts, `skill.dbss`
+# keys whose buff_ids are the item's buffs; 0 when unused. Every level of an
+# item stores the same keys.
+_SKILL_KEYS = 0xCC
+_SKILL_KEYS_STRUCT = struct.Struct("<II")
 
 
 def parse_itemenchantoffset_records(data: bytes) -> list[dict]:
@@ -60,6 +70,16 @@ def max_enchant_levels(offset_rows: list[dict]) -> dict[int, int]:
     return levels
 
 
+def _base_rows(offset_rows: list[dict]) -> Iterator[dict]:
+    """The level-0 (base item) rows, one per item."""
+    return (row for row in offset_rows if not row["enchant_level"])
+
+
+def _skill_keys(data: bytes, start: int) -> tuple[int, ...]:
+    """The non-zero skill keys of the block at `start`, in slot order."""
+    return tuple(key for key in _SKILL_KEYS_STRUCT.unpack_from(data, start + _SKILL_KEYS) if key)
+
+
 def parse_itemenchant_records(data: bytes, offset_data: bytes) -> list[dict]:
     """Parse one row per item from its level-0 block, with its highest level.
 
@@ -73,10 +93,7 @@ def parse_itemenchant_records(data: bytes, offset_data: bytes) -> list[dict]:
     max_levels = max_enchant_levels(offset_rows)
     records: list[dict] = []
 
-    for row in offset_rows:
-        if row["enchant_level"]:
-            continue
-
+    for row in _base_rows(offset_rows):
         start = row["data_offset"]
         end = start + row["data_size"]
         if end > len(data):
@@ -92,6 +109,7 @@ def parse_itemenchant_records(data: bytes, offset_data: bytes) -> list[dict]:
             "max_enchant_level": max_levels[row["item_id"]],
             "icon_path": f"{ICON_ROOT}{icon.lower()}" if icon else "",
             "character_id": u16(data, start + _CHARACTER_ID),
+            "skill_keys": list(_skill_keys(data, start)),
             "second_string": strings[1] if len(strings) > 1 else "",
             "block_size": row["data_size"],
         })
@@ -108,10 +126,7 @@ def build_item_icon_index(data: bytes, offset_data: bytes) -> dict[int, str]:
     """
     index: dict[int, str] = {}
 
-    for row in parse_itemenchantoffset_records(offset_data):
-        if row["enchant_level"]:
-            continue
-
+    for row in _base_rows(parse_itemenchantoffset_records(offset_data)):
         start = row["data_offset"]
         end = start + row["data_size"]
         if end > len(data):
@@ -133,10 +148,7 @@ def build_character_item_index(data: bytes, offset_data: bytes) -> dict[int, int
     """
     items_by_character: dict[int, list[int]] = {}
 
-    for row in parse_itemenchantoffset_records(offset_data):
-        if row["enchant_level"]:
-            continue
-
+    for row in _base_rows(parse_itemenchantoffset_records(offset_data)):
         start = row["data_offset"]
         if start + _CHARACTER_ID + 2 > len(data):
             continue
@@ -150,3 +162,29 @@ def build_character_item_index(data: bytes, offset_data: bytes) -> dict[int, int
         for character_id, items in items_by_character.items()
         if len(items) == 1
     }
+
+
+def build_buff_item_index(
+    data: bytes,
+    offset_data: bytes,
+    skill_data: bytes,
+    skill_offset_data: bytes,
+) -> dict[int, tuple[int, ...]]:
+    """Map a buff ID to every base item whose skills apply it, in ascending ID order.
+
+    The link runs item -> skill keys -> `skill.dbss` buff_ids. Skill keys with
+    no `skill.dbss` record (a few items store `0x1`) link nothing.
+    """
+    skill_buffs = build_skill_buff_index(skill_data, skill_offset_data)
+    items_by_buff: dict[int, set[int]] = {}
+
+    for row in _base_rows(parse_itemenchantoffset_records(offset_data)):
+        start = row["data_offset"]
+        if start + _SKILL_KEYS + _SKILL_KEYS_STRUCT.size > len(data):
+            continue
+
+        for skill_key in _skill_keys(data, start):
+            for buff_id in skill_buffs.get(skill_key, ()):
+                items_by_buff.setdefault(buff_id, set()).add(row["item_id"])
+
+    return {buff_id: tuple(sorted(items)) for buff_id, items in items_by_buff.items()}

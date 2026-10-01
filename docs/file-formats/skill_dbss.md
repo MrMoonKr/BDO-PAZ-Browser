@@ -128,7 +128,10 @@ non-zero ID after a zero. 20,362 records name one buff, 507 fill all ten, and
 This is the item to buff link: `itemenchant.dbss` `skill_key_1` and
 `skill_key_2` are keys of this table, and the buffs of both skills are the
 item's effects. Item 761880 casts skill 47683, which applies the six buffs
-48723 to 48728.
+48723 to 48728. The browser builds the `SKILL_BUFFS` and `BUFF_ITEMS` lookup
+indexes from it (see "Lookup Indexes" in docs/handler.md): the
+`itemenchant.dbss` Buffs column and the `buff.dbss` Applied By column read
+them.
 
 ### `resource_cost` and `stamina_cost`
 
@@ -177,7 +180,7 @@ and starts with event skills.
 | Cooldown    | num  | `cooldown_ms` as a duration (`8s`, `13.5s`, `30m`); empty when `0`; sorts by `cooldown_ms` |
 | Resource    | num  | `resource_cost` (MP or WP, by class); empty when `0`                  |
 | Stamina     | num  | `stamina_cost`; empty when `0`                                        |
-| Buffs       | list | `buff_ids` as buff ID and the first line of its LOC type `5` text; sorts by count |
+| Buffs       | list | `buff_ids` as the buff icon (`IconKind.BUFF`), buff ID and the first line of its LOC type `5` text; sorts by count |
 | Next Skills | list | `next_skill_keys` as skill names                                      |
 | Base Skill  | text | `base_skill_keys` as skill name                                       |
 | Script      | text | `script`                                                              |

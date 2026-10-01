@@ -28,8 +28,13 @@ from _common.lookup_index import IndexKind, LookupValue
 from _dbss.characterobject.parser import build_character_icon_index
 from _dbss.characterstatic.parser import build_knowledge_character_index
 from _dbss.detail_dialog.parser import build_character_lease_index
-from _dbss.itemenchant.parser import build_character_item_index, build_item_icon_index
+from _dbss.itemenchant.parser import (
+    build_buff_item_index,
+    build_character_item_index,
+    build_item_icon_index,
+)
 from _dbss.quest.parser import build_quest_icon_index
+from _dbss.skill.parser import build_skill_buff_index
 from _dbss.skilltype.parser import build_skill_icon_index, build_skill_name_index
 from _dbss.worldmapmonster.parser import build_worldmap_marker_icon_index
 from paz.bdo_index_cache import CachedIndexes, builder_fingerprint
@@ -45,6 +50,8 @@ CHARACTERSTATIC = f"{_BINARY}/characterstatic.dbss"
 CHARACTERSTATIC_OFFSET = f"{_BINARY}/characterstaticoffset.dbss"
 DETAIL_DIALOG = f"{_BINARY}/detail_dialog.dbss"
 DETAIL_DIALOG_OFFSET = f"{_BINARY}/detail_dialogoffset.dbss"
+SKILL = f"{_BINARY}/skill.dbss"
+SKILL_OFFSET = f"{_BINARY}/skilloffset.dbss"
 SKILLTYPE = f"{_BINARY}/skilltype.dbss"
 SKILLTYPE_OFFSET = f"{_BINARY}/skilltypeoffset.dbss"
 BUFFSIMPLY = f"{_BINARY}/buffsimply.bss"
@@ -118,6 +125,13 @@ INDEX_SPECS: tuple[IndexSpec, ...] = (
         IndexKind.PRODUCTION_ITEMS,
         (PLANTEXCHANGEGROUP, ITEMSUBGROUP, ITEMSUBGROUP_OFFSET),
         build_production_item_index,
+    ),
+    IndexSpec(IndexKind.SKILL_BUFFS, (SKILL, SKILL_OFFSET), build_skill_buff_index),
+    # The item to buff link: itemenchant.dbss skill keys -> skill.dbss buff_ids.
+    IndexSpec(
+        IndexKind.BUFF_ITEMS,
+        (ITEMENCHANT, ITEMENCHANT_OFFSET, SKILL, SKILL_OFFSET),
+        build_buff_item_index,
     ),
 )
 

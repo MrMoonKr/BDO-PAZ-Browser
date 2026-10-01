@@ -152,3 +152,32 @@ def test_descriptions_are_display_text(skill_result: HandlerResult) -> None:
         assert "<PA" not in r["description"], r["skill_key"]
         assert r["description"] not in {"<null>", "UNKNOWN"}, r["skill_key"]
 
+
+
+def test_build_skill_buff_index_keeps_slot_order() -> None:
+    from _dbss.skill.parser import build_skill_buff_index
+    from tests.fixtures import ensure_fixtures
+
+    paths = ensure_fixtures(SKILL_CASE)
+    index = build_skill_buff_index(paths["skill.dbss"].read_bytes(), paths[_OFFSET_FILE].read_bytes())
+
+    assert index[_ITEM_SKILL_KEY] == (48723, 48724, 48725, 48726, 48727, 48728)
+    # Skills without buffs are left out rather than stored empty.
+    assert all(index.values())
+
+
+def test_buff_list_cell_draws_buff_icons() -> None:
+    from _common.buff import buff_list_cell
+    from _common.lookup_index import init_index
+
+    icon = "ui_texture/icon/new_icon/04_pc_skill/03_buff/silverbless.dds"
+    init_index(IndexKind.BUFF_ICON, {48723: icon})
+    try:
+        cell = buff_list_cell([48723, 48724, 48725, 48726], 3)
+    finally:
+        init_index(IndexKind.BUFF_ICON, None)
+
+    assert f'data-icon-path="{icon}"' in cell
+    # Buffs without an icon keep their label; the hidden rest is counted.
+    assert "48724" in cell and "48726" not in cell
+    assert cell.endswith("(+1)")

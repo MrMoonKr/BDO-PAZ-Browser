@@ -5,9 +5,11 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
+from _common.buff import buff_label, buff_list_cell
 from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import loc_text
+from _common.skill import skill_buff_ids
 from .parser import (
     parse_itemenchant_records,
     parse_itemenchantoffset_records,
@@ -22,6 +24,27 @@ _LOC_TYPE_ITEM = 0
 _LOC_TYPE_CHARACTER = 6
 
 _EMPTY = "-"
+_LIST_PREVIEW_ITEMS = 3
+
+
+def _with_links(record: dict) -> dict:
+    """The parsed record plus its item name, placed character and buffs."""
+    buff_ids = skill_buff_ids(record["skill_keys"])
+    return {
+        **record,
+        "item_name": loc_text(_LOC_TYPE_ITEM, record["item_id"]),
+        # 0 means "places no character"; None sorts last and exports empty.
+        "character_id": record["character_id"] or None,
+        "character_name": (
+            loc_text(_LOC_TYPE_CHARACTER, record["character_id"])
+            if record["character_id"]
+            else ""
+        ),
+        # Both skills' buffs, in slot order, from the SKILL_BUFFS lookup index.
+        "buff_ids": buff_ids,
+        "buffs": [buff_label(buff_id) for buff_id in buff_ids],
+        "buff_count": len(buff_ids) or None,
+    }
 
 
 class ItemEnchantOffsetHandler(PreviewHandler):
@@ -76,6 +99,7 @@ class ItemEnchantHandler(PreviewHandler):
             Column(cols.get("maxLevel", "Max Level"), "num", sort_key="max_enchant_level"),
             Column(cols.get("objectId", "Object ID"), "num", sort_key="character_id"),
             Column(cols.get("object", "Object"), sort_key="character_name"),
+            Column(cols.get("buffs", "Buffs"), sort_key="buff_count"),
         ]
 
     def sortable_fields(self) -> frozenset[str]:
@@ -97,20 +121,7 @@ class ItemEnchantHandler(PreviewHandler):
         if offset_raw is None:
             raise ValueError(f"{_OFFSET_FILE} companion not found.")
 
-        return [
-            {
-                **record,
-                "item_name": loc_text(_LOC_TYPE_ITEM, record["item_id"]),
-                # 0 means "places no character"; None sorts last and exports empty.
-                "character_id": record["character_id"] or None,
-                "character_name": (
-                    loc_text(_LOC_TYPE_CHARACTER, record["character_id"])
-                    if record["character_id"]
-                    else ""
-                ),
-            }
-            for record in parse_itemenchant_records(data, offset_raw)
-        ]
+        return [_with_links(record) for record in parse_itemenchant_records(data, offset_raw)]
 
     def render_records_page(
         self,
@@ -135,6 +146,7 @@ class ItemEnchantHandler(PreviewHandler):
                 e(record["max_enchant_level"]),
                 e(record["character_id"]) if record["character_id"] is not None else _EMPTY,
                 e(record["character_name"] or _EMPTY),
+                buff_list_cell(record["buff_ids"], _LIST_PREVIEW_ITEMS) or _EMPTY,
             ]
             for record in slice_
         ]

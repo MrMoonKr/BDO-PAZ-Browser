@@ -6,12 +6,11 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.buff import buff_loc_description
+from _common.buff import buff_label, buff_list_cell
 from _common.duration import format_duration
 from _common.html import Column, e, icon_cell, join_limited, sort_keys, table, truncate
 from _common.icon_index import IconKind, icon_path
 from _common.lang import load_handler_strings
-from _common.loc import strip_pa_tags
 from _common.pabr_offset import PabrOffsetRow, parse_pabr_u32_offset_rows
 from _common.skill import skill_description, skill_name, split_skill_key
 from .parser import SkillRecord, parse_skill_records
@@ -22,13 +21,6 @@ _OFFSET_FILE = "skilloffset.dbss"
 _EMPTY = "-"
 _LIST_PREVIEW_ITEMS = 3
 _SCRIPT_PREVIEW_CHARS = 80
-
-
-def _buff_label(buff_id: int) -> str:
-    """Buff ID and the first line of its LOC type 5 text."""
-    text = strip_pa_tags(buff_loc_description(buff_id))
-    first_line = text.split("\n", 1)[0].strip()
-    return f"{buff_id} {first_line}" if first_line else str(buff_id)
 
 
 def _skill_label(skill_key: int) -> str:
@@ -52,7 +44,7 @@ def _record_dict(record: SkillRecord) -> dict:
         "resource_cost": record.resource_cost or None,
         "stamina_cost": record.stamina_cost or None,
         "buff_ids": list(record.buff_ids),
-        "buffs": [_buff_label(buff_id) for buff_id in record.buff_ids],
+        "buffs": [buff_label(buff_id) for buff_id in record.buff_ids],
         "buff_count": len(record.buff_ids) or None,
         "next_skill_keys": list(record.next_skill_keys),
         "next_skills": [_skill_label(key) for key in record.next_skill_keys],
@@ -178,7 +170,7 @@ class SkillHandler(PreviewHandler):
                 e(r["cooldown"] or _EMPTY),
                 e(r["resource_cost"] or _EMPTY),
                 e(r["stamina_cost"] or _EMPTY),
-                e(join_limited(r["buffs"], _LIST_PREVIEW_ITEMS) or _EMPTY),
+                buff_list_cell(r["buff_ids"], _LIST_PREVIEW_ITEMS) or _EMPTY,
                 e(join_limited(r["next_skills"], _LIST_PREVIEW_ITEMS) or _EMPTY),
                 e(r["base_skill"] or _EMPTY),
                 e(truncate(r["script"], _SCRIPT_PREVIEW_CHARS) or _EMPTY),

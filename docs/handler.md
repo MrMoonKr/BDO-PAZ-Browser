@@ -867,6 +867,8 @@ IDs (`LookupValue`).
 | `MENU_ICON`, `SUBMENU_ICON` | `menu.bss`, `submenu.bss`       | sprite sheet path |
 | `MENU_ICON_REGION`, `SUBMENU_ICON_REGION` | `menu.bss`, `submenu.bss` | `(x1, y1, x2, y2)` |
 | `PRODUCTION_ITEMS` | `plantexchangegroup.bss`, `itemsubgroup.dbss`, `itemsubgroupoffset.dbss` | item keys (tuple) |
+| `SKILL_BUFFS`    | `skill.dbss`, `skilloffset.dbss`           | buff IDs (tuple) |
+| `BUFF_ITEMS`     | `itemenchant.dbss`, `itemenchantoffset.dbss`, `skill.dbss`, `skilloffset.dbss` | item IDs (tuple) |
 
 `CHARACTER_ITEM` maps a character to the one base item that places or summons
 it (`character_id` at `+0xAA` in
@@ -898,10 +900,10 @@ skills) that would otherwise show only an ID.
 [buffsimply.bss](file-formats/buffsimply_bss.md), which stores the same icon
 paths as `buff.dbss` in fixed 30-byte rows (1.4 MB against 12 MB of
 variable-length records). Buffs without an icon or with the `UNKNOWN`
-placeholder are left out. Read it through `IconKind.BUFF`; nothing does yet,
-the Buffs column of `skill.dbss` and a future item to buff link are the
-intended readers, through `icon_list_cell()`. `buff_icon_path()` in `_common/buff.py` normalizes the
-stored paths for both buff tables.
+placeholder are left out. Read it through `IconKind.BUFF`, or through
+`buff_list_cell()` in `_common/buff.py`, which draws a buff list with icons
+(the Buffs columns of `skill.dbss` and `itemenchant.dbss`). `buff_icon_path()`
+there normalizes the stored paths for both buff tables.
 
 `ITEM_KEY_ICON` maps a packed item key (`enchant_level << 24 | item_id`) to
 the icon of that level, for the 551 items whose icon or name changes with
@@ -951,6 +953,19 @@ there, which adds the `item_keys` and `items`
 record fields (names from `item_key_text()` in `_common/item_key.py`). The
 `plantexchangegroup.bss` Items column and the `plantzone.dbss` Produced Items
 column read it that way.
+
+`SKILL_BUFFS` and `BUFF_ITEMS` are the item to buff link. An item's
+`itemenchant.dbss` skill keys name [skill.dbss](file-formats/skill_dbss.md)
+records, whose `buff_ids` are the item's buffs (item 761880 -> skill 47683 ->
+buffs 48723 to 48728). `SKILL_BUFFS` maps a skill key to its buff IDs in slot
+order, leaving out skills without buffs; read it through `skill_buff_ids()` in
+`_common/skill.py`, which the `itemenchant.dbss` Buffs column uses. The
+`buff.dbss` handler also reads every entry to give the untitled buffs of a
+consumable the title of its headline buff. `BUFF_ITEMS` maps a buff ID to
+every base item whose skills apply it, in ascending ID order; the
+`buff.dbss` Applied By column reads it. It is built by
+`build_buff_item_index()` in `_dbss/itemenchant/parser.py`, which reads both
+tables, so `BUFF_ITEMS` costs no second read of `itemenchant.dbss`.
 
 ---
 

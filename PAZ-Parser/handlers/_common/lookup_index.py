@@ -51,6 +51,10 @@ class IndexKind(Enum):
     SUBMENU_ICON_REGION = "submenu_icon_region"
     # Packed item keys a worker production key produces.
     PRODUCTION_ITEMS = "production_items"
+    # Buff IDs a skill key applies, in slot order (skill.dbss buff_ids).
+    SKILL_BUFFS = "skill_buffs"
+    # Base item IDs whose skills apply a buff (itemenchant.dbss -> skill.dbss).
+    BUFF_ITEMS = "buff_items"
 
 
 # kind -> {entity_id: value}

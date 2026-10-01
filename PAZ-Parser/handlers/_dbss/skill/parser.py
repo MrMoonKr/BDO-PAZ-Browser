@@ -116,3 +116,12 @@ def parse_skill_records(data: bytes, offset_data: bytes) -> list[SkillRecord]:
     index size: the layout has changed and later fields would be misread.
     """
     return [parse_skill_record(data, row) for row in parse_pabr_u32_offset_rows(offset_data)]
+
+
+def build_skill_buff_index(data: bytes, offset_data: bytes) -> dict[int, tuple[int, ...]]:
+    """Map a skill key to the buffs it applies, in slot order; skills without buffs are left out."""
+    return {
+        record.skill_key: record.buff_ids
+        for record in parse_skill_records(data, offset_data)
+        if record.buff_ids
+    }

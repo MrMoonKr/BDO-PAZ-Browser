@@ -10,6 +10,8 @@
     "title": "Title",
     "name": "Internal Name",
     "description": "Description",
+    "effect": "Effect",
+    "appliedBy": "Applied By",
     "level": "Level",
     "effectType": "Effect Type",
     "duration": "Duration",

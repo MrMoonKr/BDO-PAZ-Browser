@@ -5,7 +5,8 @@
     "item": "Item",
     "maxLevel": "Max Level",
     "objectId": "Object ID",
-    "object": "Object"
+    "object": "Object",
+    "buffs": "Buffs"
   },
   "offsetColumns": {
     "itemId": "Item ID",

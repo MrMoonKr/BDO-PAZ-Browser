@@ -25,6 +25,7 @@ buff_id 48830
 | --------------------- | -------- | ------------------------------------------------- |
 | `buffoffset.dbss`     | Required | `buff_id → (offset, size)` index into this file   |
 | `languagedata_en.loc` | Optional | English descriptions, `str_type=5`                |
+| `skill.dbss`, `itemenchant.dbss` | Optional | Applied By and inherited titles, through the `BUFF_ITEMS` and `SKILL_BUFFS` lookup indexes |
 
 [`buffsimply.bss`](buffsimply_bss.md) holds the same buff IDs in fixed 30-byte
 rows with the icon path, `unknown_str`, `is_shown` and a few stats bytes. It is
@@ -183,10 +184,35 @@ These are also confirmed against the English LOC type 5 text of their buffs. Per
 | 11    | 312  | Casting Speed                 | `param_1` per million                                             |
 | 30    | 509  | Critical Hit Rate             | `param_1` per million                                             |
 | 41    | 804  | All Evasion                   | `param_1` = `3`, `param_2` = amount                               |
-| 80    | 180  | Life-skill EXP                | `param_1` = life skill (`4` Alchemy), `param_2` = amount          |
-| 93    | 238  | Special-attack extra damage   | `param_1` = attack kind (`2` down, `3` air, `4` critical), `param_2` per million |
-| 105   | 123  | Ignore resistance             | `param_1` = resistance kind (`8` all), `param_2` per million      |
+| 80    | 180  | Life-skill EXP                | `param_1` = life skill, see below; `param_2` = amount             |
+| 93    | 238  | Special-attack extra damage   | `param_1` = attack kind: `0` all, `1` back, `2` down, `3` air, `4` critical, `5` speed, `6` counter; `param_2` per million |
+| 105   | 123  | Ignore resistance             | `param_1` = resistance kind: `0` knockback/floating, `1` knockdown/bound, `2` grapple, `3` stun/stiffness/freezing, `8` all; `param_2` per million |
 | 128   | 78   | Weather resistance            | `param_1` = `0` heatstroke, `1` hypothermia; `param_2` per million |
+
+The `param_1` life skills of type 80, from the English text of its buffs:
+`0` Gathering, `1` Fishing, `2` Hunting, `3` Cooking, `4` Alchemy, `5`
+Processing, `6` Training, `7` Trading, `8` Farming, `9` Sailing, `11` Barter.
+No buff with text uses `10`. Kinds `5` and `6` of type 93 each appear on a
+single buff with text. Kind `2` of type 128 appears only on
+`Mermaid's Wish III`, so it stays unlabelled.
+
+### Effect text
+
+The browser's Effect column renders the parameters of every type above in the
+game's wording (`All AP +8`, `Life EXP +15%`, `Alchemy EXP +2,560,350`), from
+`_dbss/buff/effect.py`; other types, and the kinds left unlabelled, show a
+dash. Of the buffs with a one-line LOC type 5 text, 86% start
+with exactly that text on client 3458. The rest are the drift described in
+Notes, a `- Effect:` prefix, or placeholder text such as `UNKNOWN` and
+`Not in Use`.
+
+Simple Cron Meal (`9692`), whose two skills apply 20 buffs, also names
+effects of undecoded types on its bdocodex tooltip: Weight Limit +100 LT
+(type 29, `param_1` `1000000`), Health EXP +150 (89, `param_1` `2`, `param_2`
+`150`), Knowledge Gain Chance +10% (108), Higher Grade Knowledge Gain Chance
++5% (109), Monster Damage Reduction Rate +6% (120), Extra AP Against Monsters
++30 (136) and Attack/Casting Speed +2, Movement Speed +3 and Critical Hit +2
+(67, `param_1` `0` to `3`). One item is not enough to confirm them.
 
 [bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor/blob/HEAD/FORMATS.md) also names these, unconfirmed here because their buffs have no English text: 29 Weight Limit, 50 Mount EXP, 57 Drop Rate, 63 worker stamina recovery, 67 potential ranks, 79 Energy recovery, 89 Breath/Strength/Health EXP, 90 Death Penalty Resistance, 95 underwater breathing. It gives 149 as life-skill mastery with `param_1` the life skill, but `Hunting Mastery +100` stores `param_1 = 15`, which that source reads as "all life skills".
 
@@ -211,9 +237,11 @@ Value `2` (647 rows) holds 600-minute elixir-style buffs and value `38` the Adve
 | ----------- | ---- | ------------------------------------------------------------------- |
 | Buff ID     | num  | `buff_id`; right-aligned                                            |
 | Icon        | text | `icon_path`, resolved under `ui_texture/icon/`; dash when empty     |
-| Title       | text | Coloured first line of the description when more lines follow; dash otherwise |
+| Title       | text | Coloured first line of the description when more lines follow; else the title of the headline buff it is applied with, dimmed (see Notes); dash otherwise |
 | Internal Name | text | Korean `name`; labelled internal because no English form exists   |
 | Description | text | LOC `str_type=5`, `str_id1=buff_id`; falls back to the inline Korean description, `<null>` counts as empty |
+| Effect      | text | The parameters as text for the confirmed effect types (see Effect text); dash otherwise |
+| Applied By  | list | Base items whose skills apply the buff (`BUFF_ITEMS` lookup index), with item icons; sorts by count |
 | Level       | num  | `buff_level`                                                        |
 | Effect Type | num  | `effect_type`                                                       |
 | Duration    | text | `duration_ms` formatted as h/min/s; dash when `0`, stored as `None` so it sorts last                   |
@@ -311,7 +339,16 @@ Value `2` (647 rows) holds 600-minute elixir-style buffs and value `38` the Adve
   a u32 or i64. The item-to-buff link runs through a skill: the item's
   `itemenchant.dbss` skill keys name [`skill.dbss`](skill_dbss.md) records,
   whose `buff_ids` are the buffs (item 761880 -> skill 47683 -> buffs 48723
-  to 48728).
+  to 48728). On client 3458, 15,091 base items name a skill and 14,471 buffs
+  are applied by at least one item; one buff is applied by 270 items.
+- The headline buff is not always first in its skill's `buff_ids`, and some
+  skills apply several headline buffs. The browser gives an untitled buff the
+  title of the headline buffs of every skill that applies it, but only when
+  they all share one title (the lowest buff ID is the source). A buff reached
+  by two titles keeps none, e.g. 59496 (`Blessing of the Elvia Spirits` and
+  `Reminiscence of the Elvia Spirits`). On client 3458 that titles 2,488 more
+  buffs and leaves 396 ambiguous. The record keeps the source in
+  `title_buff_id`.
 
 ---
 

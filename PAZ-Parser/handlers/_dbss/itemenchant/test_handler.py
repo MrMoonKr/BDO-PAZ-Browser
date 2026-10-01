@@ -6,6 +6,7 @@ from typing import Any
 
 import pytest
 
+from _common.lookup_index import IndexKind
 from tests.framework import (
     CaseInput,
     DeclaredCountTest,
@@ -36,6 +37,11 @@ _OFFSET_HEADER_SIZE = 8
 _OFFSET_ROW_SIZE = 12
 _ENCHANT_LEVEL_SHIFT = 24
 _OFFSET_FILE = "itemenchantoffset.dbss"
+# [Blessing] Adventure's Boon (120 min) casts skill 47683 level 1, which
+# applies buffs 48723 to 48728.
+_BOON_ITEM = 761880
+_BOON_SKILL_KEY = 47683 << 16 | 1
+_BOON_BUFFS = (48723, 48724, 48725, 48726, 48727, 48728)
 
 
 def _base_item_count(offsets: bytes) -> int:
@@ -61,6 +67,7 @@ CASE = HandlerCase(
     uses_loc=True,
     loc_fields=["Item"],
     internal_path="gamecommondata/binary/itemenchant.dbss",
+    lookup_indexes={IndexKind.SKILL_BUFFS: {_BOON_SKILL_KEY: _BOON_BUFFS}},
     tests=[
         SchemaTest(
             required_keys=[
@@ -72,6 +79,10 @@ CASE = HandlerCase(
                 "item_name",
                 "character_id",
                 "character_name",
+                "skill_keys",
+                "buff_ids",
+                "buffs",
+                "buff_count",
             ],
         ),
         DeclaredCountTest(declared=_declared_items),
@@ -106,6 +117,18 @@ CASE = HandlerCase(
             col="item_id",
             value=_WEAPON,
             expected={"character_id": None, "character_name": ""},
+        ),
+        # A consumable: its skill's buffs, in slot order.
+        TargetTest(
+            col="item_id",
+            value=_BOON_ITEM,
+            expected={"skill_keys": [_BOON_SKILL_KEY], "buff_ids": list(_BOON_BUFFS), "buff_count": 6},
+        ),
+        # A weapon casts no skill; no buffs, None to sort last.
+        TargetTest(
+            col="item_id",
+            value=_WEAPON,
+            expected={"skill_keys": [], "buff_ids": [], "buff_count": None},
         ),
         TargetTest(
             col="item_id",
@@ -173,3 +196,23 @@ def test_build_character_item_index_links_placed_objects_and_pets() -> None:
     assert index[9425] == 860014
     # Named by 120 unrelated items, so it is not a link and is left out.
     assert 1 not in index
+
+
+def test_build_buff_item_index_links_buffs_to_their_items() -> None:
+    from _dbss.itemenchant.parser import build_buff_item_index
+    from tests.fixtures import ensure_fixtures
+
+    # The index spec's sources: this table and skill.dbss.
+    skill_files = {name: name for name in ("skill.dbss", "skilloffset.dbss")}
+    paths = ensure_fixtures(replace(CASE, companion_files={**CASE.companion_files, **skill_files}))
+    index = build_buff_item_index(
+        paths["itemenchant.dbss"].read_bytes(),
+        paths[_OFFSET_FILE].read_bytes(),
+        paths["skill.dbss"].read_bytes(),
+        paths["skilloffset.dbss"].read_bytes(),
+    )
+
+    for buff_id in _BOON_BUFFS:
+        assert _BOON_ITEM in index[buff_id]
+    # Item IDs are kept once each, in ascending order.
+    assert all(list(items) == sorted(set(items)) for items in index.values())

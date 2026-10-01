@@ -11,6 +11,8 @@ shares a name. See docs/file-formats/skill_dbss.md.
 
 from __future__ import annotations
 
+from collections.abc import Iterable
+
 from _common.loc import LOC_NULL, loc_text, strip_pa_tags
 from _common.lookup_index import IndexKind, lookup
 
@@ -53,3 +55,16 @@ def skill_description(skill_no: int, description_kr: str) -> str:
         return text
     korean = strip_pa_tags(description_kr).strip()
     return "" if korean in _KOREAN_PLACEHOLDERS else korean
+
+
+def _skill_buffs(skill_key: int) -> tuple[int, ...]:
+    linked = lookup(IndexKind.SKILL_BUFFS, skill_key)
+    return linked if isinstance(linked, tuple) else ()
+
+
+def skill_buff_ids(skill_keys: Iterable[int]) -> list[int]:
+    """Buffs the given skills apply, in skill then slot order, each once.
+
+    Read from the `SKILL_BUFFS` lookup index, so empty when it is not loaded.
+    """
+    return list(dict.fromkeys(buff_id for key in skill_keys for buff_id in _skill_buffs(key)))

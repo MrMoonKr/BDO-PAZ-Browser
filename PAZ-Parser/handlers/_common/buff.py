@@ -1,16 +1,19 @@
 """Buff icon paths and buff text shared by the buff tables.
 
 `buff.dbss` and `buffsimply.bss` store the same icon paths, and every table
-that names a buff (`buff.dbss`, `buffsimply.bss`, the `skill.dbss` Buffs
-column) reads its English text from LOC type 5, keyed by buff ID. See
-docs/file-formats/buff_dbss.md.
+that names a buff (`buff.dbss`, `buffsimply.bss`, the `skill.dbss` and
+`itemenchant.dbss` Buffs columns) reads its English text from LOC type 5,
+keyed by buff ID. See docs/file-formats/buff_dbss.md.
 """
 
 from __future__ import annotations
 
 import re
+from collections.abc import Sequence
 
-from _common.loc import LOC_NULL, loc_lookup
+from _common.html import icon_list_cell
+from _common.icon_index import IconKind, icon_path
+from _common.loc import LOC_NULL, loc_lookup, strip_pa_tags
 
 # Stored paths start at "New_Icon/", which lives under ui_texture/icon/.
 BUFF_ICON_ROOT = "ui_texture/icon/"
@@ -34,3 +37,17 @@ def buff_loc_description(buff_id: int) -> str:
     """LOC type 5 text of a buff with PA tags intact, or '' on a miss or `<null>`."""
     text = loc_lookup(LOC_BUFF_DESCRIPTION, buff_id).strip()
     return "" if text == LOC_NULL else text
+
+
+def buff_label(buff_id: int) -> str:
+    """Buff ID and the first line of its LOC type 5 text, for buff lists."""
+    text = strip_pa_tags(buff_loc_description(buff_id))
+    first_line = text.split("\n", 1)[0].strip()
+    return f"{buff_id} {first_line}" if first_line else str(buff_id)
+
+
+def buff_list_cell(buff_ids: Sequence[int], max_items: int) -> str:
+    """The first `max_items` buffs, each with its icon, and a count of the rest."""
+    shown = buff_ids[:max_items]
+    entries = [(icon_path(IconKind.BUFF, buff_id), buff_label(buff_id)) for buff_id in shown]
+    return icon_list_cell(entries, len(buff_ids) - len(shown))

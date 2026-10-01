@@ -31,6 +31,7 @@ item 58011 ([Event] Fence)
 | ------------------------- | -------- | --------------------------------------------- |
 | `itemenchantoffset.dbss`  | Required | Maps the packed key to a block offset and size |
 | `languagedata_en.loc`     | Optional | Item name for the item ID (`str_type=0`)      |
+| `skill.dbss`              | Optional | The buffs of `skill_key_1` and `skill_key_2`, through the `SKILL_BUFFS` lookup index |
 
 All multi-byte values are little-endian.
 
@@ -140,13 +141,21 @@ fields that are not yet decoded.
 | `+0xAC` | u8   | dye_parts    | `0` on all 3,960 object links; across base items `0` (61,650), `1` (4,786), `2` (2,165), `5` (1,052), `10` (218) |
 | `+0xAD` | u8   | unknown_ad   | `0` in 69,875 base items                                     |
 | `+0xAE` | ...  | unknown      | Numeric fields                                               |
-| `+0xCC` | u32  | skill_key_1  | Skill a consumable casts, a [`skill.dbss`](skill_dbss.md) key; its `buff_ids` are the item's buffs |
-| `+0xD0` | u32  | skill_key_2  | Second skill, used by composite meals                        |
+| `+0xCC` | u32  | skill_key_1  | Skill a consumable casts, a [`skill.dbss`](skill_dbss.md) key; its `buff_ids` are the item's buffs; `0` when none |
+| `+0xD0` | u32  | skill_key_2  | Second skill, used by composite meals; `0` when none          |
 | `+0xD4` | ...  | unknown      | Numeric fields up to the first string                        |
 
 Checked on Balacs Lunchbox (`9359`): `item_type` 2, `grade` 3, `weight`
 1,000 (0.1 LT), `buy_price` 38,775, `sell_price` 1,551, and a non-zero
 `skill_key_1`.
+
+The skill keys are fixed fields, read at `+0xCC` and `+0xD0` whatever the
+strings hold. Every enchant level of an item stores the same keys as its base
+block (client 3458). Simple Cron Meal (`9692`) uses both: the buffs of its
+two skills give the effects its tooltip lists on bdocodex (Combat EXP +20%,
+Skill EXP +10%, Max HP +150, Back Attack and Critical Hit Extra Damage +5%,
+Heatstroke/Hypothermia Resistance +10% and more). A few items store `1`
+(skill 0 level 1), which has no `skill.dbss` record and links nothing.
 
 The fixed part of this layout, and the names of `item_type`, `category`,
 `grade`, `dye_parts` and the skill keys, come from
@@ -263,6 +272,7 @@ One row per item, read from its level-0 block. Higher levels only feed Max Level
 | Max Level     | num  | Highest `enchant_level` among the item's keys; `0` when it cannot be enhanced |
 | Object ID     | num  | `character_id` of the placed object or summoned pet; dash when `0` |
 | Object        | text | LOC `str_type=6`, `str_id1=character_id`          |
+| Buffs         | list | Buffs of `skill_key_1`, then `skill_key_2` (`SKILL_BUFFS` lookup index), each once, with buff icon and the first line of its LOC type `5` text; sorts by count |
 
 ---
 
