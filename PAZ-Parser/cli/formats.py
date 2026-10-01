@@ -29,52 +29,52 @@ _FORMATS_IGNORE: frozenset[str] = frozenset({
     ".lnk", # Windows shortcut, not a game format
     ".fxo", # Shader cache, not a game format
     ".dxil", # Compiled DirectX shader, not a game format
+    ".fxo10", # Compiled DirectX Shader, not a game format
+    ".fxo11", # Compiled DirectX Shader, not a game format
     # skip for now/I have not checked these:
     ".barrier",
     ".bk2",
     ".bkd",
-    ".bnk",
+    ".bnk", # Wwise SoundBank?
     ".chroma",
     ".cl",
-    ".col",
-    ".collisiondata2",
+    ".col", # Computational boundary data?
+    ".collisiondata2", # Computational boundary data?
     ".combine",
     ".data",
-    ".db",
+    ".db", # Database File?
     ".fcb",
-    ".fxo10",
-    ".fxo11",
     ".gnf",
-    ".hdr",
-    ".hlod",
+    ".hdr", # Radiance HDR Image?
+    ".hlod", # Level of Detail?
     ".house",
     ".ifl",
     ".ipam",
     ".light",
     ".lightlist",
-    ".lod",
+    ".lod", # Level of Detail?
     ".mapdata",
     ".namelist",
     ".object",
     ".pa",
-    ".paa",
+    ".paa", # Animation?
     ".paac",
     ".paach",
     ".paap",
-    ".pab",
+    ".pab", # Skeleton?
     ".pabav",
-    ".pac",
+    ".pac", # Skinned Mesh / Character Models?
     ".pad",
     ".pae",
     ".paem",
     ".pah",
-    ".pam",
+    ".pam", # Static Object Mesh?
     ".pami",
     ".pas",
     ".paseqfe",
     ".pat",
     ".pc",
-    ".pcm",
+    ".pcm", # Pulse-Code Modulation?
     ".ph",
     ".pm",
     ".probe",

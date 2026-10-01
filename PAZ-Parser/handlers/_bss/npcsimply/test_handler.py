@@ -16,10 +16,13 @@ from tests.framework import (
     header_count,
     run_case,
 )
+from tests.runner import load_case
 
 from _bss.npcsimply.leases import character_leases
 from _common.lookup_index import IndexKind, init_index
+from _dbss.characterspawntype.navi_labels import navi_label
 from _dbss.characterspawntype.parser import ROLE_COUNT
+from _dbss.characterspawntype.role_labels import role_label_overrides
 from _dbss.detail_dialog.lease import Lease
 
 
@@ -41,6 +44,7 @@ CASE = HandlerCase(
                 "name",
                 "kind",
                 "kind_name",
+                "kind_label",
                 "name_kr",
                 "role_kr",
                 "script",
@@ -131,6 +135,17 @@ def test_npcsimply_unknown_12_marks_rows_without_lease_item(npcsimply_result: Ha
         if (record["unknown_12"] == _NO_LEASE_ITEM) != (record["lease_item_id"] is None)
     ]
     assert not mismatched, f"unknown_12 and lease_item_id disagree on characters {mismatched[:5]}"
+
+
+def test_npcsimply_every_kind_has_an_english_label(npcsimply_result: HandlerResult) -> None:
+    load_case(CASE)
+    overrides = role_label_overrides("en")
+    unlabelled = sorted({
+        r["kind_name"]
+        for r in npcsimply_result.records
+        if not (overrides.get(r["kind_name"]) or navi_label(r["kind"]))
+    })
+    assert not unlabelled, f"kinds without a navi label or override: {unlabelled}"
 
 
 def test_character_leases_keeps_the_stored_cost() -> None:

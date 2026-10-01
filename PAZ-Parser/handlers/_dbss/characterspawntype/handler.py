@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from pathlib import Path
 
 from bdo_models import PazEntry
@@ -8,10 +8,11 @@ from bdo_preview import PreviewHandler
 from table_sort import TableSort, sort_order_by_values
 
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
-from _common.html import Column, e, sort_keys, table
+from _common.html import Column, e, flag_cell, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.pabr_offset import parse_pabr_offset_rows
-from .parser import ROLE_COUNT, SPAWN_TYPE_NAMES, parse_characterspawntype_records
+from .parser import ROLE_COUNT, parse_characterspawntype_records
+from .role_labels import role_label, role_label_overrides, role_tooltip
 
 # Role columns sort by a virtual field, read from the record's role list.
 _ROLE_FIELD_PREFIX = "role_"
@@ -28,9 +29,10 @@ def _role_field(idx: int) -> str:
     return f"{_ROLE_FIELD_PREFIX}{idx:02d}"
 
 
-def _role_column(idx: int) -> Column:
-    # The client enum name is the header; the SpawnType value is on hover.
-    return Column(SPAWN_TYPE_NAMES[idx], "num", f'title="SpawnType {idx}"', sort_key=_role_field(idx))
+def _role_column(idx: int, label_overrides: Mapping[str, str]) -> Column:
+    # The role's display name is the header; its enum name and value are on hover.
+    label = role_label(idx, label_overrides)
+    return Column(e(label), "num", f'title="{e(role_tooltip(idx))}"', sort_key=_role_field(idx))
 
 
 class CharacterSpawnTypeOffsetHandler(PreviewHandler):
@@ -75,10 +77,11 @@ class CharacterSpawnTypeOffsetHandler(PreviewHandler):
 class CharacterSpawnTypeHandler(PreviewHandler):
     def _columns(self, active_roles: Iterable[int], has_loc: bool) -> list[Column]:
         cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        role_labels = role_label_overrides(self.lang)
         columns = [Column(cols.get("characterId", "Character ID"), "num", sort_key="character_id")]
         if has_loc:
             columns.append(Column(cols.get("nameEn", "Name (EN)"), sort_key="name_en"))
-        columns.extend(_role_column(i) for i in active_roles)
+        columns.extend(_role_column(i, role_labels) for i in active_roles)
         return columns
 
     def sortable_fields(self) -> frozenset[str]:
@@ -134,7 +137,7 @@ class CharacterSpawnTypeHandler(PreviewHandler):
             if has_loc:
                 row.append(e(r["name_en"]))
             for i in active:
-                row.append("1" if r["roles"][i] else "")
+                row.append(flag_cell(bool(r["roles"][i])))
             rows.append(row)
 
         return table(meta, self._columns(active, has_loc), rows)

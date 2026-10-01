@@ -166,3 +166,12 @@ th.sort-pending::after {
 .worker-grade-5 {
   color: var(--worker-grade-5);
 }
+
+/* Yes/no cells (flag_cell) */
+.flag-yes {
+  color: var(--accent);
+}
+
+.flag-no {
+  color: var(--error);
+}

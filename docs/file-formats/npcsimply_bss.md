@@ -122,7 +122,7 @@ This is the same `[string table][u32 rows_end][u32 0]` tail that `playercharacte
 | ------------ | ---- | --------------------------------------------------------- |
 | Character ID | num  | `character_id`                                            |
 | Name (EN)    | text | LOC `str_type=6`, `str_id1=character_id`                  |
-| Kind         | text | `kind` shown as its `SpawnType` name                      |
+| Kind         | text | `kind` shown as its role's display name, the same as the `characterspawntype.dbss` role headers (`role_labels.py`); the `SpawnType` name and value are in the tooltip |
 | Name (KR)    | text | `name_ref`                                                |
 | Role         | text | `role_ref`; Korean title/role, blank when empty           |
 | Knowledge ID | num  | Parsed from `getknowledge(<id>);` in `script_ref`         |

@@ -8,7 +8,7 @@ from bdo_preview import PreviewHandler
 from _common.html import Column, e, join_limited, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_text
-from _dbss.characterspawntype.parser import SPAWN_TYPE_NAMES
+from _dbss.characterspawntype.role_labels import role_label, role_label_overrides, role_tooltip, spawn_type_name
 from _dbss.detail_dialog.lease import lease_text
 from .leases import character_leases
 from .parser import parse_npcsimply_records
@@ -20,8 +20,9 @@ _EMPTY = "-"
 _LIST_PREVIEW_ITEMS = 3
 
 
-def _kind_name(kind: int) -> str:
-    return SPAWN_TYPE_NAMES[kind] if kind < len(SPAWN_TYPE_NAMES) else str(kind)
+def _kind_cell(record: dict) -> str:
+    """The role's display name, with its enum name and value on hover."""
+    return f'<span title="{e(role_tooltip(record["kind"]))}">{e(record["kind_label"])}</span>'
 
 
 def _lease_fields(record: dict, has_loc: bool) -> dict:
@@ -43,7 +44,7 @@ class NpcSimplyBssHandler(PreviewHandler):
         return [
             Column(cols.get("characterId", "Character ID"), "num", sort_key="character_id"),
             Column(cols.get("name", "Name (EN)"), sort_key="name"),
-            Column(cols.get("kind", "Kind"), sort_key="kind_name"),
+            Column(cols.get("kind", "Kind"), sort_key="kind_label"),
             Column(cols.get("nameKr", "Name (KR)"), sort_key="name_kr"),
             Column(cols.get("role", "Role"), sort_key="role_kr"),
             Column(cols.get("knowledgeId", "Knowledge ID"), "num", sort_key="knowledge_id"),
@@ -61,12 +62,14 @@ class NpcSimplyBssHandler(PreviewHandler):
         companions: dict[str, bytes],
     ) -> list[dict]:
         has_loc = is_loc_loaded()
+        role_labels = role_label_overrides(self.lang)
         return [
             {
                 **record,
                 **_lease_fields(record, has_loc),
                 "name": loc_text(_LOC_CHARACTER_NAME, record["character_id"]),
-                "kind_name": _kind_name(record["kind"]),
+                "kind_name": spawn_type_name(record["kind"]),
+                "kind_label": role_label(record["kind"], role_labels),
             }
             for record in parse_npcsimply_records(data)
         ]
@@ -85,7 +88,7 @@ class NpcSimplyBssHandler(PreviewHandler):
             [
                 e(record["character_id"]),
                 e(record["name"] or _EMPTY),
-                e(record["kind_name"]),
+                _kind_cell(record),
                 e(record["name_kr"] or _EMPTY),
                 e(record["role_kr"]),
                 e(_EMPTY if record["knowledge_id"] is None else record["knowledge_id"]),

@@ -36,6 +36,11 @@ def join_limited(values: Sequence[str], max_items: int) -> str:
     return ", ".join(values[:max_items]) + f", ... (+{len(values) - max_items})"
 
 
+def flag_cell(is_set: bool) -> str:
+    """A yes/no cell: a green check mark or a red cross."""
+    return '<span class="flag-yes">✓</span>' if is_set else '<span class="flag-no">✗</span>'
+
+
 def color_cell(colors: list[str]) -> str:
     if not colors:
         return "-"

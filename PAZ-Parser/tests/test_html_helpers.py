@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from api.bdo_api import _table_row_height
-from _common.html import icon_cell, sprite_icon_cell
+from _common.html import flag_cell, icon_cell, sprite_icon_cell
 
 
 def test_icon_cell_renders_escaped_icon_path() -> None:
@@ -36,3 +36,8 @@ def test_sprite_icon_cell_carries_the_sheet_and_region() -> None:
 def test_sprite_icon_cell_without_a_sheet_or_region_is_a_dash() -> None:
     assert sprite_icon_cell("", (0, 0, 1, 1)) == "-"
     assert sprite_icon_cell("ui_texture/a.dds", None) == "-"
+
+
+def test_flag_cell_marks_set_and_unset() -> None:
+    assert flag_cell(True) == '<span class="flag-yes">✓</span>'
+    assert flag_cell(False) == '<span class="flag-no">✗</span>'

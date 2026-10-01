@@ -769,8 +769,9 @@ skill table needs `skilltype.dbss` as a companion. A `GAME` sheet UI key
 (`LUA_SKILLTREE_PANEL_NAME0`) gets its LOC type 37 hash from
 `parse_key_hashes()` in `_bss/stringtable/parser.py`.
 
-`html.py` has `truncate(text, max_len)` for long text cells and
-`join_limited(values, max_items)` for list cells.
+`html.py` has `truncate(text, max_len)` for long text cells,
+`join_limited(values, max_items)` for list cells and `flag_cell(is_set)` for
+yes/no cells (a green check mark or a red cross).
 
 Use format-specific helpers inside that format package.
 

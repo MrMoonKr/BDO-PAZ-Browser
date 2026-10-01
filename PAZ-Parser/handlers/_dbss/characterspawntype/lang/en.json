@@ -7,5 +7,15 @@
   "columns": {
     "characterId": "Character ID",
     "nameEn": "Name (EN)"
+  },
+  "roleLabels": {
+    "NormalNpc": "Normal NPC",
+    "RandomShop": "Night Vendor",
+    "RandomShopDay": "Day Vendor",
+    "FishSupplyShop": "Imperial Fishing Delivery",
+    "GuildStable": "Guild Stable",
+    "GuildWharf": "Guild Wharf",
+    "Unknown41": "Grand Prix",
+    "ChangeMarniStone": "Marni's Stone"
   }
 }
