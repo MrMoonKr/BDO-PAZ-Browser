@@ -30,7 +30,7 @@ hunting ground 117, region tab 13 (Inner Edania), categories 3 (Marni's Realm), 
 | ----------------------------- | -------- | ------------------------------------------------------------------------- |
 | `dropuimaincategoryinfo.bss`  | Optional | Region tabs: tab key -> territory and tab icon, see below                 |
 | `dropuisubcategoryinfo.bss`   | Optional | Filter categories: Korean name and button icon, see below                 |
-| `dropuitaginfo.bss`           | Optional | Tag definitions (12.9 KB), not decoded; LOC type 117 names the tags by key |
+| `dropuitaginfo.bss`           | Optional | Tags: Korean name and tooltip, Dehkia's Lantern guide image, tag and text colours, see below |
 | `languagedata_en.loc`         | Optional | Zone names (116), categories (115), tags (117), territories (12), monsters (6), items (0), quests (18), regions (17), titles (1), nodes (29) |
 
 `dropuiurlinfo.bss` (20 bytes) is an empty PABR block on client 3458 (count
@@ -152,6 +152,43 @@ strings: the Korean names and the button icon names).
 
 No hunting ground stores 5 or 7.
 
+### `dropuitaginfo.bss`
+
+PABR block of 45 fixed 32-byte rows plus the counted string table (118
+strings: the Korean names and tooltips, the guide image names and the colours
+as hex text). Rows are sorted by key, 1 to 45 with no gaps.
+
+| Offset  | Type | Field                 | Notes                                                                    |
+| ------- | ---- | --------------------- | ------------------------------------------------------------------------ |
+| `+0x00` | u32  | key                   | Tag key, as in `tag_keys`; LOC type 117 `str_id1`                         |
+| `+0x04` | u32  | name_ref              | String table index of the Korean name (`#다수의 몬스터와 전투`); LOC `str_id4` 0 is the English one (`#LotsOfMobs`) |
+| `+0x08` | u32  | guide_texture_ref     | String table index of the guide image name; the empty string on 32 rows   |
+| `+0x0C` | u32  | desc_ref              | String table index of the Korean tooltip, with `<PAColor>` tags; LOC `str_id4` 1 is the English one |
+| `+0x10` | u32  | texture_color_ref     | String table index of `texture_color` as hex text (`ffe1ba65`)           |
+| `+0x14` | u32  | font_color_ref        | String table index of `font_color` as hex text                           |
+| `+0x18` | u32  | texture_color         | Tag background colour, ARGB (`0xFFE1BA65`)                                |
+| `+0x1C` | u32  | font_color            | Tag text colour, ARGB                                                     |
+
+The two hex strings always equal the two ARGB values (case aside: `ffD2691E`,
+`ff3CB371`), so the strings carry nothing extra. The colours are the same on
+34 rows; the other 11 have a darker background and a lighter text:
+
+| Keys                     | Tag                         | `texture_color` | `font_color` |
+| ------------------------ | --------------------------- | --------------- | ------------ |
+| 20, 21, 23, 25 to 32, 42, 43 | `#FixedLanternSpot`     | `0xFF5384D5`    | `0xFFA6C0EA` |
+| 38, 39, 40               | Stun, knockdown, knockback  | `0xFFD2691E`    | `0xFFFFA500` |
+| 41                       | `#AllanSerbinsLandscape`    | `0xFF3CB371`    | `0xFF98FB98` |
+
+`guide_texture_ref` is set only on the 13 `#FixedLanternSpot` rows, one image
+per zone (`Combine_Etc_DekiaLanterns_GroundTooltip_01` to `_13`): a map of
+where the Dehkia's Lantern can be summoned, shown when the tag is clicked.
+Some colours are shared: `0xFF63B6E6` on `#NoItemCollectGauge`,
+`#NoAgrisFever`, both Golden Pig Caves, Atoraxxion and Orzekea, and
+`0xFFCB6768` on `#TreasurePieces`, `#RedArtifacts` and `#HighestTier`.
+
+Tags 1 to 5, 17 and 36 are on no hunting ground on client 3458; LOC type 117
+names all 45 plus a key 46 with the same `#DivineAuthority` text as 45.
+
 ---
 
 ## Suggested UI Layout
@@ -169,9 +206,9 @@ No hunting ground stores 5 or 7.
 | Max AP      | text | `limited_ap`, with `(n%)` when `limited_ap_apply_percent` is not 0           |
 | Node        | text | `node_key` name (LOC type 29); dash when 0                                  |
 | Monsters    | text | Monster names (LOC type 6)                                                  |
-| Items       | text | Item names (LOC type 0)                                                     |
+| Items       | text | Icon and name (LOC type 0) of each item, through `item_key_list_cell()`      |
 | Quests      | text | Repeat and sudden quest titles (LOC type 18)                                |
-| Tags        | text | Tag names (LOC type 117)                                                    |
+| Tags        | text | Tag names (LOC type 117); the `dropuitaginfo.bss` colours are not drawn yet |
 | Titles      | text | Title names (LOC type 1)                                                    |
 | Species     | text | `tribe_type` as `{value} {label}` (`1 Demihumans`); the label from LOC type 37, falling back to the enum name (`1 NonHuman`) |
 
@@ -204,13 +241,13 @@ The position and region keys stay on the record but out of the table.
   Ancient Spirit Dust), not the packed `itemenchant.dbss` key.
 - bdo-viewer (built on bdo-data-extractor) counts 105 zones; the file holds
   112 rows.
-
----
-
-## Open Questions
-
-### Which tag fields does `dropuitaginfo.bss` add?
-
-LOC type 117 already names every tag key in the file, so the table does not
-need it. bdo-viewer says it holds the tag label and UI colours; it is not
-decoded.
+- The same Lua draws each tag through `ToClient_getDropUITagStaticStatusWrapper`:
+  `tagControl:SetColor(getTextureColor())`, `SetFontColor(getFontColor())`,
+  the text from `getTagString`, the tooltip from `getTagTooltipDescString`
+  under the `LUA_DROPITEMUI_TOOLTIP_TAG_TITLE` heading, and on click the
+  guide image from `getTagGuideTextureId` when `isExistGuideTextureId`.
+- Which slot is which colour comes from
+  [bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor)
+  (`DecodeTags`: `+0x18` texture, `+0x1C` font) and fits the data: wherever
+  the two differ, `+0x1C` is the lighter shade, as text on a tinted
+  background would be. The getters alone do not show the order.

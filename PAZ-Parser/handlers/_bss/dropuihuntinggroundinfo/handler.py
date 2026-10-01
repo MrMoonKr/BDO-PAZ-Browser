@@ -8,7 +8,7 @@ from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, join_limited, sort_keys, table
 from _common.hunting_ground import hunting_ground_name
-from _common.item_key import item_name
+from _common.item_key import item_key_list_cell, item_name
 from _common.lang import load_handler_strings
 from _common.loc import loc_text
 from _common.quest.quest import quest_title
@@ -149,7 +149,8 @@ class DropUiHuntingGroundInfoBssHandler(PreviewHandler):
                 e(r["max_ap"]),
                 e(r["node_name"] or _EMPTY),
                 _list_cell(r["monsters"]),
-                _list_cell(r["items"]),
+                # A plain item ID is its level 0 item key.
+                item_key_list_cell(r["drop_item_ids"], _LIST_PREVIEW_ITEMS) or _EMPTY,
                 _list_cell(r["quests"]),
                 _list_cell(r["tags"]),
                 _list_cell(r["titles"]),

@@ -913,7 +913,9 @@ through `item_key_icon_path(item_key)` in `_common/item_key.py`, which falls
 back to the item's own `IconKind.ITEM` icon for every other key. Item key
 lists show it through `item_key_list_cell(item_keys, max_items)` in the same
 module: the `itemsubgroup.dbss` Item Names column, the `plantexchangegroup.bss`
-Items column and the `plantzone.dbss` Produced Items column.
+Items column, the `plantzone.dbss` Produced Items column and the
+`dropuihuntinggroundinfo.bss` Items column. A plain item ID is its level 0
+key, so lists of item IDs use it too.
 
 Six small tables are indexed although only their own handlers show their
 icons today, so a later table can reuse them without opening the source

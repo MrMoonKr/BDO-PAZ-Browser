@@ -23,6 +23,8 @@ from _bss.dropuihuntinggroundinfo import tribe_labels
 from _bss.dropuihuntinggroundinfo.parser import parse_territory_keys
 from _bss.dropuihuntinggroundinfo.tribe_labels import TRIBE_LABELS, tribe_label, tribe_text
 from _bss.stringtable.parser import GAME_SHEET, parse_key_hashes
+from _common.html import e
+from _common.item_key import item_key_icon_path
 
 
 _MAIN_CATEGORY_FILE = "dropuimaincategoryinfo.bss"
@@ -137,6 +139,16 @@ def test_every_quest_key_names_a_quest(hunting_ground_result: HandlerResult) -> 
         if "/" in title and title.replace("/", "").isdigit()
     ]
     assert not shown, f"quests without a LOC title: {shown[:5]}"
+
+
+def test_items_column_shows_each_item_with_its_icon(hunting_ground_result: HandlerResult) -> None:
+    aresion = next(r for r in hunting_ground_result.records if r["key"] == _ARESION_TEMPLE)
+    first_item = aresion["drop_item_ids"][0]
+
+    html = load_case(CASE).handler.render_records_page([aresion], 0, 1)
+
+    assert f'data-icon-path="{e(item_key_icon_path(first_item))}"' in html
+    assert f'<span class="icon-cell-label">{e(aresion["items"][0])}</span>' in html
 
 
 def test_tribe_label_hashes_match_stringtable() -> None:
