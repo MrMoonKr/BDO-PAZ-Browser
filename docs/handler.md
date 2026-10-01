@@ -785,8 +785,9 @@ bit mask (`skillsimply.dbss` `class_mask`) split it with
 `class_types_in_mask()`; `ALL_CLASSES_MASK` is the "every class" value.
 
 `html.py` has `truncate(text, max_len)` for long text cells,
-`join_limited(values, max_items)` for list cells and `flag_cell(is_set)` for
-yes/no cells (a green check mark or a red cross).
+`join_limited(values, max_items)` for list cells, `icon_list_cell(entries,
+hidden_count)` for list cells with an icon per entry (see [Icons](#icons)) and
+`flag_cell(is_set)` for yes/no cells (a green check mark or a red cross).
 
 Use format-specific helpers inside that format package.
 
@@ -899,7 +900,7 @@ paths as `buff.dbss` in fixed 30-byte rows (1.4 MB against 12 MB of
 variable-length records). Buffs without an icon or with the `UNKNOWN`
 placeholder are left out. Read it through `IconKind.BUFF`; nothing does yet,
 the Buffs column of `skill.dbss` and a future item to buff link are the
-intended readers. `buff_icon_path()` in `_common/buff.py` normalizes the
+intended readers, through `icon_list_cell()`. `buff_icon_path()` in `_common/buff.py` normalizes the
 stored paths for both buff tables.
 
 `ITEM_KEY_ICON` maps a packed item key (`enchant_level << 24 | item_id`) to
@@ -909,9 +910,10 @@ reads [specialenchantitem.bss](file-formats/specialenchantitem_bss.md), which
 copies those per-level icons out of `itemenchant.dbss` in fixed 19-byte rows
 (175 KB); `ITEM_ICON` reads level-0 blocks only and cannot reach them. Read it
 through `item_key_icon_path(item_key)` in `_common/item_key.py`, which falls
-back to the item's own `IconKind.ITEM` icon for every other key. Nothing reads
-it yet: item key lists (the `itemsubgroup.dbss` and production item columns)
-show names only, and a list cell needs a way to show an icon per entry first.
+back to the item's own `IconKind.ITEM` icon for every other key. Item key
+lists show it through `item_key_list_cell(item_keys, max_items)` in the same
+module: the `itemsubgroup.dbss` Item Names column, the `plantexchangegroup.bss`
+Items column and the `plantzone.dbss` Produced Items column.
 
 Six small tables are indexed although only their own handlers show their
 icons today, so a later table can reuse them without opening the source
@@ -955,6 +957,16 @@ column read it that way.
 `icon_cell(path)` renders an icon cell. The path is not fetched at parse time,
 the UI lazily resolves it against the PAZ entry map when the cell scrolls into
 view, so a handler only has to emit a correct path string.
+
+A list of entities with an icon each (the items of a subgroup) goes in one cell
+with `icon_list_cell(entries, hidden_count)`: each `(icon_path, label)` entry
+becomes an `icon_label_cell()`, the icon followed by its label instead of its
+path, comma-separated like `join_limited()`. The caller slices the entries to
+the ones shown and passes the count of the rest, so icon paths are looked up
+for one page of entries only. An entry without a path is its label alone. When
+the client does not ship an entry's icon, the GUI and `browser.py --render`
+drop the swatch and keep the label, where a plain icon cell becomes a dash.
+Records keep the plain names (`items`) for search, sort and CSV.
 
 The backend turns the file into a 64 x 64 PNG thumbnail
 (`api/bdo_icon_images.py`). Uncompressed 32-bit BGRA DDS files are wrapped

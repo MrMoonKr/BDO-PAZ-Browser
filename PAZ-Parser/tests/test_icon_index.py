@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 
+from _common.html import e
 from _common.icon_index import (
     ITEM_ICON_DIR,
     IconKind,
@@ -10,7 +11,7 @@ from _common.icon_index import (
     icon_region,
     indexed_icon_path,
 )
-from _common.item_key import item_key_icon_path
+from _common.item_key import item_key_icon_path, item_key_list_cell, item_key_text
 from _common.lookup_index import IndexKind, clear_indexes, init_index
 
 _KING_CLAM = 24626
@@ -206,6 +207,20 @@ def test_item_key_icon_falls_back_to_the_item_icon() -> None:
 
 def test_item_key_icon_without_indexes_derives_from_the_item_id() -> None:
     assert item_key_icon_path(_SOVEREIGN_LEVEL_3) == f"{ITEM_ICON_DIR}/00747201.png"
+
+
+def test_item_key_list_cell_shows_each_level_icon_and_counts_the_rest() -> None:
+    init_index(IndexKind.ITEM_ICON, {_SOVEREIGN_LONGSWORD: f"{_WEAPON_DIR}/00747201.dds"})
+    init_index(IndexKind.ITEM_KEY_ICON, {_SOVEREIGN_LEVEL_10: f"{_WEAPON_DIR}/00747201_02.dds"})
+
+    html = item_key_list_cell([_SOVEREIGN_LEVEL_10, _SOVEREIGN_LEVEL_3, _SOVEREIGN_LONGSWORD], 2)
+
+    assert f'data-icon-path="{_WEAPON_DIR}/00747201_02.dds"' in html
+    assert f'data-icon-path="{_WEAPON_DIR}/00747201.dds"' in html
+    # Names come from LOC when another test loaded it, else the item ID.
+    assert f">{e(item_key_text(_SOVEREIGN_LEVEL_10))}<" in html
+    assert f">{e(item_key_text(_SOVEREIGN_LEVEL_3))}<" in html
+    assert html.endswith(", ... (+1)")
 
 
 _TITLE_SHEET = "ui_texture/combine/icon/combine_title_icon_00.dds"

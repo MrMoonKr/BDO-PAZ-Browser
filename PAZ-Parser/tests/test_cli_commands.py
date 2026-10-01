@@ -9,7 +9,14 @@ from cli.errors import CliError
 from cli.index import entry_records, parse_id, parse_kind
 from cli.parsed_file import find_entry
 from cli.render import app_stylesheet, inline_icons, standalone_page
-from _common.html import PENDING_ICON_CELL_RE, icon_cell, missing_icon_cell
+from _common.html import (
+    PENDING_ICON_CELL_RE,
+    PENDING_ICON_LABEL_RE,
+    icon_cell,
+    icon_label_cell,
+    missing_icon_cell,
+    missing_icon_label_cell,
+)
 from _common.lookup_index import IndexKind, clear_indexes, init_index
 
 
@@ -117,6 +124,25 @@ def test_inline_icons_embeds_found_icons_and_dashes_missing_ones() -> None:
     assert requests == [found, missing]
     assert icon_cell(found, "data:image/png;base64,AA") in result
     assert missing_icon_cell(missing) in result
+    assert "icon-cell-placeholder" not in result
+
+
+def test_pending_label_pattern_matches_icon_label_cell() -> None:
+    path, label = 'ui/icon/a"&<b.dds', "Sap & <Knot>"
+
+    assert PENDING_ICON_LABEL_RE.fullmatch(icon_label_cell(path, label))
+    assert not PENDING_ICON_LABEL_RE.search(icon_label_cell(path, label, "data:image/png;base64,AA"))
+
+
+def test_inline_icons_keeps_the_label_of_a_missing_list_entry() -> None:
+    found, missing = "ui/icon/found.dds", "ui/icon/missing.dds"
+    icons = {found: "data:image/png;base64,AA"}
+    body = f"<td>{icon_label_cell(found, 'Sap')}, {icon_label_cell(missing, 'Knot & Bark')}</td>"
+
+    result = inline_icons(body, icons.get)
+
+    assert icon_label_cell(found, "Sap", "data:image/png;base64,AA") in result
+    assert missing_icon_label_cell(missing, "Knot & Bark") in result
     assert "icon-cell-placeholder" not in result
 
 

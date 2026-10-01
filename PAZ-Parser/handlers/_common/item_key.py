@@ -15,6 +15,9 @@ See docs/file-formats/specialenchantitem_bss.md.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+
+from _common.html import icon_list_cell
 from _common.icon_index import IconKind, icon_path
 from _common.loc import loc_text
 
@@ -48,3 +51,10 @@ def item_key_text(item_key: int) -> str:
     item_id, enchant_level = split_item_key(item_key)
     name = item_name(item_id) or str(item_id)
     return f"{name} ({enchant_level})" if enchant_level else name
+
+
+def item_key_list_cell(item_keys: Sequence[int], max_items: int) -> str:
+    """The first `max_items` items, each with its per-level icon, and a count of the rest."""
+    shown = item_keys[:max_items]
+    entries = [(item_key_icon_path(key), item_key_text(key)) for key in shown]
+    return icon_list_cell(entries, len(item_keys) - len(shown))

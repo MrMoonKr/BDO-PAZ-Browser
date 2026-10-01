@@ -116,8 +116,15 @@ th.sort-pending::after {
   border: 1px solid var(--border);
 }
 
-.icon-cell-path {
+.icon-cell-path,
+.icon-cell-label {
   min-width: 0;
+}
+
+/* List entries share a line with their separators and the "+N" count; keep the
+   labels on that text line instead of the icon's bottom edge. */
+.icon-label-cell {
+  vertical-align: middle;
 }
 
 .data-table tbody tr:nth-child(even) td {

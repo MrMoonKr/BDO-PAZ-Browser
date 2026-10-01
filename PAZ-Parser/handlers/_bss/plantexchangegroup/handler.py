@@ -5,7 +5,8 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import Column, e, join_limited, sort_keys, table
+from _common.html import Column, e, sort_keys, table
+from _common.item_key import item_key_list_cell
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded
 from _common.production_items import production_item_fields
@@ -88,7 +89,7 @@ class PlantExchangeGroupBssHandler(PreviewHandler):
                 e(record["production_key"]),
                 e(record["name"] or _EMPTY),
                 e(record["item_subgroup_key"]),
-                e(join_limited(record["items"], _LIST_PREVIEW_ITEMS) or _EMPTY),
+                item_key_list_cell(record["item_keys"] or [], _LIST_PREVIEW_ITEMS) or _EMPTY,
             ]
             for record in slice_
         ]

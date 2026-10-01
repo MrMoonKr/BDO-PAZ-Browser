@@ -14,7 +14,14 @@ from pathlib import Path
 
 from bdo_preview import PARSED_RECORDS_PER_PAGE
 
-from _common.html import PENDING_ICON_CELL_RE, icon_cell, missing_icon_cell
+from _common.html import (
+    PENDING_ICON_CELL_RE,
+    PENDING_ICON_LABEL_RE,
+    icon_cell,
+    icon_label_cell,
+    missing_icon_cell,
+    missing_icon_label_cell,
+)
 
 from .errors import CliError
 from .parsed_file import ParsedFile, load_parsed_file
@@ -44,14 +51,21 @@ def app_stylesheet() -> str:
 def inline_icons(body: str, icon_url: Callable[[str], str | None]) -> str:
     """Swap each pending icon cell for its image, or a dash when not shipped.
 
-    `icon_url` returns a data URL for an icon path, or None when not shipped.
+    A list entry keeps its label without an image. `icon_url` returns a data URL
+    for an icon path, or None when not shipped.
     """
-    def replace(match: re.Match[str]) -> str:
+    def replace_cell(match: re.Match[str]) -> str:
         path = html.unescape(match.group(1))
         url = icon_url(path)
         return icon_cell(path, url) if url else missing_icon_cell(path)
 
-    return PENDING_ICON_CELL_RE.sub(replace, body)
+    def replace_label_cell(match: re.Match[str]) -> str:
+        path, label = html.unescape(match.group(1)), html.unescape(match.group(2))
+        url = icon_url(path)
+        return icon_label_cell(path, label, url) if url else missing_icon_label_cell(path, label)
+
+    body = PENDING_ICON_CELL_RE.sub(replace_cell, body)
+    return PENDING_ICON_LABEL_RE.sub(replace_label_cell, body)
 
 
 def standalone_page(title: str, note: str, body: str, css: str) -> str:

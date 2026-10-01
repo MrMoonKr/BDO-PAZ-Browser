@@ -80,10 +80,15 @@ export const tableMethods = {
 
     if (!url) {
       // Not shipped in the PAZ. Collapse to a dash rather than leave an empty
-      // swatch beside a path that resolves to nothing. The full path stays in
-      // the cell's title attribute.
+      // swatch beside a path that resolves to nothing; a list entry keeps its
+      // label and drops only the swatch. The full path stays in the cell's
+      // title attribute.
       cell.classList.add("icon-cell-missing");
-      cell.textContent = "-";
+      if (cell.classList.contains("icon-label-cell")) {
+        cell.querySelector(".icon-cell-thumb")?.remove();
+      } else {
+        cell.textContent = "-";
+      }
       return;
     }
 

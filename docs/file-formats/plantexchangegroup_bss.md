@@ -97,7 +97,7 @@ Every one of the 439 zones has exactly one worldmap link (see [`*.bwp`](waypoint
 | Production Key     | num  | `production_key`                                                      |
 | Name               | text | English "parent node - sub-node" name (see English Names), else the Korean `name_ref` string |
 | Item Subgroup      | num  | `item_subgroup_key`                                                   |
-| Items              | text | LOC type 0 names of the subgroup's items; a dash when the subgroup is missing |
+| Items              | text | Icon and LOC type 0 name of each of the subgroup's items; a dash when the subgroup is missing |
 
 ---
 

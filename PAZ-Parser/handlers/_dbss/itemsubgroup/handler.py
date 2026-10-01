@@ -5,8 +5,8 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import Column, e, join_limited, sort_keys, table
-from _common.item_key import item_key_text
+from _common.html import Column, e, sort_keys, table
+from _common.item_key import item_key_list_cell, item_key_text
 from _common.lang import load_handler_strings
 from _common.pabr_offset import parse_pabr_offset_rows
 from .parser import parse_itemsubgroup_records
@@ -107,7 +107,7 @@ class ItemSubgroupHandler(PreviewHandler):
             [
                 e(record["subgroup_key"]),
                 e(record["entry_count"]),
-                e(join_limited(record["items"], _LIST_PREVIEW_ITEMS)),
+                item_key_list_cell(record["item_keys"], _LIST_PREVIEW_ITEMS),
             ]
             for record in slice_
         ]

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from api.bdo_api import _table_row_height
-from _common.html import flag_cell, icon_cell, sprite_icon_cell
+from _common.html import flag_cell, icon_cell, icon_label_cell, icon_list_cell, sprite_icon_cell
 
 
 def test_icon_cell_renders_escaped_icon_path() -> None:
@@ -41,3 +41,25 @@ def test_sprite_icon_cell_without_a_sheet_or_region_is_a_dash() -> None:
 def test_flag_cell_marks_set_and_unset() -> None:
     assert flag_cell(True) == '<span class="flag-yes">✓</span>'
     assert flag_cell(False) == '<span class="flag-no">✗</span>'
+
+
+def test_icon_label_cell_shows_the_label_and_keeps_the_path_for_loading() -> None:
+    html = icon_label_cell('ui/icon/a"b.dds', "Sap & <Knot>")
+
+    assert 'class="icon-cell icon-label-cell"' in html
+    assert 'data-icon-path="ui/icon/a&quot;b.dds"' in html
+    assert '<span class="icon-cell-label">Sap &amp; &lt;Knot&gt;</span>' in html
+    assert "icon-cell-path" not in html
+    assert "icon-cell-placeholder" in html
+
+
+def test_icon_label_cell_without_a_path_is_the_label_alone() -> None:
+    assert icon_label_cell("", "Sap & Knot") == "Sap &amp; Knot"
+
+
+def test_icon_list_cell_joins_entries_and_counts_the_hidden_ones() -> None:
+    entries = [("ui/a.dds", "A"), ("", "B")]
+
+    assert icon_list_cell(entries) == f"{icon_label_cell('ui/a.dds', 'A')}, B"
+    assert icon_list_cell(entries, 3).endswith("B, ... (+3)")
+    assert icon_list_cell([]) == ""

@@ -5,7 +5,8 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import Column, e, join_limited, sort_keys, table
+from _common.html import Column, e, sort_keys, table
+from _common.item_key import item_key_list_cell
 from _common.lang import load_handler_strings
 from _common.loc import loc_text
 from _common.production_items import production_item_fields
@@ -119,7 +120,7 @@ class PlantZoneHandler(PreviewHandler):
                 e(r["record_id"]),
                 e(r["node_name"] or _EMPTY),
                 e(r["production_key"]),
-                e(join_limited(r["items"], _LIST_PREVIEW_ITEMS) or _EMPTY),
+                item_key_list_cell(r["item_keys"] or [], _LIST_PREVIEW_ITEMS) or _EMPTY,
             ]
             for r in slice_
         ]
