@@ -12,7 +12,7 @@ from _common.icon_index import IconKind, icon_path
 from _common.lang import load_handler_strings
 from _common.loc import strip_pa_tags
 from _common.pabr_offset import parse_pabr_u32_offset_rows
-from _common.skill import skill_name, split_skill_key
+from _common.skill import skill_description, skill_name, split_skill_key
 from .parser import SkillRecord, parse_skill_records
 
 
@@ -44,6 +44,7 @@ def _record_dict(record: SkillRecord) -> dict:
         # English, then the Korean skilltype.dbss name, then the internal name.
         "name": skill_name(record.skill_no) or record.name,
         "internal_name": record.name,
+        "description": skill_description(record.skill_no, record.description_kr),
         # Zero means no cooldown; None sorts last.
         "cooldown_ms": record.cooldown_ms or None,
         "cooldown": format_duration(record.cooldown_ms),
@@ -116,6 +117,7 @@ class SkillHandler(PreviewHandler):
             Column(cols.get("level", "Level"), "num", sort_key="level"),
             Column(cols.get("icon", "Icon"), sort_key="icon_path"),
             Column(cols.get("name", "Name"), sort_key="name"),
+            Column(cols.get("description", "Description"), sort_key="description"),
             Column(cols.get("cooldown", "Cooldown"), "num", sort_key="cooldown_ms"),
             Column(cols.get("buffs", "Buffs"), sort_key="buff_count"),
             Column(cols.get("nextSkills", "Next Skills")),
@@ -160,6 +162,7 @@ class SkillHandler(PreviewHandler):
                 e(r["level"]),
                 icon_cell(r["icon_path"]),
                 e(r["name"] or _EMPTY),
+                e(r["description"] or _EMPTY),
                 e(r["cooldown"] or _EMPTY),
                 e(join_limited(r["buffs"], _LIST_PREVIEW_ITEMS) or _EMPTY),
                 e(join_limited(r["next_skills"], _LIST_PREVIEW_ITEMS) or _EMPTY),

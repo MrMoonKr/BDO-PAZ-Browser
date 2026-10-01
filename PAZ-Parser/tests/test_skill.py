@@ -9,6 +9,10 @@ from _common.lookup_index import IndexKind, clear_indexes, init_index
 _TELEPORT_SKILL = 57339
 _TELEPORT_KR = "므로웨크의 미궁 입구 텔레포트"
 _STUB_ENGLISH = "English name"
+# Guild skill 65069 (Ample Storage Lv. 8) has a Korean description and no LOC one.
+_GUILD_SKILL = 65069
+_GUILD_KR = "- 효과\n<PAColor0xffe9bd23>길드 창고를 10칸 확장.<PAOldColor>"
+_STUB_DESCRIPTION = "English description"
 
 
 @pytest.fixture(autouse=True)
@@ -19,7 +23,13 @@ def _clear_indexes():
 
 
 def _loc(names: dict[int, str]):
-    return lambda str_type, str_id1, str_id4=0: names.get(str_id1, "") if str_type == skill.LOC_SKILL_NAME else ""
+    return lambda str_type, str_id1, str_id4=0: names.get(str_id1, "") if str_type == skill.LOC_SKILL else ""
+
+
+def _loc_descriptions(descriptions: dict[int, str]):
+    return lambda str_type, str_id1, str_id4=0: (
+        descriptions.get(str_id1, "") if str_type == skill.LOC_SKILL and str_id4 == 1 else ""
+    )
 
 
 def test_split_skill_key() -> None:
@@ -44,3 +54,23 @@ def test_no_name_without_loc_or_index(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(skill, "loc_text", _loc({}))
 
     assert skill.skill_name(_TELEPORT_SKILL) == ""
+
+
+def test_loc_description_wins_over_the_korean_one(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(skill, "loc_text", _loc_descriptions({_GUILD_SKILL: _STUB_DESCRIPTION}))
+
+    assert skill.skill_description(_GUILD_SKILL, _GUILD_KR) == _STUB_DESCRIPTION
+
+
+@pytest.mark.parametrize("loc_description", ["", "<null>"])
+def test_korean_description_fills_a_missing_loc_one(monkeypatch: pytest.MonkeyPatch, loc_description: str) -> None:
+    monkeypatch.setattr(skill, "loc_text", _loc_descriptions({_GUILD_SKILL: loc_description}))
+
+    assert skill.skill_description(_GUILD_SKILL, _GUILD_KR) == "- 효과\n길드 창고를 10칸 확장."
+
+
+@pytest.mark.parametrize("stored", ["", "UNKNOWN", "<null>"])
+def test_korean_placeholders_are_no_description(monkeypatch: pytest.MonkeyPatch, stored: str) -> None:
+    monkeypatch.setattr(skill, "loc_text", _loc_descriptions({}))
+
+    assert skill.skill_description(_GUILD_SKILL, stored) == ""

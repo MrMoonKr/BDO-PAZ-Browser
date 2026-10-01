@@ -11,10 +11,14 @@ shares a name. See docs/file-formats/skill_dbss.md.
 
 from __future__ import annotations
 
-from _common.loc import loc_text
+from _common.loc import LOC_NULL, loc_text, strip_pa_tags
 from _common.lookup_index import IndexKind, lookup
 
-LOC_SKILL_NAME = 10
+LOC_SKILL = 10
+# LOC type 10 holds the skill name at str_id4 0 and its description at 1.
+_LOC_DESCRIPTION_ID4 = 1
+# Literals some skill.dbss records store instead of a description.
+_KOREAN_PLACEHOLDERS = frozenset({"UNKNOWN", LOC_NULL})
 
 _LEVEL_MASK = 0xFFFF
 
@@ -30,8 +34,22 @@ def skill_name(skill_no: int) -> str:
     The Korean names come from the `SKILL_NAME_KR` lookup index, so a table
     needs no `skilltype.dbss` companion for them.
     """
-    name = loc_text(LOC_SKILL_NAME, skill_no)
+    name = loc_text(LOC_SKILL, skill_no)
     if name:
         return name
     korean = lookup(IndexKind.SKILL_NAME_KR, skill_no)
     return korean if isinstance(korean, str) else ""
+
+
+def skill_description(skill_no: int, description_kr: str) -> str:
+    """LOC type 10 description of a skill, else its Korean `skill.dbss` text, else ''.
+
+    Both have PA tags removed. The Korean text is the source of the LOC one on
+    most skills, but guild skills store their effect text there instead (see
+    docs/file-formats/skill_dbss.md).
+    """
+    text = loc_text(LOC_SKILL, skill_no, _LOC_DESCRIPTION_ID4)
+    if text and text != LOC_NULL:
+        return text
+    korean = strip_pa_tags(description_kr).strip()
+    return "" if korean in _KOREAN_PLACEHOLDERS else korean

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import re
 
-from _common.loc import loc_lookup
+from _common.loc import LOC_NULL, loc_lookup
 
 # Stored paths start at "New_Icon/", which lives under ui_texture/icon/.
 BUFF_ICON_ROOT = "ui_texture/icon/"
@@ -20,8 +20,6 @@ LOC_BUFF_DESCRIPTION = 5
 _ICON_PLACEHOLDER = "unknown"
 # A few paths double a separator (`04_pc_skill//04_debuff`).
 _REPEATED_SLASHES = re.compile(r"/{2,}")
-# LOC type 5 stores this literal for buffs that have no description.
-_LOC_NULL = "<null>"
 
 
 def buff_icon_path(stored: str) -> str:
@@ -35,4 +33,4 @@ def buff_icon_path(stored: str) -> str:
 def buff_loc_description(buff_id: int) -> str:
     """LOC type 5 text of a buff with PA tags intact, or '' on a miss or `<null>`."""
     text = loc_lookup(LOC_BUFF_DESCRIPTION, buff_id).strip()
-    return "" if text == _LOC_NULL else text
+    return "" if text == LOC_NULL else text

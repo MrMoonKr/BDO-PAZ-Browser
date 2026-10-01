@@ -35,12 +35,12 @@ SKILL_CASE = HandlerCase(
     companion_files={_OFFSET_FILE: _OFFSET_FILE},
     loc_file="languagedata_en.loc",
     uses_loc=True,
-    loc_fields=["Name", "Buffs", "Next Skills", "Base Skill"],
+    loc_fields=["Name", "Description", "Buffs", "Next Skills", "Base Skill"],
     internal_path="gamecommondata/binary/skill.dbss",
     lookup_indexes={IndexKind.SKILL_ICON: {1759: _GRAVE_DIGGING_ICON}},
     tests=[
         SchemaTest(required_keys=[
-            "skill_key", "skill_no", "level", "icon_path", "name", "cooldown_ms", "buff_ids", "buffs",
+            "skill_key", "skill_no", "level", "icon_path", "name", "description", "cooldown_ms", "buff_ids", "buffs",
             "next_skill_keys", "base_skill_keys", "script",
         ]),
         DeclaredCountTest(declared=header_count(offset=0)),
@@ -144,3 +144,10 @@ def test_skilltypeoffset_dbss(spec: Any, skilltype_offset_result: HandlerResult)
 def test_records_open_in_skill_key_order(skill_result: HandlerResult) -> None:
     keys = [r["skill_key"] for r in skill_result.records]
     assert keys == sorted(keys)
+
+
+def test_descriptions_are_display_text(skill_result: HandlerResult) -> None:
+    for r in skill_result.records:
+        assert "<PA" not in r["description"], r["skill_key"]
+        assert r["description"] not in {"<null>", "UNKNOWN"}, r["skill_key"]
+

@@ -8,6 +8,9 @@ from _common.binary import u32
 
 _PA_TAG_RE = re.compile(r"<PA[^>]+>")
 
+# Some LOC keys store this literal instead of a text.
+LOC_NULL = "<null>"
+
 
 def strip_pa_tags(text: str) -> str:
     return _PA_TAG_RE.sub("", text)

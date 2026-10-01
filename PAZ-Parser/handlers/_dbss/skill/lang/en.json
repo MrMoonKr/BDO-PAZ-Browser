@@ -4,6 +4,7 @@
     "level": "Level",
     "icon": "Icon",
     "name": "Name",
+    "description": "Description",
     "cooldown": "Cooldown",
     "buffs": "Buffs",
     "nextSkills": "Next Skills",
