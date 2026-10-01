@@ -57,7 +57,7 @@ string in the table is UTF-16LE (`is_wide=1`).
 | ------- | ---- | --------- | ------------------------------------------------------------------ |
 | `+0x00` | u32  | key_hash  | Hash of the key string; the LOC type `37` `str_id1`                 |
 | `+0x04` | u32  | key_ref   | String table index of the key, e.g. `NPCSHOP_BUY`                  |
-| `+0x08` | u32  | value_ref | String table index of the Korean text; never the empty string       |
+| `+0x08` | u32  | value_ref | String table index of the Korean text; never empty, 7 are one space |
 | `+0x0C` | u32  | zero      | Always `0`                                                         |
 
 Rows are not sorted by hash or key. The string table is interned: each string
@@ -135,12 +135,13 @@ so a script's `StringSheet_<name>` picks the sheet and with it the LOC
 
 ## Suggested UI Layout
 
-One table over all sheets, one row per string row.
+One table over all sheets, one row per string row, in `key_hash` order (the
+file does not sort its rows).
 
 | Column | Type | Notes                                                                          |
 | ------ | ---- | ------------------------------------------------------------------------------ |
-| Sheet  | text | Sheet name from `name_ref`                                                     |
 | Hash   | num  | `key_hash` as hex (`0x4D282741`), the LOC type `37` `str_id1`                   |
+| Sheet  | text | Sheet name from `name_ref`                                                     |
 | Key    | text | `key_ref`                                                                      |
 | Text   | text | LOC type `37` with the sheet's `str_id2` (`str_id3` 0, then 1), else the Korean `value_ref` |
 
@@ -148,6 +149,9 @@ One table over all sheets, one row per string row.
 
 ## Notes
 
+- Seven `GAME` values are a single space (`LUA_JOIN_LOCALWAR_RULE7`,
+  `LUA_LOCALWARINFO_DESC_RULETEXT_9` and others on client 3458), unused rule
+  and condition lines; the table shows them as a dash when LOC has no text.
 - Some values forward to another key rather than holding text, e.g.
   `ALCHEMY_COOK_TEXT_DESCRPITION` = `{TextBind:TEXTBIND_ALCHEMY_COOK_TEXT_DESCRPITION}`,
   and the LOC text keeps the same placeholder. Values also carry `<PAColor...>`

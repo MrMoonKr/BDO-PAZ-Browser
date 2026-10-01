@@ -25,6 +25,7 @@ from .planttown.handler import PlantTownBssHandler
 from .questjournalvideoinfo.handler import QuestJournalVideoInfoBssHandler
 from .skillgroup.handler import SkillGroupBssHandler
 from .specialenchantitem.handler import SpecialEnchantItemBssHandler
+from .stringtable.handler import StringTableBssHandler
 from .submenu.handler import SubmenuBssHandler
 from .titlecategory.handler import TitleCategoryBssHandler
 from .ui_skillgroup.handler import UiSkillGroupBssHandler
@@ -59,6 +60,7 @@ def register_bss_handlers() -> None:
     register_handler("questjournalvideoinfo.bss", QuestJournalVideoInfoBssHandler())
     register_handler("skillgroup.bss", SkillGroupBssHandler())
     register_handler("specialenchantitem.bss", SpecialEnchantItemBssHandler())
+    register_handler("stringtable.bss", StringTableBssHandler())
     register_handler("submenu.bss", SubmenuBssHandler())
     register_handler("titlecategory.bss", TitleCategoryBssHandler())
     # One layout for the three skill windows.

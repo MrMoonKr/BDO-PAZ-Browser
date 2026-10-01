@@ -767,7 +767,9 @@ a skill with `skill_name(skill_no)` from `skill.py`: LOC type 10 first, then
 the Korean `skilltype.dbss` name from the `SKILL_NAME_KR` lookup index, so no
 skill table needs `skilltype.dbss` as a companion. A `GAME` sheet UI key
 (`LUA_SKILLTREE_PANEL_NAME0`) gets its LOC type 37 hash from
-`parse_key_hashes()` in `_bss/stringtable/parser.py`.
+`parse_key_hashes()` in `_bss/stringtable/parser.py`, and its text from
+`ui_key_text()` (by key) or `ui_hash_text()` (by hash) in
+`_bss/stringtable/text.py`, which try LOC `str_id3` 0 and then 1.
 
 `html.py` has `truncate(text, max_len)` for long text cells,
 `join_limited(values, max_items)` for list cells and `flag_cell(is_set)` for

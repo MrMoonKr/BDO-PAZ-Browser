@@ -13,7 +13,8 @@ A PABR file of sheets, then the shared counted string table and trailer:
 from __future__ import annotations
 
 import struct
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
+from dataclasses import dataclass
 
 from _common.pabr_strings import read_string_table, string_at
 
@@ -39,18 +40,25 @@ SHEET_LOC_ID2 = {
 }
 
 
-def parse_sheet_key_hashes(data: bytes, sheet_names: Iterable[str]) -> dict[str, dict[str, int]]:
-    """`sheet -> {key -> key_hash}` for the named sheets; absent sheets map to {}.
+@dataclass(frozen=True)
+class StringRow:
+    """One keyed UI string: its sheet, key, key hash and Korean text."""
+
+    sheet: str
+    key_hash: int
+    key: str
+    value: str
+
+
+def _iter_sheets(data: bytes, strings: list[str]) -> Iterator[tuple[str, bytes]]:
+    """`(sheet name, row bytes)` for every sheet in file order.
 
     Raises ValueError when the file is not a PABR string table or a sheet runs
-    past the string table.
+    past the file.
     """
     if data[:4] != _MAGIC:
         raise ValueError("stringtable.bss does not start with PABR")
 
-    wanted = set(sheet_names)
-    found: dict[str, dict[str, int]] = {name: {} for name in wanted}
-    strings = read_string_table(data)
     (sheet_count,) = _U32.unpack_from(data, 4)
     pos = 8
     for _ in range(sheet_count):
@@ -59,13 +67,31 @@ def parse_sheet_key_hashes(data: bytes, sheet_names: Iterable[str]) -> dict[str,
         rows_end = pos + row_count * _ROW.size
         if rows_end > len(data):
             raise ValueError(f"stringtable sheet at 0x{pos:X} runs past the file")
-        name = string_at(strings, name_ref)
+        yield string_at(strings, name_ref), data[pos:rows_end]
+        pos = rows_end
+
+
+def parse_rows(data: bytes) -> list[StringRow]:
+    """Every row of every sheet, in file order."""
+    strings = read_string_table(data)
+    return [
+        StringRow(sheet, key_hash, string_at(strings, key_ref), string_at(strings, value_ref))
+        for sheet, rows in _iter_sheets(data, strings)
+        for key_hash, key_ref, value_ref, _ in _ROW.iter_unpack(rows)
+    ]
+
+
+def parse_sheet_key_hashes(data: bytes, sheet_names: Iterable[str]) -> dict[str, dict[str, int]]:
+    """`sheet -> {key -> key_hash}` for the named sheets; absent sheets map to {}."""
+    wanted = set(sheet_names)
+    found: dict[str, dict[str, int]] = {name: {} for name in wanted}
+    strings = read_string_table(data)
+    for name, rows in _iter_sheets(data, strings):
         if name in wanted:
             found[name] = {
                 string_at(strings, key_ref): key_hash
-                for key_hash, key_ref, _, _ in _ROW.iter_unpack(data[pos:rows_end])
+                for key_hash, key_ref, _, _ in _ROW.iter_unpack(rows)
             }
-        pos = rows_end
     return found
 
 
