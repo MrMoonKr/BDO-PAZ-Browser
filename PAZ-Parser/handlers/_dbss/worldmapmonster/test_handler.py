@@ -23,7 +23,10 @@ from _dbss.worldmapmonster.parser import build_worldmap_marker_icon_index
 _OFFSET_FILE = "worldmapmonsteroffset.dbss"
 _BOSS_DIR = "ui_texture/combine/etc/worldmapboss"
 _BASILISK_DEN = 36
+_BASILISK_DEN_HUNTING_GROUND = 35
 _GOBLIN = 1
+# A Black Shrine boss: its unknown_ref is 0, which is no hunting ground.
+_BIHYUNG = 197
 
 MARKER_CASE = HandlerCase(
     handler_name="worldmapmonster.dbss",
@@ -31,7 +34,7 @@ MARKER_CASE = HandlerCase(
     companion_files={_OFFSET_FILE: _OFFSET_FILE},
     loc_file="languagedata_en.loc",
     uses_loc=True,
-    loc_fields=["name", "label", "detail"],
+    loc_fields=["name", "label", "detail", "hunting_ground"],
     internal_path="gamecommondata/binary/worldmapmonster.dbss",
     tests=[
         SchemaTest(
@@ -52,6 +55,8 @@ MARKER_CASE = HandlerCase(
                 "name",
                 "label",
                 "detail",
+                "hunting_ground_key",
+                "hunting_ground",
             ],
         ),
         DeclaredCountTest(declared=header_count(offset=0)),
@@ -64,13 +69,27 @@ MARKER_CASE = HandlerCase(
                 "name_kr": "바실리스크 소굴",
                 "name": "Basilisk Den",
                 "icon_path": f"{_BOSS_DIR}/worldmapmonster_36.dds",
+                "hunting_ground_key": _BASILISK_DEN_HUNTING_GROUND,
+                "hunting_ground": "Basilisk Den",
             },
         ),
-        # Level-range zones repeat their label on the second line.
+        TargetTest(
+            col="key",
+            value=_BIHYUNG,
+            expected={"hunting_ground_key": None, "hunting_ground": ""},
+        ),
+        # Level-range zones repeat their label on the second line, and store
+        # -1 for the hunting ground.
         TargetTest(
             col="key",
             value=_GOBLIN,
-            expected={"name": "Goblin", "label": "Lv. 12-15", "detail": ""},
+            expected={
+                "name": "Goblin",
+                "label": "Lv. 12-15",
+                "detail": "",
+                "hunting_ground_key": None,
+                "hunting_ground": "",
+            },
         ),
     ],
 )

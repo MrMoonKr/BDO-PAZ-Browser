@@ -748,6 +748,7 @@ _common/
 ├── buff.py              # buff icon paths and LOC type 5 buff text
 ├── duration.py          # format_duration(): milliseconds as "1h 30m", "45s", "1.5s"
 ├── html.py
+├── hunting_ground.py    # drop window hunting ground names by key (LOC type 116)
 ├── pabr_offset.py       # offset companions: u16 or u32 keys, with or without PABR magic
 ├── prefixed_string.py   # length-prefixed strings: strict and lenient readers
 ├── inline_text.py       # decode_inline_text(): the stored \n escape of inline text

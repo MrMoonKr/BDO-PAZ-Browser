@@ -88,10 +88,13 @@ for the wide ones, ASCII for the icon path (`RecordReader`).
 | Name      | text | LOC type 40 `str_id4` 0, falling back to `name_kr`                                  |
 | Label     | text | LOC type 40 `str_id4` 1, falling back to `line1_kr`                                 |
 | Detail    | text | LOC type 40 `str_id4` 2, falling back to `line2_kr`; dash when it repeats the label |
+| Hunting Ground | text | On hunting zones (`unknown_kind` 0) with `unknown_ref` set, that drop window hunting ground's name (LOC type 116), falling back to the key; dash elsewhere |
 | Condition | text | `condition`; dash when empty                                                       |
 
 The position, `unknown_str`, `unknown_ref`, `unknown_kind` and `unknown_flag`
-stay on the record but out of the table.
+stay on the record but out of the table. The Hunting Ground column reads
+`unknown_ref` only on hunting zones: the Black Shrine markers store `0` to `9`
+there, which would otherwise name hunting grounds 0 to 9 (Mansha Forest, ...).
 
 ---
 
@@ -115,7 +118,7 @@ stay on the record but out of the table.
   markers, whose icons are named `Combine_WorldMap_HardcoreServer_*`; the drop
   item window checks `ToClient_HardCoreChannelWithContensOption`), `4` world, field and hunting field bosses (15).
 - On hunting zones (`unknown_kind` 0) `unknown_ref` is the hunting ground ID
-  of `dropuihuntinggroundinfo.bss`, the drop item window's hunting ground
+  of [`dropuihuntinggroundinfo.bss`](dropuihuntinggroundinfo_bss.md), the drop item window's hunting ground
   table. All 92 hunting zones that set it point at the row of the same place
   on client 3458: 87 by name (`바실리스크 소굴` -> hunting ground 35,
   `바실리스크 소굴`), the other five under another name for that place

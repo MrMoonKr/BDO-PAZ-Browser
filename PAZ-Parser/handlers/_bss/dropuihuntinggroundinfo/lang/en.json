@@ -1,0 +1,20 @@
+{
+  "columns": {
+    "key": "Key",
+    "name": "Name",
+    "region": "Region",
+    "categories": "Categories",
+    "species": "Species",
+    "ap": "AP",
+    "dp": "DP",
+    "totalAp": "Total AP",
+    "totalDp": "Total DP",
+    "maxAp": "Max AP",
+    "node": "Node",
+    "monsters": "Monsters",
+    "items": "Items",
+    "quests": "Quests",
+    "tags": "Tags",
+    "titles": "Titles"
+  }
+}

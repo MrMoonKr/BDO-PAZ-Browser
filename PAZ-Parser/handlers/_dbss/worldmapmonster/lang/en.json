@@ -10,6 +10,7 @@
     "name": "Name",
     "label": "Label",
     "detail": "Detail",
+    "huntingGround": "Hunting Ground",
     "condition": "Condition"
   }
 }
