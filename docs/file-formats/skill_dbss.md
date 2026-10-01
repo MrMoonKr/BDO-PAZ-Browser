@@ -98,7 +98,11 @@ empty name `N` is `17`.
 | `+0x08` | u8         | unknown_08          | Non-zero on 8,842 records                                       |
 | `+0x09` | string     | name                | ASCII internal name such as `SUMMON_BOSS`, `SETUP_QUESTITEM`; empty on 24,794 records |
 | `N+0`   | u32        | name_hash           | `0` when `name` is empty; one value per name (4,461 names)      |
-| `N+4`   | u8[74]     | unknown_n04         | Not decoded                                                     |
+| `N+4`   | u8[40]     | unknown_n04         | Not decoded                                                     |
+| `N+44`  | u16        | resource_cost       | MP or WP the skill costs, by class; `0` on 26,837 records, up to `660`; see below |
+| `N+46`  | u8[7]      | unknown_n46         | Not decoded                                                     |
+| `N+53`  | u16        | stamina_cost        | Stamina the skill costs; `0` on 26,635 records, `1` on 2,825, up to `600`; see below |
+| `N+55`  | u8[23]     | unknown_n55         | Not decoded                                                     |
 | `N+78`  | u32        | cooldown_ms         | Cooldown in milliseconds; `0` on 22,798 records, see Notes      |
 | `N+82`  | u16[10]    | buff_ids            | `buff.dbss` IDs, zero-padded; see below                          |
 | `N+102` | string     | description         | Korean description, UTF-16; empty on 21,114 records, `UNKNOWN` on 1,284, `<null>` on 43. Usually the Korean source of LOC type `10` `str_id4 = 1`, see Notes. Line breaks are stored as the two characters `\n` (873 on client 3458) and decoded by the parser |
@@ -125,6 +129,20 @@ This is the item to buff link: `itemenchant.dbss` `skill_key_1` and
 `skill_key_2` are keys of this table, and the buffs of both skills are the
 item's effects. Item 761880 casts skill 47683, which applies the six buffs
 48723 to 48728.
+
+### `resource_cost` and `stamina_cost`
+
+`resource_cost` is the class's own resource, so the tooltip names it by
+class: MP on Wizard, WP on Mystic. Checked in game (2026-10-01): "Fireball IV"
+shows "Required MP : 30" and "Lightning V" 60, the Mystic's "Thunder Pound
+IV" costs 50 WP, and "Teleport III" shows "Required Stamina : 200", each as
+stored. bdocodex lists 100 MP for "Grave Digging III" (stored `100`) and no
+cost for "Imminent Doom" (`0`). The skill tooltip Lua reads them as
+`_requireMp` and `_requireSp`. 18 records set both.
+
+2,825 records store a stamina cost of `1`, mostly basic attacks and weapon
+training ranks ("Staff Attack I" to "X", "Magic Arrow I" to "V"); whether the
+tooltip shows that is not checked.
 
 ### `next_skill_keys` and `base_skill_keys`
 
@@ -157,6 +175,8 @@ and starts with event skills.
 | Name        | text | LOC type `10`, `str_id1 = skill_no`, `str_id4 = 0`; else the `skilltype.dbss` Korean name, else `name` |
 | Description | text | LOC type `10`, `str_id1 = skill_no`, `str_id4 = 1`; else `description` without PA tags; `<null>` and `UNKNOWN` count as empty |
 | Cooldown    | num  | `cooldown_ms` as a duration (`8s`, `13.5s`, `30m`); empty when `0`; sorts by `cooldown_ms` |
+| Resource    | num  | `resource_cost` (MP or WP, by class); empty when `0`                  |
+| Stamina     | num  | `stamina_cost`; empty when `0`                                        |
 | Buffs       | list | `buff_ids` as buff ID and the first line of its LOC type `5` text; sorts by count |
 | Next Skills | list | `next_skill_keys` as skill names                                      |
 | Base Skill  | text | `base_skill_keys` as skill name                                       |
@@ -166,9 +186,11 @@ and starts with event skills.
 
 ## Notes
 
-- `cooldown_ms` is checked in game (2026-09-28) on three Sorceress skill
-  lines: Grave Digging I to IV show 8 s (8,000 stored), Imminent Doom (1209)
-  18 s (18,000) and Succession: Imminent Doom (4859) 14 s (14,000). 7,547 of the 7,626 non-zero values are whole
+- `cooldown_ms` is checked on the wiki (2026-09-28) on three skill lines:
+  Warrior's Grave Digging I to IV show 8 s (8,000 stored), Imminent Doom (1209)
+  18 s (18,000) and Succession: Imminent Doom (4859) 14 s (14,000), and in
+  game (2026-10-01) on Wizard: Fireball IV 3 s, Lightning V 5 s and Teleport
+  III 7 s. 7,547 of the 7,626 non-zero values are whole
   seconds; the other 79 are mostly Black Spirit variants at 90% of a round
   value (13,500, 8,100). The field name and its position `@95` come from
   bdo-data-extractor, which reads it at a fixed offset. That only holds when
@@ -196,19 +218,21 @@ and starts with event skills.
 - `name_hash` is not the `stringtable.bss` key hash (both are unknown
   functions); it is kept as a hash because it is fixed per name and zero
   when the name is empty.
-- `skillsimply.dbss` has exactly the same 30,424 keys, see
+- `skillsimply.dbss` has exactly the same 30,424 keys and holds the learning
+  rules (class, level, skill points, prerequisites), see
   [`skillsimply.dbss`](skillsimply_dbss.md).
 
 ---
 
 ## Open Questions
 
-### What does the fixed block `unknown_n04` hold?
+### What do `unknown_n04`, `unknown_n46` and `unknown_n55` hold?
 
-The 74 bytes between `name_hash` and `cooldown_ms` are sparse: byte `N+69`
-(`+86` with an empty name) is set on all but 13 records, `N+5` and `N+7` on
-about two thirds and `N+4` on about a third. Nothing here has been matched to a
-tooltip value yet, so the block stays unnamed.
+Around `resource_cost` and `stamina_cost` the 74 bytes between `name_hash` and
+`cooldown_ms` are sparse: byte `N+69` (`+86` with an empty name) is set on all
+but 13 records, `N+5` and `N+7` on about two thirds and `N+4` on about a
+third. The skill tooltip Lua also reads an HP cost (`_requireHp`), which is a
+candidate; it needs a skill whose tooltip shows one.
 
 ### What do `unknown_tail` and `unknown_f32` control?
 

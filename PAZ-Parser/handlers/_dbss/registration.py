@@ -79,6 +79,8 @@ from .employeename.handler import EmployeeNameHandler, EmployeeNameOffsetHandler
 from .buff.handler import BuffHandler, BuffOffsetHandler
 from .skill.handler import SkillHandler, SkillOffsetHandler
 from .skilltype.handler import SkillTypeHandler
+from .skillsimply.handler import SkillSimplyHandler
+from .skillsimply.parser import parse_skillsimply_offset_rows
 
 
 def register_dbss_handlers() -> None:
@@ -98,6 +100,8 @@ def register_dbss_handlers() -> None:
     # skilltypeoffset.dbss has the layout and keys of skilloffset.dbss.
     register_handler("skilltypeoffset.dbss", SkillOffsetHandler())
     register_handler("skilltype.dbss", SkillTypeHandler())
+    register_handler("skillsimplyoffset.dbss", SkillOffsetHandler(parse_skillsimply_offset_rows))
+    register_handler("skillsimply.dbss", SkillSimplyHandler())
     register_handler("dialogtextoffset.dbss", DialogTextOffsetHandler())
     register_handler("dialogtext.dbss", DialogTextHandler())
     register_handler("mentalthemeoffset.dbss", MentalThemeOffsetHandler())

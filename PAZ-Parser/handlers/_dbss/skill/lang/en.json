@@ -6,6 +6,8 @@
     "name": "Name",
     "description": "Description",
     "cooldown": "Cooldown",
+    "resourceCost": "Resource",
+    "staminaCost": "Stamina",
     "buffs": "Buffs",
     "nextSkills": "Next Skills",
     "baseSkill": "Base Skill",

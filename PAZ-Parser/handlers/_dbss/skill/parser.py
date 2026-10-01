@@ -4,7 +4,8 @@
 record. A record, in order:
 
     u32 skill_key | u32 level_1_key | u8 | ascii name | u32 name_hash
-    | u8[74] | u32 cooldown_ms | u16[10] buff_ids | utf16 description
+    | u8[40] | u16 resource_cost | u8[7] | u16 stamina_cost | u8[23]
+    | u32 cooldown_ms | u16[10] buff_ids | utf16 description
     | utf16 script | u8[36] | u32 n + n x u32 next_skill_keys | u32 0
     | u32 m + m x u32 base_skill_keys | f32 | u8[3]
 
@@ -23,11 +24,16 @@ from _common.record_reader import RecordReader
 from _common.skill import split_skill_key
 
 _U8 = struct.Struct("<B")
+_U16 = struct.Struct("<H")
 _U32 = struct.Struct("<I")
 _KEY_PAIR = struct.Struct("<II")
 _BUFF_SLOTS = 10
 _BUFF_IDS = struct.Struct(f"<{_BUFF_SLOTS}H")
-_UNKNOWN_N04_SIZE = 74
+# The 74 bytes between name_hash and cooldown_ms: unknown_n04, resource_cost
+# (MP or WP, by class), unknown_n46, stamina_cost, unknown_n55.
+_UNKNOWN_N04_SIZE = 40
+_UNKNOWN_N46_SIZE = 7
+_UNKNOWN_N55_SIZE = 23
 _UNKNOWN_TAIL_SIZE = 36
 # f32 unknown_f32 and u8[3] unknown_end.
 _END_SIZE = 7
@@ -37,6 +43,8 @@ _END_SIZE = 7
 class SkillRecord:
     skill_key: int
     name: str
+    resource_cost: int
+    stamina_cost: int
     cooldown_ms: int
     buff_ids: tuple[int, ...]
     description_kr: str
@@ -70,6 +78,10 @@ def parse_skill_record(data: bytes, row: PabrOffsetRow) -> SkillRecord:
     name = reader.text(wide=False)
     reader.unpack(_U32)  # name_hash
     reader.skip(_UNKNOWN_N04_SIZE)
+    (resource_cost,) = reader.unpack(_U16)
+    reader.skip(_UNKNOWN_N46_SIZE)
+    (stamina_cost,) = reader.unpack(_U16)
+    reader.skip(_UNKNOWN_N55_SIZE)
     (cooldown_ms,) = reader.unpack(_U32)
     # The IDs fill the front slots; the rest are zero.
     buff_ids = tuple(buff_id for buff_id in reader.unpack(_BUFF_IDS) if buff_id)
@@ -86,6 +98,8 @@ def parse_skill_record(data: bytes, row: PabrOffsetRow) -> SkillRecord:
     return SkillRecord(
         skill_key=key,
         name=name,
+        resource_cost=resource_cost,
+        stamina_cost=stamina_cost,
         cooldown_ms=cooldown_ms,
         buff_ids=buff_ids,
         description_kr=decode_inline_text(description_kr),

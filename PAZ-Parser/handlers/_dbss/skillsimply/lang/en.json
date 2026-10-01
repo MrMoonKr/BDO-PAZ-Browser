@@ -1,0 +1,33 @@
+{
+  "columns": {
+    "skillNo": "Skill No",
+    "level": "Level",
+    "icon": "Icon",
+    "name": "Name",
+    "classes": "Classes",
+    "kind": "Kind",
+    "branch": "Branch",
+    "weapon": "Weapon",
+    "quickSlot": "Quick Slot",
+    "needLevel": "Required Level",
+    "needSkillPoint": "Skill Points",
+    "needSkills": "Required Skills",
+    "previousRank": "Previous Rank",
+    "exclusiveSkills": "Exclusive Skills"
+  },
+  "kind": {
+    "0": "Other",
+    "1": "Active",
+    "2": "Passive"
+  },
+  "branch": {
+    "1": "Awakening",
+    "2": "Succession"
+  },
+  "weapon": {
+    "main": "Main",
+    "sub": "Sub",
+    "awakening": "Awakening"
+  },
+  "allClasses": "All"
+}

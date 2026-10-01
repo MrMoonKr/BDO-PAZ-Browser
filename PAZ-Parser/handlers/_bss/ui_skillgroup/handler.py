@@ -6,10 +6,11 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
+from _common.class_type import class_name
 from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.icon_index import IconKind, icon_path
 from _common.lang import load_handler_strings
-from _common.loc import loc_lookup, loc_text, strip_pa_tags
+from _common.loc import loc_lookup, strip_pa_tags
 from _common.skill import skill_name, split_skill_key
 from _bss.skillgroup.parser import skill_keys_by_group
 from _bss.stringtable.parser import GAME_SHEET, GAME_SHEET_LOC_ID2, parse_key_hashes
@@ -19,7 +20,6 @@ from .parser import ClassGrid, SkillCell, Tab, card_column, parse_ui_skillgroup
 _LANG_DIR = Path(__file__).parent / "lang"
 _SKILLGROUP_FILE = "skillgroup.bss"
 _STRINGTABLE_FILE = "stringtable.bss"
-_LOC_CLASS_NAME = 21
 _LOC_STRING_SHEET = 37
 # A few keys only carry the str_id3 = 1 variant; try 0 first.
 _LOC_VARIANTS = (0, 1)
@@ -46,7 +46,7 @@ def _tab_names(tabs: tuple[Tab, ...], key_hashes: Mapping[str, int]) -> dict[int
 def _cell_dict(
     grid: ClassGrid,
     cell: SkillCell,
-    class_name: str,
+    grid_class_name: str,
     tab_names: Mapping[int, str],
     group_keys: Mapping[int, tuple[int, ...]],
     column_labels: Mapping[str, str],
@@ -57,7 +57,7 @@ def _cell_dict(
     column_index = card_column(cell.row, grid.height)
     return {
         "class_type": grid.class_type,
-        "class": class_name,
+        "class": grid_class_name,
         "subgroup": cell.subgroup,
         "tab": tab_names.get(cell.subgroup, str(cell.subgroup)),
         "card_column": column_index,
@@ -122,10 +122,10 @@ class UiSkillGroupBssHandler(PreviewHandler):
 
         records: list[dict] = []
         for grid in window.grids:
-            class_name = loc_text(_LOC_CLASS_NAME, grid.class_type) or str(grid.class_type)
+            grid_class_name = class_name(grid.class_type)
             tab_names = _tab_names(window.tabs.get(grid.class_type, ()), key_hashes)
             records.extend(
-                _cell_dict(grid, cell, class_name, tab_names, group_keys, column_labels)
+                _cell_dict(grid, cell, grid_class_name, tab_names, group_keys, column_labels)
                 for cell in grid.cells
             )
         return sorted(records, key=_game_order)

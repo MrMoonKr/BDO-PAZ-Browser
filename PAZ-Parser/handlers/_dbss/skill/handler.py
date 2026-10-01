@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
 
 from bdo_models import PazEntry
@@ -11,7 +12,7 @@ from _common.html import Column, e, icon_cell, join_limited, sort_keys, table, t
 from _common.icon_index import IconKind, icon_path
 from _common.lang import load_handler_strings
 from _common.loc import strip_pa_tags
-from _common.pabr_offset import parse_pabr_u32_offset_rows
+from _common.pabr_offset import PabrOffsetRow, parse_pabr_u32_offset_rows
 from _common.skill import skill_description, skill_name, split_skill_key
 from .parser import SkillRecord, parse_skill_records
 
@@ -48,6 +49,8 @@ def _record_dict(record: SkillRecord) -> dict:
         # Zero means no cooldown; None sorts last.
         "cooldown_ms": record.cooldown_ms or None,
         "cooldown": format_duration(record.cooldown_ms),
+        "resource_cost": record.resource_cost or None,
+        "stamina_cost": record.stamina_cost or None,
         "buff_ids": list(record.buff_ids),
         "buffs": [_buff_label(buff_id) for buff_id in record.buff_ids],
         "buff_count": len(record.buff_ids) or None,
@@ -61,7 +64,14 @@ def _record_dict(record: SkillRecord) -> dict:
 
 
 class SkillOffsetHandler(PreviewHandler):
-    """`skilloffset.dbss` and `skilltypeoffset.dbss`: PABR rows keyed by skill key."""
+    """Skill cluster offset tables: rows keyed by skill key.
+
+    `skilloffset.dbss` and `skilltypeoffset.dbss` are PABR tables, the default;
+    `skillsimplyoffset.dbss` passes its bare-row reader.
+    """
+
+    def __init__(self, parse_rows: Callable[[bytes], list[PabrOffsetRow]] = parse_pabr_u32_offset_rows) -> None:
+        self._parse_rows = parse_rows
 
     def _columns(self) -> list[Column]:
         cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
@@ -82,7 +92,7 @@ class SkillOffsetHandler(PreviewHandler):
         companions: dict[str, bytes],
     ) -> list[dict]:
         records = []
-        for row in parse_pabr_u32_offset_rows(data):
+        for row in self._parse_rows(data):
             skill_no, level = split_skill_key(row.entry_id)
             records.append({
                 "skill_key": row.entry_id,
@@ -119,6 +129,8 @@ class SkillHandler(PreviewHandler):
             Column(cols.get("name", "Name"), sort_key="name"),
             Column(cols.get("description", "Description"), sort_key="description"),
             Column(cols.get("cooldown", "Cooldown"), "num", sort_key="cooldown_ms"),
+            Column(cols.get("resourceCost", "Resource"), "num", sort_key="resource_cost"),
+            Column(cols.get("staminaCost", "Stamina"), "num", sort_key="stamina_cost"),
             Column(cols.get("buffs", "Buffs"), sort_key="buff_count"),
             Column(cols.get("nextSkills", "Next Skills")),
             Column(cols.get("baseSkill", "Base Skill"), sort_key="base_skill"),
@@ -164,6 +176,8 @@ class SkillHandler(PreviewHandler):
                 e(r["name"] or _EMPTY),
                 e(r["description"] or _EMPTY),
                 e(r["cooldown"] or _EMPTY),
+                e(r["resource_cost"] or _EMPTY),
+                e(r["stamina_cost"] or _EMPTY),
                 e(join_limited(r["buffs"], _LIST_PREVIEW_ITEMS) or _EMPTY),
                 e(join_limited(r["next_skills"], _LIST_PREVIEW_ITEMS) or _EMPTY),
                 e(r["base_skill"] or _EMPTY),

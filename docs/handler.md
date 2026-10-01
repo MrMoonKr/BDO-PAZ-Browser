@@ -746,6 +746,7 @@ _common/
 ├── loc.py
 ├── binary.py
 ├── buff.py              # buff icon paths and LOC type 5 buff text
+├── class_type.py        # class types: LOC type 21 names, class bit masks
 ├── duration.py          # format_duration(): milliseconds as "1h 30m", "45s", "1.5s"
 ├── html.py
 ├── hunting_ground.py    # drop window hunting ground names by key (LOC type 116)
@@ -777,6 +778,11 @@ skill table needs `skilltype.dbss` as a companion. A `GAME` sheet UI key
 `parse_key_hashes()` in `_bss/stringtable/parser.py`, and its text from
 `ui_key_text()` (by key) or `ui_hash_text()` (by hash) in
 `_bss/stringtable/text.py`, which try LOC `str_id3` 0 and then 1.
+
+A class type (`0` Warrior, `8` Sorceress) is named with `class_name()` from
+`class_type.py` (LOC type 21). Skill tables that store a set of classes as a
+bit mask (`skillsimply.dbss` `class_mask`) split it with
+`class_types_in_mask()`; `ALL_CLASSES_MASK` is the "every class" value.
 
 `html.py` has `truncate(text, max_len)` for long text cells,
 `join_limited(values, max_items)` for list cells and `flag_cell(is_set)` for

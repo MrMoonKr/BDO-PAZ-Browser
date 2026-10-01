@@ -40,7 +40,8 @@ SKILL_CASE = HandlerCase(
     lookup_indexes={IndexKind.SKILL_ICON: {1759: _GRAVE_DIGGING_ICON}},
     tests=[
         SchemaTest(required_keys=[
-            "skill_key", "skill_no", "level", "icon_path", "name", "description", "cooldown_ms", "buff_ids", "buffs",
+            "skill_key", "skill_no", "level", "icon_path", "name", "description", "cooldown_ms", "resource_cost",
+            "stamina_cost", "buff_ids", "buffs",
             "next_skill_keys", "base_skill_keys", "script",
         ]),
         DeclaredCountTest(declared=header_count(offset=0)),

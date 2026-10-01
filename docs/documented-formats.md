@@ -94,8 +94,8 @@ All formats are little-endian. Unknown fields are named `unknown_*`.
 | `skill.dbss` | Rule record of every skill rank: cooldown, applied buff IDs, effect script, next ranks and Core base skill | [skill](file-formats/skill_dbss.md) | 2 |
 | `skillgroup.bss` | Skill window groups, each listing the skill keys of its ranks in order | [skillgroup](file-formats/skillgroup_bss.md) | 0 |
 | `skilloffset.dbss` | PABR index into `skill.dbss`, maps skill_key (skill_no << 16 \| level) → offset/size | [skill](file-formats/skill_dbss.md) | 2 |
-| `skillsimply.dbss` | Compact per-rank skill record with the `skill.dbss` keys; only framing and first fields decoded | [skillsimply](file-formats/skillsimply_dbss.md) | 1 |
-| `skillsimplyoffset.dbss` | Bare u32-keyed index into `skillsimply.dbss` (no magic, no trailer) | [skillsimply](file-formats/skillsimply_dbss.md) | 1 |
+| `skillsimply.dbss` | Learning rules of every skill rank: class mask, required level and skill points, required skills, rank chain, exclusive skills | [skillsimply](file-formats/skillsimply_dbss.md) | 2 |
+| `skillsimplyoffset.dbss` | Bare u32-keyed index into `skillsimply.dbss` (no magic, no trailer) | [skillsimply](file-formats/skillsimply_dbss.md) | 2 |
 | `skilltype.dbss` | Presentation record of every skill: Korean name and family name, active/passive kind, icon path | [skilltype](file-formats/skilltype_dbss.md) | 1 |
 | `skilltypeoffset.dbss` | PABR index into `skilltype.dbss`, same layout as `skilloffset.dbss` | [skilltype](file-formats/skilltype_dbss.md) | 1 |
 | `specialenchantitem.bss` | PABR per-level table of the items whose name or icon changes with enhancement: item key, shown level, icon path and Korean name string indices | [specialenchantitem](file-formats/specialenchantitem_bss.md) | 1 |
