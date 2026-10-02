@@ -5,7 +5,9 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
+from _common.character import character_name
 from _common.html import Column, e, join_limited, sort_keys, table
+from _common.knowledge import knowledge_name
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_text
 from _bwp.waypoint.worldmap import worldmap_companion, worldmap_links
@@ -14,8 +16,6 @@ from .parser import NODE_KIND_NAMES, parse_exploration_records
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
-_LOC_CHARACTER_NAME = 6
-_LOC_KNOWLEDGE_NAME = 34
 _LIST_PREVIEW_ITEMS = 6
 _EMPTY = "-"
 
@@ -24,20 +24,16 @@ def _kind_name(kind: int) -> str:
     return NODE_KIND_NAMES[kind] if kind < len(NODE_KIND_NAMES) else str(kind)
 
 
-def _character(character_id: int, has_loc: bool) -> str:
+def _character(character_id: int) -> str:
     """ID with its LOC name, or "" when the field is 0."""
     if not character_id:
         return ""
-    name = loc_text(_LOC_CHARACTER_NAME, character_id) if has_loc else ""
-    return f"{character_id} {name}".strip()
+    return f"{character_id} {character_name(character_id)}".strip()
 
 
-def _knowledge_names(knowledge_ids: list[int], has_loc: bool) -> list[str]:
+def _knowledge_names(knowledge_ids: list[int]) -> list[str]:
     """LOC type 34 card name per ID, or the bare ID when it has none."""
-    return [
-        (loc_text(_LOC_KNOWLEDGE_NAME, key) if has_loc else "") or str(key)
-        for key in knowledge_ids
-    ]
+    return [knowledge_name(key) or str(key) for key in knowledge_ids]
 
 
 class ExplorationBssHandler(PreviewHandler):
@@ -76,7 +72,7 @@ class ExplorationBssHandler(PreviewHandler):
 
         records: list[dict] = []
         for record in parse_exploration_records(data):
-            knowledge_names = _knowledge_names(record["knowledge_ids"], has_loc)
+            knowledge_names = _knowledge_names(record["knowledge_ids"])
             records.append({
                 **record,
                 # LOC type 29 is the display name; the Korean source name
@@ -86,8 +82,8 @@ class ExplorationBssHandler(PreviewHandler):
                 "kind": _kind_name(record["node_kind"]),
                 "main_sub": sub if record["is_sub_node"] else main,
                 # Empty sorts last and exports as an empty cell.
-                "manager": _character(record["manager_id"], has_loc) or None,
-                "representative": _character(record["representative_id"], has_loc) or None,
+                "manager": _character(record["manager_id"]) or None,
+                "representative": _character(record["representative_id"]) or None,
                 "knowledge_count": len(record["knowledge_ids"]),
                 "knowledge_names": knowledge_names,
                 # Full list as text, so tab search and CSV export see every name.

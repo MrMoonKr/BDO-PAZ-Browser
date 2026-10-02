@@ -6,6 +6,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
+from _common.character import character_name
 from _common.html import Column, e, join_limited, sort_keys, table
 from _common.hunting_ground import hunting_ground_name
 from _common.item_key import item_key_list_cell, item_name
@@ -22,7 +23,6 @@ _EMPTY = "-"
 _LIST_PREVIEW_ITEMS = 8
 
 _LOC_TITLE = 1
-_LOC_CHARACTER_NAME = 6
 # Territory names; str_id4 1 is the territory, 0 the nation.
 _LOC_TERRITORY = 12
 _LOC_TERRITORY_NAME = 1
@@ -116,7 +116,7 @@ class DropUiHuntingGroundInfoBssHandler(PreviewHandler):
                 "species": tribe_text(record["tribe_type"]),
                 "max_ap": _max_ap_text(record["limited_ap"], record["limited_ap_apply_percent"]),
                 "node_name": loc_text(_LOC_NODE_NAME, node_key) if node_key else "",
-                "monsters": _names(record["monster_ids"], lambda i: loc_text(_LOC_CHARACTER_NAME, i)),
+                "monsters": _names(record["monster_ids"], character_name),
                 "items": _names(record["drop_item_ids"], item_name),
                 "quests": [
                     _quest_text(k) for k in record["repeat_quest_keys"] + record["sudden_quest_keys"]

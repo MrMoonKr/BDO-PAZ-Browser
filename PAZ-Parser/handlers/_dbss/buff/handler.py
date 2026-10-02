@@ -7,13 +7,13 @@ from bdo_preview import PreviewHandler
 
 from _common.buff import buff_loc_description
 from _common.duration import format_duration
-from _common.html import Column, e, icon_cell, sort_keys, table
+from _common.html import Column, e, icon_cell, sort_keys, table, truncate
 from _common.item_key import item_key_list_cell, item_key_text
 from _common.lang import load_handler_strings
 from _common.loc import strip_pa_tags
 from _common.lookup_index import IndexKind, index_entries, lookup
 from _common.pabr_offset import parse_pabr_offset_rows
-from .effect import effect_text
+from .effect import EffectInput, effect_text, param_labels
 from .parser import PARAM_COUNT, parse_buff_records
 from .title import extract_title, title_leaders
 
@@ -24,6 +24,8 @@ _OFFSET_FILE = "buffoffset.dbss"
 _EMPTY = "-"
 _SHOWN_PARAMS = 3
 _LIST_PREVIEW_ITEMS = 3
+# Longer Param labels (character and quest names) are cut, in full on hover.
+_PARAM_LABEL_CHARS = 24
 
 
 def _raw_description(buff_id: int, description_kr: str) -> str:
@@ -40,6 +42,28 @@ def _applying_items(buff_id: int) -> list[int]:
 def _skill_buff_lists() -> list[tuple[int, ...]]:
     """The buffs each skill applies together, from the SKILL_BUFFS lookup index."""
     return [buff_ids for buff_ids in index_entries(IndexKind.SKILL_BUFFS).values() if isinstance(buff_ids, tuple)]
+
+
+def _effect_input(record: dict) -> EffectInput:
+    """The fields the effect of a buff record reads."""
+    return EffectInput(
+        record["effect_type"],
+        [record[f"param_{index}"] for index in range(1, PARAM_COUNT + 1)],
+        tick_ms=record["tick_ms"],
+        condition_type=record["condition_type"],
+        # get_records turns a zero duration into None for sorting.
+        duration_ms=record["duration_ms"] or 0,
+        icon_path=record["icon_path"],
+    )
+
+
+def _param_cell(value: int, label: str | None) -> str:
+    """`25000 (2.5%)`: the stored value, then what it means for the effect type."""
+    if not label:
+        return e(value)
+    short = truncate(label, _PARAM_LABEL_CHARS)
+    text = e(f"{value} ({short})")
+    return text if short == label else f'<span title="{e(label)}">{text}</span>'
 
 
 def _title_cell(record: dict) -> str:
@@ -107,6 +131,23 @@ def _add_inherited_titles(records: list[dict]) -> None:
             record["title"] = own_titles[title_buff_id]
 
 
+def _buff_row(r: dict) -> list[str]:
+    labels = param_labels(_effect_input(r))
+    return [
+        e(r["buff_id"]),
+        icon_cell(r["icon_path"]) if r["icon_path"] else _EMPTY,
+        _title_cell(r),
+        e(r["name"]),
+        e(r["description"]) if r["description"] else _EMPTY,
+        e(r["effect"]) if r["effect"] else _EMPTY,
+        item_key_list_cell(r["applied_by_item_ids"], _LIST_PREVIEW_ITEMS) or _EMPTY,
+        e(r["level"]),
+        e(r["effect_type"]),
+        e(r["duration"]) if r["duration"] else _EMPTY,
+        *(_param_cell(r[f"param_{index}"], labels.get(index)) for index in range(1, _SHOWN_PARAMS + 1)),
+    ]
+
+
 class BuffHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
         cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
@@ -149,10 +190,7 @@ class BuffHandler(PreviewHandler):
             raw = _raw_description(record["buff_id"], record["description_kr"])
             record["title"] = extract_title(raw)
             record["description"] = strip_pa_tags(raw).strip()
-            record["effect"] = effect_text(
-                record["effect_type"],
-                [record[f"param_{index}"] for index in range(1, PARAM_COUNT + 1)],
-            )
+            record["effect"] = effect_text(_effect_input(record))
             record["duration"] = format_duration(record["duration_ms"])
             # 0 means no duration. None renders a dash and sorts last.
             record["duration_ms"] = record["duration_ms"] or None
@@ -172,20 +210,4 @@ class BuffHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} buffs"
-        rows = [
-            [
-                e(r["buff_id"]),
-                icon_cell(r["icon_path"]) if r["icon_path"] else _EMPTY,
-                _title_cell(r),
-                e(r["name"]),
-                e(r["description"]) if r["description"] else _EMPTY,
-                e(r["effect"]) if r["effect"] else _EMPTY,
-                item_key_list_cell(r["applied_by_item_ids"], _LIST_PREVIEW_ITEMS) or _EMPTY,
-                e(r["level"]),
-                e(r["effect_type"]),
-                e(r["duration"]) if r["duration"] else _EMPTY,
-                *(e(r[f"param_{index}"]) for index in range(1, _SHOWN_PARAMS + 1)),
-            ]
-            for r in slice_
-        ]
-        return table(meta, self._columns(), rows)
+        return table(meta, self._columns(), [_buff_row(r) for r in slice_])

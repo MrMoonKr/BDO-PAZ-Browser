@@ -5,9 +5,10 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
+from _common.character import character_name
 from _common.html import Column, e, join_limited, sort_keys, table
 from _common.lang import load_handler_strings
-from _common.loc import is_loc_loaded, loc_text
+from _common.loc import is_loc_loaded
 from _dbss.characterspawntype.role_labels import role_label, role_label_overrides, role_tooltip, spawn_type_name
 from _dbss.detail_dialog.lease import lease_text
 from .leases import character_leases
@@ -15,7 +16,6 @@ from .parser import parse_npcsimply_records
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
-_LOC_CHARACTER_NAME = 6
 _EMPTY = "-"
 _LIST_PREVIEW_ITEMS = 3
 
@@ -67,7 +67,7 @@ class NpcSimplyBssHandler(PreviewHandler):
             {
                 **record,
                 **_lease_fields(record, has_loc),
-                "name": loc_text(_LOC_CHARACTER_NAME, record["character_id"]),
+                "name": character_name(record["character_id"]),
                 "kind_name": spawn_type_name(record["kind"]),
                 "kind_label": role_label(record["kind"], role_labels),
             }

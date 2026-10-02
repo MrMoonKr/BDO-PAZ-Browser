@@ -5,7 +5,10 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
+from _common.character import LOC_CHARACTER_NAME
 from _common.html import Column, e, sort_keys, table
+from _common.item_key import LOC_ITEM_NAME
+from _common.knowledge import knowledge_name
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_text
 from .parser import (
@@ -17,9 +20,6 @@ from .parser import (
 
 _LANG_DIR = Path(__file__).parent / "lang"
 _OFFSET_FILE = "knowledgelearningoffset.dbss"
-_LOC_ITEM = 0
-_LOC_CHARACTER = 6
-_LOC_KNOWLEDGE = 34
 _EMPTY = "-"
 
 
@@ -98,14 +98,14 @@ class KnowledgeLearningHandler(PreviewHandler):
         records: list[dict] = []
         for record in parse_knowledgelearning_records(data, offset_raw):
             is_item = record.source_type == SOURCE_ITEM
-            source_loc = _LOC_ITEM if is_item else _LOC_CHARACTER
+            source_loc = LOC_ITEM_NAME if is_item else LOC_CHARACTER_NAME
             records.append({
                 "table": record.table,
                 "source_type": item if is_item else character,
                 "source_id": record.source_id,
                 "source_name": loc_text(source_loc, record.source_id) if has_loc else "",
                 "card_id": record.card_id,
-                "card_name": loc_text(_LOC_KNOWLEDGE, record.card_id) if has_loc else "",
+                "card_name": knowledge_name(record.card_id),
             })
         return records
 

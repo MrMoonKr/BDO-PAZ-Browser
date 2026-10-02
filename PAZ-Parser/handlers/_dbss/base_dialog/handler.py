@@ -5,15 +5,15 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
+from _common.character import character_name
 from _common.html import Column, e, join_limited, sort_keys, table
 from _common.lang import load_handler_strings
-from _common.loc import is_loc_loaded, loc_lookup, loc_text, strip_pa_tags
+from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 from .parser import BaseDialogRecord, parse_base_dialog_records
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
 _OFFSET_FILE = "base_dialogoffset.dbss"
-_LOC_CHARACTER_NAME = 6
 # Keyed (character_id, dialog_index, 0, n): n = 0 the dialog name, 1.. its lines.
 _LOC_BASE_DIALOG = 38
 _EMPTY = "-"
@@ -28,7 +28,7 @@ def _dialog_text(record: BaseDialogRecord, field: int) -> str:
 def _record_dict(record: BaseDialogRecord, has_loc: bool) -> dict:
     # English first; the character's LOC name, then the Korean source, stand in.
     name = (
-        (_dialog_text(record, 0) or loc_text(_LOC_CHARACTER_NAME, record.character_id)) if has_loc else ""
+        (_dialog_text(record, 0) or character_name(record.character_id)) if has_loc else ""
     ) or record.name_kr
     lines = [
         (_dialog_text(record, number) if has_loc else "") or line

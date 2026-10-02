@@ -5,7 +5,9 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
+from _common.character import character_name
 from _common.html import Column, e, icon_cell, join_limited, sort_keys, table
+from _common.knowledge import LOC_KNOWLEDGE, knowledge_name
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_text
 from _common.lookup_index import IndexKind, lookup
@@ -15,9 +17,7 @@ from .parser import MentalCardRecord, parse_mentalcard_offset_records, parse_men
 
 _LANG_DIR = Path(__file__).parent / "lang"
 _OFFSET_FILE = "mentalcardoffset.dbss"
-_LOC_CHARACTER_NAME = 6
 _LOC_THEME = 9
-_LOC_KNOWLEDGE = 34
 # LOC type 34 sub-field holding the English "how to obtain" text.
 _LOC_ACQUISITION = 2
 _EMPTY = "-"
@@ -44,7 +44,7 @@ def _combo_fields(record: MentalCardRecord) -> dict:
     }
 
 
-def _learned_from(card_id: int, has_loc: bool) -> list[str]:
+def _learned_from(card_id: int) -> list[str]:
     """Distinct names of the characters that grant the card, in ID order.
 
     Copies of one NPC share a name, so most cards reduce to a single name. A
@@ -55,10 +55,7 @@ def _learned_from(card_id: int, has_loc: bool) -> list[str]:
     if not isinstance(characters, tuple):
         return []
 
-    names = (
-        (loc_text(_LOC_CHARACTER_NAME, character_id) if has_loc else "") or str(character_id)
-        for character_id in characters
-    )
+    names = (character_name(character_id) or str(character_id) for character_id in characters)
     return list(dict.fromkeys(names))
 
 
@@ -141,8 +138,7 @@ class MentalCardHandler(PreviewHandler):
             {
                 "entry_id": record.card_id,
                 # LOC first; the Korean source name stands in without it.
-                "entry_name": (loc_text(_LOC_KNOWLEDGE, record.card_id) if has_loc else "")
-                or record.name_kr,
+                "entry_name": knowledge_name(record.card_id) or record.name_kr,
                 "node_id": record.theme_id,
                 "node_name": loc_text(_LOC_THEME, record.theme_id) if has_loc else "",
                 # Stored as floats but always whole numbers.
@@ -152,10 +148,10 @@ class MentalCardHandler(PreviewHandler):
                 **_combo_fields(record),
                 "icon_path": record.icon_path,
                 "obtain": (
-                    loc_text(_LOC_KNOWLEDGE, record.card_id, _LOC_ACQUISITION) if has_loc else ""
+                    loc_text(LOC_KNOWLEDGE, record.card_id, _LOC_ACQUISITION) if has_loc else ""
                 )
                 or record.acquisition_kr,
-                "learned_from": _learned_from(record.card_id, has_loc),
+                "learned_from": _learned_from(record.card_id),
                 "position": list(record.position),
                 "position_text": _position_text(record.position),
             }

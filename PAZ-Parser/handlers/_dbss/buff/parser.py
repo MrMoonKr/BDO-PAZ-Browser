@@ -30,6 +30,7 @@ _CONDITION_TYPE = 0x06
 _EFFECT_TYPE = 0x08
 _PARAMS = 0x13
 _DURATION_MS = 0x68
+_TICK_MS = 0x6C
 
 # Tail block offset of the broad family byte (food, elixir, perfume, ...).
 _STACKING_CATEGORY = 0x18
@@ -69,6 +70,8 @@ def _parse_record(data: bytes, row: PabrOffsetRow) -> dict:
         "group": u16(data, stats + _GROUP),
         "condition_type": _I16.unpack_from(data, stats + _CONDITION_TYPE)[0],
         "duration_ms": u32(data, stats + _DURATION_MS),
+        # Tick interval of a periodic effect; 0 on everything else.
+        "tick_ms": u32(data, stats + _TICK_MS),
         "unknown_str": unknown_str,
         "icon_path": buff_icon_path(icon),
         "is_shown": bool(is_shown),

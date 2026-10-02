@@ -5,7 +5,8 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
+from _common.character import character_name
+from _common.loc import is_loc_loaded
 from _common.html import Column, e, error, icon_cell, sort_keys, table
 from _common.icon_index import IconKind, icon_path
 from _common.lang import load_handler_strings
@@ -13,14 +14,8 @@ from _common.pabr_offset import parse_pabr_offset_rows
 from .parser import NO_CLASS_TYPE, parse_characterstatic_records
 
 _LANG_DIR = Path(__file__).parent / "lang"
-_LOC_CHARACTER_NAME = 6
 # The low byte of `npc_kind` is the character kind; the higher bits are unmapped flags.
 _NPC_KIND_LOW_MASK = 0xFF
-
-
-def _character_name(character_id: int) -> str:
-    raw = loc_lookup(_LOC_CHARACTER_NAME, character_id)
-    return strip_pa_tags(raw) if raw else ""
 
 
 def _optional(value: int | None) -> str:
@@ -117,7 +112,7 @@ class CharacterStaticHandler(PreviewHandler):
             {
                 "character_id": r["character_id"],
                 "icon_path": icon_path(IconKind.CHARACTER, r["character_id"]),
-                "name_en": _character_name(r["character_id"]) if has_loc else "",
+                "name_en": character_name(r["character_id"]),
                 "action_script": r["action_script"],
                 "condition_script": r["condition_script"],
                 "knowledge_id": r["knowledge_id"],

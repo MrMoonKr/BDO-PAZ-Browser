@@ -7,7 +7,8 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 from table_sort import TableSort, sort_order_by_values
 
-from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
+from _common.character import character_name
+from _common.loc import is_loc_loaded
 from _common.html import Column, e, flag_cell, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.pabr_offset import parse_pabr_offset_rows
@@ -17,12 +18,6 @@ from .role_labels import role_label, role_label_overrides, role_tooltip
 # Role columns sort by a virtual field, read from the record's role list.
 _ROLE_FIELD_PREFIX = "role_"
 _LANG_DIR = Path(__file__).parent / "lang"
-_LOC_CHARACTER_NAME = 6
-
-
-def _character_name(character_id: int) -> str:
-    raw = loc_lookup(_LOC_CHARACTER_NAME, character_id)
-    return strip_pa_tags(raw) if raw else ""
 
 
 def _role_field(idx: int) -> str:
@@ -112,7 +107,7 @@ class CharacterSpawnTypeHandler(PreviewHandler):
         return [
             {
                 "character_id": r["character_id"],
-                "name_en": _character_name(r["character_id"]) if has_loc else "",
+                "name_en": character_name(r["character_id"]),
                 "roles": r["roles"],
             }
             for r in parse_characterspawntype_records(data)

@@ -746,6 +746,7 @@ _common/
 ├── loc.py
 ├── binary.py
 ├── buff.py              # buff icon paths and LOC type 5 buff text
+├── character.py         # character names (LOC type 6)
 ├── class_type.py        # class types: LOC type 21 names, class bit masks
 ├── duration.py          # format_duration(): milliseconds as "1h 30m", "45s", "1.5s"
 ├── html.py
@@ -754,6 +755,7 @@ _common/
 ├── prefixed_string.py   # length-prefixed strings: strict and lenient readers
 ├── inline_text.py       # decode_inline_text(): the stored \n escape of inline text
 ├── item_key.py          # item keys (enchant_level << 24 | item_id), LOC type 0 names, per-level icons
+├── knowledge.py         # knowledge entry names (LOC type 34)
 ├── record_reader.py     # RecordReader: walks one variable-length record in order
 └── skill.py             # skill keys (skill_no << 16 | level) and LOC type 10 names
 ```
@@ -769,6 +771,11 @@ check; it raises ValueError as soon as a field runs past the record. For inline
 strings at unknown positions, `read_prefixed_at()` reads a prefix at a known
 position and returns the next one; `read_prefixed_utf16()` and
 `find_prefixed_ascii()` are for text whose position is only a guess.
+
+Name a character with `character_name()` from `character.py` (LOC type 6) and
+a knowledge entry with `knowledge_name()` from `knowledge.py` (LOC type 34);
+both return `''` when LOC is not loaded, so no `is_loc_loaded()` guard is
+needed. Do not define those LOC types in a handler.
 
 Tables in the skill cluster split a skill key with `split_skill_key()` and name
 a skill with `skill_name(skill_no)` from `skill.py`: LOC type 10 first, then

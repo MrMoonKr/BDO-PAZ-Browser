@@ -5,15 +5,14 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
+from _common.character import character_name
 from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.lang import load_handler_strings
-from _common.loc import loc_text
 from .parser import parse_mansionpartinfo_records
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
 _EMPTY = "-"
-_LOC_CHARACTER_NAME = 6
 
 
 class MansionPartInfoBssHandler(PreviewHandler):
@@ -37,7 +36,7 @@ class MansionPartInfoBssHandler(PreviewHandler):
     ) -> list[dict]:
         # The file holds no text, so without LOC the manor name is empty.
         return [
-            {**record, "manor": loc_text(_LOC_CHARACTER_NAME, record["character_id"])}
+            {**record, "manor": character_name(record["character_id"])}
             for record in parse_mansionpartinfo_records(data)
         ]
 

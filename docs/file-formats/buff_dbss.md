@@ -79,7 +79,7 @@ Offsets are relative to the end of the name string.
 | `+0x00` | i16     | buff_level      | 1 to 999; `1` in 32,071 rows. Ranks buffs within a `group`; staged buffs count up, e.g. boss stages 1 to 10 |
 | `+0x02` | u8[2]   | reserved        | Always `0`                                                            |
 | `+0x04` | u16     | group           | `0` in 28,199 rows. Shared by some effect families, see Notes         |
-| `+0x06` | i16     | condition_type  | `0` in 44,390 rows; selects a trigger such as on-hit recovery         |
+| `+0x06` | i16     | condition_type  | `0` in 44,390 rows; the trigger of types 1 and 4, see `condition_type` |
 | `+0x08` | u8      | effect_type     | 173 distinct values; see Enum Values                                  |
 | `+0x09` | u8      | flag_09         | `1` in 44,489 rows                                                    |
 | `+0x0A` | u8      | flag_0a         | `1` in 31,950 rows                                                    |
@@ -91,7 +91,7 @@ Offsets are relative to the end of the name string.
 | `+0x65` | u16     | reserved        | Always `0`                                                            |
 | `+0x67` | u8      | flag_67         | `0` or `1`                                                            |
 | `+0x68` | u32     | duration_ms     | `0` in 30,016 rows; max `86400000` (24 h). `3600000` = 60 min        |
-| `+0x6C` | u32     | unknown_6c      | Millisecond-like (1000, 2000, 3000); only on periodic effects        |
+| `+0x6C` | u32     | tick_ms         | Tick interval of periodic effects in milliseconds (`10000` = every 10 sec); see Notes |
 | `+0x70` | u8[14]  | reserved        | `0` in every row but one                                              |
 | `+0x7E` | u8      | flag_7e         | `1` in 44,514 rows                                                    |
 | `+0x7F` | u8      | unknown_7f      | Always `2`                                                            |
@@ -158,18 +158,19 @@ of the buffs that use each value.
 
 | Value | Rows  | Observed buffs                                     | Parameters, where confirmed                          |
 | ----- | ----- | -------------------------------------------------- | ---------------------------------------------------- |
-| 1     | 1,662 | On-hit effects (HP recovery on hit, back attack)   |                                                      |
+| 1     | 1,662 | HP over time or per trigger                        | `param_1` = HP per tick (`tick_ms`) or per trigger (`condition_type`), signed: positive heals, negative damages |
 | 2     | 443   | Max HP                                             | `param_1` = amount                                   |
-| 18    | 3,386 | Summons                                            |                                                      |
+| 18    | 3,386 | Summons                                            | `param_1` = summoned character (LOC type 6 name); see Effect text |
 | 25    | 1,597 | Combat, skill and life EXP gain                    | `param_1` = bonus per million; `param_2` 0 combat, 1 skill, 2 life |
-| 38    | 5,683 | Story and record unlocks                           |                                                      |
+| 34    | 287   | Display buff (title, text and icon)                | All parameters `0` on 228; see Effect text           |
+| 38    | 5,683 | Knowledge unlock                                   | `param_1` = knowledge ID (LOC type 34 name); see Effect text |
 | 39    | 1,732 | All AP, positive or negative                       | `param_1` = `3`, `param_2` = amount                  |
 | 40    | 870   | All Accuracy                                       | `param_1` = `3`, `param_2` = amount                  |
 | 43    | 1,730 | All Damage Reduction                               | `param_1` = `3`, `param_2` = amount                  |
-| 45    | 8,286 | Damage multipliers (monster attack %, pure damage) |                                                      |
-| 46    | 1,831 | Species extra AP                                   |                                                      |
-| 49    | 1,378 | Crowd-control resistance                           |                                                      |
-| 58    | 1,132 | Elixirs, herbal teas, sequence check buffs         |                                                      |
+| 45    | 8,311 | Damage multipliers (summons, monsters, siege, cannons) | `param_4` = damage per million (`5790000` = `Attack Damage 579%`); `param_1` maybe the attack type, see Effect text |
+| 46    | 1,831 | Species extra AP                                   | `param_1` = species: `0` Humans, `1` Demihumans, `2` Beasts, `3` Kamasylvian Monsters, `4` Edanian Monsters; `param_2` = amount, can be negative. `5` is unused ("Not in Use", Korean `미사용`), `6` mixes hunting effects whose amounts do not follow `param_2`; both unlabelled. 1,296 of 1,313 one-line texts match |
+| 49    | 1,378 | Crowd-control resistance                           | `param_1` = kind as in type 105: `0` Knockback/Floating, `1` Knockdown/Bound, `2` Grapple, `3` and `5` Stun/Stiffness/Freezing (stun and stiffness in Korean), `7` Fear, `8` All; `param_2` per million. `6` (bound in Korean) reads "Not in Use", unlabelled. 745 of 873 one-line texts match; the rest are kind 7 "Not in Use" |
+| 58    | 1,132 | Display buff (title, text and icon)                | All parameters `0` on 1,095; `param_1` is set on a few vision buffs, see Effect text |
 
 These are also confirmed against the English LOC type 5 text of their buffs. Percentages use the same per-million scale.
 
@@ -189,6 +190,29 @@ These are also confirmed against the English LOC type 5 text of their buffs. Per
 | 105   | 123  | Ignore resistance             | `param_1` = resistance kind: `0` knockback/floating, `1` knockdown/bound, `2` grapple, `3` stun/stiffness/freezing, `8` all; `param_2` per million |
 | 128   | 78   | Weather resistance            | `param_1` = `0` heatstroke, `1` hypothermia; `param_2` per million |
 
+These are confirmed the same way, and where their buffs have little or no
+English text, by item names and bdocodex tooltips (see Effect text).
+
+| Value | Rows | Effect                        | Parameters                                                        |
+| ----- | ---: | ----------------------------- | ----------------------------------------------------------------- |
+| 4     | 268  | MP/WP/SP over time            | `param_1` per tick, signed; `tick_ms` the interval; `condition_type` `1` = per hit instead. Without either it is a one-off refill, unlabelled (see Effect text) |
+| 29    | 249  | Weight Limit                  | `param_1` in ten-thousandths of an LT (`1000000` = 100 LT)        |
+| 50    | 144  | Mount EXP                     | `param_1` per million                                             |
+| 57    | 225  | Item Drop Rate                | `param_1` per million; `param_2` `1` or `2` on 6 buffs with the same text, meaning unknown |
+| 63    | 11   | Worker Stamina recovery       | `param_1` = amount, one-off (`Recover 2 Worker Stamina`)          |
+| 67    | 660  | Stat ranks                    | `param_1` = stat: `0` Movement Speed, `1` Attack Speed, `2` Casting Speed, `3` Critical Hit, `4` Luck, `5` Fishing Speed, `6` Gathering Speed; `param_2` = ranks, can be negative |
+| 69    | 670  | Accept quest                  | `param_1` = quest chain, `param_2` = quest (LOC type 18 title); see Effect text |
+| 79    | 44   | Energy recovery               | `param_1` = amount, one-off (`Recover 10 Energy`); every buff has no duration |
+| 89    | 62   | Breath/Strength/Health EXP    | `param_1` = `0` Breath, `1` Strength, `2` Health; `param_2` = amount |
+| 90    | 42   | Death Penalty Resistance      | `param_1` per million (`30000` = +3%)                             |
+| 94    | 19   | Max Energy                    | `param_1` = amount                                                |
+| 95    | 22   | Underwater Breathing          | `param_1` in milliseconds (`15000` = +15 sec)                     |
+| 108   | 102  | Knowledge Gain Chance         | `param_1` per million                                             |
+| 109   | 66   | Higher Grade Knowledge Gain Chance | `param_1` per million                                        |
+| 120   | 116  | Monster Damage Reduction      | `param_1` = `0` rate, `param_2` per million; `param_1` = `2` flat, `param_2` = amount |
+| 136   | 219  | Extra AP Against Monsters / Adventurers | `param_1` = against monsters, `param_2` = against adventurers; no buff sets both |
+| 149   | 246  | Life skill mastery            | `param_1` = life skill (type 80 numbering), `15` all; `param_3` = amount; `param_2` see below |
+
 The `param_1` life skills of type 80, from the English text of its buffs:
 `0` Gathering, `1` Fishing, `2` Hunting, `3` Cooking, `4` Alchemy, `5`
 Processing, `6` Training, `7` Trading, `8` Farming, `9` Sailing, `11` Barter.
@@ -196,25 +220,212 @@ No buff with text uses `10`. Kinds `5` and `6` of type 93 each appear on a
 single buff with text. Kind `2` of type 128 appears only on
 `Mermaid's Wish III`, so it stays unlabelled.
 
+Type 149 `param_2` is fixed per life skill on every buff with text: `0` for
+Gathering, Fishing, Processing and all (`15`), `1` for Hunting, Cooking,
+Alchemy, Training and Sailing. The [Life Skill Season] buffs pair Gathering and
+Processing with `2` to `7` for single tools (`Processing_Hoe Mastery`); those
+stay unlabelled. Type 89 `param_3` is `1` on 8 food buffs and `0` elsewhere;
+food that grants Health EXP is limited by the Satiated buff (type 184), which
+may be what it marks, unconfirmed.
+
 ### Effect text
 
 The browser's Effect column renders the parameters of every type above in the
 game's wording (`All AP +8`, `Life EXP +15%`, `Alchemy EXP +2,560,350`), from
-`_dbss/buff/effect.py`; other types, and the kinds left unlabelled, show a
-dash. Of the buffs with a one-line LOC type 5 text, 86% start
+`_dbss/buff/effect/`; other types, the kinds left unlabelled and a zero
+amount show a dash. The same entry per type (`formats.py`) labels the Param columns,
+so `param_1` of a type 46 buff reads `3 (Kamasylvian Monsters)`. Of the buffs with a one-line LOC type 5 text, 87% start
 with exactly that text on client 3458. The rest are the drift described in
-Notes, a `- Effect:` prefix, or placeholder text such as `UNKNOWN` and
-`Not in Use`.
+Notes (`Weight Limit +100 LT` on a buff that stores 150 LT), a `- Effect:`
+prefix, or placeholder text such as `UNKNOWN` and `Not in Use`.
 
-Simple Cron Meal (`9692`), whose two skills apply 20 buffs, also names
-effects of undecoded types on its bdocodex tooltip: Weight Limit +100 LT
-(type 29, `param_1` `1000000`), Health EXP +150 (89, `param_1` `2`, `param_2`
-`150`), Knowledge Gain Chance +10% (108), Higher Grade Knowledge Gain Chance
-+5% (109), Monster Damage Reduction Rate +6% (120), Extra AP Against Monsters
-+30 (136) and Attack/Casting Speed +2, Movement Speed +3 and Critical Hit +2
-(67, `param_1` `0` to `3`). One item is not enough to confirm them.
+The second table above was checked three ways:
 
-[bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor/blob/HEAD/FORMATS.md) also names these, unconfirmed here because their buffs have no English text: 29 Weight Limit, 50 Mount EXP, 57 Drop Rate, 63 worker stamina recovery, 67 potential ranks, 79 Energy recovery, 89 Breath/Strength/Health EXP, 90 Death Penalty Resistance, 95 underwater breathing. It gives 149 as life-skill mastery with `param_1` the life skill, but `Hunting Mastery +100` stores `param_1 = 15`, which that source reads as "all life skills".
+- **LOC type 5 text.** 29, 50, 57, 67, 90, 94, 95, 108, 109, 120, 136 and 149
+  have 6 to 328 one-line texts each, and 85% to 100% of them start with the
+  rendered text. Two type 149 buffs with `param_1` `15` read
+  `Hunting Mastery +100`; the other 32 read `Life Skill Mastery`.
+- **Item names.** `[Trial] Breath/Strength/Health Lv. 50` store type 89
+  `param_1` `0`, `1` and `2`, and the `Recover 2 Energy` to
+  `Recover 200 Energy` items store that amount in type 79 `param_1`.
+- **bdocodex tooltips** of 85 items picked one or two per kind, buffs without
+  English text first. 29, 50, 63, 95, 108, 136 and 149 match on every item.
+  The type 89 items only say `Gain Breath EXP` or `Gain Strength EXP`, without
+  an amount; `Stamina Experience` (574), from before Stamina became Breath,
+  stores `0`. Items and the pet skill Death Penalty Resistance +3% (49134,
+  buff 49134, `30000`) word type 90 as `Death Penalty Resistance +3%`, which
+  the column follows; the six buff texts say `Death Penalty -0.5%` instead,
+  for the same value. Item
+  886, `Knowledge Gain Chance +10% (120 min)`, applies a 30% type 108 buff and
+  a 10% type 109 buff, so its name is the stale part. Whale Meat Salad (9456)
+  lists only its type 94 `Max Energy +10`, not the type 79 recovery of 10 it
+  also applies.
+
+Type 38 renders as `Learn Knowledge: Tuntaros`. Its buffs have no text, icon
+or duration and are all hidden; the items that apply them are quest rewards
+used the moment they reach the inventory, described as `You can learn about
+Tuntaros.` (item 66397, buff 39562, knowledge 11216). 5,651 of the 5,683
+`param_1` values have a LOC type 34 name; the other 32 (four `개발용 지식`
+developer entries, old Altar of Blood illusions such as 15074) show the ID.
+
+Type 18 renders as `Summon Incarnation of Corruption` (buff 48806, item
+970013), with the ID when LOC has no name. 2,127 of the 2,199 distinct
+`param_1` values have a LOC type 6 character name, against 39% of random IDs
+in the same range, and the Korean buff names match them (`암석의 거상 소환` is
+Rock Golem 28254, `제단 임프 전사` is Altar Imp Warrior 20067). The event
+gimmicks show the character's name plate rather than the buff text:
+`[Event] Summon Satto Gimmick` summons `Mayor` (사또, a magistrate). Buffs
+40871 to 40876 read `Summon Young Kamasylve` but are named `눈사람 소환 :
+벨리아` ("summon snowman: Velia") and summon Baby Snowman 37223, so the English
+text is the stale side. 68 buffs on 22912 (Suspicious Broom) are placeholder
+slots, named `사용 불가능한 인덱스` ("unusable index") or `UNKNOWN`.
+
+The other type 18 parameters are open:
+
+- `param_2` (0 to 6) groups summons: `0` monster and skill summons, `1`
+  event, season and invasion spawns, `2` bosses and event gimmicks, `3` siege
+  objects (Hwacha, siege towers, fences), `4` boss scrolls and guild hunts,
+  `5` and `6` one buff each.
+- `param_3` looks like the action the summon performs. The Wizard's keepers
+  show it best: Keeper Marg (60143) uses `0` for Flow: Fire Breath Marg (buff
+  9015), `1` for Flow: Fire Fist Marg (9016, the Hellfire follow-up), `2`
+  for the Bolide of Destruction add-on (19125), `3` for the enhanced Hellfire
+  (9017) and `4` for the Cataclysm add-on (19121); Keeper Arne (60142) runs
+  `0` to `4` the same way. Buffs 41456 to 41475, named `가넬 궁수
+  소환(인덱스 1)` to `(인덱스 20)` ("Ganelle Archer summon, index 1 to 20"),
+  store 1 to 20, but the world raid fragments 40723 to 40726 (`인덱스1` to
+  `4`) store 0 to 2.
+- `param_4` looks like a facing angle: `180` on 432 buffs, then `90`, `-90`,
+  `-180`, `±135`, `±40`. Group boss scrolls do not show it: Cartian Spell
+  (41587) applies 54156, which summons Mediah Ancient Relic Crystal (23053,
+  `param_4` `180`), a floating object that then spawns three bosses in front
+  of itself, so the bosses do not come from a buff. Solo boss scrolls spawn
+  the boss directly and are the test case still to do.
+- `param_6` is `1000000` on 429 buffs, mostly damage summons named
+  `피해 : ...` ("damage: ..."); maybe a per-million damage scale.
+- [Altar of Blood] Flame Tower (761902) spawns a flame tower in the Altar of
+  Blood minigame, but its buff 48677 (`피의 제단 화염탑 소환`, "Altar of Blood
+  flame tower summon") points at 26701, `Ahib Salun Wolf Spearmaiden`, whose
+  model is `infinitydefence/monster/4/m0004_defence_knightwolf`, one of the
+  defence-mode monsters at 26829 to 26879. The tower comes from somewhere
+  else, or the item was repointed without its buff; open.
+
+The Wizard's Summon: Keeper Marg skill (2250) shows how a skill splits one
+tooltip over several buffs, all lasting 60 min:
+
+| buff_id | effect_type | Parameters                    | Role                                              |
+| ------- | ----------- | ----------------------------- | ------------------------------------------------- |
+| 19113   | 34          | none                          | Headline with the text: `Marg's Rage`, Movement Speed +10%, Recover 250 MP per tick |
+| 8972    | 9           | `param_1` `100000`            | The Movement Speed +10% itself                    |
+| 8973    | 4           | `param_1` `250`, `tick_ms` `10000` | The MP recovery: 250 every 10 sec            |
+| 8999    | 18          | `param_1` `60136`             | Summons Keeper Marg                               |
+| 8974, 8975, 19117 | 16 | `param_1` `521`, `2341`, `2300` | Removal buffs that clear the previous summon's effects |
+
+Summon: Keeper Arne (2246) shares 8972 to 8975 and has its own 19114
+(`Arne's Touch`), 8998 and 19118. The in-game skill tooltip reads `Marg's
+attack damage 579%`, `Recover 250 MP every 10 sec` and `Stiffness on Marg's
+special attack hits`. The damage is type 45 in the `Marg Effect` skill
+(10072): 8992 basic attack `param_4` `5790000` (579%), 8993 special attack
+`8220000`, 9004 Fire Fist `23800000`, each with a lower PvP twin (8990
+basic PvP `5430000`). The stiffness is type 14 buff 850 (`[액션제한] 경직`,
+"action limit: stiffness", `param_1` `6`, `param_2` `1350`). Every keeper
+damage buff stores type 45 `param_1` `2`, which fits the attack-type reading
+(`0` melee, `1` ranged, `2` magic; cannon shots store `1`); the Wizard is a
+magic class.
+
+Types 45 and 4 were checked further on bdocodex. Summon: Keeper Arne (skill
+2246) reads `Arne's attack damage 579%` (buff 8986, `5790000`) and `Recover
+250 MP every 10 sec` (8973). Against buildings and vehicles, Cannonball's
+buff 1988 stores 400% and [Guild] Cannonball's 15709 stores 310%, the
+`around 30% more damage` the Cannonball (56003) tooltip claims. In LOC, 87
+monster and test skills state a damage percentage equal to `param_4`; the 13
+misses are descriptions copied between skills, while the skill names still
+match (`Samsin: Final Damage 200%` stores 200%). The skill tooltip itself is
+a LOC type 46 template (`Marg's attack damage {p0}%`), filled from data.
+Player attacks do not use type 45.
+
+Type 4 renders as `Recover 250 MP/WP/SP every 10 sec`, `MP/WP/SP -50 every 5
+sec` or, under `condition_type` `1`, `Recover 9 MP/WP/SP on Hits`
+(Immortal: Perfume of Spirits, 1166, whose buff 56897 has no English text).
+The 174 type 4 buffs without a tick or a condition are one-off refills that
+serve players and mounts alike: High-quality Carrot (54004) stores 3000 for a
+horse's stamina, MP Potion (Beginner) (503) 50 for the player's MP, so they
+show a dash. Short buffs are worded both ways in the game, `every 1 sec` (14
+buffs) and `5 times over 5 sec` (42), with nothing in the record to tell them
+apart; the column always uses `every`.
+
+Type 1 is the HP counterpart: `Recover 25 HP every 1 sec`, `HP -200 every 1
+sec`, or one of the trigger lines below. On the 77 ticking texts that state
+numbers, 72 match both the amount and the interval; the misses are 65209
+(the stale "every 3 sec") and four `1,000,000 burn damage` placeholders. The
+game names ticking damage by kind (`200 poison damage every 2 sec for 10
+sec`), and only the icon tells the kinds apart. `dot_poison.dds` (294 texts
+say poison), `dot_burns.dds` (229 burn) and `dot_pains.dds` (211 pain) agree
+with their text on all but one or two buffs each, so the column names those
+kinds and adds the duration as `for N sec` (it equals the stated one on 35 of
+36 texts). `dot_bleeding.dds` does not: 201 of its texts say burn and 9
+bleed, so those buffs read `HP -200 every 1 sec`. 80 of the 151 one-line
+texts match exactly; most of the rest name an effect without numbers
+(`Poisonous`, `Syca's Chance`).
+
+[bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor/blob/HEAD/FORMATS.md) agrees on 29, 50, 57, 63, 67, 79, 89, 90 and 95. It gives 149 as life-skill mastery with `param_1` the life skill, and reads `15` as "all life skills", which the LOC text bears out.
+
+Type 69 renders as `Accept Quest: [Co-op] Eliminating the Threats to
+Mediah`, with `chain/quest` when LOC has no title. Cartian Spell (41587)
+applies buff 57217 (`244`, `1`, Korean `메디아 주술서 보스 3종 처치 의뢰`, "Mediah
+spellbook, defeat three bosses quest"), and its tooltip says `[Co-op]
+Eliminating the Threats to Mediah will automatically be accepted when this
+summon scroll is used`; quest 244/1 has exactly that title. 610 of the 670
+buffs name a quest. That alone proves little, since a random quest number
+of the same chain also has a title 68% of the time, but the Korean names
+follow the quest numbers: the Black Spirit's special alchemy quests 9501/4
+and 9501/7 are Clear Liquid Reagent in both, 9501/3 and 9501/6 Clown's
+Blood. The 176 field gimmick buffs on chain 15000 all reach the same title,
+`Catch a large rabbit.`, and the 60 misses are mostly chain 11485 (`그믐달
+실습서`, "new moon practice book" per life skill).
+
+### Display buffs (types 34 and 58)
+
+Types 34 and 58 carry a consumable's or skill's title, tooltip text and icon,
+and do nothing themselves; the other buffs of the same skill hold the effects.
+`[Event] It's Boba Time Drink` (skill 57057) applies headline 55251 (type 58,
+all parameters `0`, text `Extra AP Against Monsters +15, Combat EXP +...`)
+and seven effect buffs of types 136, 29, 25, 1, 67, 25 and 120; Summon:
+Keeper Marg's `Marg's Rage` (19113) is the type 34 headline of its skill. 1,095
+of the 1,132 type 58 and 228 of the 287 type 34 buffs store no parameter.
+Even region bonuses such as `Item Drop Rate +8% upon defeating monsters at
+Sherekhan Necropolis (Night)` (62639) are type 58 with all parameters `0`, so
+their effect is applied outside this table. The Effect column shows a dash.
+
+The type 58 buffs that set `param_1` look like vision range: Sea Bugle
+(58799) and the Ancient Magic Crystal vision effect (50088) store `10` and
+read `Vision Range +10m`, the explorer's clothes (52022) store `500`, and two
+GM and test buffs `1000`. Seven `아이템 획득 증가 이펙트` ("item drop increase
+visual effect") buffs also store `10` with no vision text, so the field and
+its unit stay open.
+
+### `condition_type` (stats block `+0x06`)
+
+The trigger of a type 1 or type 4 buff, confirmed against the English text of
+its buffs (counts are type 1 buffs):
+
+| Value | Buffs | Trigger | Text |
+| ----- | ----: | ------- | ---- |
+| 0     | 1,524 | None: per tick (`tick_ms`) or one-off | |
+| 1     | 34    | On hits | `Recover 9 HP on Hits`; type 4 `Recover 9 MP/WP/SP on Hits` |
+| 3     | 28    | When struck, healing | `Recover 250 HP when struck` (no buff text; Infinite Fortitude 2805 and Purga: Sanguine Heart 9837 on bdocodex, buffs 12647 and 12648) |
+| 4     | 6     | When struck | `Retaliate 15 Fixed Damage when struck` |
+| 6     | 19    | On back attack hits | `Deal 15 Fixed Damage on Back Attack Hits` |
+| 9     | 16    | On critical hits, healing | `Recover 15 HP on Critical Hits` |
+| 10    | 34    | On critical hits, damage | `Deal 30 Fixed Damage on Critical Hits` |
+
+Type 4 uses `8` for "when struck" instead of `3`: Fury of the Beast (354)
+reads `Recover 5 WP each time when struck` on bdocodex, and its buff 80
+stores `5` under `8`. `2` (one buff, 50046, `HP -100`, Ancient Magic Crystal
+- Temptation on the target) and `5` (12 buffs, the "To_Self" effects of
+crystals and Giant's Belt, types 29 and 67) are open; their skills have no
+tooltip on bdocodex. Fixed damage is stored negative and written as a
+positive amount.
 
 ### `stacking_category` (tail block `+0x18`)
 
@@ -245,9 +456,9 @@ Value `2` (647 rows) holds 600-minute elixir-style buffs and value `38` the Adve
 | Level       | num  | `buff_level`                                                        |
 | Effect Type | num  | `effect_type`                                                       |
 | Duration    | text | `duration_ms` formatted as h/min/s; dash when `0`, stored as `None` so it sorts last                   |
-| Param 1     | num  | `param_1`                                                           |
-| Param 2     | num  | `param_2`                                                           |
-| Param 3     | num  | `param_3`                                                           |
+| Param 1     | num  | `param_1`, then what it means for the effect type where confirmed: `3 (Kamasylvian Monsters)`, `25000 (2.5%)`, `10 (Monster AP)`, `250 (every 10 sec)`. Labels over 24 characters (character and quest names) are cut, in full on hover. Sorts by the raw value |
+| Param 2     | num  | `param_2`, labelled the same way                                    |
+| Param 3     | num  | `param_3`, labelled the same way                                    |
 
 ---
 
@@ -349,6 +560,13 @@ Value `2` (647 rows) holds 600-minute elixir-style buffs and value `38` the Adve
   `Reminiscence of the Elvia Spirits`). On client 3458 that titles 2,488 more
   buffs and leaves 396 ambiguous. The record keeps the source in
   `title_buff_id`.
+- `tick_ms` (stats `+0x6C`) is the tick interval of a periodic effect. It
+  equals the stated interval on 105 of 112 English texts and 104 of 108
+  Korean descriptions with "every N sec" (`N초마다`), including the keeper
+  MP recovery 8973 (`10000`, "Recover 250 MP every 10 sec" in game). Most
+  misses are headline buffs of type 34 or 58 that store `0` because a
+  component buff carries the tick; the rest are drift such as 65209 ("every
+  3 sec", `2000`) and 18056 ("every 1 sec", `3000`).
 
 ---
 
@@ -359,12 +577,6 @@ Value `2` (647 rows) holds 600-minute elixir-style buffs and value `38` the Adve
 A short UTF-16 string of digits (`"0"`, `"90"`, `"158"`), and occasionally `*`.
 It could be a group or stacking key stored as text, but no table has been
 matched against it.
-
-### What does `unknown_6c` measure?
-
-It is only set on periodic effects such as bleeds and heal-over-time, and holds
-millisecond-like values. It is not the stated tick interval: a buff named
-"every 3 seconds" stores `2000`.
 
 ### What do the ten parameters mean per effect type?
 

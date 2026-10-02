@@ -22,7 +22,7 @@ from _common.duration import format_duration
 from _common.inline_text import decode_inline_text
 from _common.lookup_index import IndexKind
 
-from _dbss.buff.effect import effect_text
+from _dbss.buff.effect import EffectInput, effect_text, param_labels
 from _dbss.buff.title import extract_title, title_leaders
 
 
@@ -56,6 +56,7 @@ BUFF_CASE = HandlerCase(
                 "level",
                 "effect_type",
                 "duration_ms",
+                "tick_ms",
                 "duration",
                 "icon_path",
                 "title",
@@ -123,6 +124,49 @@ BUFF_CASE = HandlerCase(
             },
         ),
         TargetTest(col="buff_id", value=48727, expected={"effect": "Combat EXP +15%"}),
+        # Summon: Keeper Marg: in game "Marg's attack damage 579%" and
+        # "Recover 250 MP every 10 sec".
+        TargetTest(
+            col="buff_id",
+            value=8992,
+            expected={"effect_type": 45, "param_4": 5790000, "effect": "Attack Damage 579%"},
+        ),
+        TargetTest(
+            col="buff_id",
+            value=8973,
+            expected={
+                "effect_type": 4,
+                "tick_ms": 10000,
+                "effect": "Recover 250 MP/WP/SP every 10 sec",
+            },
+        ),
+        # An alchemy stone retaliation buff: type 1 under condition 4.
+        TargetTest(
+            col="buff_id",
+            value=57123,
+            expected={"effect_type": 1, "condition_type": 4, "effect": "Retaliate 15 Fixed Damage when struck"},
+        ),
+        # High-quality Carrot refills a mount's stamina: type 4 with no tick.
+        TargetTest(col="buff_id", value=50403, expected={"effect_type": 4, "tick_ms": 0, "effect": ""}),
+        # Cartian Spell (41587): "[Co-op] Eliminating the Threats to Mediah
+        # will automatically be accepted".
+        TargetTest(
+            col="buff_id",
+            value=57217,
+            expected={"effect_type": 69, "effect": "Accept Quest: [Co-op] Eliminating the Threats to Mediah"},
+        ),
+        # Item 970013 summons character 28615.
+        TargetTest(
+            col="buff_id",
+            value=48806,
+            expected={"effect_type": 18, "param_1": 28615, "effect": "Summon Incarnation of Corruption"},
+        ),
+        # Item 66397 Tuntaros, used on pickup, unlocks knowledge 11216.
+        TargetTest(
+            col="buff_id",
+            value=39562,
+            expected={"effect_type": 38, "param_1": 11216, "effect": "Learn Knowledge: Tuntaros"},
+        ),
         # Applied by no item in the installed index: an empty list, None to sort last.
         TargetTest(
             col="buff_id",
@@ -264,8 +308,40 @@ def test_korean_title_survives_without_loc() -> None:
         (80, [4, 2560350], "Alchemy EXP +2,560,350"),
         (93, [4, 50000], "Critical Hit Extra Damage +5%"),
         (105, [8, 100000], "Ignore All Resistance +10%"),
+        # Weight in ten-thousandths of an LT, durations in milliseconds.
+        (29, [1000000, 0], "Weight Limit +100 LT"),
+        (95, [15000, 0], "Underwater Breathing +15 sec"),
+        # Pet skill 49134 reads "Death Penalty Resistance +3%".
+        (90, [30000, 0], "Death Penalty Resistance +3%"),
+        # One-off recoveries carry no sign.
+        (63, [2, 0], "Recover 2 Worker Stamina"),
+        (79, [10, 0], "Recover 10 Energy"),
+        (67, [1, -1], "Attack Speed -1"),
+        (89, [0, 2350], "Breath EXP +2,350"),
+        # param_1 picks a rate or a flat amount.
+        (120, [0, 60000], "Monster Damage Reduction Rate +6%"),
+        (120, [2, 10], "Monster Damage Reduction +10"),
+        # The amount sits in the parameter of its target.
+        (136, [30, 0], "Extra AP Against Monsters +30"),
+        (136, [0, 6], "Extra AP Against Adventurers +6"),
+        (149, [2, 1, 70], "Hunting Mastery +70"),
+        (149, [15, 0, 100], "Life Skill Mastery +100"),
+        # A [Life Skill Season] single-tool mastery.
+        (149, [0, 2, 580], ""),
         # Targets other than 3 (all) have no confirmed label.
         (39, [0, 8], ""),
+        # A zero amount.
+        (43, [3, 0], ""),
+        (46, [3, -12], "Extra AP Against Kamasylvian Monsters -12"),
+        (49, [8, 100000], "All Resistance +10%"),
+        # Kind 6 (bound) reads "Not in Use".
+        (49, [6, 100000], ""),
+        # Damage is a share of attack, printed without a sign.
+        (45, [2, 0, 0, 5790000], "Attack Damage 579%"),
+        # A character or knowledge entry with no LOC name falls back to its ID.
+        (18, [27542, 0], "Summon 27542"),
+        (69, [11485, 30], "Accept Quest: 11485/30"),
+        (38, [15074, 0], "Learn Knowledge: 15074"),
         # A kind outside the confirmed ones.
         (80, [10, 100], ""),
         # An effect type that is not decoded.
@@ -273,7 +349,80 @@ def test_korean_title_survives_without_loc() -> None:
     ],
 )
 def test_effect_text(effect_type: int, params: list[int], expected: str) -> None:
-    assert effect_text(effect_type, params) == expected
+    assert effect_text(EffectInput(effect_type, params)) == expected
+
+
+@pytest.mark.parametrize(
+    ("icon_path", "duration_ms", "expected"),
+    [
+        ("ui_texture/icon/new_icon/dot_poison.dds", 10000, "200 poison damage every 2 sec for 10 sec"),
+        ("ui_texture/icon/new_icon/dot_burns.dds", 0, "200 burn damage every 2 sec"),
+        # The bleeding icon also marks "burn" texts, so it names no kind.
+        ("ui_texture/icon/new_icon/dot_bleeding.dds", 10000, "HP -200 every 2 sec"),
+    ],
+)
+def test_ticking_damage_kind(icon_path: str, duration_ms: int, expected: str) -> None:
+    buff = EffectInput(1, [-200], tick_ms=2000, duration_ms=duration_ms, icon_path=icon_path)
+    text = effect_text(buff)
+    assert text == expected
+
+
+@pytest.mark.parametrize(
+    ("effect_type", "amount", "tick_ms", "condition_type", "expected"),
+    [
+        (4, 250, 10000, 0, "Recover 250 MP/WP/SP every 10 sec"),
+        (4, -50, 5000, 0, "MP/WP/SP -50 every 5 sec"),
+        (4, 25, 1500, 0, "Recover 25 MP/WP/SP every 1.5 sec"),
+        (4, 9, 0, 1, "Recover 9 MP/WP/SP on Hits"),
+        # No tick and no condition: a one-off refill, possibly a mount's.
+        (4, 500, 0, 0, ""),
+        # A condition with no confirmed wording for MP/WP/SP.
+        (4, 5, 0, 9, ""),
+        (1, 25, 1000, 0, "Recover 25 HP every 1 sec"),
+        # Poison, burn, pain and bleed differ only by icon.
+        (1, -200, 1000, 0, "HP -200 every 1 sec"),
+        (1, 9, 0, 1, "Recover 9 HP on Hits"),
+        (1, 15, 0, 9, "Recover 15 HP on Critical Hits"),
+        (1, -15, 0, 4, "Retaliate 15 Fixed Damage when struck"),
+        (1, -7, 0, 6, "Deal 7 Fixed Damage on Back Attack Hits"),
+        (1, -30, 0, 10, "Deal 30 Fixed Damage on Critical Hits"),
+        # Infinite Fortitude: "Recover 250 HP when struck".
+        (1, 250, 0, 3, "Recover 250 HP when struck"),
+        # Fury of the Beast: "Recover 5 WP each time when struck".
+        (4, 5, 0, 8, "Recover 5 MP/WP/SP when struck"),
+        # A condition with no confirmed wording.
+        (1, -100, 0, 2, ""),
+    ],
+)
+def test_over_time_text(
+    effect_type: int, amount: int, tick_ms: int, condition_type: int, expected: str
+) -> None:
+    buff = EffectInput(effect_type, [amount], tick_ms=tick_ms, condition_type=condition_type)
+    assert effect_text(buff) == expected
+
+
+@pytest.mark.parametrize(
+    ("buff", "expected"),
+    [
+        # A kind parameter gets its kind; a flat amount needs no label.
+        (EffectInput(46, [3, -12]), {1: "Kamasylvian Monsters"}),
+        # A scaled amount shows the game's number.
+        (EffectInput(9, [25000]), {1: "2.5%"}),
+        (EffectInput(25, [150000, 0]), {1: "15%", 2: "Combat"}),
+        # The parameter alone does not say which target it is.
+        (EffectInput(136, [10, 0]), {1: "Monster AP"}),
+        (EffectInput(136, [0, 6]), {2: "Adventurer AP"}),
+        (EffectInput(120, [0, 15000]), {1: "Rate", 2: "1.5%"}),
+        (EffectInput(149, [6, 1, 5]), {1: "Training"}),
+        (EffectInput(4, [250], tick_ms=10000), {1: "every 10 sec"}),
+        (EffectInput(1, [-15], condition_type=4), {1: "when struck"}),
+        # No confirmed meaning: no labels at all.
+        (EffectInput(39, [0, 8]), {}),
+        (EffectInput(98, [1, 2]), {}),
+    ],
+)
+def test_param_labels(buff: EffectInput, expected: dict[int, str]) -> None:
+    assert param_labels(buff) == expected
 
 
 def test_title_leaders_follow_the_skill_that_applies_them() -> None:
