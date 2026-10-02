@@ -12,6 +12,7 @@ from bdo_preview import PreviewHandler, register_handler
 from _common.binary import u8, u16, u32
 from _common.html import Column, header_cell, sort_keys
 from _common.loc import decompress_loc
+from _common.pa_text import pa_html
 from table_sort import TableSort, sort_order_by_values
 
 
@@ -279,7 +280,7 @@ class LocHandler(PreviewHandler):
             f"<td>{r['str_id4']}</td>"
             f"<td>{_html.escape(str(r['str_type']))}</td>"
             f"<td>{_html.escape(r['str_type_text'])}</td>"
-            f"<td class='loc-text'>{_html.escape(r['text'])}</td>"
+            f"<td class='loc-text'>{pa_html(r['text'])}</td>"
             f"</tr>"
             for r in records
         )

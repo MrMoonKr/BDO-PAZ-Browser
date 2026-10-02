@@ -5,7 +5,7 @@ from typing import Any
 
 import pytest
 
-from _dbss.dialogtext.text import plain_text, voice_name
+from _dbss.dialogtext.text import plain_text, tagged_text, voice_name
 from _dbss.dialogtext.parser import DialogTextLine
 from tests.framework import (
     DeclaredCountTest,
@@ -87,6 +87,13 @@ def test_voiced_line_is_split_into_text_and_voice() -> None:
     line = DialogTextLine(1, "{AudioVoice(NPC_VCE_1_1_Test)}First line.\\nSecond line.")
     assert plain_text(line.text) == "First line. Second line."
     assert voice_name(line) == "NPC_VCE_1_1_Test"
+
+
+def test_pa_tags_stay_out_of_the_plain_line() -> None:
+    text = "{ChangeScene(Scene_01)}Go <PAColor0xffe9bd23>north<PAOldColor>.\\nNow."
+
+    assert tagged_text(text) == "Go <PAColor0xffe9bd23>north<PAOldColor>. Now."
+    assert plain_text(text) == "Go north. Now."
 
 
 def test_line_without_voice() -> None:

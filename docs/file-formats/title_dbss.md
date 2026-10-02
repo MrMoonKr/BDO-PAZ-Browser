@@ -197,9 +197,19 @@ Requirement text commonly starts with:
 ```
 
 This default requirement label color is not the visible title-name color.
+The English requirement (LOC type 1, `str_id4` 1) carries the same tag on its
+`Title Requirement` label in all 3,322 rows on client 3458. The parser keeps the
+tags in `requirement_text_ko`, and the table draws them.
 
 Special "MASTER ..." title names are different: their title payload itself is
-PAColor-tagged, so those PAColor tags are part of the displayed title name.
+PAColor-tagged, so those PAColor tags are part of the displayed title name. The
+tags draw a gradient, one colour per letter pair: `MASTER WARRIOR` goes from
+`0xffffffff` on `MA` down to `0xff424242` on `R`, as in game. The parser keeps
+the tags in `title_text_ko`, and the English LOC name (type 1) carries the same
+tags. Two more LOC names are tagged without a styled payload (`Seasonal
+Sensation!`, `Rise Above the Disorder`); 1348 `Lights, Camera, Action!` has a
+stored payload colour and a different LOC tag colour; the table draws the tag
+colour (unchecked in game).
 
 ## Style Field
 
@@ -243,9 +253,8 @@ color itself.
 | ------------------ | ----- | ----------------------------------------------------------------------------- |
 | Title ID           | num   | Loc lookup key                                                                |
 | Category           |       | Decoded category name, falling back to the numeric value                      |
-| Title Color        |       | Swatch from extra payload, if present                                         |
-| Title              |       | English loc text, falling back to Korean; colored when a payload color exists |
-| Title Requirements |       | English loc text, falling back to Korean                                      |
+| Title              |       | English loc text, falling back to Korean; drawn in the payload color when one exists, with the name's own PAColor tags on top |
+| Title Requirements |       | English loc text, falling back to Korean; in the colours of its PAColor tags  |
 | Special            |       | `True` when the title has a non-default payload color or inline title PAColor |
 | Effect             |       | Extra payload effect/aura string, if present                                  |
 

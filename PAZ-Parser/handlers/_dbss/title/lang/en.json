@@ -2,7 +2,6 @@
   "columns": {
     "titleId":            "Title ID",
     "category":           "Category",
-    "titleColor":         "Title Color",
     "title":              "Title",
     "titleRequirements":  "Title Requirements",
     "special":            "Special",

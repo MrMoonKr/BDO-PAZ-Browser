@@ -6,9 +6,10 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.character import character_name
-from _common.html import Column, e, join_limited, sort_keys, table
+from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
-from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
+from _common.loc import is_loc_loaded, loc_lookup
+from _common.pa_text import pa_key, pa_list_cell, strip_pa_tags
 from .parser import BaseDialogRecord, parse_base_dialog_records
 
 
@@ -21,15 +22,16 @@ _LIST_PREVIEW_ITEMS = 3
 
 
 def _dialog_text(record: BaseDialogRecord, field: int) -> str:
-    text = loc_lookup(_LOC_BASE_DIALOG, record.character_id, record.dialog_index, 0, field)
-    return strip_pa_tags(text).strip()
+    """One LOC string of the dialog with its PA tags, or "" when it has no text."""
+    text = loc_lookup(_LOC_BASE_DIALOG, record.character_id, record.dialog_index, 0, field).strip()
+    return text if strip_pa_tags(text).strip() else ""
 
 
 def _record_dict(record: BaseDialogRecord, has_loc: bool) -> dict:
     # English first; the character's LOC name, then the Korean source, stand in.
-    name = (
-        (_dialog_text(record, 0) or character_name(record.character_id)) if has_loc else ""
-    ) or record.name_kr
+    name = strip_pa_tags(
+        ((_dialog_text(record, 0) or character_name(record.character_id)) if has_loc else "") or record.name_kr
+    ).strip()
     lines = [
         (_dialog_text(record, number) if has_loc else "") or line
         for number, line in enumerate(record.lines, start=1)
@@ -40,7 +42,8 @@ def _record_dict(record: BaseDialogRecord, has_loc: bool) -> dict:
         "dialog_index": record.dialog_index,
         "character": name,
         "name_kr": record.name_kr,
-        "lines": lines,
+        "lines": [strip_pa_tags(line).strip() for line in lines],
+        pa_key("lines"): lines,
         "lines_kr": list(record.lines),
         # Empty sorts last.
         "line_count": len(record.lines) or None,
@@ -92,7 +95,7 @@ class BaseDialogHandler(PreviewHandler):
                 e(r["character_id"]),
                 e(r["dialog_index"]),
                 e(r["character"] or _EMPTY),
-                e(join_limited(r["lines"], _LIST_PREVIEW_ITEMS) or _EMPTY),
+                pa_list_cell(r[pa_key("lines")], _LIST_PREVIEW_ITEMS),
             ]
             for r in slice_
         ]

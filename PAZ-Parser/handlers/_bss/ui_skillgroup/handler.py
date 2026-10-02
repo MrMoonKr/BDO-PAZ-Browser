@@ -11,7 +11,8 @@ from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.icon_index import IconKind, icon_path
 from _common.lang import load_handler_strings
 from _common.loc import loc_lookup, strip_pa_tags
-from _common.skill import skill_name, split_skill_key
+from _common.pa_text import pa_cell, pa_fields
+from _common.skill import skill_name_tagged, split_skill_key
 from _bss.skillgroup.parser import skill_keys_by_group
 from _bss.stringtable.parser import GAME_SHEET, GAME_SHEET_LOC_ID2, parse_key_hashes
 from .parser import ClassGrid, SkillCell, Tab, card_column, parse_ui_skillgroup
@@ -67,7 +68,7 @@ def _cell_dict(
         "group_no": cell.group_no,
         "skill_no": skill_no,
         "icon_path": icon_path(IconKind.SKILL, skill_no) if skill_no is not None else "",
-        "skill": skill_name(skill_no) if skill_no is not None else "",
+        **pa_fields("skill", skill_name_tagged(skill_no) if skill_no is not None else ""),
     }
 
 
@@ -149,7 +150,7 @@ class UiSkillGroupBssHandler(PreviewHandler):
                 e(r["column"]),
                 e(r["group_no"]),
                 icon_cell(r["icon_path"]),
-                e(r["skill"] or _EMPTY),
+                pa_cell(r, "skill"),
             ]
             for r in slice_
         ]

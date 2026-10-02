@@ -6,9 +6,10 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.character import character_name
-from _common.html import Column, e, join_limited, sort_keys, table, truncate
+from _common.html import Column, e, join_limited, sort_keys, table
 from _common.lang import load_handler_strings
-from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
+from _common.loc import is_loc_loaded, loc_lookup
+from _common.pa_text import pa_fields, pa_html, pa_key, pa_list_cell, strip_pa_tags
 from .lease import lease_text
 from .parser import DialogRecord, parse_detail_dialog_offset_rows, parse_detail_dialog_records, split_key
 
@@ -24,21 +25,29 @@ _LIST_PREVIEW_ITEMS = 3
 _GREETING_PREVIEW_CHARS = 120
 
 
-def _greeting_preview(text: str) -> str:
-    """The greeting on one line, cut for the table cell."""
-    return truncate(" ".join(text.split()), _GREETING_PREVIEW_CHARS)
+def _greeting_cell(record: dict) -> str:
+    """The greeting on one line in its game colours, cut for the table cell."""
+    if not record["greeting"]:
+        return _EMPTY
+    one_line = " ".join(record[pa_key("greeting")].split())
+    return pa_html(one_line, max_chars=_GREETING_PREVIEW_CHARS)
 
 
 def _dialog_text(record: DialogRecord, text_id: int, field: int, has_loc: bool) -> str:
-    """The user-language text of one dialog string, or "" without LOC."""
+    """The user-language text of one dialog string with its PA tags, or "" without LOC."""
     if not has_loc:
         return ""
-    return strip_pa_tags(loc_lookup(_LOC_DIALOG, record.key, text_id, 0, field)).strip()
+    text = loc_lookup(_LOC_DIALOG, record.key, text_id, 0, field).strip()
+    return text if strip_pa_tags(text).strip() else ""
 
 
 def _record_dict(record: DialogRecord, has_loc: bool) -> dict:
     leases = [option.lease for option in record.options]
     found = [lease for lease in leases if lease is not None]
+    option_titles = [
+        _dialog_text(record, option.text_id, _FIELD_OPTION_TITLE, has_loc) or option.title
+        for option in record.options
+    ]
     return {
         "key": record.key,
         "character_id": record.character_id,
@@ -47,12 +56,10 @@ def _record_dict(record: DialogRecord, has_loc: bool) -> dict:
         "character": character_name(record.character_id) or record.internal_name,
         "internal_name": record.internal_name,
         # User language first, the Korean source as fallback.
-        "greeting": _dialog_text(record, record.text_id, _FIELD_GREETING, has_loc) or record.greeting,
+        **pa_fields("greeting", _dialog_text(record, record.text_id, _FIELD_GREETING, has_loc) or record.greeting),
         "option_count": len(record.options),
-        "option_titles": [
-            _dialog_text(record, option.text_id, _FIELD_OPTION_TITLE, has_loc) or option.title
-            for option in record.options
-        ],
+        "option_titles": [strip_pa_tags(title).strip() for title in option_titles],
+        pa_key("option_titles"): option_titles,
         "leases": [lease_text(lease, has_loc) for lease in found],
         "lease_item_ids": [lease.item_id for lease in found],
     }
@@ -154,9 +161,9 @@ class DetailDialogHandler(PreviewHandler):
                 e(r["character_id"]),
                 e(r["dialog_index"]),
                 e(r["character"] or _EMPTY),
-                e(_greeting_preview(r["greeting"]) or _EMPTY),
+                _greeting_cell(r),
                 e(r["option_count"]),
-                e(join_limited(r["option_titles"], _LIST_PREVIEW_ITEMS) or _EMPTY),
+                pa_list_cell(r[pa_key("option_titles")], _LIST_PREVIEW_ITEMS),
                 e(join_limited(r["leases"], _LIST_PREVIEW_ITEMS) or _EMPTY),
             ]
             for r in slice_

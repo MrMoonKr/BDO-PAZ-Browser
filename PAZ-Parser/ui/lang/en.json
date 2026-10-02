@@ -60,6 +60,8 @@
     "pazFolder": "PAZ Folder",
     "language": "Language",
     "tableRowHeight": "Table Row Height",
+    "showPaTags": "Show game text tags",
+    "showPaTagsHint": "Show the <PAColor> tags of game text next to its colours",
     "cancel": "Cancel",
     "save": "Save"
   },

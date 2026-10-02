@@ -714,9 +714,60 @@ Give number columns the `"num"` class (`Column("Buff ID", "num", ...)`). The
 table CSS right-aligns them and shrinks them to their content, so text columns
 take the spare width of the pane.
 
+Draw game text that may hold `<PAColor0xAARRGGBB>` / `<PAOldColor>` tags with
+`pa_html(raw)` from `_common/pa_text.py`, never with `e(raw)`: it escapes the
+text and turns each colour into a span. Keep the plain text in the record and
+the tagged copy in a display-only field, see
+[Display-Only Fields](#display-only-fields).
+
 Use `icon_cell(path)` for icon path columns so DBSS/BSS table previews keep
 consistent spacing and escaping. The frontend lazy-loads matching PAZ image
 entries into those cells, while parsed CSV export keeps the raw icon path field.
+
+### Display-Only Fields
+
+A record key starting with `_` is for rendering only (`record_fields.py`).
+Tab search (`record_matches()`, also for a handler with its own
+`search_records`), sorting (`TableSort.parse` rejects it) and the CSV export
+skip it, so a handler keeps its plain field for those and adds the tagged text
+next to it. Read LOC text with its tags through `loc_tagged()` (the tagged
+twin of `loc_text()`), then:
+
+```python
+from _common.loc import loc_tagged
+from _common.pa_text import pa_cell, pa_fields, pa_key, pa_list_cell
+
+# get_records: `description` plain, `_description_pa` tagged
+record = {**record, **pa_fields("description", loc_tagged(5, buff_id))}
+
+# render_records_page: coloured, or "-" when blank; max_chars cuts the
+# visible text like truncate()
+pa_cell(r, "description")
+pa_cell(r, "objective", 140)
+
+# A list field: the plain list under the field, the tagged list under pa_key()
+pa_list_cell(r[pa_key("texts")], 3)
+```
+
+Text that has its own fallback chain gets a tagged helper next to the plain
+one: `skill_name_tagged()` / `skill_description_tagged()` in `_common/skill.py`.
+Icon list labels (`icon_label_cell`, the buff and item lists) are still plain
+text.
+
+`pa_html(raw, colors=False)` drops the colours and returns
+`e(strip_pa_tags(raw))`, so a column can turn colour off without changing its
+call. Colours nest; a stray `<PAOldColor>` is dropped, colours left open are
+closed at the end, and other `<PA...>` tags are dropped. The **Show game text
+tags** setting (off by default) makes `pa_html` show every tag as a dimmed
+`pa-tag` span too; the app applies it through `set_show_pa_tags()` at start and
+on save, and the CLI always turns it on. A colour stored as a u32 rather than
+in tag text (`dropuitaginfo.bss`) goes through `argb_css(argb)`, which keeps
+the alpha (`rgba(r, g, b, a)`).
+
+`_common/pa_color.py` is a different job: it finds colour markers in raw UTF-16
+bytes for `title.dbss`.
+
+The CLI `--records` table and JSON keep display-only fields, to show the tags.
 
 ---
 
@@ -756,6 +807,7 @@ _common/
 ├── inline_text.py       # decode_inline_text(): the stored \n escape of inline text
 ├── item_key.py          # item keys (enchant_level << 24 | item_id), LOC type 0 names, per-level icons
 ├── knowledge.py         # knowledge entry names (LOC type 34)
+├── pa_text.py           # game text tags: pa_fields() / pa_cell() for records, pa_html(), argb_css()
 ├── record_reader.py     # RecordReader: walks one variable-length record in order
 └── skill.py             # skill keys (skill_no << 16 | level) and LOC type 10 names
 ```

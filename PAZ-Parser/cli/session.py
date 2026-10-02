@@ -7,6 +7,7 @@ from api.bdo_api import Api
 from api.bdo_config import load_config
 from bdo_models import PazEntry
 from bdo_preview import set_handler_lang
+from _common.pa_text import set_show_pa_tags
 from paz.bdo_paz_extract import parse_meta_file
 
 from .errors import CliError
@@ -37,6 +38,9 @@ def open_session(
     """
     paz_root = resolve_paz_root(paz_folder)
     set_handler_lang(load_config().get("language", "en"))
+    # The CLI is for checking data, so rendered pages always show the game
+    # text tags, whatever the app setting says.
+    set_show_pa_tags(True)
 
     extras = [name for name, wanted in (("LOC", load_loc), ("lookup indexes", load_indexes)) if wanted]
     progress("Loading PAZ entries" + (f", {' and '.join(extras)}" if extras else "") + "…")

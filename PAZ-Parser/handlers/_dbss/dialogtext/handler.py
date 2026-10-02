@@ -8,8 +8,9 @@ from bdo_preview import PreviewHandler
 from _common.html import Column, e, join_limited, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded
+from _common.pa_text import pa_key, pa_list_cell
 from .parser import parse_dialogtext_offset_rows, parse_dialogtext_records
-from .text import line_text, voice_name
+from .text import line_text_tagged, plain_text, voice_name
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
@@ -88,11 +89,13 @@ class DialogTextHandler(PreviewHandler):
         records = []
         for pool in parse_dialogtext_records(data, offset_raw):
             voices = [voice_name(line) for line in pool.lines]
+            texts = [line_text_tagged(pool, line, has_loc) for line in pool.lines]
             records.append({
                 "key": pool.key,
                 "name": pool.name,
                 "line_count": len(pool.lines),
-                "texts": [line_text(pool, line, has_loc) for line in pool.lines],
+                "texts": [plain_text(text) for text in texts],
+                pa_key("texts"): texts,
                 "voices": [voice for voice in voices if voice],
             })
         return records
@@ -111,7 +114,7 @@ class DialogTextHandler(PreviewHandler):
             [
                 e(r["name"]),
                 e(r["line_count"]),
-                e(join_limited(r["texts"], _LIST_PREVIEW_ITEMS) or _EMPTY),
+                pa_list_cell(r[pa_key("texts")], _LIST_PREVIEW_ITEMS),
                 e(join_limited(r["voices"], _LIST_PREVIEW_ITEMS) or _EMPTY),
             ]
             for r in slice_

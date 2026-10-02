@@ -9,7 +9,8 @@ from _common.character import character_name
 from _common.html import Column, e, icon_cell, join_limited, sort_keys, table
 from _common.knowledge import LOC_KNOWLEDGE, knowledge_name
 from _common.lang import load_handler_strings
-from _common.loc import is_loc_loaded, loc_text
+from _common.loc import is_loc_loaded, loc_tagged, loc_text
+from _common.pa_text import pa_cell, pa_fields
 from _common.lookup_index import IndexKind, lookup
 from .combo import combo_text, has_combo
 from .parser import MentalCardRecord, parse_mentalcard_offset_records, parse_mentalcard_records
@@ -147,10 +148,11 @@ class MentalCardHandler(PreviewHandler):
                 "interest": round(record.interest),
                 **_combo_fields(record),
                 "icon_path": record.icon_path,
-                "obtain": (
-                    loc_text(LOC_KNOWLEDGE, record.card_id, _LOC_ACQUISITION) if has_loc else ""
-                )
-                or record.acquisition_kr,
+                **pa_fields(
+                    "obtain",
+                    (loc_tagged(LOC_KNOWLEDGE, record.card_id, _LOC_ACQUISITION) if has_loc else "")
+                    or record.acquisition_kr,
+                ),
                 "learned_from": _learned_from(record.card_id),
                 "position": list(record.position),
                 "position_text": _position_text(record.position),
@@ -181,7 +183,7 @@ class MentalCardHandler(PreviewHandler):
                 e(r["max_favor"]),
                 e(r["interest"]),
                 e(r["combo_text"] or _EMPTY),
-                e(r["obtain"] or _EMPTY),
+                pa_cell(r, "obtain"),
                 e(join_limited(r["learned_from"], _LIST_PREVIEW_ITEMS) or _EMPTY),
                 e(r["position_text"] or _EMPTY),
             ]

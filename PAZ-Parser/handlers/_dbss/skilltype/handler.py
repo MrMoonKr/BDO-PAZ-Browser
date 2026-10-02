@@ -7,7 +7,8 @@ from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.lang import load_handler_strings
-from _common.skill import skill_name
+from _common.pa_text import pa_cell, pa_fields
+from _common.skill import skill_name_tagged
 from .parser import SkillTypeRecord, parse_skilltype_records
 
 
@@ -22,7 +23,7 @@ def _record_dict(record: SkillTypeRecord, kind_labels: dict[str, str]) -> dict:
         "skill_no": record.skill_no,
         "icon_path": record.icon_path,
         # English first, then the Korean source.
-        "name": skill_name(record.skill_no) or record.name_kr,
+        **pa_fields("name", skill_name_tagged(record.skill_no) or record.name_kr),
         "name_kr": record.name_kr,
         "group_name_kr": record.group_name_kr,
         "kind": record.kind,
@@ -76,7 +77,7 @@ class SkillTypeHandler(PreviewHandler):
             [
                 e(r["skill_no"]),
                 icon_cell(r["icon_path"]),
-                e(r["name"] or _EMPTY),
+                pa_cell(r, "name"),
                 e(r["kind_label"]),
             ]
             for r in slice_

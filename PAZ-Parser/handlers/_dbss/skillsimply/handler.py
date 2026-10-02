@@ -9,7 +9,8 @@ from _common.class_type import ALL_CLASSES_MASK, class_name, class_types_in_mask
 from _common.html import Column, e, flag_cell, icon_cell, join_limited, sort_keys, table
 from _common.icon_index import IconKind, icon_path
 from _common.lang import load_handler_strings
-from _common.skill import skill_name
+from _common.pa_text import pa_cell, pa_fields
+from _common.skill import skill_name, skill_name_tagged
 from .parser import SkillSimplyRecord, parse_skillsimply_records
 
 
@@ -50,7 +51,7 @@ def _record_dict(record: SkillSimplyRecord, strings: dict) -> dict:
         "skill_no": record.skill_no,
         "level": record.level,
         "icon_path": icon_path(IconKind.SKILL, record.skill_no),
-        "name": skill_name(record.skill_no),
+        **pa_fields("name", skill_name_tagged(record.skill_no)),
         "class_mask": record.class_mask,
         "classes": _classes(record.class_mask, strings.get("allClasses", "All")),
         "kind": record.kind,
@@ -135,7 +136,7 @@ class SkillSimplyHandler(PreviewHandler):
                 e(r["skill_no"]),
                 e(r["level"]),
                 icon_cell(r["icon_path"]),
-                e(r["name"] or _EMPTY),
+                pa_cell(r, "name"),
                 e(r["classes"] or _EMPTY),
                 e(r["kind_label"]),
                 e(r["branch_label"] or _EMPTY),

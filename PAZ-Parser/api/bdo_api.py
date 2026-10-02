@@ -11,7 +11,7 @@ from typing import Any
 
 import webview
 
-from .bdo_config import load_config, save_config
+from .bdo_config import load_config, save_config, show_pa_tags_setting
 from .bdo_api_helpers import _DISK_VIRTUAL_PREFIX, _file_icon, _norm, path_matcher
 from .bdo_api_preview import PreviewMixin
 from .bdo_api_search import SearchMixin
@@ -22,6 +22,7 @@ from bdo_models import PazEntry
 from paz.bdo_paz_extract import extract_entry, find_single_meta_file, parse_meta_file
 from paz.bdo_payload_cache import cached_read_entry_payload, clear_payload_cache
 from bdo_preview import StreamPreviewHandler, get_handler, set_handler_lang
+from _common.pa_text import set_show_pa_tags
 
 _COMPANION_POOL = ThreadPoolExecutor(max_workers=4, thread_name_prefix="companion")
 
@@ -73,7 +74,9 @@ class Api(PreviewMixin, SearchMixin):
 
     def set_window(self, window: webview.Window) -> None:
         self._window = window
-        set_handler_lang(load_config().get("language", "en"))
+        cfg = load_config()
+        set_handler_lang(cfg.get("language", "en"))
+        set_show_pa_tags(show_pa_tags_setting(cfg))
 
     # ── Folder ────────────────────────────────────────────────────────────────
 
@@ -119,9 +122,16 @@ class Api(PreviewMixin, SearchMixin):
             "paz_path": cfg.get("last_folder", ""),
             "language": cfg.get("language", "en"),
             "table_row_height": _table_row_height(cfg.get("table_row_height")),
+            "show_pa_tags": show_pa_tags_setting(cfg),
         }
 
-    def save_settings(self, paz_path: str, language: str, table_row_height: int | None = None) -> dict:
+    def save_settings(
+        self,
+        paz_path: str,
+        language: str,
+        table_row_height: int | None = None,
+        show_pa_tags: bool = False,
+    ) -> dict:
         if language not in _VALID_LANGUAGES:
             return {"ok": False, "error": f"Invalid language: {language}"}
         old_cfg = load_config()
@@ -130,7 +140,9 @@ class Api(PreviewMixin, SearchMixin):
             "last_folder": paz_path,
             "language": language,
             "table_row_height": row_height,
+            "show_pa_tags": show_pa_tags is True,
         })
+        set_show_pa_tags(show_pa_tags is True)
         self._reload_loc(language)
         if paz_path != old_cfg.get("last_folder", "") and Path(paz_path).is_dir():
             self._paz_root = Path(paz_path)

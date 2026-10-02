@@ -20,6 +20,11 @@ def load_config() -> dict:
         return {}
 
 
+def show_pa_tags_setting(cfg: dict) -> bool:
+    """The "Show game text tags" setting; off unless saved as true."""
+    return cfg.get("show_pa_tags") is True
+
+
 def save_config(updates: dict) -> None:
     cfg = {**load_config(), **updates}
     try:

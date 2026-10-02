@@ -5,9 +5,11 @@ from pathlib import Path
 
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
+from record_fields import record_matches
 from table_sort import TableSort, sort_order_by_values
 
-from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
+from _common.loc import is_loc_loaded, loc_lookup
+from _common.pa_text import pa_cell, pa_fields, strip_pa_tags
 
 from _common.html import Column, e, icon_cell, sort_keys, table, truncate
 from _common.lang import load_handler_strings
@@ -28,17 +30,18 @@ def _truncate(text: str) -> str:
 
 
 def _quest_loc_texts(quest_chain_id: int, quest_id: int) -> list[str]:
+    """LOC type 18 texts of a quest with their PA tags, each visible text once."""
     if not is_loc_loaded():
         return []
 
     seen: set[str] = set()
     texts: list[str] = []
     for str_id4 in range(10):
-        text = loc_lookup(18, quest_chain_id, quest_id, 0, str_id4)
+        text = loc_lookup(18, quest_chain_id, quest_id, 0, str_id4).strip()
         clean = strip_pa_tags(text).strip()
         if clean and clean not in seen:
             seen.add(clean)
-            texts.append(clean)
+            texts.append(text)
     return texts
 
 
@@ -102,9 +105,9 @@ class QuestDbssHandler(PreviewHandler):
         loc_texts = _quest_loc_texts(parsed["quest_chain_id"], parsed["quest_id"])
         return {
             **parsed,
-            "loc_texts_en": loc_texts,
-            "title": _title(loc_texts),
-            "objective": _objective(loc_texts) or parsed["objective_text_kr"],
+            "loc_texts_en": [strip_pa_tags(text).strip() for text in loc_texts],
+            **pa_fields("title", _title(loc_texts)),
+            **pa_fields("objective", _objective(loc_texts) or parsed["objective_text_kr"]),
             # Empty sorts last and exports as an empty cell.
             "family_stat_text": _family_stat_text(parsed["family_stats"]) or None,
         }
@@ -184,7 +187,7 @@ class QuestDbssHandler(PreviewHandler):
         index = self._get_index(data, companions)
         for row in range(len(index)):
             record = self._record_at(data, index, row)
-            if q in "\t".join(str(value).lower() for value in record.values()):
+            if record_matches(record, q):
                 matches.append(row)
 
         return matches
@@ -204,8 +207,6 @@ class QuestDbssHandler(PreviewHandler):
         for record in records:
             if record.get("loc_texts_en"):
                 with_loc += 1
-            title = record["title"]
-            objective = record["objective"]
 
             rows.append([
                 e(record["packed_quest_id"]),
@@ -213,10 +214,10 @@ class QuestDbssHandler(PreviewHandler):
                 e(record["quest_id"]),
                 e(record["quest_category"]),
                 icon_cell(record["icon_path"]),
-                e(_truncate(title) if title else "-"),
+                pa_cell(record, "title", _TEXT_PREVIEW_CHARS),
                 e(_truncate(record["condition_script"])),
                 e(_truncate(record["action_script"])),
-                e(_truncate(objective) if objective else "-"),
+                pa_cell(record, "objective", _TEXT_PREVIEW_CHARS),
                 e(record["family_stat_text"] or "-"),
             ])
 

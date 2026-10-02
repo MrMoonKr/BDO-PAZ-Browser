@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import re
 import string
 
 from _common.binary import debug_u32_fields, u16 as _u16, u32
@@ -8,7 +7,6 @@ from _common.pa_color import extract_pa_colors, first_pa_color_offset
 from .model import TitleRecord
 
 _PA_TAG_START = "<PA".encode("utf-16-le")
-_PA_TAG_RE = re.compile(r"<PA[^>]+>")
 _HEX_BYTES = set(bytes(string.hexdigits, "ascii"))
 
 
@@ -69,10 +67,6 @@ def _read_utf16z(data: bytes, start: int) -> tuple[str, int]:
     return _decode_utf16(data, start, end), end
 
 
-def _strip_pa_tags(text: str) -> str:
-    return _PA_TAG_RE.sub("", text)
-
-
 def _decode_ascii(data: bytes) -> str:
     return data.decode("ascii", errors="ignore").rstrip("\x00")
 
@@ -129,7 +123,8 @@ def _extract_text_fields(
     is_styled_title = block.startswith(_PA_TAG_START, text_start)
     if is_styled_title:
         title_end = text_start + (style_value + 1) * 2
-        title_text = _strip_pa_tags(_decode_utf16(block, text_start, title_end - 2))
+        # Kept as stored: the colour tags draw gradient names (MASTER WARRIOR).
+        title_text = _decode_utf16(block, text_start, title_end - 2)
         requirement_length = _u16(block, title_end - 2)
         requirement_start = title_end + 6
         header_field_meaning = "styled title length"
@@ -159,7 +154,7 @@ def _extract_text_fields(
 
     return (
         title_text.rstrip("\x00"),
-        _strip_pa_tags(requirement_text),
+        requirement_text,
         requirement_length,
         category_id,
         title_color_argb,

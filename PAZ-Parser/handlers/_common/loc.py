@@ -1,19 +1,14 @@
 from __future__ import annotations
 
-import re
 import struct
 import zlib
 
 from _common.binary import u32
-
-_PA_TAG_RE = re.compile(r"<PA[^>]+>")
+# Re-exported: handlers import strip_pa_tags from here.
+from _common.pa_text import strip_pa_tags as strip_pa_tags
 
 # Some LOC keys store this literal instead of a text.
 LOC_NULL = "<null>"
-
-
-def strip_pa_tags(text: str) -> str:
-    return _PA_TAG_RE.sub("", text)
 
 
 def decompress_loc(raw: bytes) -> bytes | None:
@@ -95,9 +90,14 @@ def loc_lookup(
     return _LOC_INDEX.get((str_type, str_id1, str_id2, str_id3, str_id4), "")
 
 
+def loc_tagged(str_type: int, str_id1: int, str_id4: int = 0) -> str:
+    """Text for a LOC key with its PA tags kept, for `pa_fields`, or '' on miss / not loaded."""
+    return loc_lookup(str_type, str_id1, 0, 0, str_id4).strip()
+
+
 def loc_text(str_type: int, str_id1: int, str_id4: int = 0) -> str:
     """Display text for a LOC key with PA tags removed, or '' on miss / not loaded."""
-    return strip_pa_tags(loc_lookup(str_type, str_id1, 0, 0, str_id4)).strip()
+    return strip_pa_tags(loc_tagged(str_type, str_id1, str_id4)).strip()
 
 
 def loc_lookup_prefix(str_type: int, str_id1: int) -> list[str]:

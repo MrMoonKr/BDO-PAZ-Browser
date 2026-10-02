@@ -24,7 +24,11 @@ class OutputFormat(Enum):
 
 
 def record_fields(records: Sequence[dict]) -> list[str]:
-    """Every key across the records, in first-seen order."""
+    """Every key across the records, in first-seen order.
+
+    Display-only fields (`_description_pa`) are kept: the CLI is for checking
+    data, so it shows the text with its game tags next to the plain text.
+    """
     seen: dict[str, None] = {}
     for record in records:
         for key in record:

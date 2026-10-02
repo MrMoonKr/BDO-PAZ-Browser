@@ -19,8 +19,10 @@ from tests.framework import (
 )
 
 from _common.duration import format_duration
+from _common.html import e
 from _common.inline_text import decode_inline_text
 from _common.lookup_index import IndexKind
+from _common.pa_text import pa_html
 
 from _dbss.buff.effect import EffectInput, effect_text, param_labels
 from _dbss.buff.title import extract_title, title_leaders
@@ -227,6 +229,17 @@ def test_buff_dbss(spec: Any, buff_result: HandlerResult) -> None:
 @pytest.mark.parametrize("spec", OFFSET_CASE.tests, ids=case_id)
 def test_buffoffset_dbss(spec: Any, offset_result: HandlerResult) -> None:
     offset_result.check(spec)
+
+
+def test_boon_titles_keep_their_game_colour(buff_result: HandlerResult) -> None:
+    """The headline buff and the buffs that inherit its title draw it in colour."""
+    records = [r for r in buff_result.records if r["buff_id"] in _BOON_BUFFS[:2]]
+
+    assert len(records) == 2
+    for record in records:
+        html = pa_html(record["_title_pa"])
+        assert html.startswith('<span class="pa-color" style="color: rgba(')
+        assert e(_BOON_TITLE) in html
 
 
 def test_buff_group_levels_are_unique(buff_result: HandlerResult) -> None:

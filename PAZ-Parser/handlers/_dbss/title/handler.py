@@ -6,10 +6,11 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.lang import load_handler_strings
-from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
+from _common.loc import is_loc_loaded, loc_lookup
+from _common.pa_text import argb_css, pa_cell, pa_fields, pa_html, pa_key
 
 from _common.binary import parse_offset_table
-from _common.html import Column, color_cell, e, sort_keys, table
+from _common.html import Column, e, sort_keys, table
 from .parser import extract_title_records
 
 
@@ -27,11 +28,18 @@ def _category_label(category_id: int) -> str:
     return _CATEGORY_NAMES.get(category_id, str(category_id))
 
 
-def _title_cell(title: str, css_color: str) -> str:
-    if not css_color:
-        return e(title)
+def _title_cell(record: dict) -> str:
+    """The title in its stored colour, with the colours of its own tags on top.
 
-    return f'<span style="color:{e(css_color)}">{e(title)}</span>'
+    362 titles store one colour in the record (`title_color_argb`); about 30
+    names colour themselves with tags instead, such as the MASTER WARRIOR
+    gradients.
+    """
+    title = pa_html(record[pa_key("title")])
+    stored = record["title_color_argb"]
+    if not stored:
+        return title
+    return f'<span class="pa-color" style="color: {argb_css(int(stored, 16))}">{title}</span>'
 
 
 class TitleDbssHandler(PreviewHandler):
@@ -40,7 +48,6 @@ class TitleDbssHandler(PreviewHandler):
         return [
             Column(cols.get("titleId", "Title ID"), "num", sort_key="title_id"),
             Column(cols.get("category", "Category"), sort_key="category"),
-            Column(cols.get("titleColor", "Title Color"), sort_key="title_color_argb"),
             Column(cols.get("title", "Title"), sort_key="title"),
             Column(cols.get("titleRequirements", "Title Requirements"), sort_key="requirement"),
             Column(cols.get("special", "Special"), sort_key="is_special"),
@@ -73,10 +80,10 @@ class TitleDbssHandler(PreviewHandler):
             row: dict = dict(rec)
             if has_loc:
                 row["en_name"] = loc_lookup(1, rec["title_id"])
-                row["en_req"] = strip_pa_tags(loc_lookup(1, rec["title_id"], 0, 0, 1))
+                row["en_req"] = loc_lookup(1, rec["title_id"], 0, 0, 1)
             row["category"] = _category_label(rec["category_id"])
-            row["title"] = strip_pa_tags(row.get("en_name") or rec["title_text_ko"])
-            row["requirement"] = strip_pa_tags(row.get("en_req") or rec["requirement_text_ko"])
+            row.update(pa_fields("title", row.get("en_name") or rec["title_text_ko"]))
+            row.update(pa_fields("requirement", row.get("en_req") or rec["requirement_text_ko"]))
             row["is_special"] = bool(rec["title_color_argb"] or rec["header_field_meaning"] != "style")
             result.append(row)
 
@@ -91,19 +98,16 @@ class TitleDbssHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
 
-        rows: list[list] = []
-        for record in slice_:
-            title_color = record["title_color_argb"]
-            title_color_hex = title_color[4:] if title_color.startswith("0xFF") else ""
-
-            rows.append([
+        rows = [
+            [
                 e(record["title_id"]),
                 e(record["category"]),
-                color_cell([title_color_hex]) if title_color_hex else "-",
-                _title_cell(record["title"], record["title_color_css"]),
-                e(record["requirement"]),
+                _title_cell(record),
+                pa_cell(record, "requirement"),
                 e("True" if record["is_special"] else "False"),
                 e(record["title_effect_name"] or "-"),
-            ])
+            ]
+            for record in slice_
+        ]
 
         return table(f"{len(records):,} titles decoded", self._columns(), rows)

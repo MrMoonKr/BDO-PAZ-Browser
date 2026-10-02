@@ -187,3 +187,13 @@ th.sort-pending::after {
 .inherited-cell {
   color: var(--fg-dim);
 }
+
+/* An inherited value keeps its game colour (pa_html), dimmed */
+.inherited-cell .pa-color {
+  opacity: 0.6;
+}
+
+/* A <PA...> tag shown as text, with the "Show game text tags" setting on */
+.pa-tag {
+  color: var(--fg-dim);
+}

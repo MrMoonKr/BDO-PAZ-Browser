@@ -37,40 +37,54 @@ def test_split_skill_key() -> None:
 
 
 def test_korean_name_fills_a_missing_loc_name(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(skill, "loc_text", _loc({}))
+    monkeypatch.setattr(skill, "loc_tagged", _loc({}))
     init_index(IndexKind.SKILL_NAME_KR, {_TELEPORT_SKILL: _TELEPORT_KR})
 
     assert skill.skill_name(_TELEPORT_SKILL) == _TELEPORT_KR
 
 
 def test_loc_name_wins_over_the_korean_name(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(skill, "loc_text", _loc({_TELEPORT_SKILL: _STUB_ENGLISH}))
+    monkeypatch.setattr(skill, "loc_tagged", _loc({_TELEPORT_SKILL: _STUB_ENGLISH}))
     init_index(IndexKind.SKILL_NAME_KR, {_TELEPORT_SKILL: _TELEPORT_KR})
 
     assert skill.skill_name(_TELEPORT_SKILL) == _STUB_ENGLISH
 
 
 def test_no_name_without_loc_or_index(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(skill, "loc_text", _loc({}))
+    monkeypatch.setattr(skill, "loc_tagged", _loc({}))
 
     assert skill.skill_name(_TELEPORT_SKILL) == ""
 
 
 def test_loc_description_wins_over_the_korean_one(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(skill, "loc_text", _loc_descriptions({_GUILD_SKILL: _STUB_DESCRIPTION}))
+    monkeypatch.setattr(skill, "loc_tagged", _loc_descriptions({_GUILD_SKILL: _STUB_DESCRIPTION}))
 
     assert skill.skill_description(_GUILD_SKILL, _GUILD_KR) == _STUB_DESCRIPTION
 
 
 @pytest.mark.parametrize("loc_description", ["", "<null>"])
 def test_korean_description_fills_a_missing_loc_one(monkeypatch: pytest.MonkeyPatch, loc_description: str) -> None:
-    monkeypatch.setattr(skill, "loc_text", _loc_descriptions({_GUILD_SKILL: loc_description}))
+    monkeypatch.setattr(skill, "loc_tagged", _loc_descriptions({_GUILD_SKILL: loc_description}))
 
     assert skill.skill_description(_GUILD_SKILL, _GUILD_KR) == "- 효과\n길드 창고를 10칸 확장."
 
 
 @pytest.mark.parametrize("stored", ["", "UNKNOWN", "<null>"])
 def test_korean_placeholders_are_no_description(monkeypatch: pytest.MonkeyPatch, stored: str) -> None:
-    monkeypatch.setattr(skill, "loc_text", _loc_descriptions({}))
+    monkeypatch.setattr(skill, "loc_tagged", _loc_descriptions({}))
 
     assert skill.skill_description(_GUILD_SKILL, stored) == ""
+
+
+def test_tagged_name_keeps_its_colour(monkeypatch: pytest.MonkeyPatch) -> None:
+    tagged = "<PAColor0xffeb9261>Prime: Engage<PAOldColor>"
+    monkeypatch.setattr(skill, "loc_tagged", _loc({_TELEPORT_SKILL: tagged}))
+
+    assert skill.skill_name_tagged(_TELEPORT_SKILL) == tagged
+    assert skill.skill_name(_TELEPORT_SKILL) == "Prime: Engage"
+
+
+def test_korean_description_keeps_its_tags(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(skill, "loc_tagged", _loc_descriptions({}))
+
+    assert skill.skill_description_tagged(_GUILD_SKILL, _GUILD_KR) == _GUILD_KR

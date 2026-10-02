@@ -12,6 +12,7 @@ from pathlib import Path
 import sys
 
 from bdo_models import PazEntry
+from record_fields import record_matches
 from table_sort import TableSort, sort_order
 
 _TEXT_LIMIT = 512 * 1024   # bytes shown in text view
@@ -145,13 +146,13 @@ class PreviewHandler(ABC):
         companions: dict[str, bytes],
         query: str,
     ) -> list[int]:
-        """Return matching record indices. Uses _data_cache to avoid re-parsing."""
+        """Return matching record indices. Uses _data_cache to avoid re-parsing.
+
+        Display-only fields (`_` keys, see record_fields.py) are skipped.
+        """
         q = query.lower()
         records = self._all_records(data, entry, companions)
-        return [
-            i for i, rec in enumerate(records)
-            if any(q in str(value).lower() for value in rec.values())
-        ]
+        return [i for i, rec in enumerate(records) if record_matches(rec, q)]
 
     @abstractmethod
     def get_records(self, data: bytes, entry: PazEntry, companions: dict[str, bytes]) -> list[dict]:

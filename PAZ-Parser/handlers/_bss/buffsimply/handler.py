@@ -8,7 +8,7 @@ from bdo_preview import PreviewHandler
 from _common.buff import buff_loc_description
 from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.lang import load_handler_strings
-from _common.loc import strip_pa_tags
+from _common.pa_text import pa_cell, pa_fields
 from .parser import parse_buffsimply_records
 
 
@@ -40,10 +40,7 @@ class BuffSimplyBssHandler(PreviewHandler):
     ) -> list[dict]:
         # The file holds no inline text, so without LOC the description is empty.
         return [
-            {
-                **record,
-                "description": strip_pa_tags(buff_loc_description(record["buff_id"])).strip(),
-            }
+            {**record, **pa_fields("description", buff_loc_description(record["buff_id"]))}
             for record in parse_buffsimply_records(data)
         ]
 
@@ -62,7 +59,7 @@ class BuffSimplyBssHandler(PreviewHandler):
             [
                 e(r["buff_id"]),
                 icon_cell(r["icon_path"]) if r["icon_path"] else _EMPTY,
-                e(r["description"]) if r["description"] else _EMPTY,
+                pa_cell(r, "description"),
                 e(yes if r["is_shown"] else no),
             ]
             for r in slice_

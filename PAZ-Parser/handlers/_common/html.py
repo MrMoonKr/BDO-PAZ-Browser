@@ -41,22 +41,6 @@ def flag_cell(is_set: bool) -> str:
     return '<span class="flag-yes">✓</span>' if is_set else '<span class="flag-no">✗</span>'
 
 
-def color_cell(colors: list[str]) -> str:
-    if not colors:
-        return "-"
-
-    parts: list[str] = []
-
-    for color in colors:
-        escaped_color = e(color)
-        parts.append(
-            f'<span class="color-swatch" style="background:#{escaped_color}"></span>'
-            f'#{escaped_color}'
-        )
-
-    return " ".join(parts)
-
-
 # The swatch an icon cell shows until the GUI (ui/js/features/table.js) or
 # `browser.py --render` swaps in the image.
 _ICON_PLACEHOLDER = '<span class="icon-cell-thumb icon-cell-placeholder" aria-hidden="true"></span>'

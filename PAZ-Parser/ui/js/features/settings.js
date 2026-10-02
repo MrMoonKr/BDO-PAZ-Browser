@@ -10,6 +10,7 @@ export const settingsMethods = {
     document.getElementById("settings-paz-path").value = s.paz_path ?? "";
     document.getElementById("settings-language").value = s.language ?? "en";
     document.getElementById("settings-table-row-height").value = s.table_row_height ?? 27;
+    document.getElementById("settings-show-pa-tags").checked = s.show_pa_tags === true;
     document.getElementById("settings-overlay").hidden = false;
 
     this._settingsEscHandler = (e) => {
@@ -37,7 +38,8 @@ export const settingsMethods = {
     const pazPath = document.getElementById("settings-paz-path").value.trim();
     const language = document.getElementById("settings-language").value;
     const tableRowHeight = Number(document.getElementById("settings-table-row-height").value);
-    const result = await window.pywebview.api.save_settings(pazPath, language, tableRowHeight);
+    const showPaTags = document.getElementById("settings-show-pa-tags").checked;
+    const result = await window.pywebview.api.save_settings(pazPath, language, tableRowHeight, showPaTags);
     if (!result?.ok) return;
     this._applyTableRowHeight(result.table_row_height ?? tableRowHeight);
     this.closeSettings();

@@ -12,6 +12,8 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import cast
 
+from record_fields import is_display_field
+
 SORT_ASC = "asc"
 SORT_DESC = "desc"
 SORT_DIRECTIONS = frozenset({SORT_ASC, SORT_DESC})
@@ -39,8 +41,11 @@ class TableSort:
 
     @classmethod
     def parse(cls, field: object, direction: object) -> TableSort | None:
-        """Build a sort from untrusted input, or None when it is malformed."""
-        if not isinstance(field, str) or not field:
+        """Build a sort from untrusted input, or None when it is malformed.
+
+        Display-only fields (`_` keys) never sort.
+        """
+        if not isinstance(field, str) or not field or is_display_field(field):
             return None
         if direction not in SORT_DIRECTIONS:
             return None

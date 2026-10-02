@@ -10,12 +10,12 @@ from _common.duration import format_duration
 from _common.html import Column, e, icon_cell, sort_keys, table, truncate
 from _common.item_key import item_key_list_cell, item_key_text
 from _common.lang import load_handler_strings
-from _common.loc import strip_pa_tags
 from _common.lookup_index import IndexKind, index_entries, lookup
+from _common.pa_text import pa_cell, pa_fields, pa_html, pa_key
 from _common.pabr_offset import parse_pabr_offset_rows
 from .effect import EffectInput, effect_text, param_labels
 from .parser import PARAM_COUNT, parse_buff_records
-from .title import extract_title, title_leaders
+from .title import extract_title_pa, title_leaders
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
@@ -67,13 +67,15 @@ def _param_cell(value: int, label: str | None) -> str:
 
 
 def _title_cell(record: dict) -> str:
-    """The title; one taken from the headline buff it is applied with is dimmed."""
+    """The title in its game colour; one taken from the headline buff it is
+    applied with is dimmed."""
     if not record["title"]:
         return _EMPTY
+    title = pa_html(record[pa_key("title")])
     if record["title_buff_id"] == record["buff_id"]:
-        return e(record["title"])
+        return title
     tooltip = f"Title of buff {record['title_buff_id']}"
-    return f'<span class="inherited-cell" title="{e(tooltip)}">{e(record["title"])}</span>'
+    return f'<span class="inherited-cell" title="{e(tooltip)}">{title}</span>'
 
 
 class BuffOffsetHandler(PreviewHandler):
@@ -121,14 +123,16 @@ def _add_inherited_titles(records: list[dict]) -> None:
     `title_buff_id` names the buff whose description holds the title: the
     buff itself, the headline buff, or None without a title.
     """
-    own_titles = {r["buff_id"]: r["title"] for r in records if r["title"]}
-    leaders = title_leaders(_skill_buff_lists(), own_titles)
+    titled = {r["buff_id"]: r for r in records if r["title"]}
+    leaders = title_leaders(_skill_buff_lists(), {buff_id: r["title"] for buff_id, r in titled.items()})
     for record in records:
         buff_id = record["buff_id"]
-        title_buff_id = buff_id if buff_id in own_titles else leaders.get(buff_id)
+        title_buff_id = buff_id if buff_id in titled else leaders.get(buff_id)
         record["title_buff_id"] = title_buff_id
         if title_buff_id is not None:
-            record["title"] = own_titles[title_buff_id]
+            leader = titled[title_buff_id]
+            record["title"] = leader["title"]
+            record[pa_key("title")] = leader[pa_key("title")]
 
 
 def _buff_row(r: dict) -> list[str]:
@@ -138,7 +142,7 @@ def _buff_row(r: dict) -> list[str]:
         icon_cell(r["icon_path"]) if r["icon_path"] else _EMPTY,
         _title_cell(r),
         e(r["name"]),
-        e(r["description"]) if r["description"] else _EMPTY,
+        pa_cell(r, "description"),
         e(r["effect"]) if r["effect"] else _EMPTY,
         item_key_list_cell(r["applied_by_item_ids"], _LIST_PREVIEW_ITEMS) or _EMPTY,
         e(r["level"]),
@@ -188,8 +192,8 @@ class BuffHandler(PreviewHandler):
         records = parse_buff_records(data, parse_pabr_offset_rows(offset_data))
         for record in records:
             raw = _raw_description(record["buff_id"], record["description_kr"])
-            record["title"] = extract_title(raw)
-            record["description"] = strip_pa_tags(raw).strip()
+            record.update(pa_fields("title", extract_title_pa(raw)))
+            record.update(pa_fields("description", raw))
             record["effect"] = effect_text(_effect_input(record))
             record["duration"] = format_duration(record["duration_ms"])
             # 0 means no duration. None renders a dash and sorts last.

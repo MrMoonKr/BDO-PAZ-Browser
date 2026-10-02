@@ -1,4 +1,5 @@
-"""LOC sorting runs on the handler's index, not on materialised records."""
+"""LOC viewer: sorting runs on the handler's index, not on materialised
+records, and text shows its game colours without the tags."""
 from __future__ import annotations
 
 import re
@@ -87,3 +88,15 @@ def test_loc_sort_does_not_build_all_record_dicts(loc: tuple, monkeypatch: pytes
     monkeypatch.setattr(handler, "get_records", fail)
 
     handler.render_sorted_page(data, entry, {}, 0, 10, TableSort("str_id2", "desc"))
+
+
+def test_loc_text_draws_the_colour_without_the_tags() -> None:
+    data = _loc_bytes([(5, 48723, 0, 0, 0, "<PAColor0xffe9bd23>Boon & Co<PAOldColor>")])
+    entry = PazEntry("t.paz", "ads/languagedata_en.loc", 0, len(data), len(data), 0, 0)
+    handler = get_handler("languagedata_en.loc", ".loc")
+
+    html = handler.render_data_page(data, entry, {}, 0, 10)
+
+    assert '<span class="pa-color" style="color: rgba(233, 189, 35, 1)">Boon &amp; Co</span>' in html
+    assert "PAColor" not in html
+    assert "PAOldColor" not in html

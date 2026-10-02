@@ -8,7 +8,8 @@ from bdo_preview import PreviewHandler
 from _common.html import Column, e, icon_cell, join_limited, sort_keys, table
 from _common.icon_index import IconKind, icon_path
 from _common.lang import load_handler_strings
-from _common.skill import skill_name, split_skill_key
+from _common.pa_text import pa_cell, pa_fields
+from _common.skill import skill_name, skill_name_tagged, split_skill_key
 from .parser import SkillGroup, parse_skillgroup_records
 
 
@@ -24,7 +25,7 @@ def _record_dict(group: SkillGroup) -> dict:
     return {
         "group_no": group.group_no,
         "icon_path": icon_path(IconKind.SKILL, first) if first is not None else "",
-        "name": skill_name(first) if first is not None else "",
+        **pa_fields("name", skill_name_tagged(first) if first is not None else ""),
         "ranks": len(group.skill_keys),
         "skill_keys": list(group.skill_keys),
         "skill_nos": skill_nos,
@@ -67,7 +68,7 @@ class SkillGroupBssHandler(PreviewHandler):
             [
                 e(r["group_no"]),
                 icon_cell(r["icon_path"]),
-                e(r["name"] or _EMPTY),
+                pa_cell(r, "name"),
                 e(r["ranks"]),
                 e(join_limited(r["skills"], _LIST_PREVIEW_ITEMS) or _EMPTY),
             ]

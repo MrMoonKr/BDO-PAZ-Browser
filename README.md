@@ -16,6 +16,7 @@ A Python tool for browsing, extracting, and previewing files from **Black Desert
 - **Paged preview**, large files (hex and parsed tabs) are paged; navigate with Prev/Next without loading the full DOM
 - **Tab search**, Ctrl+F inline search within hex (byte offset) and parsed (record) tabs; string and hex-pattern modes
 - **Export**, save the current file as raw binary (hex tab) or CSV (parsed tab) via the Entry Details panel
+- **Game text colours**, LOC text shows the colours of its `<PAColor>` tags, as in game; the **Show game text tags** setting (off by default) also shows the tags themselves
 - **Plugin system**, add handlers for new binary formats by dropping a file into `handlers/`
 - **Caching**, PAZ index is parsed once and cached; subsequent launches load instantly
 
@@ -197,6 +198,11 @@ file name, or a pattern that matches one file. Options:
 
 Several `--where` options must all match. `--index` takes `--json`, `--csv`
 and `--limit` too.
+
+The CLI always shows game text tags, whatever the GUI setting: `--render`
+draws them next to the colours, and `--records` lists the tagged text in the
+fields starting with `_` (`_description_pa` next to the plain `description`).
+CSV leaves those fields out, like the app's export.
 
 ---
 

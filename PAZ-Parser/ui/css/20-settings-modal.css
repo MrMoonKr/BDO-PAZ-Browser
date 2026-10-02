@@ -109,6 +109,15 @@
   min-width: 20px;
 }
 
+.settings-check {
+  align-items: center;
+  color: var(--fg2);
+  cursor: pointer;
+  display: flex;
+  font-size: 12px;
+  gap: 6px;
+}
+
 .settings-footer {
   display: flex;
   justify-content: flex-end;
