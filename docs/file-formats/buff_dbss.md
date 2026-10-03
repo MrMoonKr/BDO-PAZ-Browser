@@ -599,7 +599,7 @@ Value `2` (647 rows) holds 600-minute elixir-style buffs and value `38` the Adve
 | Internal Name | text | Korean `name`; labelled internal because no English form exists   |
 | Description | text | LOC `str_type=5`, `str_id1=buff_id`; falls back to the inline Korean description, `<null>` counts as empty |
 | Effect      | text | The parameters as text for the confirmed effect types (see Effect text); dash otherwise |
-| Applied By  | list | Base items whose skills apply the buff (`BUFF_ITEMS` lookup index), with item icons; sorts by count |
+| Applied By  | list | Base items whose skills apply the buff (`BUFF_ITEMS` lookup index), with item icons and grade colours; sorts by count |
 | Level       | num  | `buff_level`                                                        |
 | Effect Type | num  | `effect_type`                                                       |
 | Duration    | text | `duration_ms` formatted as h/min/s; dash when `0`, stored as `None` so it sorts last                   |

@@ -118,7 +118,7 @@ One row per subgroup; the item list is the useful part.
 | ------------- | ---- | -------------------------------------------------------------- |
 | Subgroup Key  | num  | `subgroup_key`                                                 |
 | Items         | num  | `entry_count`                                                  |
-| Item Names    | text | Icon and LOC type 0 name of each entry, comma-separated, the first eight shown; the item ID when no name exists. An entry with `enchant_level > 0` adds the level as a number, e.g. `Blackstar Helmet (19)`, and shows that level's own icon where `specialenchantitem.bss` has one (Ator's Shoes `00719900_1.dds` to `_5.dds`) |
+| Item Names    | text | Icon and LOC type 0 name of each entry in its grade colour (`ITEM_GRADE`), comma-separated, the first eight shown; the item ID when no name exists. An entry with `enchant_level > 0` adds the level as a number, e.g. `Blackstar Helmet (19)`, and shows that level's own icon where `specialenchantitem.bss` has one (Ator's Shoes `00719900_1.dds` to `_5.dds`) |
 
 ---
 

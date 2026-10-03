@@ -8,7 +8,9 @@ from bdo_preview import PreviewHandler
 from _common.loc import is_loc_loaded
 from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.icon_index import IconKind, icon_path
+from _common.item_grade import item_grade, item_grade_tagged
 from _common.lang import load_handler_strings
+from _common.pa_text import pa_cell, pa_key
 from .parser import (
     parse_gift_offset_records,
     parse_npcgift_records,
@@ -91,7 +93,11 @@ class NpcGiftHandler(PreviewHandler):
         companions: dict[str, bytes],
     ) -> list[dict]:
         return [
-            {**record, "icon_path": icon_path(IconKind.ITEM, record["item_id"])}
+            {
+                **record,
+                "icon_path": icon_path(IconKind.ITEM, record["item_id"]),
+                pa_key("item_name"): item_grade_tagged(record["item_name"], item_grade(record["item_id"])),
+            }
             for record in parse_npcgift_records(data)
         ]
 
@@ -117,7 +123,7 @@ class NpcGiftHandler(PreviewHandler):
                 e(r["npc_name"] or "-"),
                 e(r["item_id"]),
                 icon_cell(r["icon_path"]),
-                e(r["item_name"] or "-"),
+                pa_cell(r, "item_name"),
                 e(r["amity"]),
             ]
             for r in slice_

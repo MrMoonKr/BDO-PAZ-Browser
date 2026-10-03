@@ -6,12 +6,14 @@ from typing import Any
 
 import pytest
 
+from _common.item_grade import ITEM_GRADE_COLORS, item_grade_tagged
 from _common.lookup_index import IndexKind
 from tests.framework import (
     CaseInput,
     DeclaredCountTest,
     HandlerCase,
     HandlerResult,
+    PaFieldTest,
     RangeTest,
     SchemaTest,
     TargetTest,
@@ -28,6 +30,8 @@ _KING_CLAM = 24626
 _EVENT_FENCE = 58011
 _EVENT_FENCE_CHARACTER = 2053
 _WEAPON = 697192
+# Balacs Lunchbox, a yellow (grade 3) item (itemenchant_dbss.md).
+_BALACS_LUNCHBOX = 9359
 # Kzarka Gauntlet enhances +1 to +15, then PRI to PEN: levels 1-20.
 _KZARKA_GAUNTLET = 11210
 _PEN = 20
@@ -87,6 +91,12 @@ CASE = HandlerCase(
         ),
         DeclaredCountTest(declared=_declared_items),
         RangeTest(col="item_id", min_val=1, max_val=_MAX_ITEM_ID),
+        # A new grade needs its colour in _common/item_grade.py first.
+        RangeTest(col="grade", min_val=0, max_val=len(ITEM_GRADE_COLORS) - 1),
+        # Balacs Lunchbox is a yellow (grade 3) item.
+        TargetTest(col="item_id", value=_BALACS_LUNCHBOX, expected={"grade": 3}),
+        # Item names are drawn in their grade colour.
+        PaFieldTest(field="item_name"),
         # The furniture case: icon path comes from the block, not the item ID.
         TargetTest(
             col="item_id",
@@ -156,6 +166,15 @@ def test_itemenchant_dbss(
     itemenchant_result.check(spec)
 
 
+def test_item_grade_index_matches_the_grade_column(itemenchant_result: HandlerResult) -> None:
+    from _dbss.itemenchant.parser import build_item_grade_index
+
+    source = itemenchant_result.source
+    index = build_item_grade_index(source.data, source.file(_OFFSET_FILE))
+
+    assert index == {r["item_id"]: r["grade"] for r in itemenchant_result.records}
+
+
 def test_build_item_icon_index_covers_the_furniture_case() -> None:
     """The index is what lets an item ID reach an asset-named icon."""
     from _dbss.itemenchant.parser import build_item_icon_index
@@ -216,3 +235,10 @@ def test_build_buff_item_index_links_buffs_to_their_items() -> None:
         assert _BOON_ITEM in index[buff_id]
     # Item IDs are kept once each, in ascending order.
     assert all(list(items) == sorted(set(items)) for items in index.values())
+
+
+def test_item_grade_tagged_wraps_the_name_in_its_grade_colour() -> None:
+    assert item_grade_tagged("Kzarka Longsword", 3) == "<PAColor0xFFF5BA3A>Kzarka Longsword<PAOldColor>"
+    # An unknown grade or a missing name stays plain.
+    assert item_grade_tagged("Kzarka Longsword", len(ITEM_GRADE_COLORS)) == "Kzarka Longsword"
+    assert item_grade_tagged("", 3) == ""

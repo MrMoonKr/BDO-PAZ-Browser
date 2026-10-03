@@ -121,7 +121,7 @@ Small PABR config block (32 bytes) with global gift-system values. See [npcgifte
 | NPC Name  | text | LOC str_type=6, str_id1=npc_id                        |
 | Item ID   | num  | `item_id`                                             |
 | Icon      | text | Item icon, `product_icon_png/{item_id:08d}.png`       |
-| Item Name | text | LOC str_type=0, str_id1=item_id                       |
+| Item Name | text | LOC str_type=0, str_id1=item_id, in its grade colour (`ITEM_GRADE`) |
 | Amity     | num  | `amity_a`; `amity_b` is a duplicate in observed data  |
 
 100 of the 112 distinct gift items in the pre-2026-09-27 fixture resolve an icon from their item ID. The

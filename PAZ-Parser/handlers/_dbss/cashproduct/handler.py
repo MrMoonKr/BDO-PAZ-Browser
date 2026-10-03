@@ -8,7 +8,8 @@ from bdo_preview import PreviewHandler
 from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.icon_index import IconKind, icon_path
 from _common.lang import load_handler_strings
-from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
+from _common.item_key import item_name_tagged
+from _common.pa_text import pa_cell, pa_fields
 from .parser import (
     parse_cashproduct_records,
     parse_cashproductoffset_records,
@@ -18,17 +19,7 @@ from .parser import (
 _LANG_DIR = Path(__file__).parent / "lang"
 _OFFSET_FILE = "cashproductoffset.dbss"
 
-# Item display names live in LOC type 0, keyed by item ID.
-_LOC_TYPE_ITEM = 0
-
 _EMPTY = "-"
-
-
-def _item_name(item_id: int | None) -> str:
-    if not item_id or not is_loc_loaded():
-        return ""
-
-    return strip_pa_tags(loc_lookup(_LOC_TYPE_ITEM, item_id, 0, 0, 0)).strip()
 
 
 class CashProductOffsetHandler(PreviewHandler):
@@ -107,7 +98,8 @@ class CashProductHandler(PreviewHandler):
             record["icon_path"] = icon_path(IconKind.ITEM, item_id) if item_id else ""
             # LOC already answers in the user's language; the block's Korean
             # name is only a fallback for products with no linked item.
-            record["item_name"] = _item_name(item_id) or record["product_name"]
+            tagged = item_name_tagged(item_id) if item_id else ""
+            record.update(pa_fields("item_name", tagged or record["product_name"]))
 
         return records
 
@@ -125,7 +117,7 @@ class CashProductHandler(PreviewHandler):
             [
                 e(record["item_id"] or _EMPTY),
                 icon_cell(record["icon_path"]) if record["icon_path"] else _EMPTY,
-                e(record.get("item_name") or _EMPTY),
+                pa_cell(record, "item_name"),
             ]
             for record in slice_
         ]

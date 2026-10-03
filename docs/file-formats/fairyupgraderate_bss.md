@@ -134,7 +134,7 @@ steps and 16× at the last.
 | Step          | num  | Record index, 0-based                                    |
 | Upgrade       | text | Grade transition label derived from the record index     |
 | Icon          | text | Item icon, `product_icon_png/{item_id:08d}.png`          |
-| Item          | text | LOC name for `item_id`, falls back to the raw ID         |
+| Item          | text | LOC name for `item_id`, in its grade colour (`ITEM_GRADE`), falls back to the raw ID |
 | Item ID       | num  | Raw `item_id`                                            |
 | Chance / Item | num  | `rate_ppm / success_cap_ppm` as a percentage             |
 | Rate (ppm)    | num  | Raw `rate_ppm`                                           |

@@ -9,6 +9,7 @@ from _bwp.waypoint.worldmap import worldmap_companion, worldmap_waypoints
 from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.node import full_node_name
+from _common.pa_text import pa_key
 from _common.teleport import teleport_buff_ids
 from .nearest import named_nodes, nearest_node
 from .parser import parse_teleport_offset_rows, parse_teleport_records
@@ -98,6 +99,7 @@ class TeleportHandler(PreviewHandler):
                 "used_by_buff_ids": list(buff_ids),
                 "used_by_icons": [entry.icon_path for entry in entries],
                 "used_by": [entry.label for entry in entries],
+                pa_key("used_by"): [entry.tagged_label for entry in entries],
                 "used_by_tooltips": [entry.tooltip for entry in entries],
                 "used_by_count": len(entries) or None,
             })
@@ -121,7 +123,7 @@ class TeleportHandler(PreviewHandler):
                 e(f"{r['z']:,.0f}"),
                 e(r["nearest_node"] or _EMPTY),
                 e(_EMPTY if r["distance_m"] is None else f"{r['distance_m']:,}"),
-                used_by_cell(r["used_by_icons"], r["used_by"], r["used_by_tooltips"], _LIST_PREVIEW_ITEMS)
+                used_by_cell(r["used_by_icons"], r[pa_key("used_by")], r["used_by_tooltips"], _LIST_PREVIEW_ITEMS)
                 or _EMPTY,
             ]
             for r in slice_

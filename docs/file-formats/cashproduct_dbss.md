@@ -140,7 +140,7 @@ start at `New_Icon/` and take the prefix `ui_texture/icon/`.
 | ------- | ---- | ------------------------------------------------------------ |
 | Item ID | num  | Linked `item_id`; dash when absent, stored as `None` so it sorts last                            |
 | Icon    | text | The item's own icon, resolved from `item_id`, not the tile   |
-| Item    | text | LOC name in the user's language; falls back to Korean `name` |
+| Item    | text | LOC name in the user's language, in its grade colour (`ITEM_GRADE`); falls back to Korean `name` |
 
 `product_icon_path` and `product_id` are parsed but not shown. The tile is
 marketing art for the offer rather than an item icon, and the product ID is the

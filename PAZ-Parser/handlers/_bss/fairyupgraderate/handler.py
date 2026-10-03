@@ -9,23 +9,14 @@ from _common.fairy import upgrade_step_label
 from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.icon_index import IconKind, icon_path
 from _common.lang import load_handler_strings
-from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
+from _common.item_key import item_name_tagged
+from _common.pa_text import pa_cell, pa_fields
 from .parser import parse_fairyupgraderate_records
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
 
-# Item display names live in LOC type 0, keyed by item ID.
-_LOC_TYPE_ITEM = 0
-
 _CHANCE_DECIMALS = 4
-
-
-def _item_name(item_id: int) -> str:
-    if not is_loc_loaded():
-        return ""
-
-    return strip_pa_tags(loc_lookup(_LOC_TYPE_ITEM, item_id, 0, 0, 0)).strip()
 
 
 class FairyUpgradeRateBssHandler(PreviewHandler):
@@ -57,7 +48,7 @@ class FairyUpgradeRateBssHandler(PreviewHandler):
             row = dict(record)
             item_id = row["item_id"]
             row["upgrade"] = upgrade_step_label(row["step"])
-            row["item_name"] = _item_name(item_id)
+            row.update(pa_fields("item_name", item_name_tagged(item_id)))
             row["icon_path"] = icon_path(IconKind.ITEM, item_id)
             records.append(row)
 
@@ -83,7 +74,7 @@ class FairyUpgradeRateBssHandler(PreviewHandler):
                 e(record["step"]),
                 e(record["upgrade"] or record["step"]),
                 icon_cell(record["icon_path"]),
-                e(record["item_name"] or record["item_id"]),
+                pa_cell(record, "item_name") if record["item_name"] else e(record["item_id"]),
                 e(record["item_id"]),
                 e(f"{round(record['chance_pct'], _CHANCE_DECIMALS):g}%"),
                 e(f"{record['rate_ppm']:,}"),

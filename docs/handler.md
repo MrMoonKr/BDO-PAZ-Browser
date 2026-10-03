@@ -937,6 +937,7 @@ IDs (`LookupValue`).
 | `SKILL_NAME_KR`  | `skilltype.dbss`, `skilltypeoffset.dbss`   | Korean name    |
 | `BUFF_ICON`      | `buffsimply.bss`                           | icon path      |
 | `ITEM_KEY_ICON`  | `specialenchantitem.bss`                   | icon path      |
+| `ITEM_GRADE`     | `itemenchant.dbss`, `itemenchantoffset.dbss` | grade, 0 to 5 |
 | `QUEST_ARTWORK_ICON` | `questjournalvideoinfo.bss`            | artwork path   |
 | `MANOR_PART_ICON` | `mansionpartinfo.bss`                     | icon path      |
 | `CUTSCENE_ICON`  | `groupcameradata.bss`                      | icon path      |
@@ -999,6 +1000,18 @@ module: the `itemsubgroup.dbss` Item Names column, the `plantexchangegroup.bss`
 Items column, the `plantzone.dbss` Produced Items column and the
 `dropuihuntinggroundinfo.bss` Items column. A plain item ID is its level 0
 key, so lists of item IDs use it too.
+
+`ITEM_GRADE` maps a base item ID to its grade (`+0x06` in
+[itemenchant.dbss](file-formats/itemenchant_dbss.md)), which the game draws
+the name in. `item_key_list_cell()` reads it through
+`item_key_text_tagged()`, which wraps the name in the grade's `<PAColor>`
+tag, so every item list (and the `buff.dbss` Applied By and `teleport.dbss`
+Used By columns) shows item names in their grade colour. The colours are
+`ITEM_GRADE_COLORS` in `_common/item_grade.py`; `itemenchant.dbss` colours its
+own Item column from the record. A single item name column uses
+`item_name_tagged(item_id)` from `_common/item_key.py` with `pa_fields()`
+(`cashproduct.dbss`, `fairyupgraderate.bss`, `characterobject.dbss`), and
+the lease lists use `lease_text_tagged()` from `_dbss/detail_dialog/lease.py`.
 
 Six small tables are indexed although only their own handlers show their
 icons today, so a later table can reuse them without opening the source

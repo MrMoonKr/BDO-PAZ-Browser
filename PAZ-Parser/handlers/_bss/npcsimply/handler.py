@@ -6,11 +6,12 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.character import character_name
-from _common.html import Column, e, join_limited, sort_keys, table
+from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded
 from _dbss.characterspawntype.role_labels import role_label, role_label_overrides, role_tooltip, spawn_type_name
-from _dbss.detail_dialog.lease import lease_text
+from _common.pa_text import pa_key, pa_list_cell, pa_list_fields
+from _dbss.detail_dialog.lease import lease_text_tagged
 from .leases import character_leases
 from .parser import parse_npcsimply_records
 
@@ -32,7 +33,7 @@ def _lease_fields(record: dict, has_loc: bool) -> dict:
     return {
         "lease_item_id": item_id or None,
         "lease_cost": record["lease_cost"] if item_id else None,
-        "leases": [lease_text(lease, has_loc) for lease in leases],
+        **pa_list_fields("leases", [lease_text_tagged(lease, has_loc) for lease in leases]),
         # Empty sorts last.
         "lease_count": len(leases) or None,
     }
@@ -92,7 +93,7 @@ class NpcSimplyBssHandler(PreviewHandler):
                 e(record["name_kr"] or _EMPTY),
                 e(record["role_kr"]),
                 e(_EMPTY if record["knowledge_id"] is None else record["knowledge_id"]),
-                e(join_limited(record["leases"], _LIST_PREVIEW_ITEMS) or _EMPTY),
+                pa_list_cell(record[pa_key("leases")], _LIST_PREVIEW_ITEMS),
                 e(record["script"]),
             ]
             for record in slice_

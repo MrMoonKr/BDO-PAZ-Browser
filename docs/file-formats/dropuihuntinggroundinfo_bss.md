@@ -206,7 +206,7 @@ names all 45 plus a key 46 with the same `#DivineAuthority` text as 45.
 | Max AP      | text | `limited_ap`, with `(n%)` when `limited_ap_apply_percent` is not 0           |
 | Node        | text | `node_key` name (LOC type 29); dash when 0                                  |
 | Monsters    | text | Monster names (LOC type 6)                                                  |
-| Items       | text | Icon and name (LOC type 0) of each item, through `item_key_list_cell()`      |
+| Items       | text | Icon and name (LOC type 0) of each item in its grade colour (`ITEM_GRADE`), through `item_key_list_cell()` |
 | Quests      | text | Repeat and sudden quest titles (LOC type 18)                                |
 | Tags        | text | Tag names (LOC type 117), each a pill in its `dropuitaginfo.bss` colours as in game; plain names without that file |
 | Titles      | text | Title names (LOC type 1)                                                    |

@@ -34,6 +34,7 @@ from _dbss.detail_dialog.parser import build_character_lease_index
 from _dbss.itemenchant.parser import (
     build_buff_item_index,
     build_character_item_index,
+    build_item_grade_index,
     build_item_icon_index,
 )
 from _dbss.quest.parser import build_quest_icon_index
@@ -89,6 +90,7 @@ class IndexSpec:
 # Adding an index is one entry here plus its `IndexKind` member.
 INDEX_SPECS: tuple[IndexSpec, ...] = (
     IndexSpec(IndexKind.ITEM_ICON, (ITEMENCHANT, ITEMENCHANT_OFFSET), build_item_icon_index),
+    IndexSpec(IndexKind.ITEM_GRADE, (ITEMENCHANT, ITEMENCHANT_OFFSET), build_item_grade_index),
     IndexSpec(IndexKind.QUEST_ICON, (QUEST, ALLQUESTLIST), build_quest_icon_index),
     IndexSpec(
         IndexKind.CHARACTER_ICON,

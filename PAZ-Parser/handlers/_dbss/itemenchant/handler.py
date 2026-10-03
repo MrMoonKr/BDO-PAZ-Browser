@@ -7,8 +7,10 @@ from bdo_preview import PreviewHandler
 
 from _common.buff import buff_label, buff_list_cell
 from _common.html import Column, e, icon_cell, sort_keys, table
+from _common.item_grade import item_grade_tagged
 from _common.lang import load_handler_strings
 from _common.loc import loc_text
+from _common.pa_text import pa_cell, pa_fields
 from _common.skill import skill_buff_ids
 from .parser import (
     parse_itemenchant_records,
@@ -32,7 +34,8 @@ def _with_links(record: dict) -> dict:
     buff_ids = skill_buff_ids(record["skill_keys"])
     return {
         **record,
-        "item_name": loc_text(_LOC_TYPE_ITEM, record["item_id"]),
+        # In its grade colour, as the game draws item names.
+        **pa_fields("item_name", item_grade_tagged(loc_text(_LOC_TYPE_ITEM, record["item_id"]), record["grade"])),
         # 0 means "places no character"; None sorts last and exports empty.
         "character_id": record["character_id"] or None,
         "character_name": (
@@ -142,7 +145,7 @@ class ItemEnchantHandler(PreviewHandler):
             [
                 e(record["item_id"]),
                 icon_cell(record["icon_path"]) if record["icon_path"] else _EMPTY,
-                e(record.get("item_name") or record["item_id"]),
+                pa_cell(record, "item_name") if record["item_name"] else e(record["item_id"]),
                 e(record["max_enchant_level"]),
                 e(record["character_id"]) if record["character_id"] is not None else _EMPTY,
                 e(record["character_name"] or _EMPTY),

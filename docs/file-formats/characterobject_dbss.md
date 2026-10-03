@@ -181,7 +181,7 @@ Grouped by model folder; the kind numbers are observed, not named by the client.
 | Icon         | icon | `IconKind.CHARACTER` lookup, so overrides apply; dash when none |
 | Name         | text | LOC type `6`; shown only when LOC is loaded                |
 | Item ID      | num  | `lookup(IndexKind.CHARACTER_ITEM, character_id)`; dash for characters named by zero or several items |
-| Item         | text | LOC type `0` for the item ID; shown only when LOC is loaded |
+| Item         | text | LOC type `0` for the item ID, in its grade colour (`ITEM_GRADE`); shown only when LOC is loaded |
 | Kind         | num  | `object_kind`                                              |
 | Model        | text | `model_path`                                               |
 

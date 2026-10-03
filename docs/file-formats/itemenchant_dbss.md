@@ -130,7 +130,7 @@ fields that are not yet decoded.
 | `+0x00` | u32  | item_id      | Repeats the item ID from the key                             |
 | `+0x04` | u8   | item_type    | Tooltip class (`EItemType`), see below                       |
 | `+0x05` | u8   | category     | Item classification                                          |
-| `+0x06` | u8   | grade        | `0` to `5`                                                   |
+| `+0x06` | u8   | grade        | `0` to `5`, the item name colour, see below                  |
 | `+0x07` | ...  | unknown      | Numeric fields                                               |
 | `+0x3F` | i32  | weight       | Divide by 10,000 for LT                                      |
 | `+0x43` | ...  | unknown      | Numeric fields                                               |
@@ -165,6 +165,24 @@ size, market category, durability and more). The offsets above were checked
 against this file; the names `category` and `dye_parts` were not. Its
 `dyeable` flag at `+0xA8` does not line up cleanly with `dye_parts`: 2,017
 items have dye parts with `dyeable` at `0`, and 16 store `3` there.
+
+#### `grade`
+
+The colour the game draws the item name in. The colours are the ones
+`PAGlobalFunc_SetItemTextColorByItemGrade` in the client Lua
+(`include/global_util`) sets, in this order; the same file wraps a name in
+the grade's `<PAColor>` tag for text. Grade 5 purple is confirmed in game.
+Other tables read the grade from the `ITEM_GRADE` lookup index. Counts are
+base items on client 3458.
+
+| Value | Colour       | Example                         | Base items |
+| ----: | ------------ | ------------------------------- | ---------: |
+| 0     | `0xFFC4C4C4` | Memory Fragment                 | 7,334      |
+| 1     | `0xFF83A543` | Faint Dream Box                 | 4,182      |
+| 2     | `0xFF438DCC` | Caphras Stone                   | 6,904      |
+| 3     | `0xFFF5BA3A` | Kzarka Longsword, Cron Stone    | 17,155     |
+| 4     | `0xFFD05D48` | Blackstar Longsword, Black Stone | 34,433    |
+| 5     | `0xFFA070EF` | Sovereign Longsword, Kharazad Earring | 276  |
 
 #### `item_type`
 
@@ -268,7 +286,7 @@ One row per item, read from its level-0 block. Higher levels only feed Max Level
 | ------------- | ---- | ------------------------------------------------- |
 | Item ID       | num  | `item_id` from the key                            |
 | Icon          | text | First block string, prefixed `ui_texture/icon/`   |
-| Item          | text | LOC `str_type=0`, `str_id1=item_id`               |
+| Item          | text | LOC `str_type=0`, `str_id1=item_id`, in its `grade` colour |
 | Max Level     | num  | Highest `enchant_level` among the item's keys; `0` when it cannot be enhanced |
 | Object ID     | num  | `character_id` of the placed object or summoned pet; dash when `0` |
 | Object        | text | LOC `str_type=6`, `str_id1=character_id`          |

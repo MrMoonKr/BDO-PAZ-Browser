@@ -9,10 +9,11 @@ from _common.character import character_name
 from _common.loc import is_loc_loaded
 from _common.html import Column, e, error, icon_cell, sort_keys, table
 from _common.icon_index import IconKind, icon_path
-from _common.item_key import item_name
+from _common.item_key import item_name_tagged
 from _common.lang import load_handler_strings
 from _common.lookup_index import IndexKind, lookup
 from _common.pabr_offset import parse_pabr_offset_rows
+from _common.pa_text import pa_cell, pa_fields
 from .parser import parse_characterobject_records
 
 _LANG_DIR = Path(__file__).parent / "lang"
@@ -112,7 +113,7 @@ class CharacterObjectHandler(PreviewHandler):
                 "icon_path": icon_path(IconKind.CHARACTER, r.character_id),
                 "name_en": character_name(r.character_id),
                 "item_id": item_id,
-                "item_name": item_name(item_id) if has_loc and item_id is not None else "",
+                **pa_fields("item_name", item_name_tagged(item_id) if has_loc and item_id is not None else ""),
                 "object_kind": r.object_kind,
                 "model_path": r.model_path,
             })
@@ -143,7 +144,7 @@ class CharacterObjectHandler(PreviewHandler):
                 row.append(e(r["name_en"]))
             row.append(e(r["item_id"] or _EMPTY))
             if has_loc:
-                row.append(e(r["item_name"] or _EMPTY))
+                row.append(pa_cell(r, "item_name"))
             row.append(e(r["object_kind"]))
             row.append(e(r["model_path"]))
             rows.append(row)

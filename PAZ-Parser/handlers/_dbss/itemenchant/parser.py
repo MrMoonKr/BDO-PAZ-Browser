@@ -3,7 +3,7 @@ from __future__ import annotations
 import struct
 from collections.abc import Iterator
 
-from _common.binary import u16, u32
+from _common.binary import u8, u16, u32
 from _common.item_key import split_item_key
 from _common.prefixed_string import find_prefixed_ascii
 from _dbss.skill.parser import build_skill_buff_index
@@ -20,6 +20,9 @@ _TRAILER_SIZE = 12
 
 # Stored icon paths are relative to this folder.
 ICON_ROOT = "ui_texture/icon/"
+
+# The item grade, 0 (white) to 5, which colours the item name (`_common/item_grade.py`).
+_GRADE = 0x06
 
 # The character this item places or summons (furniture, fences, pets), keyed
 # like characterstatic.dbss and characterobject.dbss; 0 when there is none.
@@ -108,6 +111,7 @@ def parse_itemenchant_records(data: bytes, offset_data: bytes) -> list[dict]:
             "item_id": row["item_id"],
             "max_enchant_level": max_levels[row["item_id"]],
             "icon_path": f"{ICON_ROOT}{icon.lower()}" if icon else "",
+            "grade": u8(data, start + _GRADE),
             "character_id": u16(data, start + _CHARACTER_ID),
             "skill_keys": list(_skill_keys(data, start)),
             "second_string": strings[1] if len(strings) > 1 else "",
@@ -135,6 +139,22 @@ def build_item_icon_index(data: bytes, offset_data: bytes) -> dict[int, str]:
         strings = find_prefixed_ascii(data, start, end)
         if strings:
             index[row["item_id"]] = f"{ICON_ROOT}{strings[0].lower()}"
+
+    return index
+
+
+def build_item_grade_index(data: bytes, offset_data: bytes) -> dict[int, int]:
+    """Map base item ID to its grade, from the level-0 records.
+
+    Every level of an item shares its name, so the base grade colours them all.
+    """
+    index: dict[int, int] = {}
+
+    for row in _base_rows(parse_itemenchantoffset_records(offset_data)):
+        start = row["data_offset"]
+        if start + _GRADE >= len(data):
+            continue
+        index[row["item_id"]] = u8(data, start + _GRADE)
 
     return index
 

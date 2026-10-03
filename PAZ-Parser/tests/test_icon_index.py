@@ -11,8 +11,10 @@ from _common.icon_index import (
     icon_region,
     indexed_icon_path,
 )
+from _common.item_grade import ITEM_GRADE_COLORS
 from _common.item_key import item_key_icon_path, item_key_list_cell, item_key_text
 from _common.lookup_index import IndexKind, clear_indexes, init_index
+from _common.pa_text import argb_css
 
 _KING_CLAM = 24626
 _SWEET_HONEY_WINE = 54030
@@ -221,6 +223,32 @@ def test_item_key_list_cell_shows_each_level_icon_and_counts_the_rest() -> None:
     assert f">{e(item_key_text(_SOVEREIGN_LEVEL_10))}<" in html
     assert f">{e(item_key_text(_SOVEREIGN_LEVEL_3))}<" in html
     assert html.endswith(", ... (+1)")
+
+
+def test_item_key_list_cell_draws_each_name_in_its_grade_colour() -> None:
+    init_index(IndexKind.ITEM_GRADE, {_SOVEREIGN_LONGSWORD: 5})
+
+    html = item_key_list_cell([_SOVEREIGN_LEVEL_10, _SOVEREIGN_LONGSWORD + 1], 2)
+
+    # Every level shares the base item's grade; an item without one stays plain.
+    purple = argb_css(ITEM_GRADE_COLORS[5])
+    assert f'<span class="pa-color" style="color: {purple}">{e(item_key_text(_SOVEREIGN_LEVEL_10))}</span>' in html
+    assert f">{e(item_key_text(_SOVEREIGN_LONGSWORD + 1))}<" in html
+
+
+def test_lease_text_colours_the_item_by_grade(monkeypatch: pytest.MonkeyPatch) -> None:
+    import _common.item_key as item_key
+    from _dbss.detail_dialog.lease import Lease, lease_text, lease_text_tagged
+
+    monkeypatch.setattr(item_key, "item_name", lambda item_id: "Sovereign Longsword")
+    init_index(IndexKind.ITEM_GRADE, {_SOVEREIGN_LONGSWORD: 5})
+    lease = Lease(item_id=_SOVEREIGN_LONGSWORD, cost=3)
+
+    tagged = f"<PAColor0x{ITEM_GRADE_COLORS[5]:08X}>Sovereign Longsword<PAOldColor> (3 CP)"
+    assert lease_text_tagged(lease, has_loc=True) == tagged
+    assert lease_text(lease, has_loc=True) == "Sovereign Longsword (3 CP)"
+    # Without LOC the item ID stands in, plain.
+    assert lease_text(lease, has_loc=False) == f"{_SOVEREIGN_LONGSWORD} (3 CP)"
 
 
 _TITLE_SHEET = "ui_texture/combine/icon/combine_title_icon_00.dds"

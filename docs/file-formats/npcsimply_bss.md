@@ -126,7 +126,7 @@ This is the same `[string table][u32 rows_end][u32 0]` tail that `playercharacte
 | Name (KR)    | text | `name_ref`                                                |
 | Role         | text | `role_ref`; Korean title/role, blank when empty           |
 | Knowledge ID | num  | Parsed from `getknowledge(<id>);` in `script_ref`         |
-| Leases       | list | Every lease of the character: the `CHARACTER_LEASES` index (all lease options in `detail_dialog.dbss`), as LOC `str_type=0` item name and cost, e.g. `[CP] Container (10 CP)`; the lease stored here keeps its own cost, and is the only one without the index; sorts by count |
+| Leases       | list | Every lease of the character: the `CHARACTER_LEASES` index (all lease options in `detail_dialog.dbss`), as LOC `str_type=0` item name (in its grade colour) and cost, e.g. `[CP] Container (10 CP)`; the lease stored here keeps its own cost, and is the only one without the index; sorts by count |
 | Script       | text | Raw script string for debugging/export                    |
 
 ---

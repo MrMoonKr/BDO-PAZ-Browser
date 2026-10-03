@@ -6,11 +6,11 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.character import character_name
-from _common.html import Column, e, join_limited, sort_keys, table
+from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup
 from _common.pa_text import pa_fields, pa_html, pa_key, pa_list_cell, pa_list_fields, strip_pa_tags
-from .lease import lease_text
+from .lease import lease_text_tagged
 from .parser import DialogRecord, parse_detail_dialog_offset_rows, parse_detail_dialog_records, split_key
 
 
@@ -59,7 +59,7 @@ def _record_dict(record: DialogRecord, has_loc: bool) -> dict:
         **pa_fields("greeting", _dialog_text(record, record.text_id, _FIELD_GREETING, has_loc) or record.greeting),
         "option_count": len(record.options),
         **pa_list_fields("option_titles", option_titles),
-        "leases": [lease_text(lease, has_loc) for lease in found],
+        **pa_list_fields("leases", [lease_text_tagged(lease, has_loc) for lease in found]),
         "lease_item_ids": [lease.item_id for lease in found],
     }
 
@@ -163,7 +163,7 @@ class DetailDialogHandler(PreviewHandler):
                 _greeting_cell(r),
                 e(r["option_count"]),
                 pa_list_cell(r[pa_key("option_titles")], _LIST_PREVIEW_ITEMS),
-                e(join_limited(r["leases"], _LIST_PREVIEW_ITEMS) or _EMPTY),
+                pa_list_cell(r[pa_key("leases")], _LIST_PREVIEW_ITEMS),
             ]
             for r in slice_
         ]

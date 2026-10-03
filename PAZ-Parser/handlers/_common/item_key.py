@@ -10,16 +10,19 @@ level of one item shares a name. See docs/file-formats/itemenchant_dbss.md.
 
 A few hundred items also change icon with their level (Sovereign weapons,
 Fallen God armor); `item_key_icon_path()` picks that icon when there is one.
-See docs/file-formats/specialenchantitem_bss.md.
+See docs/file-formats/specialenchantitem_bss.md. Item lists draw each name in
+its grade colour (`_common/item_grade.py`).
 """
 
 from __future__ import annotations
 
 from collections.abc import Sequence
 
-from _common.html import icon_list_cell
+from _common.html import icon_html_list_cell
 from _common.icon_index import IconKind, icon_path
+from _common.item_grade import item_grade, item_grade_tagged
 from _common.loc import loc_text
+from _common.pa_text import pa_html
 
 LOC_ITEM_NAME = 0
 
@@ -35,6 +38,11 @@ def split_item_key(item_key: int) -> tuple[int, int]:
 def item_name(item_id: int) -> str:
     """LOC type 0 name of an item, or '' when it has none or LOC is not loaded."""
     return loc_text(LOC_ITEM_NAME, item_id)
+
+
+def item_name_tagged(item_id: int) -> str:
+    """`item_name` in the item's grade colour, as a `<PAColor>` tag for `pa_fields`, or ''."""
+    return item_grade_tagged(item_name(item_id), item_grade(item_id))
 
 
 def item_key_icon_path(item_key: int) -> str:
@@ -53,8 +61,14 @@ def item_key_text(item_key: int) -> str:
     return f"{name} ({enchant_level})" if enchant_level else name
 
 
+def item_key_text_tagged(item_key: int) -> str:
+    """`item_key_text` in the item's grade colour, as a `<PAColor>` tag for `pa_html`."""
+    item_id, _ = split_item_key(item_key)
+    return item_grade_tagged(item_key_text(item_key), item_grade(item_id))
+
+
 def item_key_list_cell(item_keys: Sequence[int], max_items: int) -> str:
-    """The first `max_items` items, each with its per-level icon, and a count of the rest."""
+    """The first `max_items` items, each with its per-level icon and grade colour, and a count of the rest."""
     shown = item_keys[:max_items]
-    entries = [(item_key_icon_path(key), item_key_text(key)) for key in shown]
-    return icon_list_cell(entries, len(item_keys) - len(shown))
+    entries = [(item_key_icon_path(key), pa_html(item_key_text_tagged(key))) for key in shown]
+    return icon_html_list_cell(entries, len(item_keys) - len(shown))

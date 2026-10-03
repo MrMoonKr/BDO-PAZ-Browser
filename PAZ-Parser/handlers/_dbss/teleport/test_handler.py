@@ -229,17 +229,20 @@ def test_used_by_names_a_buff_by_item_then_text_then_korean(monkeypatch: pytest.
     import _dbss.teleport.used_by as used_by
     from _common.lookup_index import IndexKind, clear_indexes, init_index
 
-    monkeypatch.setattr(used_by, "item_key_text", lambda item_id: f"item {item_id}")
+    monkeypatch.setattr(used_by, "item_key_text_tagged", lambda item_id: f"<PAColor0xFFF5BA3A>item {item_id}<PAOldColor>")
     monkeypatch.setattr(used_by, "item_key_icon_path", lambda item_id: "item.dds")
     monkeypatch.setattr(used_by, "buff_first_line", lambda buff_id: "Move to Velia" if buff_id == 2 else "")
     clear_indexes()
     try:
         init_index(IndexKind.BUFF_ITEMS, {1: (761880,)})
         init_index(IndexKind.TELEPORT_BUFF_NAME_KR, {3: "벨리아 귀환석"})
-        labels = [entry.label for entry in used_by.used_by_entries([1, 2, 3, 4])]
+        entries = used_by.used_by_entries([1, 2, 3, 4])
+        labels = [entry.label for entry in entries]
     finally:
         clear_indexes()
     assert labels == ["item 761880", "Move to Velia", "벨리아 귀환석", "4"]
+    # The item name keeps its grade colour for the cell.
+    assert entries[0].tagged_label == "<PAColor0xFFF5BA3A>item 761880<PAOldColor>"
 
 
 def test_used_by_reads_buffs_of_one_item_once(monkeypatch: pytest.MonkeyPatch) -> None:

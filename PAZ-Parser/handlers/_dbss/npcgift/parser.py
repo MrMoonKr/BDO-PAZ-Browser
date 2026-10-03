@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from _common.binary import u16 as _u16, u32 as _u32
+from _common.item_key import item_name
 from _common.loc import is_loc_loaded, loc_lookup, loc_lookup_prefix, strip_pa_tags
 
 from .model import NpcGiftDataRecord, NpcGiftFlatRecord, NpcGiftOffsetRecord
@@ -11,11 +12,6 @@ _GIFT_ROW_SIZE = 12       # u32 item_id + u32 amity_a + u32 amity_b
 
 def _npc_name(npc_id: int) -> str:
     raw = loc_lookup(6, npc_id)
-    return strip_pa_tags(raw) if raw else ""
-
-
-def _item_name(item_id: int) -> str:
-    raw = loc_lookup(0, item_id)
     return strip_pa_tags(raw) if raw else ""
 
 
@@ -83,7 +79,7 @@ def parse_npcgift_records(data: bytes) -> list[NpcGiftFlatRecord]:
                 npc_id=npc_id,
                 npc_name=npc_name,
                 item_id=item_id,
-                item_name=_item_name(item_id) if loc else "",
+                item_name=item_name(item_id) if loc else "",
                 amity=amity_a,
             ))
 

@@ -144,7 +144,7 @@ One row per record:
 | Greeting       | text | LOC type `39` field `0`, fallback to `greeting`; truncated |
 | Options        | num  | `option_count` |
 | Option Titles  | list | LOC type `39` field `2` of each option, fallback to `title`; first few then a count |
-| Leases         | list | For each lease option: LOC `str_type=0` name of the item and the cost, e.g. `[CP] Small Fence (3 CP)` |
+| Leases         | list | For each lease option: LOC `str_type=0` name of the item (in its grade colour) and the cost, e.g. `[CP] Small Fence (3 CP)` |
 
 ---
 

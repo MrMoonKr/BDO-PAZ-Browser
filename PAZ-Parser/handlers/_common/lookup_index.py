@@ -38,6 +38,8 @@ class IndexKind(Enum):
     BUFF_ICON = "buff_icon"
     # Per-level icons of the items whose icon changes with their level.
     ITEM_KEY_ICON = "item_key_icon"
+    # Grade (0 to 5) of each base item ID, which colours its name.
+    ITEM_GRADE = "item_grade"
     # Journal page artwork by packed quest ID, not the quest's own icon.
     QUEST_ARTWORK_ICON = "quest_artwork_icon"
     # Manor part blueprints by manor_part_key(character_id, part).
