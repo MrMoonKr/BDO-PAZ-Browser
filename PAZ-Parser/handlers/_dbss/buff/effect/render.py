@@ -47,7 +47,8 @@ def _applying_lines(buff: EffectInput) -> list[EffectLine]:
 
 
 def _line_text(line: EffectLine, buff: EffectInput) -> str:
-    amount = format_amount(buff.param(line.value_param), line.unit, signed=line.is_signed)
+    value = buff.param(line.value_param)
+    amount = format_amount(-value if line.is_negated else value, line.unit, signed=line.is_signed)
     return line.template.format(label=line.label, amount=amount)
 
 

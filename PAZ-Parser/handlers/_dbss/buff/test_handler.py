@@ -315,7 +315,11 @@ def test_korean_title_survives_without_loc() -> None:
         (8, [-150, 0], "Max Stamina -150"),
         # Per-million percentages keep their decimals and drop trailing zeros.
         (9, [25000, 0], "Movement Speed +2.5%"),
-        (25, [150000, 2], "Life EXP +15%"),
+        # Life EXP names its life skill in param_3, 15 for all.
+        (25, [150000, 2, 15], "Life EXP +15%"),
+        # Hunter's Clothes (Costume) reads "Hunting EXP +10%" on bdocodex.
+        (25, [100000, 2, 2], "Hunting EXP +10%"),
+        (25, [100000, 0, 0], "Combat EXP +10%"),
         (39, [3, 8], "All AP +8"),
         (43, [3, -2], "All Damage Reduction -2"),
         (80, [4, 2560350], "Alchemy EXP +2,560,350"),
@@ -351,10 +355,34 @@ def test_korean_title_survives_without_loc() -> None:
         (49, [6, 100000], ""),
         # Damage is a share of attack, printed without a sign.
         (45, [2, 0, 0, 5790000], "Attack Damage 579%"),
+        # A reduction stored positive: "Fall Damage -50%".
+        (52, [500000, 0], "Fall Damage -50%"),
+        # Centimetres: Chenga - Sherekhan Tome of Wisdom reads +150m.
+        (53, [15000, 0], "Discovery Radius +150m"),
+        (59, [80, 0], "Jump Height +80"),
+        (91, [100000, 0], "Durability Reduction Resistance +10%"),
+        # Time cuts per million of 20 sec: Eileen's Cheer, Alchemy Time -5 sec.
+        (111, [0, 250000], "Alchemy Time -5 sec"),
+        (111, [1, 15000], "Cooking Time -0.3 sec"),
+        (111, [2, 80000], "Processing Success Rate +8%"),
+        # Farming time does not fit the scale.
+        (111, [3, 400000], ""),
+        # Light Iron Horseshoe +0 and Epheria: Old Wind Sail on bdocodex.
+        (98, [1, 20000], "Movement Speed (Mount) +2%"),
+        (98, [2, 5000], "Turn +0.5%"),
+        (98, [0, 10000], "Acceleration +1%"),
+        (98, [3, 30000], "Brake +3%"),
+        (187, [200, 0, 2], "AP +200"),
+        (187, [250, 500, 1], "AP +250, DP +500"),
+        (187, [0, -100, 0], "DP -100"),
         # A character or knowledge entry with no LOC name falls back to its ID.
         (18, [27542, 0], "Summon 27542"),
         (69, [11485, 30], "Accept Quest: 11485/30"),
         (38, [15074, 0], "Learn Knowledge: 15074"),
+        (37, [2070, 0], "Register Node: 2070"),
+        (142, [3176, 0], "Obtain Title: 3176"),
+        # No table names a teleport point, so it always shows the key.
+        (23, [0, 340], "Teleport to point 340"),
         # A kind outside the confirmed ones.
         (80, [10, 100], ""),
         # An effect type that is not decoded.
@@ -431,7 +459,12 @@ def test_over_time_text(
         (EffectInput(1, [-15], condition_type=4), {1: "when struck"}),
         # No confirmed meaning: no labels at all.
         (EffectInput(39, [0, 8]), {}),
-        (EffectInput(98, [1, 2]), {}),
+        (EffectInput(14, [6, 1350]), {}),
+        (EffectInput(187, [0, 300, 2]), {3: "Earth"}),
+        (EffectInput(25, [100000, 2, 2]), {1: "10%", 2: "Life", 3: "Hunting"}),
+        (EffectInput(53, [1000]), {1: "10m"}),
+        # A named effect without a name labels nothing.
+        (EffectInput(23, [0, 340]), {}),
     ],
 )
 def test_param_labels(buff: EffectInput, expected: dict[int, str]) -> None:

@@ -9,9 +9,9 @@ from _common.character import character_name
 from _common.html import Column, e, join_limited, sort_keys, table
 from _common.knowledge import knowledge_name
 from _common.lang import load_handler_strings
-from _common.loc import is_loc_loaded, loc_text
+from _common.node import node_name
 from _bwp.waypoint.worldmap import worldmap_companion, worldmap_links
-from .connections import LOC_NODE_NAME, connection_fields
+from .connections import connection_fields
 from .parser import NODE_KIND_NAMES, parse_exploration_records
 
 
@@ -66,7 +66,6 @@ class ExplorationBssHandler(PreviewHandler):
         entry: PazEntry,
         companions: dict[str, bytes],
     ) -> list[dict]:
-        has_loc = is_loc_loaded()
         strings = load_handler_strings(self.lang, _LANG_DIR).get("values", {})
         main, sub = strings.get("main", "Main"), strings.get("sub", "Sub")
 
@@ -77,8 +76,7 @@ class ExplorationBssHandler(PreviewHandler):
                 **record,
                 # LOC type 29 is the display name; the Korean source name
                 # stands in when LOC is not loaded or has no entry.
-                "node_name": (loc_text(LOC_NODE_NAME, record["node_key"]) if has_loc else "")
-                or record["name_kr"],
+                "node_name": node_name(record["node_key"]) or record["name_kr"],
                 "kind": _kind_name(record["node_kind"]),
                 "main_sub": sub if record["is_sub_node"] else main,
                 # Empty sorts last and exports as an empty cell.

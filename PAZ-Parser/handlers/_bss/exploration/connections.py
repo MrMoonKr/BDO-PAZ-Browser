@@ -8,20 +8,14 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 
-from _common.loc import is_loc_loaded, loc_text
-
-LOC_NODE_NAME = 29
-
-
-def _loc_node_name(key: int) -> str:
-    return loc_text(LOC_NODE_NAME, key) if is_loc_loaded() else ""
+from _common.node import node_name
 
 
 def connection_fields(
     node_key: int,
     links: Mapping[int, frozenset[int]],
     node_names: Mapping[int, str],
-    loc_name: Callable[[int], str] = _loc_node_name,
+    loc_name: Callable[[int], str] = node_name,
 ) -> dict:
     """The nodes `node_key` links to, by key and by name.
 

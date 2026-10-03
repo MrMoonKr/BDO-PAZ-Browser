@@ -17,6 +17,7 @@ from typing import cast
 
 from _common.icon_index import borrow_icons
 from _bss.buffsimply.parser import build_buff_icon_index
+from _bss.exploration.parser import build_node_parent_index
 from _bss.groupcameradata.parser import build_cutscene_icon_index
 from _bss.mansionpartinfo.parser import build_manor_part_icon_index
 from _bss.menu.parser import build_menu_icon_index, build_menu_icon_region_index
@@ -24,6 +25,7 @@ from _bss.plantexchangegroup.parser import build_production_item_index
 from _bss.questjournalvideoinfo.parser import build_quest_artwork_index
 from _bss.specialenchantitem.parser import build_item_key_icon_index
 from _bss.submenu.parser import build_submenu_icon_index, build_submenu_icon_region_index
+from _bwp.waypoint.worldmap import WORLDMAP_FILE
 from _common.lookup_index import IndexKind, LookupValue
 from _dbss.characterobject.parser import build_character_icon_index
 from _dbss.characterstatic.parser import build_knowledge_character_index
@@ -66,6 +68,8 @@ SUBMENU = f"{_BINARY}/submenu.bss"
 PLANTEXCHANGEGROUP = f"{_BINARY}/plantexchangegroup.bss"
 ITEMSUBGROUP = f"{_BINARY}/itemsubgroup.dbss"
 ITEMSUBGROUP_OFFSET = f"{_BINARY}/itemsubgroupoffset.dbss"
+EXPLORATION = f"{_BINARY}/exploration.bss"
+WORLDMAP = f"gamecommondata/waypoint_binary/{WORLDMAP_FILE}"
 
 
 @dataclass(frozen=True)
@@ -133,6 +137,8 @@ INDEX_SPECS: tuple[IndexSpec, ...] = (
         (ITEMENCHANT, ITEMENCHANT_OFFSET, SKILL, SKILL_OFFSET),
         build_buff_item_index,
     ),
+    # Sub-node -> parent node, so a sub-node reads `Bambu Valley - Mining`.
+    IndexSpec(IndexKind.NODE_PARENT, (EXPLORATION, WORLDMAP), build_node_parent_index),
 )
 
 

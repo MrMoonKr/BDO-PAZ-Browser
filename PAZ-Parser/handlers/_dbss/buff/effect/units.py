@@ -25,6 +25,11 @@ PERCENT = Unit(10_000, "%")
 WEIGHT = Unit(10_000, " LT")
 # Durations are stored in milliseconds.
 SECONDS = Unit(1_000, " sec")
+# Distances are stored in centimetres: 1000 is 10m.
+METRES = Unit(100, "m")
+# Cooking and alchemy time cuts are stored per million of 20 seconds:
+# 250000 is 5 sec, 50000 is 1 sec.
+CRAFT_SECONDS = Unit(50_000, " sec")
 
 _MAX_DECIMALS = 4
 

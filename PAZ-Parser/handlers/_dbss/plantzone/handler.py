@@ -8,13 +8,12 @@ from bdo_preview import PreviewHandler
 from _common.html import Column, e, sort_keys, table
 from _common.item_key import item_key_list_cell
 from _common.lang import load_handler_strings
-from _common.loc import loc_text
+from _common.node import node_name
 from _common.production_items import production_item_fields
 from .parser import WORKER_SPECIES_NAMES, parse_offset_records, parse_plantzone_records
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
-_LOC_NODE_NAME = 29
 _EMPTY = "-"
 _LIST_PREVIEW_ITEMS = 8
 
@@ -95,7 +94,7 @@ class PlantZoneHandler(PreviewHandler):
             {
                 **record,
                 **production_item_fields(record["production_key"]),
-                "node_name": loc_text(_LOC_NODE_NAME, record["record_id"]),
+                "node_name": node_name(record["record_id"]),
                 # Not shown: the list is not a worker lock and its use is
                 # unknown. Kept for search and export.
                 "worker_species_text": ", ".join(

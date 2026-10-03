@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import struct
 
+from _bwp.waypoint.parser import is_waypoint_graph, neighbours, parse_waypoint_graph
 from _common.binary import u16, u32
 from _common.pabr_strings import TRAILER_SIZE, read_string_table, string_at, string_table_start
 
@@ -90,3 +91,25 @@ def parse_exploration_records(data: bytes) -> list[dict]:
         raise ValueError("exploration.bss records do not end where its string table starts")
 
     return records
+
+
+def build_node_parent_index(exploration: bytes, worldmap: bytes) -> dict[int, int]:
+    """The `NODE_PARENT` index: each sub-node key to the node it hangs off.
+
+    A sub-node (Mining, an investment bank, a fish drying yard) links to its
+    parent alone in `mapdata_realexplore2.bwp`; sub-nodes with no link or
+    several are left out. An unreadable graph yields an empty index.
+    """
+    if not is_waypoint_graph(worldmap):
+        return {}
+    links = neighbours(parse_waypoint_graph(worldmap))
+    sub_nodes = [
+        record["node_key"]
+        for record in parse_exploration_records(exploration)
+        if record["is_sub_node"]
+    ]
+    return {
+        key: next(iter(links[key]))
+        for key in sub_nodes
+        if len(links.get(key, frozenset())) == 1
+    }

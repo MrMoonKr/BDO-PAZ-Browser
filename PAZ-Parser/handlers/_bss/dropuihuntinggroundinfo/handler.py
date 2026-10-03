@@ -12,7 +12,9 @@ from _common.hunting_ground import hunting_ground_name
 from _common.item_key import item_key_list_cell, item_name
 from _common.lang import load_handler_strings
 from _common.loc import loc_text
+from _common.node import node_name
 from _common.quest.quest import quest_title
+from _common.title import title_name
 from .parser import parse_hunting_ground_records, parse_territory_keys
 from .tribe_labels import tribe_text
 
@@ -22,11 +24,9 @@ _MAIN_CATEGORY_FILE = "dropuimaincategoryinfo.bss"
 _EMPTY = "-"
 _LIST_PREVIEW_ITEMS = 8
 
-_LOC_TITLE = 1
 # Territory names; str_id4 1 is the territory, 0 the nation.
 _LOC_TERRITORY = 12
 _LOC_TERRITORY_NAME = 1
-_LOC_NODE_NAME = 29
 _LOC_CATEGORY = 115
 _LOC_TAG = 117
 
@@ -115,14 +115,14 @@ class DropUiHuntingGroundInfoBssHandler(PreviewHandler):
                 "categories": _names(record["sub_category_keys"], lambda k: loc_text(_LOC_CATEGORY, k)),
                 "species": tribe_text(record["tribe_type"]),
                 "max_ap": _max_ap_text(record["limited_ap"], record["limited_ap_apply_percent"]),
-                "node_name": loc_text(_LOC_NODE_NAME, node_key) if node_key else "",
+                "node_name": node_name(node_key) if node_key else "",
                 "monsters": _names(record["monster_ids"], character_name),
                 "items": _names(record["drop_item_ids"], item_name),
                 "quests": [
                     _quest_text(k) for k in record["repeat_quest_keys"] + record["sudden_quest_keys"]
                 ],
                 "tags": _names(record["tag_keys"], lambda k: loc_text(_LOC_TAG, k)),
-                "titles": _names(record["title_keys"], lambda k: loc_text(_LOC_TITLE, k)),
+                "titles": _names(record["title_keys"], title_name),
             })
         return records
 

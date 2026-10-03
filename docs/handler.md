@@ -824,10 +824,14 @@ strings at unknown positions, `read_prefixed_at()` reads a prefix at a known
 position and returns the next one; `read_prefixed_utf16()` and
 `find_prefixed_ascii()` are for text whose position is only a guess.
 
-Name a character with `character_name()` from `character.py` (LOC type 6) and
-a knowledge entry with `knowledge_name()` from `knowledge.py` (LOC type 34);
-both return `''` when LOC is not loaded, so no `is_loc_loaded()` guard is
-needed. Do not define those LOC types in a handler.
+Name a character with `character_name()` from `character.py` (LOC type 6), a
+knowledge entry with `knowledge_name()` from `knowledge.py` (LOC type 34), a
+worldmap node with `node_name()` or `full_node_name()` from `node.py` (LOC
+type 29, see `NODE_PARENT` under Lookup Indexes) and a title with
+`title_name()` from `title.py` (LOC type 1, tags removed; `title.dbss` keeps
+its own tagged lookup for the colours). All return `''` when LOC is not
+loaded, so no `is_loc_loaded()` guard is needed. Do not define those LOC types
+in a handler.
 
 Tables in the skill cluster split a skill key with `split_skill_key()` and name
 a skill with `skill_name(skill_no)` from `skill.py`: LOC type 10 first, then
@@ -928,6 +932,7 @@ IDs (`LookupValue`).
 | `PRODUCTION_ITEMS` | `plantexchangegroup.bss`, `itemsubgroup.dbss`, `itemsubgroupoffset.dbss` | item keys (tuple) |
 | `SKILL_BUFFS`    | `skill.dbss`, `skilloffset.dbss`           | buff IDs (tuple) |
 | `BUFF_ITEMS`     | `itemenchant.dbss`, `itemenchantoffset.dbss`, `skill.dbss`, `skilloffset.dbss` | item IDs (tuple) |
+| `NODE_PARENT`    | `exploration.bss`, `mapdata_realexplore2.bwp` | parent node key |
 
 `CHARACTER_ITEM` maps a character to the one base item that places or summons
 it (`character_id` at `+0xAA` in
@@ -1025,6 +1030,15 @@ every base item whose skills apply it, in ascending ID order; the
 `buff.dbss` Applied By column reads it. It is built by
 `build_buff_item_index()` in `_dbss/itemenchant/parser.py`, which reads both
 tables, so `BUFF_ITEMS` costs no second read of `itemenchant.dbss`.
+
+`NODE_PARENT` maps a worldmap sub-node (`is_sub_node` in
+[exploration.bss](file-formats/exploration_bss.md)) to the one node it links
+to in the worldmap graph, its parent; sub-nodes with no link or several are
+left out. Read it through `full_node_name()` in `_common/node.py`, which names
+a sub-node `Bambu Valley - Mining` where LOC type 29 alone says `Mining`; the
+`buff.dbss` Effect column uses it for node registration buffs. `node_name()`
+in the same module is the plain LOC type 29 name the node tables show. It is
+built by `build_node_parent_index()` in `_bss/exploration/parser.py`.
 
 ---
 

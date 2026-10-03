@@ -12,8 +12,10 @@ from dataclasses import dataclass, field
 
 from _common.character import character_name
 from _common.knowledge import knowledge_name
+from _common.node import full_node_name
 from _common.quest.quest import quest_title
-from .units import FLAT, PERCENT, SECONDS, WEIGHT, Unit
+from _common.title import title_name
+from .units import CRAFT_SECONDS, FLAT, METRES, PERCENT, SECONDS, WEIGHT, Unit
 
 
 @dataclass(frozen=True)
@@ -34,6 +36,9 @@ class EffectLine:
     value_label: str = ""
     # False for amounts the game prints without a sign: `Recover 10 Energy`.
     is_signed: bool = True
+    # True for a reduction stored positive that the game prints negative:
+    # `500000` reads `Fall Damage -50%`.
+    is_negated: bool = False
     template: str = "{label} {amount}"
 
 
@@ -120,6 +125,10 @@ _MASTERY_PARAM_2 = {0: 0, 1: 0, 2: 1, 3: 1, 4: 1, 5: 0, 6: 1, 9: 1}
 # Type 149 `param_1` for every life skill at once.
 _ALL_LIFE_SKILLS = 15
 
+# Type 187 `param_3`, the Land of the Morning Light attribute: the Korean names
+# read 해 / 달 / 땅 and the English texts Morning Sun / Moon / Earth.
+_MORNING_LIGHT_ATTRIBUTES = {0: "Sun", 1: "Moon", 2: "Earth"}
+
 _RESISTANCES = {
     0: "Knockback/Floating",
     1: "Knockdown/Bound",
@@ -137,7 +146,20 @@ EFFECT_LINES: dict[int, tuple[EffectLine, ...]] = {
     9: (EffectLine("Movement Speed", 1, PERCENT),),
     10: (EffectLine("Attack Speed", 1, PERCENT),),
     11: (EffectLine("Casting Speed", 1, PERCENT),),
-    25: kinds(2, "{kind} EXP", {0: "Combat", 1: "Skill", 2: "Life"}, 1, PERCENT),
+    25: (
+        *kinds(2, "{kind} EXP", {0: "Combat", 1: "Skill"}, 1, PERCENT),
+        # Life EXP names its life skill in param_3, 15 for all of them.
+        *(
+            EffectLine(
+                f"{name} EXP",
+                1,
+                PERCENT,
+                when={2: 2, 3: skill},
+                kind_labels={2: "Life", 3: name},
+            )
+            for skill, name in {**_LIFE_SKILLS, _ALL_LIFE_SKILLS: "Life"}.items()
+        ),
+    ),
     29: (EffectLine("Weight Limit", 1, WEIGHT),),
     30: (EffectLine("Critical Hit Rate", 1, PERCENT),),
     # param_1 3 is all targets. bdo-data-extractor reads 0 to 2 as melee,
@@ -173,7 +195,10 @@ EFFECT_LINES: dict[int, tuple[EffectLine, ...]] = {
         PERCENT,
     ),
     50: (EffectLine("Mount EXP", 1, PERCENT),),
+    52: (EffectLine("Fall Damage", 1, PERCENT, is_negated=True),),
+    53: (EffectLine("Discovery Radius", 1, METRES),),
     57: (EffectLine("Item Drop Rate", 1, PERCENT),),
+    59: (EffectLine("Jump Height", 1),),
     63: (recovery("Worker Stamina", 1),),
     67: kinds(
         1,
@@ -193,6 +218,7 @@ EFFECT_LINES: dict[int, tuple[EffectLine, ...]] = {
     80: kinds(1, "{kind} EXP", _LIFE_SKILLS, 2),
     89: kinds(1, "{kind} EXP", {0: "Breath", 1: "Strength", 2: "Health"}, 2),
     90: (EffectLine("Death Penalty Resistance", 1, PERCENT),),
+    91: (EffectLine("Durability Reduction Resistance", 1, PERCENT),),
     93: kinds(
         1,
         "{kind} Extra Damage",
@@ -210,9 +236,35 @@ EFFECT_LINES: dict[int, tuple[EffectLine, ...]] = {
     ),
     94: (EffectLine("Max Energy", 1),),
     95: (EffectLine("Underwater Breathing", 1, SECONDS),),
+    # Mount and ship stats, in the wording of their gear: horseshoes and
+    # prows read `Movement Speed`, sails `Turn`, stirrups `Brake`. Speed is
+    # marked `(Mount)` so it does not read like the player's type 9.
+    98: kinds(
+        1,
+        "{kind}",
+        {0: "Acceleration", 1: "Movement Speed (Mount)", 2: "Turn", 3: "Brake"},
+        2,
+        PERCENT,
+    ),
     105: kinds(1, "Ignore {kind} Resistance", _RESISTANCES, 2, PERCENT),
     108: (EffectLine("Knowledge Gain Chance", 1, PERCENT),),
     109: (EffectLine("Higher Grade Knowledge Gain Chance", 1, PERCENT),),
+    # Kind 3 cuts farming time on two buffs whose names do not fit this
+    # scale (400000 named -2 sec), so it stays unlabelled.
+    111: (
+        *(
+            EffectLine(
+                f"{name} Time",
+                2,
+                CRAFT_SECONDS,
+                is_negated=True,
+                when={1: kind},
+                kind_labels={1: name},
+            )
+            for kind, name in {0: "Alchemy", 1: "Cooking"}.items()
+        ),
+        *kinds(1, "Processing Success Rate", {2: "Processing"}, 2, PERCENT),
+    ),
     # param_1 picks a rate (0) or a flat amount (2).
     120: (
         *kinds(1, "Monster Damage Reduction Rate", {0: "Rate"}, 2, PERCENT),
@@ -241,16 +293,34 @@ EFFECT_LINES: dict[int, tuple[EffectLine, ...]] = {
             kind_labels={1: "All"},
         ),
     ),
+    # Flat AP and DP from Land of the Morning Light buffs and bosses.
+    187: tuple(
+        EffectLine(stat, value_param, when={3: attribute}, kind_labels={3: name})
+        for attribute, name in _MORNING_LIGHT_ATTRIBUTES.items()
+        for stat, value_param in (("AP", 1), ("DP", 2))
+    ),
 }
+
+
+def _unnamed(_key: int) -> str:
+    """No table names the key yet, so the effect shows the key itself."""
+    return ""
 
 NAMED_EFFECTS: dict[int, NamedEffect] = {
     # The summoned character. Siege objects and placed objects are characters too.
     18: NamedEffect("Summon {name}", character_name),
+    # param_2 is a teleport.dbss point, which stores a position but no name.
+    # param_1 is 0, or 5 on boss-room and unstuck teleports; unlabelled.
+    23: NamedEffect("Teleport to point {name}", _unnamed, key_params=(2,)),
+    # The node a Node Registration item registers.
+    37: NamedEffect("Register Node: {name}", full_node_name),
     # Hidden buffs that items used on pickup apply to unlock a knowledge entry.
     38: NamedEffect("Learn Knowledge: {name}", knowledge_name),
     # Accepts quest `param_2` of chain `param_1`: Cartian Spell's "[Co-op]
     # Eliminating the Threats to Mediah will automatically be accepted".
     69: NamedEffect("Accept Quest: {name}", quest_title, key_params=(1, 2)),
+    # [Title] items: "Obtain the Linked Up Morning Light title".
+    142: NamedEffect("Obtain Title: {name}", title_name),
 }
 
 OVER_TIME_EFFECTS: dict[int, OverTimeEffect] = {

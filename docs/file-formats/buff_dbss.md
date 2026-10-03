@@ -26,6 +26,7 @@ buff_id 48830
 | `buffoffset.dbss`     | Required | `buff_id → (offset, size)` index into this file   |
 | `languagedata_en.loc` | Optional | English descriptions, `str_type=5`                |
 | `skill.dbss`, `itemenchant.dbss` | Optional | Applied By and inherited titles, through the `BUFF_ITEMS` and `SKILL_BUFFS` lookup indexes |
+| `exploration.bss`, `mapdata_realexplore2.bwp` | Optional | Sub-node names of type 37 (`Bambu Valley - Mining`), through the `NODE_PARENT` lookup index |
 
 [`buffsimply.bss`](buffsimply_bss.md) holds the same buff IDs in fixed 30-byte
 rows with the icon path, `unknown_str`, `is_shown` and a few stats bytes. It is
@@ -161,7 +162,7 @@ of the buffs that use each value.
 | 1     | 1,662 | HP over time or per trigger                        | `param_1` = HP per tick (`tick_ms`) or per trigger (`condition_type`), signed: positive heals, negative damages |
 | 2     | 443   | Max HP                                             | `param_1` = amount                                   |
 | 18    | 3,386 | Summons                                            | `param_1` = summoned character (LOC type 6 name); see Effect text |
-| 25    | 1,597 | Combat, skill and life EXP gain                    | `param_1` = bonus per million; `param_2` 0 combat, 1 skill, 2 life |
+| 25    | 1,597 | Combat, skill and life EXP gain                    | `param_1` = bonus per million; `param_2` 0 combat, 1 skill, 2 life, 3 party (2 buffs, unlabelled); under 2, `param_3` = life skill as in type 80, `15` all |
 | 34    | 287   | Display buff (title, text and icon)                | All parameters `0` on 228; see Effect text           |
 | 38    | 5,683 | Knowledge unlock                                   | `param_1` = knowledge ID (LOC type 34 name); see Effect text |
 | 39    | 1,732 | All AP, positive or negative                       | `param_1` = `3`, `param_2` = amount                  |
@@ -196,22 +197,32 @@ English text, by item names and bdocodex tooltips (see Effect text).
 | Value | Rows | Effect                        | Parameters                                                        |
 | ----- | ---: | ----------------------------- | ----------------------------------------------------------------- |
 | 4     | 268  | MP/WP/SP over time            | `param_1` per tick, signed; `tick_ms` the interval; `condition_type` `1` = per hit instead. Without either it is a one-off refill, unlabelled (see Effect text) |
+| 23    | 654  | Teleport                      | `param_2` = `teleport.dbss` point, see Effect text; `param_1` `0`, or `5` on boss-room and unstuck teleports (unlabelled) |
 | 29    | 249  | Weight Limit                  | `param_1` in ten-thousandths of an LT (`1000000` = 100 LT)        |
+| 37    | 1,031 | Node registration            | `param_1` = node key (LOC type 29 name); `param_2` `1` on 37 town, city and investment bank nodes, meaning unknown |
 | 50    | 144  | Mount EXP                     | `param_1` per million                                             |
+| 52    | 40   | Fall Damage reduction         | `param_1` per million, stored positive and shown negative (`500000` = `Fall Damage -50%`); `param_2` `1` on one 15 sec buff, meaning unknown |
+| 53    | 9    | Discovery Radius              | `param_1` in centimetres (`1000` = `+10m`); `param_2` `2000` / `4000` on two old grape salads that read `Vision Range Increase`, unlabelled |
 | 57    | 225  | Item Drop Rate                | `param_1` per million; `param_2` `1` or `2` on 6 buffs with the same text, meaning unknown |
+| 59    | 31   | Jump Height                   | `param_1` = amount                                                |
 | 63    | 11   | Worker Stamina recovery       | `param_1` = amount, one-off (`Recover 2 Worker Stamina`)          |
 | 67    | 660  | Stat ranks                    | `param_1` = stat: `0` Movement Speed, `1` Attack Speed, `2` Casting Speed, `3` Critical Hit, `4` Luck, `5` Fishing Speed, `6` Gathering Speed; `param_2` = ranks, can be negative |
 | 69    | 670  | Accept quest                  | `param_1` = quest chain, `param_2` = quest (LOC type 18 title); see Effect text |
 | 79    | 44   | Energy recovery               | `param_1` = amount, one-off (`Recover 10 Energy`); every buff has no duration |
 | 89    | 62   | Breath/Strength/Health EXP    | `param_1` = `0` Breath, `1` Strength, `2` Health; `param_2` = amount |
 | 90    | 42   | Death Penalty Resistance      | `param_1` per million (`30000` = +3%)                             |
+| 91    | 18   | Durability Reduction Resistance | `param_1` per million                                           |
 | 94    | 19   | Max Energy                    | `param_1` = amount                                                |
 | 95    | 22   | Underwater Breathing          | `param_1` in milliseconds (`15000` = +15 sec)                     |
+| 98    | 1,093 | Mount and ship stats         | `param_1` = `0` Acceleration, `1` Movement Speed (shown as `Movement Speed (Mount)`), `2` Turn, `3` Brake; `param_2` per million |
 | 108   | 102  | Knowledge Gain Chance         | `param_1` per million                                             |
 | 109   | 66   | Higher Grade Knowledge Gain Chance | `param_1` per million                                        |
+| 111   | 196  | Craft time and success rate   | `param_1` = `0` Alchemy Time, `1` Cooking Time, `2` Processing Success Rate; `param_2` = time cut per million of 20 sec (`250000` = `-5 sec`), or the rate per million. `3` (farming time, 2 buffs) does not fit the time scale and stays unlabelled |
 | 120   | 116  | Monster Damage Reduction      | `param_1` = `0` rate, `param_2` per million; `param_1` = `2` flat, `param_2` = amount |
 | 136   | 219  | Extra AP Against Monsters / Adventurers | `param_1` = against monsters, `param_2` = against adventurers; no buff sets both |
+| 142   | 673  | Obtain title                  | `param_1` = title ID (LOC type 1 name, `title.dbss` key)         |
 | 149   | 246  | Life skill mastery            | `param_1` = life skill (type 80 numbering), `15` all; `param_3` = amount; `param_2` see below |
+| 187   | 298  | Flat AP and DP                | `param_1` = AP, `param_2` = DP, both can be set; `param_3` = Land of the Morning Light attribute: `0` Sun, `1` Moon, `2` Earth |
 
 The `param_1` life skills of type 80, from the English text of its buffs:
 `0` Gathering, `1` Fishing, `2` Hunting, `3` Cooking, `4` Alchemy, `5`
@@ -234,10 +245,13 @@ The browser's Effect column renders the parameters of every type above in the
 game's wording (`All AP +8`, `Life EXP +15%`, `Alchemy EXP +2,560,350`), from
 `_dbss/buff/effect/`; other types, the kinds left unlabelled and a zero
 amount show a dash. The same entry per type (`formats.py`) labels the Param columns,
-so `param_1` of a type 46 buff reads `3 (Kamasylvian Monsters)`. Of the buffs with a one-line LOC type 5 text, 87% start
-with exactly that text on client 3458. The rest are the drift described in
-Notes (`Weight Limit +100 LT` on a buff that stores 150 LT), a `- Effect:`
-prefix, or placeholder text such as `UNKNOWN` and `Not in Use`.
+so `param_1` of a type 46 buff reads `3 (Kamasylvian Monsters)`. Of the 8,049 buffs with a
+one-line LOC type 5 text and an Effect, 84% start with exactly that text on
+client 3458, and 88% leaving out types 23, 142 and 187, whose texts name the
+place, title or event first (`Morning Earth: AP -60 for 3600 sec`). The rest
+are the drift described in Notes (`Weight Limit +100 LT` on a buff that stores
+150 LT), a `- Effect:` prefix, or placeholder text such as `UNKNOWN` and `Not
+in Use`.
 
 The second table above was checked three ways:
 
@@ -260,6 +274,78 @@ The second table above was checked three ways:
   a 10% type 109 buff, so its name is the stale part. Whale Meat Salad (9456)
   lists only its type 94 `Max Energy +10`, not the type 79 recovery of 10 it
   also applies.
+
+The batch of 2026-10-03 was checked the same three ways:
+
+- **98**, mount and ship stats, on bdocodex: Light Iron Horseshoe (52902)
+  reads `Movement Speed +2%` at +0 (buff 53512, `20000`), Kaia Fishing Boat
+  Prow (49310) `Movement Speed +4%` with an `Acceleration +3%` set effect,
+  Epheria: Old Wind Sail (49757) `Turn +0.5%` (52648, `5000`) and Krogdalo's
+  Stirrups - Wind (52812) `Brake +3%` to `+8%`. Krogdalo's Feathers and the
+  sea crystals word kind 1 as `Speed`; the gear tooltips and the 11 one-line
+  texts read `Movement Speed`, and so does horse gear in game (`Max Stamina
+  +7500, Movement Speed +6%, Turn +3%`). The column writes `Movement Speed
+  (Mount) +2%`, so it does not read like the player's type 9, and the 11 texts
+  then match up to that suffix.
+  The Korean names give the kinds too (가속도, 속도, 회전력, 제동).
+- **187**, flat AP and DP: 256 of the 296 one-line texts contain the
+  rendered amounts (`Morning Earth: AP -60 for 3600 sec`); the rest are
+  prose (`Sun Buff +5`), `UNKNOWN`, or stale (41778 reads `DP -200`, stores
+  `-30`). `param_3` follows the Korean name on all 252 attribute buffs (아침
+  해 / 달 / 땅, "morning sun / moon / earth"); the Morning Light bosses
+  (Duoksini, Bulgasal, Imoogi) store `2`.
+- **53**, Discovery Radius, on bdocodex: Chenga - Sherekhan Tome of Wisdom
+  (12808) reads `+150m` (53476, `15000`), Magic Crystal of Infinity - Vision
+  `+15m` (`1500`), the Magic Crystal of Enchantment - Vision and its Ancient
+  version `+10m` (`1000`). `1999` reads `+20m` in its text and `+19.99m` in
+  the column. Hunter's Clothes (Costume) (14321) lists `Discovery Radius
+  +10m`, `Fall Damage -50%` and `Hunting EXP +10%`, which are its skill's
+  buffs 52021 (type 53), 52023 (type 52) and 56286 (type 25, `param_3` `2`).
+  The same costume line shows on other costumes in game ([Warrior] Red Gat:
+  Song of Red Winds, 604186). `Vision Range` is the old English name of the
+  stat: Magic Crystal of Infinity - Vision read `Vision Range +15m` on older
+  sites (Altar of Gaming) and reads `Discovery Radius +15m` now, on the same
+  type 53 buff, and the type 53 texts that never got updated still say
+  `Increase Vision Range.`
+- **52**, Fall Damage: 19 of 22 one-line texts match; the others are prose
+  (`You won't take fall damage.`) and a placeholder `1`.
+- **59** Jump Height and **91** Durability Reduction Resistance, from the
+  functional costume tooltips (`Jump Height +80`, `Durability Reduction
+  Resistance +10%`): all 19 one-line type 59 texts match, and 8 of 10 type 91
+  (the misses read `Gear Durability Reduction Resistance`, and `+10%` on a
+  buff that stores `999999`).
+- **111**, from the costume tooltips (`Cooking Time -2 sec`) and LOC: 30 of
+  32 one-line texts match (`Alchemy Time -5 sec` on Eileen's Cheer, 48808,
+  `250000`; `Cooking Time -0.3 sec` on `15000`). The misses are 48868, which
+  reads `+5%` while its Korean name and value say `+10%`, and one prose text.
+  The time scale is odd but holds on every English text; the Korean names
+  that give percentages (`연금 시간 -11%`) do not follow any one scale.
+- **25** `param_3`: 205 one-line life EXP texts name the life skill of
+  `param_3` (`Hunting EXP +10%` on `2`, `Life EXP` on `15`), so the column
+  now names it too instead of always `Life EXP`.
+
+Type 142 renders as `Obtain Title: Back Home Again`, from LOC type 1; the
+items that apply it read `Using this item will grant you the Olvium Frontia!
+title` or `Effect: Obtain the ... title`. 53 titles have no LOC name and show
+their ID. Type 37 renders as `Register Node: Bambu Valley - Mining`: LOC type
+29 names a sub-node by its work alone (`Mining`), so the parent node is put in
+front, found as the one node a sub-node links to in the worldmap graph (the
+`NODE_PARENT` index, 465 sub-nodes on client 3458). Of the 1,022 buffs whose
+node has a name, 804 equal the item's own `Node Registration:` name, and the
+rest differ only in wording: the item says `Fish Drying Yard: Taramura Island
+1` or the older `Altas Farm`, the worldmap `Taramura Island - Fish Drying Yard
+1` and `Altas Farmland`. Nine nodes have no LOC name and show their key.
+
+Type 23 renders as `Teleport to point 340`. `teleport.dbss` holds the points:
+18-byte records of `u32 key | u8 | f32 x | f32 y | f32 z | u8`, the first
+section of 426 starting at `+0x08` (the file has more sections, and the
+`teleportoffset.dbss` rows do not line up with the inline keys, so both are
+read by the inline key here). 649 of the 654 `param_2` values are keys of
+that first section, and the points land on the places the English texts name:
+`Footprints: Flower-sunken Swamp`, `Mongryong's Exile` and `Martial God
+Tournament` lie within 1 m of their worldmap node, `Holbon Entrance` 3 m. The
+points have no names, so the column shows the key until the format is
+documented.
 
 Type 38 renders as `Learn Knowledge: Tuntaros`. Its buffs have no text, icon
 or duration and are all hidden; the items that apply them are quest rewards
@@ -399,10 +485,24 @@ their effect is applied outside this table. The Effect column shows a dash.
 
 The type 58 buffs that set `param_1` look like vision range: Sea Bugle
 (58799) and the Ancient Magic Crystal vision effect (50088) store `10` and
-read `Vision Range +10m`, the explorer's clothes (52022) store `500`, and two
-GM and test buffs `1000`. Seven `아이템 획득 증가 이펙트` ("item drop increase
-visual effect") buffs also store `10` with no vision text, so the field and
-its unit stay open.
+read `Vision Range +10m`, Hunter's Clothes (52022, Korean `탐험가 의복`,
+"explorer's clothes") store `500`, and two GM and test buffs `1000`. Seven
+`아이템 획득 증가 이펙트` ("item drop increase visual effect") buffs also store
+`10` with no vision text, so the field and its unit stay open. The tooltips do
+not settle it. `Vision Range` is the old name of Discovery Radius (type 53,
+see Effect text), and the Ancient Magic Crystal of Enchantment - Vision
+(15623) reads `Discovery Radius +10m` on bdocodex while its skill (50268)
+applies only 50088 (type 58, `10`) and All Evasion +12, no type 53 buff. Sea
+Bugle's skill likewise applies only its type 58 `10`. So `param_1` may be the
+same radius in metres, which type 53 stores in centimetres. Against that, the
+Korean names keep two terms apart (type 53 `탐험 발견 거리`, "exploration
+discovery distance"; type 58 `시야 거리`, "sight distance"), Hunter's Clothes
+apply both (type 53 `1000` and type 58 `500`) while listing only `Discovery
+Radius +10m`, and the drop-rate scroll companions store `10` too. The column
+shows a dash until one reading holds for all of them. No in-game check is
+left: the Ancient vision crystal can no longer be obtained, and Sea Bugle is
+not an item a player keeps, so neither can be looked at in the character
+window.
 
 ### `condition_type` (stats block `+0x06`)
 

@@ -6,6 +6,8 @@ from typing import Any
 import pytest
 
 from _bss.exploration.connections import connection_fields
+from _bss.exploration.parser import build_node_parent_index
+from _bwp.waypoint.worldmap import WORLDMAP_FILE
 from tests.framework import (
     DeclaredCountTest,
     HandlerCase,
@@ -161,3 +163,36 @@ def test_connection_names_fall_back_to_loc_then_the_key() -> None:
 def test_node_without_links_has_no_connections() -> None:
     fields = connection_fields(1, {}, {}, lambda key: "")
     assert (fields["connection_keys"], fields["connection_count"], fields["connection_text"]) == ([], 0, "")
+
+
+@pytest.mark.parametrize(
+    ("sub_node", "parent"),
+    [
+        (209, 63),  # Elder's Bridge - Lumbering
+        (401, 301),  # Luciano Pietro Investment Bank, Calpheon
+        (1035, 1012),  # Taramura Island - Fish Drying Yard 1
+    ],
+)
+def test_node_parent_index_names_the_parent_of_a_sub_node(
+    exploration_result: HandlerResult,
+    sub_node: int,
+    parent: int,
+) -> None:
+    source = exploration_result.source
+    index = build_node_parent_index(source.data, source.file(WORLDMAP_FILE))
+    assert index[sub_node] == parent
+
+
+def test_node_parent_index_holds_only_sub_nodes_and_their_links(
+    exploration_result: HandlerResult,
+) -> None:
+    source = exploration_result.source
+    index = build_node_parent_index(source.data, source.file(WORLDMAP_FILE))
+    by_key = {record["node_key"]: record for record in exploration_result.records}
+    for sub_node, parent in index.items():
+        assert by_key[sub_node]["is_sub_node"], sub_node
+        assert by_key[sub_node]["connection_keys"] == [parent], sub_node
+
+
+def test_node_parent_index_is_empty_without_a_graph(exploration_result: HandlerResult) -> None:
+    assert build_node_parent_index(exploration_result.source.data, b"not a graph") == {}

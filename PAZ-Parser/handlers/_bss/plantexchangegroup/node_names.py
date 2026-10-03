@@ -18,15 +18,13 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Mapping
 
-from _common.loc import loc_text
-
-LOC_NODE_NAME = 29
+from _common.node import node_name as loc_node_name
 
 
 def english_group_names(
     zones: Iterable[dict],
     links: Mapping[int, frozenset[int]],
-    node_name: Callable[[int], str] = lambda key: loc_text(LOC_NODE_NAME, key),
+    node_name: Callable[[int], str] = loc_node_name,
 ) -> dict[int, str]:
     """Map each production key to its "parent node - sub-node" name, where unique.
 
