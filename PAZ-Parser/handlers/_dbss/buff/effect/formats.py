@@ -302,16 +302,16 @@ EFFECT_LINES: dict[int, tuple[EffectLine, ...]] = {
 }
 
 
-def _unnamed(_key: int) -> str:
+def _unnamed(*_key: int) -> str:
     """No table names the key yet, so the effect shows the key itself."""
     return ""
 
 NAMED_EFFECTS: dict[int, NamedEffect] = {
     # The summoned character. Siege objects and placed objects are characters too.
     18: NamedEffect("Summon {name}", character_name),
-    # param_2 is a teleport.dbss point, which stores a position but no name.
-    # param_1 is 0, or 5 on boss-room and unstuck teleports; unlabelled.
-    23: NamedEffect("Teleport to point {name}", _unnamed, key_params=(2,)),
+    # A teleport.dbss point: param_1 is its section, param_2 its key within
+    # the section. The file stores a position but no name.
+    23: NamedEffect("Teleport to point {name}", _unnamed, key_params=(1, 2)),
     # The node a Node Registration item registers.
     37: NamedEffect("Register Node: {name}", full_node_name),
     # Hidden buffs that items used on pickup apply to unlock a knowledge entry.

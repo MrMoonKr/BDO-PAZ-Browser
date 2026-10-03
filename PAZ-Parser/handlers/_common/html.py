@@ -98,57 +98,72 @@ def sprite_icon_cell(path: object, region: Sequence[int] | None) -> str:
 IconEntry = tuple[str, str]
 
 # An `icon_label_cell` still waiting for its image; group 1 is the escaped
-# path, group 2 the escaped label.
+# tooltip (the path unless the caller gave one), group 2 the escaped path,
+# group 3 the escaped label.
 PENDING_ICON_LABEL_RE = re.compile(
-    r'<span class="icon-cell icon-label-cell" title="([^"]*)" data-icon-path="\1">'
+    r'<span class="icon-cell icon-label-cell" title="([^"]*)" data-icon-path="([^"]*)">'
     + re.escape(_ICON_PLACEHOLDER)
     + r'<span class="icon-cell-label">([^<]*)</span></span>'
 )
 
 
-def icon_label_cell(path: object, label: str, image_src: str | None = None) -> str:
+def icon_label_cell(
+    path: object,
+    label: str,
+    image_src: str | None = None,
+    tooltip: str | None = None,
+) -> str:
     """An icon with a label after it instead of its path; the label alone without a path.
 
-    The GUI drops the swatch of an icon the client does not ship and keeps the label.
+    The hover text is `tooltip`, else the icon path. The GUI drops the swatch
+    of an icon the client does not ship and keeps the label.
     """
     icon_path = str(path).strip()
     if not icon_path:
-        return e(label)
+        return f'<span title="{e(tooltip)}">{e(label)}</span>' if tooltip else e(label)
 
-    escaped_path = e(icon_path)
     thumb = _ICON_PLACEHOLDER
     if image_src:
         thumb = f'<img class="icon-cell-thumb" src="{e(image_src)}" alt="" loading="lazy">'
 
     return (
-        f'<span class="icon-cell icon-label-cell" title="{escaped_path}" data-icon-path="{escaped_path}">'
+        f'<span class="icon-cell icon-label-cell" title="{e(tooltip or icon_path)}" '
+        f'data-icon-path="{e(icon_path)}">'
         f'{thumb}'
         f'<span class="icon-cell-label">{e(label)}</span>'
         f'</span>'
     )
 
 
-def missing_icon_label_cell(path: object, label: str) -> str:
-    """An `icon_label_cell` whose file the client does not ship: the label, path in the tooltip.
+def missing_icon_label_cell(path: object, label: str, tooltip: str | None = None) -> str:
+    """An `icon_label_cell` whose file the client does not ship: the label, with its tooltip.
 
     Matches what the GUI turns an unresolved `icon_label_cell` into.
     """
-    escaped_path = e(str(path).strip())
+    icon_path = str(path).strip()
     return (
-        f'<span class="icon-cell icon-label-cell icon-cell-missing" title="{escaped_path}" '
-        f'data-icon-path="{escaped_path}">'
+        f'<span class="icon-cell icon-label-cell icon-cell-missing" title="{e(tooltip or icon_path)}" '
+        f'data-icon-path="{e(icon_path)}">'
         f'<span class="icon-cell-label">{e(label)}</span>'
         f'</span>'
     )
 
 
-def icon_list_cell(entries: Sequence[IconEntry], hidden_count: int = 0) -> str:
+def icon_list_cell(
+    entries: Sequence[IconEntry],
+    hidden_count: int = 0,
+    tooltips: Sequence[str] | None = None,
+) -> str:
     """Comma-join `icon_label_cell` entries and count the `hidden_count` not shown.
 
     The list form of `join_limited()`: the caller slices the entries, so icon paths
-    are only looked up for the ones shown.
+    are only looked up for the ones shown. `tooltips`, one per entry, replace
+    the icon path as hover text.
     """
-    shown = ", ".join(icon_label_cell(path, label) for path, label in entries)
+    hover: Sequence[str | None] = tooltips if tooltips is not None else [None] * len(entries)
+    shown = ", ".join(
+        icon_label_cell(path, label, tooltip=tip) for (path, label), tip in zip(entries, hover)
+    )
     if hidden_count <= 0:
         return shown
     return f"{shown}, ... (+{hidden_count})"

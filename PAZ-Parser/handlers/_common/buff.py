@@ -39,10 +39,15 @@ def buff_loc_description(buff_id: int) -> str:
     return "" if text == LOC_NULL else text
 
 
+def buff_first_line(buff_id: int) -> str:
+    """The first line of a buff's LOC type 5 text without tags, or ''."""
+    text = strip_pa_tags(buff_loc_description(buff_id))
+    return text.split("\n", 1)[0].strip()
+
+
 def buff_label(buff_id: int) -> str:
     """Buff ID and the first line of its LOC type 5 text, for buff lists."""
-    text = strip_pa_tags(buff_loc_description(buff_id))
-    first_line = text.split("\n", 1)[0].strip()
+    first_line = buff_first_line(buff_id)
     return f"{buff_id} {first_line}" if first_line else str(buff_id)
 
 

@@ -197,7 +197,7 @@ English text, by item names and bdocodex tooltips (see Effect text).
 | Value | Rows | Effect                        | Parameters                                                        |
 | ----- | ---: | ----------------------------- | ----------------------------------------------------------------- |
 | 4     | 268  | MP/WP/SP over time            | `param_1` per tick, signed; `tick_ms` the interval; `condition_type` `1` = per hit instead. Without either it is a one-off refill, unlabelled (see Effect text) |
-| 23    | 654  | Teleport                      | `param_2` = `teleport.dbss` point, see Effect text; `param_1` `0`, or `5` on boss-room and unstuck teleports (unlabelled) |
+| 23    | 654  | Teleport                      | `param_1` = [teleport.dbss](teleport_dbss.md) section, `param_2` = key within it; see Effect text |
 | 29    | 249  | Weight Limit                  | `param_1` in ten-thousandths of an LT (`1000000` = 100 LT)        |
 | 37    | 1,031 | Node registration            | `param_1` = node key (LOC type 29 name); `param_2` `1` on 37 town, city and investment bank nodes, meaning unknown |
 | 50    | 144  | Mount EXP                     | `param_1` per million                                             |
@@ -336,16 +336,14 @@ rest differ only in wording: the item says `Fish Drying Yard: Taramura Island
 1` or the older `Altas Farm`, the worldmap `Taramura Island - Fish Drying Yard
 1` and `Altas Farmland`. Nine nodes have no LOC name and show their key.
 
-Type 23 renders as `Teleport to point 340`. `teleport.dbss` holds the points:
-18-byte records of `u32 key | u8 | f32 x | f32 y | f32 z | u8`, the first
-section of 426 starting at `+0x08` (the file has more sections, and the
-`teleportoffset.dbss` rows do not line up with the inline keys, so both are
-read by the inline key here). 649 of the 654 `param_2` values are keys of
-that first section, and the points land on the places the English texts name:
-`Footprints: Flower-sunken Swamp`, `Mongryong's Exile` and `Martial God
-Tournament` lie within 1 m of their worldmap node, `Holbon Entrance` 3 m. The
-points have no names, so the column shows the key until the format is
-documented.
+Type 23 renders as `Teleport to point 0/340`, section and key of a
+[teleport.dbss](teleport_dbss.md) point. 652 of the 654 buffs name a point
+that exists (section 0 travel items, section 5 boss rooms and unstuck moves);
+the other two are town return stones on the empty sections 3 and 4. The
+points land on the places the English texts name: `Footprints: Flower-sunken
+Swamp`, `Mongryong's Exile` and `Martial God Tournament` lie within 1 m of
+their worldmap node, `Holbon Entrance` 3 m. The points have no names, so the
+column shows section and key.
 
 Type 38 renders as `Learn Knowledge: Tuntaros`. Its buffs have no text, icon
 or duration and are all hidden; the items that apply them are quest rewards

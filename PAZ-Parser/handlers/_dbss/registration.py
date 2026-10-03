@@ -81,6 +81,7 @@ from .skill.handler import SkillHandler, SkillOffsetHandler
 from .skilltype.handler import SkillTypeHandler
 from .skillsimply.handler import SkillSimplyHandler
 from .skillsimply.parser import parse_skillsimply_offset_rows
+from .teleport.handler import TeleportHandler, TeleportOffsetHandler
 
 
 def register_dbss_handlers() -> None:
@@ -168,3 +169,5 @@ def register_dbss_handlers() -> None:
     register_handler("buff.dbss", BuffHandler())
     register_handler("worldmapmonsteroffset.dbss", WorldMapMonsterOffsetHandler())
     register_handler("worldmapmonster.dbss", WorldMapMonsterHandler())
+    register_handler("teleportoffset.dbss", TeleportOffsetHandler())
+    register_handler("teleport.dbss", TeleportHandler())

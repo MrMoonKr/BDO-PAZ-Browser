@@ -57,6 +57,10 @@ class IndexKind(Enum):
     BUFF_ITEMS = "buff_items"
     # Parent node key of each sub-node (exploration.bss + the worldmap graph).
     NODE_PARENT = "node_parent"
+    # Buff IDs that teleport to a point, by teleport_point_id(section, key).
+    TELEPORT_BUFFS = "teleport_buffs"
+    # Korean names of the teleport buffs, the last fallback for naming a point.
+    TELEPORT_BUFF_NAME_KR = "teleport_buff_name_kr"
 
 
 # kind -> {entity_id: value}

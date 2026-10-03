@@ -29,6 +29,7 @@ from _bwp.waypoint.worldmap import WORLDMAP_FILE
 from _common.lookup_index import IndexKind, LookupValue
 from _dbss.characterobject.parser import build_character_icon_index
 from _dbss.characterstatic.parser import build_knowledge_character_index
+from _dbss.buff.parser import build_teleport_buff_index, build_teleport_buff_name_index
 from _dbss.detail_dialog.parser import build_character_lease_index
 from _dbss.itemenchant.parser import (
     build_buff_item_index,
@@ -69,6 +70,8 @@ PLANTEXCHANGEGROUP = f"{_BINARY}/plantexchangegroup.bss"
 ITEMSUBGROUP = f"{_BINARY}/itemsubgroup.dbss"
 ITEMSUBGROUP_OFFSET = f"{_BINARY}/itemsubgroupoffset.dbss"
 EXPLORATION = f"{_BINARY}/exploration.bss"
+BUFF = f"{_BINARY}/buff.dbss"
+BUFF_OFFSET = f"{_BINARY}/buffoffset.dbss"
 WORLDMAP = f"gamecommondata/waypoint_binary/{WORLDMAP_FILE}"
 
 
@@ -139,6 +142,9 @@ INDEX_SPECS: tuple[IndexSpec, ...] = (
     ),
     # Sub-node -> parent node, so a sub-node reads `Bambu Valley - Mining`.
     IndexSpec(IndexKind.NODE_PARENT, (EXPLORATION, WORLDMAP), build_node_parent_index),
+    # The 654 teleport buffs out of the 12 MB buff.dbss, to name teleport.dbss points.
+    IndexSpec(IndexKind.TELEPORT_BUFFS, (BUFF, BUFF_OFFSET), build_teleport_buff_index),
+    IndexSpec(IndexKind.TELEPORT_BUFF_NAME_KR, (BUFF, BUFF_OFFSET), build_teleport_buff_name_index),
 )
 
 

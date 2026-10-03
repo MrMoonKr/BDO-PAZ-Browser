@@ -102,6 +102,8 @@ All formats are little-endian. Unknown fields are named `unknown_*`.
 | `specialenchantitem.bss` | PABR per-level table of the items whose name or icon changes with enhancement: item key, shown level, icon path and Korean name string indices | [specialenchantitem](file-formats/specialenchantitem_bss.md) | 1 |
 | `stringtable.bss` | Korean source of the keyed UI strings in eight sheets; each key's hash is the LOC type 37 `str_id1` | [stringtable](file-formats/stringtable_bss.md) | 2 |
 | `submenu.bss` | PABR main menu entries grouped by category: position, title UI string key, sprite sheet and icon region | [submenu](file-formats/submenu_bss.md) | 1 |
+| `teleport.dbss` | Teleport buff destinations: sections of 18-byte records, key, section and world position; buff type 23 stores section and key | [teleport](file-formats/teleport_dbss.md) | 2 |
+| `teleportoffset.dbss` | Positional index of the `teleport.dbss` records per section (index, offset, size), not keyed by the record key | [teleport](file-formats/teleport_dbss.md) | 2 |
 | `title.dbss`                       | Title record table (multiple layouts, embedded PAColor text)                                                   | [title](file-formats/title_dbss.md)                                 | 2              |
 | `titlebufflist.dbss`               | Title collection buff rewards (KR text + LOC tooltip match)                                                    | [titlebufflist](file-formats/titlebufflist_dbss.md)                 | 1              |
 | `titlebufflistoffset.dbss`         | Offset index into `titlebufflist.dbss`, maps entry ID → offset/size                                           | [titlebufflist](file-formats/titlebufflist_dbss.md)                 | 1              |

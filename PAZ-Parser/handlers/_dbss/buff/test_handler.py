@@ -382,7 +382,7 @@ def test_korean_title_survives_without_loc() -> None:
         (37, [2070, 0], "Register Node: 2070"),
         (142, [3176, 0], "Obtain Title: 3176"),
         # No table names a teleport point, so it always shows the key.
-        (23, [0, 340], "Teleport to point 340"),
+        (23, [0, 340], "Teleport to point 0/340"),
         # A kind outside the confirmed ones.
         (80, [10, 100], ""),
         # An effect type that is not decoded.
@@ -488,3 +488,22 @@ def test_title_leaders_follow_the_skill_that_applies_them() -> None:
 def test_title_leaders_drop_a_buff_reached_by_two_titles() -> None:
     titles = {1: "Boon", 5: "Meal"}
     assert title_leaders([(1, 2), (5, 2)], titles) == {}
+
+
+def test_teleport_buff_index_follows_section_and_key(buff_result: HandlerResult) -> None:
+    from _common.teleport import teleport_point_id
+    from _dbss.buff.parser import build_teleport_buff_index, build_teleport_buff_name_index
+
+    data, offsets = buff_result.source.data, buff_result.source.file("buffoffset.dbss")
+    index = build_teleport_buff_index(data, offsets)
+    names = build_teleport_buff_name_index(data, offsets)
+
+    # Buff 47341, "Footprints: Flower-sunken Swamp", goes to section 0 key 277.
+    assert 47341 in index[teleport_point_id(0, 277)]
+    teleports = {r["buff_id"]: r for r in buff_result.records if r["effect_type"] == 23}
+    for point_id, buff_ids in index.items():
+        assert list(buff_ids) == sorted(buff_ids)
+        for buff_id in buff_ids:
+            record = teleports[buff_id]
+            assert teleport_point_id(record["param_1"], record["param_2"]) == point_id
+    assert set(names) <= set(teleports)

@@ -60,9 +60,13 @@ def inline_icons(body: str, icon_url: Callable[[str], str | None]) -> str:
         return icon_cell(path, url) if url else missing_icon_cell(path)
 
     def replace_label_cell(match: re.Match[str]) -> str:
-        path, label = html.unescape(match.group(1)), html.unescape(match.group(2))
+        title, path, label = (html.unescape(match.group(n)) for n in (1, 2, 3))
+        # The title is the path unless the handler gave the entry its own tooltip.
+        tooltip = title if title != path else None
         url = icon_url(path)
-        return icon_label_cell(path, label, url) if url else missing_icon_label_cell(path, label)
+        if url:
+            return icon_label_cell(path, label, url, tooltip)
+        return missing_icon_label_cell(path, label, tooltip)
 
     body = PENDING_ICON_CELL_RE.sub(replace_cell, body)
     return PENDING_ICON_LABEL_RE.sub(replace_label_cell, body)

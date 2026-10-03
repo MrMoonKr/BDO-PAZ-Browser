@@ -15,8 +15,9 @@ import struct
 from _common.binary import u16, u32
 from _common.buff import buff_icon_path
 from _common.inline_text import decode_inline_text
-from _common.pabr_offset import PabrOffsetRow
+from _common.pabr_offset import PabrOffsetRow, parse_pabr_offset_rows
 from _common.prefixed_string import read_prefixed_at
+from _common.teleport import TELEPORT_EFFECT_TYPE, teleport_point_id
 
 
 STATS_BLOCK_SIZE = 133
@@ -90,3 +91,27 @@ def parse_buff_records(data: bytes, offset_rows: list[PabrOffsetRow]) -> list[di
     point, so a bad length would silently misread every field after it.
     """
     return [_parse_record(data, row) for row in offset_rows]
+
+
+def _teleport_buffs(data: bytes, offset_data: bytes) -> list[dict]:
+    """The effect type 23 buffs, which name a teleport.dbss section and key."""
+    records = parse_buff_records(data, parse_pabr_offset_rows(offset_data))
+    return [record for record in records if record["effect_type"] == TELEPORT_EFFECT_TYPE]
+
+
+def build_teleport_buff_index(data: bytes, offset_data: bytes) -> dict[int, tuple[int, ...]]:
+    """The `TELEPORT_BUFFS` index: each teleport point to the buffs that go there, by buff ID."""
+    points: dict[int, list[int]] = {}
+    for record in _teleport_buffs(data, offset_data):
+        point_id = teleport_point_id(record["param_1"], record["param_2"])
+        points.setdefault(point_id, []).append(record["buff_id"])
+    return {point_id: tuple(sorted(buff_ids)) for point_id, buff_ids in points.items()}
+
+
+def build_teleport_buff_name_index(data: bytes, offset_data: bytes) -> dict[int, str]:
+    """The `TELEPORT_BUFF_NAME_KR` index: each teleport buff to its Korean name."""
+    return {
+        record["buff_id"]: record["name"].strip()
+        for record in _teleport_buffs(data, offset_data)
+        if record["name"].strip()
+    }

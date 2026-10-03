@@ -1,0 +1,18 @@
+{
+  "offsetColumns": {
+    "section": "Section",
+    "index": "Index",
+    "byteOffset": "Byte Offset",
+    "size": "Size"
+  },
+  "columns": {
+    "section": "Section",
+    "key": "Key",
+    "x": "X",
+    "y": "Y",
+    "z": "Z",
+    "nearestNode": "Nearest Node",
+    "distance": "Distance (m)",
+    "usedBy": "Used By"
+  }
+}

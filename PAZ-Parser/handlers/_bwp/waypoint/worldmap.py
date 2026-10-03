@@ -11,7 +11,7 @@ from collections.abc import Mapping
 
 from bdo_models import PazEntry
 
-from .parser import is_waypoint_graph, neighbours, parse_waypoint_graph
+from .parser import Waypoint, is_waypoint_graph, neighbours, parse_waypoint_graph
 
 
 WORLDMAP_FILE = "mapdata_realexplore2.bwp"
@@ -30,3 +30,11 @@ def worldmap_links(companions: Mapping[str, bytes]) -> dict[int, frozenset[int]]
     if worldmap is None or not is_waypoint_graph(worldmap):
         return {}
     return neighbours(parse_waypoint_graph(worldmap))
+
+
+def worldmap_waypoints(companions: Mapping[str, bytes]) -> tuple[Waypoint, ...]:
+    """Every worldmap node with its position; empty when the graph is missing or not PABR."""
+    worldmap = companions.get(WORLDMAP_FILE)
+    if worldmap is None or not is_waypoint_graph(worldmap):
+        return ()
+    return parse_waypoint_graph(worldmap).waypoints

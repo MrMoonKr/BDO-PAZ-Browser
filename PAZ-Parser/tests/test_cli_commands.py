@@ -153,3 +153,14 @@ def test_standalone_page_carries_the_app_table_css() -> None:
     assert ".data-table" in page
     assert "--surface2" in page
     assert '<div id="preview-content"><table class="data-table"></table></div>' in page
+
+
+def test_inline_icons_keeps_a_list_entry_tooltip() -> None:
+    found, missing = "ui/icon/found.dds", "ui/icon/missing.dds"
+    icons = {found: "data:image/png;base64,AA"}
+    body = f"{icon_label_cell(found, 'Sap', tooltip='Buff 1')}, {icon_label_cell(missing, 'Knot', tooltip='Buff 2')}"
+
+    result = inline_icons(body, icons.get)
+
+    assert icon_label_cell(found, "Sap", "data:image/png;base64,AA", "Buff 1") in result
+    assert missing_icon_label_cell(missing, "Knot", "Buff 2") in result

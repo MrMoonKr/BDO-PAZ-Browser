@@ -933,6 +933,8 @@ IDs (`LookupValue`).
 | `SKILL_BUFFS`    | `skill.dbss`, `skilloffset.dbss`           | buff IDs (tuple) |
 | `BUFF_ITEMS`     | `itemenchant.dbss`, `itemenchantoffset.dbss`, `skill.dbss`, `skilloffset.dbss` | item IDs (tuple) |
 | `NODE_PARENT`    | `exploration.bss`, `mapdata_realexplore2.bwp` | parent node key |
+| `TELEPORT_BUFFS` | `buff.dbss`, `buffoffset.dbss`             | buff IDs (tuple) |
+| `TELEPORT_BUFF_NAME_KR` | `buff.dbss`, `buffoffset.dbss`      | Korean buff name |
 
 `CHARACTER_ITEM` maps a character to the one base item that places or summons
 it (`character_id` at `+0xAA` in
@@ -1040,6 +1042,15 @@ a sub-node `Bambu Valley - Mining` where LOC type 29 alone says `Mining`; the
 in the same module is the plain LOC type 29 name the node tables show. It is
 built by `build_node_parent_index()` in `_bss/exploration/parser.py`.
 
+`TELEPORT_BUFFS` maps a [teleport.dbss](file-formats/teleport_dbss.md) point
+to the effect type 23 buffs that go there, and `TELEPORT_BUFF_NAME_KR` maps
+those buffs to their Korean names; the point ID packs section and key
+(`teleport_point_id()` in `_common/teleport.py`, which also reads both
+indexes). The `teleport.dbss` Used By column names each buff by its item
+(`BUFF_ITEMS`), else its LOC type 5 text, else the Korean name. Both are built
+in `_dbss/buff/parser.py` and keep only the 654 teleport buffs, so the table
+does not open the 12 MB `buff.dbss`.
+
 ---
 
 ## Icons
@@ -1056,7 +1067,10 @@ the ones shown and passes the count of the rest, so icon paths are looked up
 for one page of entries only. An entry without a path is its label alone. When
 the client does not ship an entry's icon, the GUI and `browser.py --render`
 drop the swatch and keep the label, where a plain icon cell becomes a dash.
-Records keep the plain names (`items`) for search, sort and CSV.
+Records keep the plain names (`items`) for search, sort and CSV. The hover
+text of an entry is its icon path; pass `tooltips` (one string per shown
+entry) to replace it, as the `teleport.dbss` Used By column does with the
+buff IDs behind each name. `browser.py --render` keeps those tooltips.
 
 The backend turns the file into a 64 x 64 PNG thumbnail
 (`api/bdo_icon_images.py`). Uncompressed 32-bit BGRA DDS files are wrapped
