@@ -29,11 +29,11 @@ def truncate(text: str, max_len: int) -> str:
     return text if len(text) <= max_len else text[:max_len] + "…"
 
 
-def join_limited(values: Sequence[str], max_items: int) -> str:
-    """Comma-join the first `max_items` values and count the rest, for list cells."""
+def join_limited(values: Sequence[str], max_items: int, separator: str = ", ") -> str:
+    """Join the first `max_items` values (comma-separated by default) and count the rest, for list cells."""
     if len(values) <= max_items:
-        return ", ".join(values)
-    return ", ".join(values[:max_items]) + f", ... (+{len(values) - max_items})"
+        return separator.join(values)
+    return separator.join(values[:max_items]) + f"{separator}... (+{len(values) - max_items})"
 
 
 def flag_cell(is_set: bool) -> str:
@@ -44,6 +44,14 @@ def flag_cell(is_set: bool) -> str:
 # The swatch an icon cell shows until the GUI (ui/js/features/table.js) or
 # `browser.py --render` swaps in the image.
 _ICON_PLACEHOLDER = '<span class="icon-cell-thumb icon-cell-placeholder" aria-hidden="true"></span>'
+
+
+def _icon_thumb(image_src: str | None) -> str:
+    """The loaded image, or the placeholder swatch without `image_src`."""
+    if not image_src:
+        return _ICON_PLACEHOLDER
+    return f'<img class="icon-cell-thumb" src="{e(image_src)}" alt="" loading="lazy">'
+
 
 # An `icon_cell` still waiting for its image; group 1 is the escaped path.
 PENDING_ICON_CELL_RE = re.compile(
@@ -59,13 +67,9 @@ def icon_cell(path: object, image_src: str | None = None) -> str:
         return "-"
 
     escaped_path = e(icon_path)
-    thumb = _ICON_PLACEHOLDER
-    if image_src:
-        thumb = f'<img class="icon-cell-thumb" src="{e(image_src)}" alt="" loading="lazy">'
-
     return (
         f'<span class="icon-cell" title="{escaped_path}" data-icon-path="{escaped_path}">'
-        f'{thumb}'
+        f'{_icon_thumb(image_src)}'
         f'<span class="icon-cell-path">{escaped_path}</span>'
         f'</span>'
     )
@@ -97,14 +101,33 @@ def sprite_icon_cell(path: object, region: Sequence[int] | None) -> str:
 # `(icon_path, label)` of one entry in an icon list cell.
 IconEntry = tuple[str, str]
 
-# An `icon_label_cell` still waiting for its image; group 1 is the escaped
-# tooltip (the path unless the caller gave one), group 2 the escaped path,
-# group 3 the escaped label.
+_ICON_LABEL_CLASSES = "icon-cell icon-label-cell"
+
+# The head of an `icon_label_cell` still waiting for its image, up to its
+# swatch; the label after it can hold markup (game text colours) and is left
+# alone, as the GUI (ui/js/features/table.js) leaves it. Group 1 is the
+# escaped tooltip (the path unless the caller gave one), group 2 the escaped
+# path.
 PENDING_ICON_LABEL_RE = re.compile(
-    r'<span class="icon-cell icon-label-cell" title="([^"]*)" data-icon-path="([^"]*)">'
+    rf'<span class="{_ICON_LABEL_CLASSES}" title="([^"]*)" data-icon-path="([^"]*)">'
     + re.escape(_ICON_PLACEHOLDER)
-    + r'<span class="icon-cell-label">([^<]*)</span></span>'
 )
+
+
+def _icon_label_open(icon_path: str, tooltip: str | None, is_missing: bool = False) -> str:
+    classes = f"{_ICON_LABEL_CLASSES} icon-cell-missing" if is_missing else _ICON_LABEL_CLASSES
+    return f'<span class="{classes}" title="{e(tooltip or icon_path)}" data-icon-path="{e(icon_path)}">'
+
+
+def resolved_icon_label_head(path: str, tooltip: str | None, image_src: str | None) -> str:
+    """What a `PENDING_ICON_LABEL_RE` head becomes once its icon is looked up.
+
+    With `image_src`, the image; without, the head marked missing and no
+    swatch, as the GUI does for an icon the client does not ship.
+    """
+    if image_src:
+        return _icon_label_open(path, tooltip) + _icon_thumb(image_src)
+    return _icon_label_open(path, tooltip, is_missing=True)
 
 
 def icon_label_cell(
@@ -118,33 +141,24 @@ def icon_label_cell(
     The hover text is `tooltip`, else the icon path. The GUI drops the swatch
     of an icon the client does not ship and keeps the label.
     """
+    return icon_html_label_cell(path, e(label), image_src, tooltip)
+
+
+def icon_html_label_cell(
+    path: object,
+    label_html: str,
+    image_src: str | None = None,
+    tooltip: str | None = None,
+) -> str:
+    """`icon_label_cell` with a label that is already safe HTML, such as `pa_html()` text."""
     icon_path = str(path).strip()
     if not icon_path:
-        return f'<span title="{e(tooltip)}">{e(label)}</span>' if tooltip else e(label)
-
-    thumb = _ICON_PLACEHOLDER
-    if image_src:
-        thumb = f'<img class="icon-cell-thumb" src="{e(image_src)}" alt="" loading="lazy">'
+        return f'<span title="{e(tooltip)}">{label_html}</span>' if tooltip else label_html
 
     return (
-        f'<span class="icon-cell icon-label-cell" title="{e(tooltip or icon_path)}" '
-        f'data-icon-path="{e(icon_path)}">'
-        f'{thumb}'
-        f'<span class="icon-cell-label">{e(label)}</span>'
-        f'</span>'
-    )
-
-
-def missing_icon_label_cell(path: object, label: str, tooltip: str | None = None) -> str:
-    """An `icon_label_cell` whose file the client does not ship: the label, with its tooltip.
-
-    Matches what the GUI turns an unresolved `icon_label_cell` into.
-    """
-    icon_path = str(path).strip()
-    return (
-        f'<span class="icon-cell icon-label-cell icon-cell-missing" title="{e(tooltip or icon_path)}" '
-        f'data-icon-path="{e(icon_path)}">'
-        f'<span class="icon-cell-label">{e(label)}</span>'
+        f'{_icon_label_open(icon_path, tooltip)}'
+        f'{_icon_thumb(image_src)}'
+        f'<span class="icon-cell-label">{label_html}</span>'
         f'</span>'
     )
 
@@ -160,9 +174,20 @@ def icon_list_cell(
     are only looked up for the ones shown. `tooltips`, one per entry, replace
     the icon path as hover text.
     """
+    escaped = [(path, e(label)) for path, label in entries]
+    return icon_html_list_cell(escaped, hidden_count, tooltips)
+
+
+def icon_html_list_cell(
+    entries: Sequence[IconEntry],
+    hidden_count: int = 0,
+    tooltips: Sequence[str] | None = None,
+) -> str:
+    """`icon_list_cell` with labels that are already safe HTML, such as `pa_html()` text."""
     hover: Sequence[str | None] = tooltips if tooltips is not None else [None] * len(entries)
     shown = ", ".join(
-        icon_label_cell(path, label, tooltip=tip) for (path, label), tip in zip(entries, hover)
+        icon_html_label_cell(path, label_html, tooltip=tip)
+        for (path, label_html), tip in zip(entries, hover)
     )
     if hidden_count <= 0:
         return shown

@@ -28,8 +28,9 @@ def ui_key_hashes(stringtable: bytes | None, sheets: Iterable[str]) -> dict[str,
     return parse_sheet_key_hashes(stringtable, [s for s in sheets if s in SHEET_LOC_ID2])
 
 
-def ui_hash_text(sheet: str, key_hash: int) -> str:
-    """LOC type 37 text of a key hash in a sheet, or '' when the sheet or text is missing.
+def ui_hash_tagged(sheet: str, key_hash: int) -> str:
+    """LOC type 37 text of a key hash in a sheet with its PA tags, or '' when the
+    sheet or text is missing.
 
     Tries LOC `str_id3` 0 first, then the variant 1 that some keys only have.
     """
@@ -39,8 +40,13 @@ def ui_hash_text(sheet: str, key_hash: int) -> str:
     for variant in _LOC_VARIANTS:
         text = loc_lookup(LOC_UI_STRING, key_hash, loc_id2, variant)
         if text:
-            return strip_pa_tags(text).strip()
+            return text.strip()
     return ""
+
+
+def ui_hash_text(sheet: str, key_hash: int) -> str:
+    """`ui_hash_tagged` without its PA tags."""
+    return strip_pa_tags(ui_hash_tagged(sheet, key_hash)).strip()
 
 
 def ui_key_text(hashes: KeyHashes, sheet: str, key: str) -> str:

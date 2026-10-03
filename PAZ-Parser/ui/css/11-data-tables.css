@@ -197,3 +197,12 @@ th.sort-pending::after {
 .pa-tag {
   color: var(--fg-dim);
 }
+
+/* A hunting ground tag as the drop item window draws it: a pill tinted with
+   the tag colour, inline styles from dropuitaginfo.bss */
+.tag-chip {
+  display: inline-block;
+  padding: 0 7px;
+  border-radius: 999px;
+  line-height: 1.5;
+}

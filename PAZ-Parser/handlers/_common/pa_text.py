@@ -9,7 +9,7 @@ goes back to the previous one, so colours nest as a stack.
   shows every tag as dimmed text.
 - `argb_css()` turns one ARGB value into a CSS colour, also for colours stored
   as u32s rather than in tag text (`dropuitaginfo.bss`).
-- `pa_fields()` / `pa_cell()` are the record side: a plain field for search,
+- `pa_fields()` / `pa_list_fields()` / `pa_cell()` are the record side: a plain field for search,
   sort and CSV next to its tagged copy (`_description_pa`) for the cell. See
   "Display-Only Fields" in docs/handler.md.
 
@@ -53,11 +53,12 @@ def strip_pa_tags(raw: str) -> str:
     return _PA_TAG_RE.sub("", raw)
 
 
-def argb_css(argb: int) -> str:
+def argb_css(argb: int, alpha_scale: float = 1.0) -> str:
     """CSS colour of an ARGB value: `0xffe9bd23` -> `rgba(233, 189, 35, 1)`.
 
     Alpha is kept, so the few non-opaque game colours draw partly transparent
-    as in game. Raises ValueError outside 0 to 0xFFFFFFFF.
+    as in game. `alpha_scale` multiplies it, for a colour the game uses to tint
+    a translucent texture. Raises ValueError outside 0 to 0xFFFFFFFF.
     """
     if isinstance(argb, bool) or not 0 <= argb <= _MAX_ARGB:
         raise ValueError(f"ARGB value out of range: {argb!r}")
@@ -65,7 +66,7 @@ def argb_css(argb: int) -> str:
     red = (argb >> 16) & 0xFF
     green = (argb >> 8) & 0xFF
     blue = argb & 0xFF
-    return f"rgba({red}, {green}, {blue}, {alpha / _ALPHA_MAX:.3g})"
+    return f"rgba({red}, {green}, {blue}, {alpha / _ALPHA_MAX * alpha_scale:.3g})"
 
 
 def pa_html(raw: str, *, colors: bool = True, max_chars: int | None = None) -> str:
@@ -133,6 +134,11 @@ def pa_key(field: str) -> str:
 def pa_fields(field: str, raw: str) -> dict[str, str]:
     """`field` as plain text and its tagged copy for the cell, to merge into a record."""
     return {field: strip_pa_tags(raw).strip(), pa_key(field): raw}
+
+
+def pa_list_fields(field: str, raws: Sequence[str]) -> dict[str, list[str]]:
+    """`pa_fields` for a list: the plain texts under `field`, the tagged ones under `pa_key(field)`."""
+    return {field: [strip_pa_tags(raw).strip() for raw in raws], pa_key(field): list(raws)}
 
 
 def pa_cell(record: dict, field: str, max_chars: int | None = None) -> str:

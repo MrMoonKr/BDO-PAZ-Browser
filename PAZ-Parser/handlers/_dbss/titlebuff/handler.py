@@ -5,10 +5,10 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.loc import strip_pa_tags
 from _common.binary import parse_offset_table
 from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
+from _common.pa_text import pa_cell, pa_fields
 from .parser import extract_titlebuff_records, find_title_effects_en
 
 
@@ -61,7 +61,6 @@ class TitleBuffListHandler(PreviewHandler):
             Column(cols.get("level", "Level"), "num", sort_key="level"),
             Column(cols.get("requiredTitles", "Required Titles"), "num", sort_key="required_titles"),
             Column(cols.get("text", "Text"), sort_key="text"),
-            Column(cols.get("offset", "Offset"), "num", sort_key="offset"),
         ]
 
     def sortable_fields(self) -> frozenset[str]:
@@ -92,7 +91,7 @@ class TitleBuffListHandler(PreviewHandler):
             result.append({
                 "level": debug_u32["u32_00"] + 1,
                 "required_titles": required_titles,
-                "text": strip_pa_tags(en_effects.get(required_titles, "")),
+                **pa_fields("text", en_effects.get(required_titles, "")),
                 "offset": rec["offset"],
             })
 
@@ -115,8 +114,7 @@ class TitleBuffListHandler(PreviewHandler):
             rows.append([
                 e(r["level"]),
                 e(r["required_titles"]),
-                e(r["text"]) if r["text"] else "-",
-                e(f"0x{r['offset']:08X}"),
+                pa_cell(r, "text"),
             ])
 
         return table(meta, self._columns(), rows)

@@ -208,7 +208,7 @@ names all 45 plus a key 46 with the same `#DivineAuthority` text as 45.
 | Monsters    | text | Monster names (LOC type 6)                                                  |
 | Items       | text | Icon and name (LOC type 0) of each item, through `item_key_list_cell()`      |
 | Quests      | text | Repeat and sudden quest titles (LOC type 18)                                |
-| Tags        | text | Tag names (LOC type 117); the `dropuitaginfo.bss` colours are not drawn yet |
+| Tags        | text | Tag names (LOC type 117), each a pill in its `dropuitaginfo.bss` colours as in game; plain names without that file |
 | Titles      | text | Title names (LOC type 1)                                                    |
 | Species     | text | `tribe_type` as `{value} {label}` (`1 Demihumans`); the label from LOC type 37, falling back to the enum name (`1 NonHuman`) |
 
@@ -250,4 +250,11 @@ The position and region keys stay on the record but out of the table.
   [bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor)
   (`DecodeTags`: `+0x18` texture, `+0x1C` font) and fits the data: wherever
   the two differ, `+0x1C` is the lighter shade, as text on a tinted
-  background would be. The getters alone do not show the order.
+  background would be. The getters alone do not show the order; the game
+  confirms it: on Aakman, `#Knockdown/Bound` is orange text on a brown pill.
+- The tag control's texture (`StaticText_Tag_Templete` in
+  `ui_data/window/dropitem/panel_window_dropitem_all_renew.xml`) is
+  `Combine_Etc_DropItem_Tag_BG`, a pill in `combine/etc/combine_etc_dropitem.dds`
+  (UV 128,314 to 228,339) that is white at alpha 51. `SetColor` tints it, so
+  the background shows `texture_color` at about 20% over the window, and a
+  tag whose two colours are equal (34 of 45) still reads.

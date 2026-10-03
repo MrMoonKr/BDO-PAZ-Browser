@@ -9,7 +9,7 @@ from _common.character import character_name
 from _common.html import Column, e, join_limited, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup
-from _common.pa_text import pa_fields, pa_html, pa_key, pa_list_cell, strip_pa_tags
+from _common.pa_text import pa_fields, pa_html, pa_key, pa_list_cell, pa_list_fields, strip_pa_tags
 from .lease import lease_text
 from .parser import DialogRecord, parse_detail_dialog_offset_rows, parse_detail_dialog_records, split_key
 
@@ -58,8 +58,7 @@ def _record_dict(record: DialogRecord, has_loc: bool) -> dict:
         # User language first, the Korean source as fallback.
         **pa_fields("greeting", _dialog_text(record, record.text_id, _FIELD_GREETING, has_loc) or record.greeting),
         "option_count": len(record.options),
-        "option_titles": [strip_pa_tags(title).strip() for title in option_titles],
-        pa_key("option_titles"): option_titles,
+        **pa_list_fields("option_titles", option_titles),
         "leases": [lease_text(lease, has_loc) for lease in found],
         "lease_item_ids": [lease.item_id for lease in found],
     }

@@ -9,6 +9,7 @@ from tests.framework import (
     DeclaredCountTest,
     HandlerCase,
     HandlerResult,
+    PaFieldTest,
     SchemaTest,
     TargetTest,
     case_id,
@@ -29,6 +30,8 @@ CASE = HandlerCase(
         SchemaTest(required_keys=["slot", "packed_quest_id", "quest_chain_id", "quest_id", "title"]),
         # The u32 count after the PABR magic.
         DeclaredCountTest(declared=header_count(offset=4)),
+        # Academy and event quests carry a coloured `[Olvia Academy]` prefix.
+        PaFieldTest(field="title"),
         TargetTest(
             col="packed_quest_id",
             value=1050655,

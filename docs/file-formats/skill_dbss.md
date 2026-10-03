@@ -180,9 +180,9 @@ and starts with event skills.
 | Cooldown    | num  | `cooldown_ms` as a duration (`8s`, `13.5s`, `30m`); empty when `0`; sorts by `cooldown_ms` |
 | Resource    | num  | `resource_cost` (MP or WP, by class); empty when `0`                  |
 | Stamina     | num  | `stamina_cost`; empty when `0`                                        |
-| Buffs       | list | `buff_ids` as the buff icon (`IconKind.BUFF`), buff ID and the first line of its LOC type `5` text; sorts by count |
-| Next Skills | list | `next_skill_keys` as skill names                                      |
-| Base Skill  | text | `base_skill_keys` as skill name                                       |
+| Buffs       | list | `buff_ids` as the buff icon (`IconKind.BUFF`), buff ID and the first line of its LOC type `5` text in its game colours; sorts by count |
+| Next Skills | list | `next_skill_keys` as skill names, in their game colours (Prime skills orange) |
+| Base Skill  | text | `base_skill_keys` as skill name, in its game colours                  |
 | Script      | text | `script`                                                              |
 
 ---

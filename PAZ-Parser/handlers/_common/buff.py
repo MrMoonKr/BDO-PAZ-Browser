@@ -11,9 +11,10 @@ from __future__ import annotations
 import re
 from collections.abc import Sequence
 
-from _common.html import icon_list_cell
+from _common.html import icon_html_list_cell
 from _common.icon_index import IconKind, icon_path
-from _common.loc import LOC_NULL, loc_lookup, strip_pa_tags
+from _common.loc import LOC_NULL, loc_lookup
+from _common.pa_text import pa_html, strip_pa_tags
 
 # Stored paths start at "New_Icon/", which lives under ui_texture/icon/.
 BUFF_ICON_ROOT = "ui_texture/icon/"
@@ -39,10 +40,14 @@ def buff_loc_description(buff_id: int) -> str:
     return "" if text == LOC_NULL else text
 
 
+def _tagged_first_line(buff_id: int) -> str:
+    """The first line of a buff's LOC type 5 text with its PA tags, or ''."""
+    return buff_loc_description(buff_id).split("\n", 1)[0].strip()
+
+
 def buff_first_line(buff_id: int) -> str:
     """The first line of a buff's LOC type 5 text without tags, or ''."""
-    text = strip_pa_tags(buff_loc_description(buff_id))
-    return text.split("\n", 1)[0].strip()
+    return strip_pa_tags(_tagged_first_line(buff_id)).strip()
 
 
 def buff_label(buff_id: int) -> str:
@@ -51,8 +56,16 @@ def buff_label(buff_id: int) -> str:
     return f"{buff_id} {first_line}" if first_line else str(buff_id)
 
 
+def buff_label_html(buff_id: int) -> str:
+    """`buff_label` as HTML, the first line in its game colours."""
+    tagged = _tagged_first_line(buff_id)
+    if not strip_pa_tags(tagged).strip():
+        return str(buff_id)
+    return f"{buff_id} {pa_html(tagged)}"
+
+
 def buff_list_cell(buff_ids: Sequence[int], max_items: int) -> str:
-    """The first `max_items` buffs, each with its icon, and a count of the rest."""
+    """The first `max_items` buffs, each with its icon and coloured label, and a count of the rest."""
     shown = buff_ids[:max_items]
-    entries = [(icon_path(IconKind.BUFF, buff_id), buff_label(buff_id)) for buff_id in shown]
-    return icon_list_cell(entries, len(buff_ids) - len(shown))
+    entries = [(icon_path(IconKind.BUFF, buff_id), buff_label_html(buff_id)) for buff_id in shown]
+    return icon_html_list_cell(entries, len(buff_ids) - len(shown))

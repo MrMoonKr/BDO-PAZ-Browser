@@ -6,6 +6,7 @@ from typing import Any
 import pytest
 
 from _common.lookup_index import IndexKind
+from _common.pa_text import pa_key, strip_pa_tags
 from tests.framework import (
     DeclaredCountTest,
     HandlerCase,
@@ -166,6 +167,14 @@ def test_build_skill_buff_index_keeps_slot_order() -> None:
     assert all(index.values())
 
 
+def test_next_skills_keep_their_game_colours(skill_result: HandlerResult) -> None:
+    """Prime skills are orange in LOC, also where another skill lists them as next."""
+    tagged_key = pa_key("next_skills")
+    for record in skill_result.records:
+        assert record["next_skills"] == [strip_pa_tags(label).strip() for label in record[tagged_key]]
+    assert any("<PAColor" in label for record in skill_result.records for label in record[tagged_key])
+
+
 def test_buff_list_cell_draws_buff_icons() -> None:
     from _common.buff import buff_list_cell
     from _common.lookup_index import init_index
@@ -181,3 +190,18 @@ def test_buff_list_cell_draws_buff_icons() -> None:
     # Buffs without an icon keep their label; the hidden rest is counted.
     assert "48724" in cell and "48726" not in cell
     assert cell.endswith("(+1)")
+
+
+def test_buff_list_cell_draws_labels_in_game_colours(monkeypatch: pytest.MonkeyPatch) -> None:
+    from _common import buff
+
+    texts = {1: "<PAColor0xffe9bd23>Sap & Knot<PAOldColor>\nsecond line", 2: ""}
+    monkeypatch.setattr(buff, "loc_lookup", lambda _type, buff_id: texts[buff_id])
+
+    cell = buff.buff_list_cell([1, 2], 2)
+
+    assert '1 <span class="pa-color" style="color: rgba(233, 189, 35, 1)">Sap &amp; Knot</span>' in cell
+    assert "second line" not in cell and "PAColor" not in cell
+    # The plain label for records and CSV keeps no markup.
+    assert buff.buff_label(1) == "1 Sap & Knot"
+    assert buff.buff_label_html(2) == "2"

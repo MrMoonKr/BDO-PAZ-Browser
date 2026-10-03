@@ -13,9 +13,9 @@ from _common.html import (
     PENDING_ICON_CELL_RE,
     PENDING_ICON_LABEL_RE,
     icon_cell,
+    icon_html_label_cell,
     icon_label_cell,
     missing_icon_cell,
-    missing_icon_label_cell,
 )
 from _common.lookup_index import IndexKind, clear_indexes, init_index
 
@@ -130,8 +130,16 @@ def test_inline_icons_embeds_found_icons_and_dashes_missing_ones() -> None:
 def test_pending_label_pattern_matches_icon_label_cell() -> None:
     path, label = 'ui/icon/a"&<b.dds', "Sap & <Knot>"
 
-    assert PENDING_ICON_LABEL_RE.fullmatch(icon_label_cell(path, label))
+    assert PENDING_ICON_LABEL_RE.match(icon_label_cell(path, label))
     assert not PENDING_ICON_LABEL_RE.search(icon_label_cell(path, label, "data:image/png;base64,AA"))
+
+
+def _missing_label_entry(path: str, label: str, tooltip: str | None = None) -> str:
+    """What the GUI turns an unshipped `icon_label_cell` into: no swatch, label kept."""
+    return (
+        f'<span class="icon-cell icon-label-cell icon-cell-missing" title="{tooltip or path}" '
+        f'data-icon-path="{path}"><span class="icon-cell-label">{label}</span></span>'
+    )
 
 
 def test_inline_icons_keeps_the_label_of_a_missing_list_entry() -> None:
@@ -142,8 +150,20 @@ def test_inline_icons_keeps_the_label_of_a_missing_list_entry() -> None:
     result = inline_icons(body, icons.get)
 
     assert icon_label_cell(found, "Sap", "data:image/png;base64,AA") in result
-    assert missing_icon_label_cell(missing, "Knot & Bark") in result
+    assert _missing_label_entry(missing, "Knot &amp; Bark") in result
     assert "icon-cell-placeholder" not in result
+
+
+def test_inline_icons_keeps_a_coloured_label_intact() -> None:
+    found, missing = "ui/icon/found.dds", "ui/icon/missing.dds"
+    icons = {found: "data:image/png;base64,AA"}
+    label = '1 <span class="pa-color" style="color: red">Sap</span> &amp; Knot'
+    body = f"{icon_html_label_cell(found, label)}, {icon_html_label_cell(missing, label)}"
+
+    result = inline_icons(body, icons.get)
+
+    assert icon_html_label_cell(found, label, "data:image/png;base64,AA") in result
+    assert _missing_label_entry(missing, label) in result
 
 
 def test_standalone_page_carries_the_app_table_css() -> None:
@@ -163,4 +183,4 @@ def test_inline_icons_keeps_a_list_entry_tooltip() -> None:
     result = inline_icons(body, icons.get)
 
     assert icon_label_cell(found, "Sap", "data:image/png;base64,AA", "Buff 1") in result
-    assert missing_icon_label_cell(missing, "Knot", "Buff 2") in result
+    assert _missing_label_entry(missing, "Knot", "Buff 2") in result

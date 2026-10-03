@@ -6,7 +6,6 @@
   "columns": {
     "level": "Level",
     "requiredTitles": "Required Titles",
-    "text": "Text",
-    "offset": "Offset"
+    "text": "Text"
   }
 }

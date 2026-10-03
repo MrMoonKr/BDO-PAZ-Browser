@@ -132,8 +132,7 @@ Recommended lookup:
 | --------------- | --------------------------------------------------------- |
 | Level           | `internal_id + 1`                                         |
 | Required Titles | `required_titles`                                         |
-| Text            | Parsed from `languagedata_en.loc` by required title count |
-| Offset          | From offset file                                          |
+| Text            | Parsed from `languagedata_en.loc` by required title count, values in their game colours |
 
 ---
 

@@ -18,9 +18,8 @@ from _common.html import (
     PENDING_ICON_CELL_RE,
     PENDING_ICON_LABEL_RE,
     icon_cell,
-    icon_label_cell,
     missing_icon_cell,
-    missing_icon_label_cell,
+    resolved_icon_label_head,
 )
 
 from .errors import CliError
@@ -51,25 +50,23 @@ def app_stylesheet() -> str:
 def inline_icons(body: str, icon_url: Callable[[str], str | None]) -> str:
     """Swap each pending icon cell for its image, or a dash when not shipped.
 
-    A list entry keeps its label without an image. `icon_url` returns a data URL
-    for an icon path, or None when not shipped.
+    A list entry keeps its label, markup included, and loses only the swatch
+    when not shipped. `icon_url` returns a data URL for an icon path, or None
+    when not shipped.
     """
     def replace_cell(match: re.Match[str]) -> str:
         path = html.unescape(match.group(1))
         url = icon_url(path)
         return icon_cell(path, url) if url else missing_icon_cell(path)
 
-    def replace_label_cell(match: re.Match[str]) -> str:
-        title, path, label = (html.unescape(match.group(n)) for n in (1, 2, 3))
+    def replace_label_head(match: re.Match[str]) -> str:
+        title, path = (html.unescape(match.group(n)) for n in (1, 2))
         # The title is the path unless the handler gave the entry its own tooltip.
         tooltip = title if title != path else None
-        url = icon_url(path)
-        if url:
-            return icon_label_cell(path, label, url, tooltip)
-        return missing_icon_label_cell(path, label, tooltip)
+        return resolved_icon_label_head(path, tooltip, icon_url(path))
 
     body = PENDING_ICON_CELL_RE.sub(replace_cell, body)
-    return PENDING_ICON_LABEL_RE.sub(replace_label_cell, body)
+    return PENDING_ICON_LABEL_RE.sub(replace_label_head, body)
 
 
 def standalone_page(title: str, note: str, body: str, css: str) -> str:

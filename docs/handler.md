@@ -735,7 +735,7 @@ twin of `loc_text()`), then:
 
 ```python
 from _common.loc import loc_tagged
-from _common.pa_text import pa_cell, pa_fields, pa_key, pa_list_cell
+from _common.pa_text import pa_cell, pa_fields, pa_key, pa_list_cell, pa_list_fields
 
 # get_records: `description` plain, `_description_pa` tagged
 record = {**record, **pa_fields("description", loc_tagged(5, buff_id))}
@@ -745,14 +745,26 @@ record = {**record, **pa_fields("description", loc_tagged(5, buff_id))}
 pa_cell(r, "description")
 pa_cell(r, "objective", 140)
 
-# A list field: the plain list under the field, the tagged list under pa_key()
+# A list field: pa_list_fields() puts the plain list under the field and the
+# tagged list under pa_key()
+record = {**record, **pa_list_fields("texts", tagged_texts)}
 pa_list_cell(r[pa_key("texts")], 3)
 ```
 
 Text that has its own fallback chain gets a tagged helper next to the plain
-one: `skill_name_tagged()` / `skill_description_tagged()` in `_common/skill.py`.
-Icon list labels (`icon_label_cell`, the buff and item lists) are still plain
-text.
+one: `skill_name_tagged()` / `skill_description_tagged()` in `_common/skill.py`,
+`quest_title_tagged()` in `_common/quest/quest.py` and `ui_hash_tagged()` in
+`_bss/stringtable/text.py`.
+
+An icon list label in colour goes through `icon_html_label_cell()` /
+`icon_html_list_cell()`, which take labels that are already safe HTML
+(`pa_html()` output); `icon_label_cell()` / `icon_list_cell()` escape plain
+labels. `buff_list_cell()` draws each buff's first line in its colours this
+way. Item names (LOC type 0 field 0) carry no tags, so item lists stay plain.
+
+A handler test checks a `pa_fields` text with `PaFieldTest(field="text")` from
+`tests/framework.py`: every plain value is its tagged copy without tags, and
+at least one copy keeps a `<PAColor>` tag.
 
 `pa_html(raw, colors=False)` drops the colours and returns
 `e(strip_pa_tags(raw))`, so a column can turn colour off without changing its
@@ -762,7 +774,9 @@ tags** setting (off by default) makes `pa_html` show every tag as a dimmed
 `pa-tag` span too; the app applies it through `set_show_pa_tags()` at start and
 on save, and the CLI always turns it on. A colour stored as a u32 rather than
 in tag text (`dropuitaginfo.bss`) goes through `argb_css(argb)`, which keeps
-the alpha (`rgba(r, g, b, a)`).
+the alpha (`rgba(r, g, b, a)`); `argb_css(argb, alpha_scale)` multiplies it,
+for a colour the game uses to tint a translucent texture (the hunting ground
+tag pills).
 
 `_common/pa_color.py` is a different job: it finds colour markers in raw UTF-16
 bytes for `title.dbss`.
@@ -1072,6 +1086,10 @@ the ones shown and passes the count of the rest, so icon paths are looked up
 for one page of entries only. An entry without a path is its label alone. When
 the client does not ship an entry's icon, the GUI and `browser.py --render`
 drop the swatch and keep the label, where a plain icon cell becomes a dash.
+Both swap only the head of the entry (`PENDING_ICON_LABEL_RE` matches the
+opening span and the swatch) and leave the label alone, so a coloured label
+(`icon_html_list_cell()`, see [Display-Only Fields](#display-only-fields))
+keeps its markup.
 Records keep the plain names (`items`) for search, sort and CSV. The hover
 text of an entry is its icon path; pass `tooltips` (one string per shown
 entry) to replace it, as the `teleport.dbss` Used By column does with the

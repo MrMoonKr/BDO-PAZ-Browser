@@ -10,29 +10,18 @@ from _common.class_type import class_name
 from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.icon_index import IconKind, icon_path
 from _common.lang import load_handler_strings
-from _common.loc import loc_lookup, strip_pa_tags
 from _common.pa_text import pa_cell, pa_fields
 from _common.skill import skill_name_tagged, split_skill_key
 from _bss.skillgroup.parser import skill_keys_by_group
-from _bss.stringtable.parser import GAME_SHEET, GAME_SHEET_LOC_ID2, parse_key_hashes
+from _bss.stringtable.parser import GAME_SHEET, parse_key_hashes
+from _bss.stringtable.text import ui_hash_text
 from .parser import ClassGrid, SkillCell, Tab, card_column, parse_ui_skillgroup
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
 _SKILLGROUP_FILE = "skillgroup.bss"
 _STRINGTABLE_FILE = "stringtable.bss"
-_LOC_STRING_SHEET = 37
-# A few keys only carry the str_id3 = 1 variant; try 0 first.
-_LOC_VARIANTS = (0, 1)
 _EMPTY = "-"
-
-
-def _sheet_text(key_hash: int) -> str:
-    for variant in _LOC_VARIANTS:
-        text = strip_pa_tags(loc_lookup(_LOC_STRING_SHEET, key_hash, GAME_SHEET_LOC_ID2, variant)).strip()
-        if text:
-            return text
-    return ""
 
 
 def _tab_names(tabs: tuple[Tab, ...], key_hashes: Mapping[str, int]) -> dict[int, str]:
@@ -40,7 +29,7 @@ def _tab_names(tabs: tuple[Tab, ...], key_hashes: Mapping[str, int]) -> dict[int
     names: dict[int, str] = {}
     for tab in tabs:
         key_hash = key_hashes.get(tab.key)
-        names[tab.subgroup] = (_sheet_text(key_hash) if key_hash is not None else "") or tab.key
+        names[tab.subgroup] = (ui_hash_text(GAME_SHEET, key_hash) if key_hash is not None else "") or tab.key
     return names
 
 

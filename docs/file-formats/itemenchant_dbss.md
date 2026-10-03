@@ -272,7 +272,7 @@ One row per item, read from its level-0 block. Higher levels only feed Max Level
 | Max Level     | num  | Highest `enchant_level` among the item's keys; `0` when it cannot be enhanced |
 | Object ID     | num  | `character_id` of the placed object or summoned pet; dash when `0` |
 | Object        | text | LOC `str_type=6`, `str_id1=character_id`          |
-| Buffs         | list | Buffs of `skill_key_1`, then `skill_key_2` (`SKILL_BUFFS` lookup index), each once, with buff icon and the first line of its LOC type `5` text; sorts by count |
+| Buffs         | list | Buffs of `skill_key_1`, then `skill_key_2` (`SKILL_BUFFS` lookup index), each once, with buff icon and the first line of its LOC type `5` text in its game colours; sorts by count |
 
 ---
 

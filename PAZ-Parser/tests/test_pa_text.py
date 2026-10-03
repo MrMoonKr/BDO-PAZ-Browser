@@ -11,6 +11,7 @@ from _common.pa_text import (
     pa_fields,
     pa_html,
     pa_key,
+    pa_list_fields,
     set_show_pa_tags,
     strip_pa_tags,
 )
@@ -155,10 +156,21 @@ def test_argb_css_partly_transparent() -> None:
     assert argb_css(0x00000000) == "rgba(0, 0, 0, 0)"
 
 
+def test_argb_css_scales_the_alpha() -> None:
+    assert argb_css(0xFFD2691E, 0.2) == "rgba(210, 105, 30, 0.2)"
+    assert argb_css(0x80FFFFFF, 0.5) == "rgba(255, 255, 255, 0.251)"
+
+
 @pytest.mark.parametrize("value", [-1, 0x1_0000_0000, True])
 def test_argb_css_rejects_values_out_of_range(value: int) -> None:
     with pytest.raises(ValueError):
         argb_css(value)
+
+
+def test_pa_list_fields_keep_plain_and_tagged_lists() -> None:
+    fields = pa_list_fields("titles", ["<PAColor0xffe9bd23>Boon<PAOldColor> ", "Plain"])
+
+    assert fields == {"titles": ["Boon", "Plain"], "_titles_pa": ["<PAColor0xffe9bd23>Boon<PAOldColor> ", "Plain"]}
 
 
 def test_pa_fields_keep_plain_and_tagged_text() -> None:

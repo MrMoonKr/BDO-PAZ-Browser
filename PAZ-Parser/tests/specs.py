@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Protocol
 
+from _common.pa_text import pa_key, strip_pa_tags
+
 from .case_input import CaseInput
 from .declared import DeclaredCount
 
@@ -87,6 +89,27 @@ class RangeTest:
                     f"[{self.min_val!r}, {self.max_val!r}]"
                 )
         return f"RangeTest {self.col} within [{self.min_val!r}, {self.max_val!r}]"
+
+
+@dataclass(frozen=True)
+class PaFieldTest:
+    """A `pa_fields` text: the plain field is its tagged copy without tags, and
+    some rows keep a game colour in the copy."""
+
+    field: str
+
+    def check(self, records: list[dict], source: CaseInput) -> str:
+        tagged_key = pa_key(self.field)
+        for pos, record in enumerate(records):
+            plain = strip_pa_tags(record[tagged_key]).strip()
+            if record[self.field] != plain:
+                raise AssertionError(
+                    f"PaFieldTest records[{pos}].{self.field}={record[self.field]!r} "
+                    f"is not its tagged copy without tags ({plain!r})"
+                )
+        if not any("<PAColor" in record[tagged_key] for record in records):
+            raise AssertionError(f"PaFieldTest no {tagged_key} holds a <PAColor> tag")
+        return f"PaFieldTest {self.field} keeps its game colours"
 
 
 def _assert_subset(record: dict, expected: dict[str, Any], label: str) -> None:

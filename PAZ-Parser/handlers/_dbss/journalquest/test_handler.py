@@ -11,6 +11,7 @@ from tests.framework import (
     DeclaredCountTest,
     HandlerCase,
     HandlerResult,
+    PaFieldTest,
     RangeTest,
     SchemaTest,
     TargetTest,
@@ -78,6 +79,8 @@ CASE = HandlerCase(
         DeclaredCountTest(declared=_offset_rows("journalquestoffset.dbss")),
         RangeTest(col="is_record_book", min_val=0, max_val=1),
         RangeTest(col="terminal", min_val=0, max_val=0),
+        # Unlock conditions name their quests in colour.
+        PaFieldTest(field="unlock_condition_text"),
         TargetTest(
             col="journal_cat_id",
             value=748,

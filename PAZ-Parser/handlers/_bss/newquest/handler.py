@@ -9,7 +9,8 @@ from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.icon_index import IconKind, icon_path
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded
-from _common.quest.quest import quest_title
+from _common.pa_text import pa_cell, pa_fields
+from _common.quest.quest import quest_title_tagged
 from .parser import parse_newquest_records
 
 
@@ -41,11 +42,8 @@ class NewQuestBssHandler(PreviewHandler):
 
         for record in parse_newquest_records(data):
             row = dict(record)
-            row["title"] = (
-                quest_title(record["quest_chain_id"], record["quest_id"])
-                if has_loc
-                else ""
-            )
+            title = quest_title_tagged(record["quest_chain_id"], record["quest_id"]) if has_loc else ""
+            row.update(pa_fields("title", title))
             row["icon_path"] = icon_path(IconKind.QUEST, record["packed_quest_id"])
             records.append(row)
 
@@ -71,7 +69,7 @@ class NewQuestBssHandler(PreviewHandler):
                 e(record["quest_id"]),
                 e(record["group"]),
                 icon_cell(record["icon_path"]) if record["icon_path"] else "-",
-                e(record.get("title") or "-"),
+                pa_cell(record, "title"),
             ]
             for record in slice_
         ]

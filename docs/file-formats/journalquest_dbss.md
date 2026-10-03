@@ -141,7 +141,7 @@ Page text is LOC `str_type=18` keyed by the page's packed quest ID, like any que
 | Journal Name        | text | LOC type=63 `id4=0`, falling back to `journal_name_kr`                |
 | Description         | text | LOC type=63 `id4=1`, falling back to `journal_description_kr`         |
 | Book Name           | text | LOC type=63 `id4=3`, falling back to `book_name_kr`                   |
-| Unlock Requirement  | text | LOC type=63 `id4=2`, falling back to `unlock_requirement_kr` with PAColor markup stripped |
+| Unlock Requirement  | text | LOC type=63 `id4=2`, falling back to `unlock_requirement_kr`; drawn in its PAColor game colours |
 | Pages               | num  | `page_count`                                                          |
 | Record Book         | text | `is_record_book` as Yes or No                                         |
 | Page Titles         | text | LOC type=18 `id4=0` for each page quest ID                            |

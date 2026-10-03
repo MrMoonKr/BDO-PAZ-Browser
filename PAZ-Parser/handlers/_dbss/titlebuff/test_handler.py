@@ -9,6 +9,7 @@ from tests.framework import (
     DeclaredCountTest,
     HandlerCase,
     HandlerResult,
+    PaFieldTest,
     SchemaTest,
     TargetTest,
     case_id,
@@ -30,6 +31,8 @@ BUFF_CASE = HandlerCase(
         DeclaredCountTest(declared=header_count(companion="titlebufflistoffset.dbss")),
         # The first tier follows the u32 count.
         TargetTest(col="level", value=1, expected={"offset": 4}),
+        # The effect values are coloured (`Luck +1` in blue).
+        PaFieldTest(field="text"),
     ],
 )
 

@@ -8,12 +8,12 @@ from bdo_preview import PreviewHandler
 
 from _common.buff import buff_label, buff_list_cell
 from _common.duration import format_duration
-from _common.html import Column, e, icon_cell, join_limited, sort_keys, table, truncate
+from _common.html import Column, e, icon_cell, sort_keys, table, truncate
 from _common.icon_index import IconKind, icon_path
 from _common.lang import load_handler_strings
 from _common.pabr_offset import PabrOffsetRow, parse_pabr_u32_offset_rows
-from _common.pa_text import pa_cell, pa_fields
-from _common.skill import skill_description_tagged, skill_name, skill_name_tagged, split_skill_key
+from _common.pa_text import pa_cell, pa_fields, pa_key, pa_list_cell, pa_list_fields
+from _common.skill import skill_description_tagged, skill_name_tagged, split_skill_key
 from .parser import SkillRecord, parse_skill_records
 
 
@@ -24,9 +24,10 @@ _LIST_PREVIEW_ITEMS = 3
 _SCRIPT_PREVIEW_CHARS = 80
 
 
-def _skill_label(skill_key: int) -> str:
+def _skill_label_tagged(skill_key: int) -> str:
+    """The skill's name with its PA tags (Prime skills are orange), else its number."""
     skill_no = split_skill_key(skill_key)[0]
-    return skill_name(skill_no) or str(skill_no)
+    return skill_name_tagged(skill_no) or str(skill_no)
 
 
 def _record_dict(record: SkillRecord) -> dict:
@@ -48,9 +49,9 @@ def _record_dict(record: SkillRecord) -> dict:
         "buffs": [buff_label(buff_id) for buff_id in record.buff_ids],
         "buff_count": len(record.buff_ids) or None,
         "next_skill_keys": list(record.next_skill_keys),
-        "next_skills": [_skill_label(key) for key in record.next_skill_keys],
+        **pa_list_fields("next_skills", [_skill_label_tagged(key) for key in record.next_skill_keys]),
         "base_skill_keys": list(record.base_skill_keys),
-        "base_skill": ", ".join(_skill_label(key) for key in record.base_skill_keys),
+        **pa_fields("base_skill", ", ".join(_skill_label_tagged(key) for key in record.base_skill_keys)),
         "description_kr": record.description_kr,
         "script": record.script,
     }
@@ -172,8 +173,8 @@ class SkillHandler(PreviewHandler):
                 e(r["resource_cost"] or _EMPTY),
                 e(r["stamina_cost"] or _EMPTY),
                 buff_list_cell(r["buff_ids"], _LIST_PREVIEW_ITEMS) or _EMPTY,
-                e(join_limited(r["next_skills"], _LIST_PREVIEW_ITEMS) or _EMPTY),
-                e(r["base_skill"] or _EMPTY),
+                pa_list_cell(r[pa_key("next_skills")], _LIST_PREVIEW_ITEMS),
+                pa_cell(r, "base_skill"),
                 e(truncate(r["script"], _SCRIPT_PREVIEW_CHARS) or _EMPTY),
             ]
             for r in slice_

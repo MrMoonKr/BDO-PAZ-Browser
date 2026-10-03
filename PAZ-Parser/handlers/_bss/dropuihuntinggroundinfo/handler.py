@@ -15,12 +15,14 @@ from _common.loc import loc_text
 from _common.node import node_name
 from _common.quest.quest import quest_title
 from _common.title import title_name
-from .parser import parse_hunting_ground_records, parse_territory_keys
+from .parser import TagColors, parse_hunting_ground_records, parse_tag_colors, parse_territory_keys
+from .tag_chips import tag_chips_cell
 from .tribe_labels import tribe_text
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
 _MAIN_CATEGORY_FILE = "dropuimaincategoryinfo.bss"
+_TAG_INFO_FILE = "dropuitaginfo.bss"
 _EMPTY = "-"
 _LIST_PREVIEW_ITEMS = 8
 
@@ -92,7 +94,7 @@ class DropUiHuntingGroundInfoBssHandler(PreviewHandler):
 
     def companions(self, entry: PazEntry) -> list[str]:
         folder = entry.internal_path.rsplit("/", 1)[0]
-        return [f"{folder}/{_MAIN_CATEGORY_FILE}"]
+        return [f"{folder}/{_MAIN_CATEGORY_FILE}", f"{folder}/{_TAG_INFO_FILE}"]
 
     def get_records(
         self,
@@ -103,6 +105,9 @@ class DropUiHuntingGroundInfoBssHandler(PreviewHandler):
         main_categories = companions.get(_MAIN_CATEGORY_FILE)
         # Without the tab table the Region column shows the tab keys.
         territories = parse_territory_keys(main_categories) if main_categories else {}
+        tag_info = companions.get(_TAG_INFO_FILE)
+        # Without the tag table the Tags column shows plain names.
+        tag_colors: dict[int, TagColors] = parse_tag_colors(tag_info) if tag_info else {}
 
         records: list[dict] = []
         for record in parse_hunting_ground_records(data):
@@ -122,6 +127,7 @@ class DropUiHuntingGroundInfoBssHandler(PreviewHandler):
                     _quest_text(k) for k in record["repeat_quest_keys"] + record["sudden_quest_keys"]
                 ],
                 "tags": _names(record["tag_keys"], lambda k: loc_text(_LOC_TAG, k)),
+                "_tag_colors": [tag_colors.get(k) for k in record["tag_keys"]],
                 "titles": _names(record["title_keys"], title_name),
             })
         return records
@@ -152,7 +158,7 @@ class DropUiHuntingGroundInfoBssHandler(PreviewHandler):
                 # A plain item ID is its level 0 item key.
                 item_key_list_cell(r["drop_item_ids"], _LIST_PREVIEW_ITEMS) or _EMPTY,
                 _list_cell(r["quests"]),
-                _list_cell(r["tags"]),
+                tag_chips_cell(r["tags"], r["_tag_colors"], _LIST_PREVIEW_ITEMS),
                 _list_cell(r["titles"]),
             ]
             for r in slice_

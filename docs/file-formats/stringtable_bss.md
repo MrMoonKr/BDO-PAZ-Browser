@@ -143,7 +143,7 @@ file does not sort its rows).
 | Hash   | num  | `key_hash` as hex (`0x4D282741`), the LOC type `37` `str_id1`                   |
 | Sheet  | text | Sheet name from `name_ref`                                                     |
 | Key    | text | `key_ref`                                                                      |
-| Text   | text | LOC type `37` with the sheet's `str_id2` (`str_id3` 0, then 1), else the Korean `value_ref` |
+| Text   | text | LOC type `37` with the sheet's `str_id2` (`str_id3` 0, then 1), else the Korean `value_ref`; in its game colours |
 
 ---
 

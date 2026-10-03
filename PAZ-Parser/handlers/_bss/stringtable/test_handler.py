@@ -12,6 +12,7 @@ from tests.framework import (
     DeclaredCountTest,
     HandlerCase,
     HandlerResult,
+    PaFieldTest,
     SchemaTest,
     TargetTest,
     case_id,
@@ -48,6 +49,8 @@ CASE = HandlerCase(
     tests=[
         SchemaTest(required_keys=["sheet", "key_hash", "key", "korean", "text"]),
         DeclaredCountTest(declared=_sheet_rows),
+        # UI strings colour names and values, in LOC and in the Korean fallback.
+        PaFieldTest(field="text"),
         # The Storage town NPC navigation label (stringtable_bss.md).
         TargetTest(
             col="key",

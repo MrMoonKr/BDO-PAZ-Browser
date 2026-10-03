@@ -4,7 +4,7 @@ from .case_input import CaseInput
 from .declared import DeclaredCount, fixed_rows, header_count
 from .models import HandlerCase, HandlerResult
 from .runner import run_case
-from .specs import DeclaredCountTest, RangeTest, SchemaTest, TargetTest, TestSpec
+from .specs import DeclaredCountTest, PaFieldTest, RangeTest, SchemaTest, TargetTest, TestSpec
 
 
 def case_id(spec: object) -> str:
@@ -12,6 +12,8 @@ def case_id(spec: object) -> str:
         return "declared row count"
     if isinstance(spec, SchemaTest):
         return f"schema: {', '.join(spec.required_keys)}"
+    if isinstance(spec, PaFieldTest):
+        return f"{spec.field} keeps its game colours"
     if isinstance(spec, RangeTest):
         return f"{spec.col} in [{spec.min_val}, {spec.max_val}]"
     if isinstance(spec, TargetTest):
@@ -30,6 +32,7 @@ __all__ = [
     "DeclaredCountTest",
     "HandlerCase",
     "HandlerResult",
+    "PaFieldTest",
     "RangeTest",
     "SchemaTest",
     "TargetTest",

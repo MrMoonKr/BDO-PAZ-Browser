@@ -1,7 +1,15 @@
 from __future__ import annotations
 
 from api.bdo_api import _table_row_height
-from _common.html import flag_cell, icon_cell, icon_label_cell, icon_list_cell, sprite_icon_cell
+from _common.html import (
+    flag_cell,
+    icon_cell,
+    icon_html_label_cell,
+    icon_html_list_cell,
+    icon_label_cell,
+    icon_list_cell,
+    sprite_icon_cell,
+)
 
 
 def test_icon_cell_renders_escaped_icon_path() -> None:
@@ -63,3 +71,18 @@ def test_icon_list_cell_joins_entries_and_counts_the_hidden_ones() -> None:
     assert icon_list_cell(entries) == f"{icon_label_cell('ui/a.dds', 'A')}, B"
     assert icon_list_cell(entries, 3).endswith("B, ... (+3)")
     assert icon_list_cell([]) == ""
+
+
+def test_icon_html_label_cell_keeps_the_label_markup() -> None:
+    label = '<span class="pa-color">Sap</span>'
+
+    assert f'<span class="icon-cell-label">{label}</span>' in icon_html_label_cell("ui/a.dds", label)
+    assert icon_html_label_cell("", label) == label
+    assert icon_html_label_cell("", label, tooltip="Buff 1") == f'<span title="Buff 1">{label}</span>'
+
+
+def test_icon_html_list_cell_keeps_each_label_markup() -> None:
+    entries = [("ui/a.dds", "<b>A</b>"), ("", "<b>B</b>")]
+
+    assert icon_html_list_cell(entries) == f"{icon_html_label_cell('ui/a.dds', '<b>A</b>')}, <b>B</b>"
+    assert icon_html_list_cell(entries, 2).endswith("<b>B</b>, ... (+2)")

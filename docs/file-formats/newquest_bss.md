@@ -102,7 +102,7 @@ Pre-2026-09-27 fixture:
 | Sub ID       | num  | `quest_id`; LOC type 18 `str_id2`                                |
 | Group        | num  | Decoded group index, `0` to `group_count - 1`                    |
 | Icon         | text | Quest icon resolved from `packed_quest_id` through the quest icon index |
-| Title        | text | Prefer LOC type 18 row with matching main/sub ID and `str_id4=0` |
+| Title        | text | Prefer LOC type 18 row with matching main/sub ID and `str_id4=0`, in its game colours |
 
 `unknown_05`, `unknown_09` and `unknown_0d` stay on the record for search and export but are not shown.
 

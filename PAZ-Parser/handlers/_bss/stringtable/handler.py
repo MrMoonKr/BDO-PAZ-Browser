@@ -7,24 +7,23 @@ from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
-from _common.loc import strip_pa_tags
+from _common.pa_text import pa_cell, pa_fields, strip_pa_tags
 from .parser import StringRow, parse_rows
-from .text import ui_hash_text
+from .text import ui_hash_tagged
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
-_EMPTY = "-"
 
 
 def _record(row: StringRow) -> dict:
     """One table row; the text is the loaded LOC language, else the stored Korean."""
-    korean = strip_pa_tags(row.value).strip()
+    localized = ui_hash_tagged(row.sheet, row.key_hash)
     return {
         "key_hash": row.key_hash,
         "sheet": row.sheet,
         "key": row.key,
-        "korean": korean,
-        "text": ui_hash_text(row.sheet, row.key_hash) or korean,
+        "korean": strip_pa_tags(row.value).strip(),
+        **pa_fields("text", localized if strip_pa_tags(localized).strip() else row.value),
     }
 
 
@@ -66,7 +65,7 @@ class StringTableBssHandler(PreviewHandler):
                 e(f"0x{r['key_hash']:08X}"),
                 e(r["sheet"]),
                 e(r["key"]),
-                e(r["text"] or _EMPTY),
+                pa_cell(r, "text"),
             ]
             for r in slice_
         ]
