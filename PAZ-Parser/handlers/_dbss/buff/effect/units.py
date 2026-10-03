@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 
 
@@ -11,11 +12,13 @@ class Unit:
 
     divisor: int = 1
     suffix: str = ""
+    # Writes the whole amount instead, for units the game words: `15 days`.
+    formatter: Callable[[int], str] | None = None
 
     @property
     def is_scaled(self) -> bool:
         """True when the stored number differs from what the game shows."""
-        return self.divisor != 1 or bool(self.suffix)
+        return self.divisor != 1 or bool(self.suffix) or self.formatter is not None
 
 
 FLAT = Unit()
@@ -31,11 +34,33 @@ METRES = Unit(100, "m")
 # 250000 is 5 sec, 50000 is 1 sec.
 CRAFT_SECONDS = Unit(50_000, " sec")
 
+_MINUTES_PER_HOUR = 60
+_MINUTES_PER_DAY = 24 * _MINUTES_PER_HOUR
+
+
+def _count(number: int, word: str) -> str:
+    return f"{number:,} {word}" if number == 1 else f"{number:,} {word}s"
+
+
+def minutes_text(minutes: int) -> str:
+    """`15 days`, `1 day`, `10 hours`, `25 min`, as package item names word them."""
+    if minutes and minutes % _MINUTES_PER_DAY == 0:
+        return _count(minutes // _MINUTES_PER_DAY, "day")
+    if minutes and minutes % _MINUTES_PER_HOUR == 0:
+        return _count(minutes // _MINUTES_PER_HOUR, "hour")
+    return f"{minutes:,} min"
+
+
+# Package durations are stored in minutes: 21600 is 15 days.
+MINUTES = Unit(formatter=minutes_text)
+
 _MAX_DECIMALS = 4
 
 
 def format_amount(value: int, unit: Unit, *, signed: bool) -> str:
     """`+150`, `-6`, `+2,560,350`, `+2.5%`, `+100 LT`, or `10` unsigned."""
+    if unit.formatter is not None:
+        return unit.formatter(value)
     sign = "+" if signed else ""
     if unit.divisor == 1:
         number = f"{value:{sign},}"

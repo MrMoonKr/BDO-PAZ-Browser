@@ -15,6 +15,9 @@ from .formats import (
 )
 from .units import format_amount, seconds_text
 
+# Named templates may hold `{param_1}` to `{param_10}`.
+_PARAM_COUNT = 10
+
 
 @dataclass(frozen=True)
 class EffectInput:
@@ -70,7 +73,11 @@ def _named_key(effect: NamedEffect, buff: EffectInput) -> tuple[list[int], str]:
 def _named_text(effect: NamedEffect, buff: EffectInput) -> str:
     """`Summon Rock Golem`, or the key when LOC has no name for it."""
     key, name = _named_key(effect, buff)
-    return effect.template.format(name=name or "/".join(str(value) for value in key))
+    key_text = "/".join(str(value) for value in key)
+    params = {f"param_{number}": buff.param(number) for number in range(1, _PARAM_COUNT + 1)}
+    if name:
+        return effect.template.format(name=name, key=key_text, **params)
+    return (effect.unnamed_template or effect.template).format(name=key_text, key=key_text, **params)
 
 
 def _over_time_trigger(effect: OverTimeEffect, buff: EffectInput) -> str:

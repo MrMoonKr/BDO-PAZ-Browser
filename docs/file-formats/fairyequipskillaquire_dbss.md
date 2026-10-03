@@ -150,8 +150,8 @@ def roll_chance(record, equip_skill_id):
 
 | Column      | Type | Notes                                                |
 | ----------- | ---- | ---------------------------------------------------- |
-| Fairy Grade | text | Grade name from `acquire_type_id`; falls back to ID  |
 | Skill ID    | num  | `equip_skill_id` the weight indexes (right-aligned)  |
+| Fairy Grade | text | Grade name from `acquire_type_id`; falls back to ID  |
 | Skill Name  | text | Resolved via the catalog's `loc_id` (LOC type 10)    |
 | Chance      | num  | `weight / total_weight` as a percentage              |
 | Weight      | num  | Raw parts-per-million value                          |

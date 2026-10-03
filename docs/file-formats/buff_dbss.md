@@ -197,14 +197,18 @@ English text, by item names and bdocodex tooltips (see Effect text).
 | Value | Rows | Effect                        | Parameters                                                        |
 | ----- | ---: | ----------------------------- | ----------------------------------------------------------------- |
 | 4     | 268  | MP/WP/SP over time            | `param_1` per tick, signed; `tick_ms` the interval; `condition_type` `1` = per hit instead. Without either it is a one-off refill, unlabelled (see Effect text) |
+| 14    | 172  | Crowd control                 | `param_1` = kind, `param_2` = duration in ms (`Stun for 5 sec`), see Effect text; `param_4` `1` on every labelled kind |
 | 23    | 654  | Teleport                      | `param_1` = [teleport.dbss](teleport_dbss.md) section, `param_2` = key within it; see Effect text |
+| 24    | 95   | One-off EXP                   | `param_1` = amount, flat; `param_2` = `0` Combat, `1` Guild, `2` Skill |
 | 29    | 249  | Weight Limit                  | `param_1` in ten-thousandths of an LT (`1000000` = 100 LT)        |
 | 37    | 1,031 | Node registration            | `param_1` = node key (LOC type 29 name); `param_2` `1` on 37 town, city and investment bank nodes, meaning unknown |
+| 48    | 123  | Set effect points             | `param_1` = set skill (LOC type 10 name), `param_2` = points the piece adds; see Effect text |
 | 50    | 144  | Mount EXP                     | `param_1` per million                                             |
 | 52    | 40   | Fall Damage reduction         | `param_1` per million, stored positive and shown negative (`500000` = `Fall Damage -50%`); `param_2` `1` on one 15 sec buff, meaning unknown |
 | 53    | 9    | Discovery Radius              | `param_1` in centimetres (`1000` = `+10m`); `param_2` `2000` / `4000` on two old grape salads that read `Vision Range Increase`, unlabelled |
 | 57    | 225  | Item Drop Rate                | `param_1` per million; `param_2` `1` or `2` on 6 buffs with the same text, meaning unknown |
 | 59    | 31   | Jump Height                   | `param_1` = amount                                                |
+| 60    | 59   | One-off Contribution EXP      | `param_1` = `0` on all, `param_2` = amount; `param_3` `1` on all, meaning unknown |
 | 63    | 11   | Worker Stamina recovery       | `param_1` = amount, one-off (`Recover 2 Worker Stamina`)          |
 | 67    | 660  | Stat ranks                    | `param_1` = stat: `0` Movement Speed, `1` Attack Speed, `2` Casting Speed, `3` Critical Hit, `4` Luck, `5` Fishing Speed, `6` Gathering Speed; `param_2` = ranks, can be negative |
 | 69    | 670  | Accept quest                  | `param_1` = quest chain, `param_2` = quest (LOC type 18 title); see Effect text |
@@ -214,6 +218,7 @@ English text, by item names and bdocodex tooltips (see Effect text).
 | 91    | 18   | Durability Reduction Resistance | `param_1` per million                                           |
 | 94    | 19   | Max Energy                    | `param_1` = amount                                                |
 | 95    | 22   | Underwater Breathing          | `param_1` in milliseconds (`15000` = +15 sec)                     |
+| 97    | 226  | Packages                      | `param_1` = package, `param_2` = duration in minutes (`21600` = 15 days); see Effect text |
 | 98    | 1,093 | Mount and ship stats         | `param_1` = `0` Acceleration, `1` Movement Speed (shown as `Movement Speed (Mount)`), `2` Turn, `3` Brake; `param_2` per million |
 | 108   | 102  | Knowledge Gain Chance         | `param_1` per million                                             |
 | 109   | 66   | Higher Grade Knowledge Gain Chance | `param_1` per million                                        |
@@ -245,10 +250,10 @@ The browser's Effect column renders the parameters of every type above in the
 game's wording (`All AP +8`, `Life EXP +15%`, `Alchemy EXP +2,560,350`), from
 `_dbss/buff/effect/`; other types, the kinds left unlabelled and a zero
 amount show a dash. The same entry per type (`formats.py`) labels the Param columns,
-so `param_1` of a type 46 buff reads `3 (Kamasylvian Monsters)`. Of the 8,049 buffs with a
-one-line LOC type 5 text and an Effect, 84% start with exactly that text on
-client 3458, and 88% leaving out types 23, 142 and 187, whose texts name the
-place, title or event first (`Morning Earth: AP -60 for 3600 sec`). The rest
+so `param_1` of a type 46 buff reads `3 (Kamasylvian Monsters)`. Of the 8,135 buffs with a
+one-line LOC type 5 text and an Effect, 83% start with exactly that text on
+client 3458, and 88% leaving out types 23, 48, 142 and 187, whose texts name
+the place, set, title or event first (`Morning Earth: AP -60 for 3600 sec`). The rest
 are the drift described in Notes (`Weight Limit +100 LT` on a buff that stores
 150 LT), a `- Effect:` prefix, or placeholder text such as `UNKNOWN` and `Not
 in Use`.
@@ -314,6 +319,46 @@ The batch of 2026-10-03 was checked the same three ways:
   Resistance +10%`): all 19 one-line type 59 texts match, and 8 of 10 type 91
   (the misses read `Gear Durability Reduction Resistance`, and `+10%` on a
   buff that stores `999999`).
+- **14**, crowd control: the kinds come from the Korean names (`[액션제한]
+  넉다운`, "action limit: knockdown"): `1` Knockback, `2` Knockdown, `4` Stun,
+  `6` Stiffness, `7` Bound, `12` Floating, `13` Air Smash, `14` Down Smash,
+  `22` Freezing, and `15`, `17`, `20`, `23`, `24` the same that ignore the
+  target's resistance (`저항 무시`). The kind word appears in 113 of the 127
+  labelled names, the rest use a synonym (`기절`, also stun). Flashbang (206)
+  stores kind `4` for `5000` and reads `Targets within the range will be
+  stunned for a while` in game. Kind `0` mixes resistances and stuns, `5`
+  guard crush and knockback, `19` (groggy) has two buffs; all three stay
+  unlabelled. Keeper Marg's stiffness (850, `6`, `1350`) reads `Stiffness for
+  1.35 sec`.
+- **24** and **60**, one-off EXP: the amount equals the number in all 47 item
+  names that carry one (`Guild EXP (200,000)`, `60 Contribution EXP`; one
+  `5 Contribution EXP` item stores `1`). The [Event] Delicious Jeon, Sikhye and
+  Braised Short Ribs descriptions (1000347 to 1000349) read `Contribution EXP
+  +1,000`, the rendered text exactly, for a stored `1000`. The Skill EXP item
+  reads only `Skill EXP` in game; its buff 47499 stores `27500000`.
+- **48**, set effect points: a set piece applies a type 48 buff that adds
+  `param_2` points to the set skill of `param_1`, and each level of that skill
+  holds one tier of set effects. Combined Magic Crystal - Gervish (15662)
+  applies 57863 (`56050`, `1`); skill 56050 level 1 is Weight Limit +75 LT,
+  Movement Speed +1 and Critical Hit +1, the `2 crystal set effects` of its
+  tooltip, and level 2 adds Combat EXP +5% and Skill EXP +3%, the 4-crystal
+  lines. Korean names state the points (`세트 효과 2포인트`, "set effect 2
+  points", stores `2`). 84 of the 123 skills have a LOC type 10 name; the
+  rest show the skill number.
+- **97**, packages: the duration equals the one in all 267 item names that
+  state one (`Value Pack (30 Days)` stores `43200`). A Value Pack applies three
+  of them, kinds `1` (the pack), `4` (`Unlimited Customization`) and `5`
+  (`Unlimited Use of Merv's Palette`), the last two worded as on its tooltip;
+  the pack's other lines are other buffs. Named after their items: `0`
+  Blessing of Kamasylve, `2` Shining Pearl Blessing, `7` Cliff's Skill Add-on
+  Guide, `8` Armstrong's Skill Guide, `10` Book of Training - Combat, `12`
+  Premium Value Pack, `13` Book of Training - Skill, `14` Artisan's Blessing,
+  `15` Secret Book of Old Moon, `18` Viano's Guide to the Desert, `20`
+  Millennial Wild Ginseng. Unlabelled: `9` (Premium Package III) and `19`
+  (Manos life skill guide) have no item, `21` holds siege and honour family
+  buffs with a buff ID in `param_3`, `22` is shared by Premium Value Pack Plus
+  (`param_3` `1`) and Blessing of Cron Stones (`2`, which grants Cron Stone
+  x300 via a daily Challenge), and `23` to `25` are guild skills.
 - **111**, from the costume tooltips (`Cooking Time -2 sec`) and LOC: 30 of
   32 one-line texts match (`Alchemy Time -5 sec` on Eileen's Cheer, 48808,
   `250000`; `Cooking Time -0.3 sec` on `15000`). The misses are 48868, which
@@ -336,14 +381,18 @@ rest differ only in wording: the item says `Fish Drying Yard: Taramura Island
 1` or the older `Altas Farm`, the worldmap `Taramura Island - Fish Drying Yard
 1` and `Altas Farmland`. Nine nodes have no LOC name and show their key.
 
-Type 23 renders as `Teleport to point 0/340`, section and key of a
-[teleport.dbss](teleport_dbss.md) point. 652 of the 654 buffs name a point
+Type 23 renders as `Teleport to point 0/371, near Marni's Lab (12 m)`:
+section and key of a [teleport.dbss](teleport_dbss.md) point, then the
+nearest worldmap node and its distance (the `TELEPORT_NEAREST_NODE` lookup
+index), as the points have no names. Without the index, or for a point
+missing from the file, it shows `Teleport to point 0/340`. 652 of the 654 buffs name a point
 that exists (section 0 travel items, section 5 boss rooms and unstuck moves);
 the other two are town return stones on the empty sections 3 and 4. The
 points land on the places the English texts name: `Footprints: Flower-sunken
 Swamp`, `Mongryong's Exile` and `Martial God Tournament` lie within 1 m of
-their worldmap node, `Holbon Entrance` 3 m. The points have no names, so the
-column shows section and key.
+their worldmap node, `Holbon Entrance` 3 m. 574 of the 654 buffs are the only
+buff at their point, so naming a point after its buffs would mostly repeat the
+buff's own Applied By item; the nearest node adds where it is.
 
 Type 38 renders as `Learn Knowledge: Tuntaros`. Its buffs have no text, icon
 or duration and are all hidden; the items that apply them are quest rewards

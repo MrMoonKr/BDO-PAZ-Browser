@@ -98,9 +98,9 @@ Pre-2026-09-27 fixture:
 
 | Column       | Type | Notes                                                            |
 | ------------ | ---- | ---------------------------------------------------------------- |
-| Group        | num  | Decoded group index, `0` to `group_count - 1`                    |
 | Main ID      | num  | `quest_chain_id`; LOC type 18 `str_id1`                          |
 | Sub ID       | num  | `quest_id`; LOC type 18 `str_id2`                                |
+| Group        | num  | Decoded group index, `0` to `group_count - 1`                    |
 | Icon         | text | Quest icon resolved from `packed_quest_id` through the quest icon index |
 | Title        | text | Prefer LOC type 18 row with matching main/sub ID and `str_id4=0` |
 

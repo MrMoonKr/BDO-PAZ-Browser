@@ -38,6 +38,7 @@ from _dbss.itemenchant.parser import (
 )
 from _dbss.quest.parser import build_quest_icon_index
 from _dbss.skill.parser import build_skill_buff_index
+from _dbss.teleport.parser import build_teleport_nearest_node_index
 from _dbss.skilltype.parser import build_skill_icon_index, build_skill_name_index
 from _dbss.worldmapmonster.parser import build_worldmap_marker_icon_index
 from paz.bdo_index_cache import CachedIndexes, builder_fingerprint
@@ -72,6 +73,7 @@ ITEMSUBGROUP_OFFSET = f"{_BINARY}/itemsubgroupoffset.dbss"
 EXPLORATION = f"{_BINARY}/exploration.bss"
 BUFF = f"{_BINARY}/buff.dbss"
 BUFF_OFFSET = f"{_BINARY}/buffoffset.dbss"
+TELEPORT = f"{_BINARY}/teleport.dbss"
 WORLDMAP = f"gamecommondata/waypoint_binary/{WORLDMAP_FILE}"
 
 
@@ -145,6 +147,9 @@ INDEX_SPECS: tuple[IndexSpec, ...] = (
     # The 654 teleport buffs out of the 12 MB buff.dbss, to name teleport.dbss points.
     IndexSpec(IndexKind.TELEPORT_BUFFS, (BUFF, BUFF_OFFSET), build_teleport_buff_index),
     IndexSpec(IndexKind.TELEPORT_BUFF_NAME_KR, (BUFF, BUFF_OFFSET), build_teleport_buff_name_index),
+    # Where a teleport buff goes, for its Effect text: the 11 KB teleport.dbss
+    # against the worldmap graph.
+    IndexSpec(IndexKind.TELEPORT_NEAREST_NODE, (TELEPORT, WORLDMAP), build_teleport_nearest_node_index),
 )
 
 

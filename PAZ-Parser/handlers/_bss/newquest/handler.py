@@ -20,9 +20,9 @@ class NewQuestBssHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
         cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
         return [
-            Column(cols.get("group", "Group"), "num", sort_key="group"),
             Column(cols.get("mainId", "Main ID"), "num", sort_key="quest_chain_id"),
             Column(cols.get("subId", "Sub ID"), "num", sort_key="quest_id"),
+            Column(cols.get("group", "Group"), "num", sort_key="group"),
             Column(cols.get("icon", "Icon"), sort_key="icon_path"),
             Column(cols.get("title", "Title"), sort_key="title"),
         ]
@@ -67,9 +67,9 @@ class NewQuestBssHandler(PreviewHandler):
 
         rows = [
             [
-                e(record["group"]),
                 e(record["quest_chain_id"]),
                 e(record["quest_id"]),
+                e(record["group"]),
                 icon_cell(record["icon_path"]) if record["icon_path"] else "-",
                 e(record.get("title") or "-"),
             ]

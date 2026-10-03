@@ -14,8 +14,10 @@ from _common.character import character_name
 from _common.knowledge import knowledge_name
 from _common.node import full_node_name
 from _common.quest.quest import quest_title
+from _common.skill import skill_name
+from _common.teleport import teleport_point_place
 from _common.title import title_name
-from .units import CRAFT_SECONDS, FLAT, METRES, PERCENT, SECONDS, WEIGHT, Unit
+from .units import CRAFT_SECONDS, FLAT, METRES, MINUTES, PERCENT, SECONDS, WEIGHT, Unit
 
 
 @dataclass(frozen=True)
@@ -53,8 +55,13 @@ def kinds(
     names: Mapping[int, str],
     value_param: int,
     unit: Unit = FLAT,
+    template: str = "{label} {amount}",
 ) -> tuple[EffectLine, ...]:
-    """One line per value of `kind_param`; `label` may hold `{kind}`."""
+    """One line per value of `kind_param`; `label` may hold `{kind}`.
+
+    A template other than the default writes the amount without a sign:
+    `Stun for 5 sec`, `Value Pack for 15 days`.
+    """
     return tuple(
         EffectLine(
             label.format(kind=name),
@@ -62,6 +69,8 @@ def kinds(
             unit,
             when={kind_param: kind},
             kind_labels={kind_param: name},
+            is_signed=template == "{label} {amount}",
+            template=template,
         )
         for kind, name in names.items()
     )
@@ -71,13 +80,16 @@ def kinds(
 class NamedEffect:
     """An effect whose parameters are the key of something LOC names.
 
-    `name_of` receives the values of `key_params`; without a name the key is
-    shown as `244/1`.
+    `name_of` receives the values of `key_params`. A template may hold
+    `{name}`, `{key}` (`244/1`) and `{param_1}` to `{param_10}`; without a
+    name, `unnamed_template` is used when given, else `template` with the key
+    in place of the name.
     """
 
     template: str
     name_of: Callable[..., str]
     key_params: tuple[int, ...] = (1,)
+    unnamed_template: str = ""
 
 
 @dataclass(frozen=True)
@@ -129,6 +141,49 @@ _ALL_LIFE_SKILLS = 15
 # read 해 / 달 / 땅 and the English texts Morning Sun / Moon / Earth.
 _MORNING_LIGHT_ATTRIBUTES = {0: "Sun", 1: "Moon", 2: "Earth"}
 
+# Type 14 `param_1`, from the Korean buff names (`[액션제한] 넉다운`, "action
+# limit: knockdown"); Flashbang's kind 4 reads "will be stunned" in game. The
+# second set ignores the target's resistance (`저항 무시`). Kind 0 mixes
+# resistances and stuns, 5 guard crush and knockback, 19 is groggy on two
+# buffs: all three stay unlabelled.
+_CROWD_CONTROL = {
+    1: "Knockback",
+    2: "Knockdown",
+    4: "Stun",
+    6: "Stiffness",
+    7: "Bound",
+    12: "Floating",
+    13: "Air Smash",
+    14: "Down Smash",
+    22: "Freezing",
+    15: "Bound (Ignores Resistance)",
+    17: "Knockdown (Ignores Resistance)",
+    20: "Stun (Ignores Resistance)",
+    23: "Floating (Ignores Resistance)",
+    24: "Freezing (Ignores Resistance)",
+}
+
+# Type 97 `param_1`, named after the items that apply each kind (Value Pack,
+# Book of Training - Combat); a Value Pack applies kinds 1, 4 and 5. Kinds
+# without an item of their own, or shared by unlike items (22: Premium Value
+# Pack Plus and Blessing of Cron Stones), stay unlabelled.
+_PACKAGES = {
+    0: "Blessing of Kamasylve",
+    1: "Value Pack",
+    2: "Shining Pearl Blessing",
+    4: "Unlimited Customization",
+    5: "Unlimited Use of Merv's Palette",
+    7: "Cliff's Skill Add-on Guide",
+    8: "Armstrong's Skill Guide",
+    10: "Book of Training - Combat",
+    12: "Premium Value Pack",
+    13: "Book of Training - Skill",
+    14: "Artisan's Blessing",
+    15: "Secret Book of Old Moon",
+    18: "Viano's Guide to the Desert",
+    20: "Millennial Wild Ginseng",
+}
+
 _RESISTANCES = {
     0: "Knockback/Floating",
     1: "Knockdown/Bound",
@@ -139,6 +194,10 @@ _RESISTANCES = {
 
 EFFECT_LINES: dict[int, tuple[EffectLine, ...]] = {
     2: (EffectLine("Max HP", 1),),
+    14: kinds(1, "{kind}", _CROWD_CONTROL, 2, SECONDS, template="{label} for {amount}"),
+    # One-off EXP; the amount matches the number in all 47 item names that
+    # carry one (`Guild EXP (200,000)`).
+    24: kinds(2, "{kind} EXP", {0: "Combat", 1: "Guild", 2: "Skill"}, 1),
     3: (EffectLine("HP Recovery", 1),),
     5: (EffectLine("Max MP/WP/SP", 1),),
     6: (EffectLine("MP/WP/SP Recovery", 1),),
@@ -199,6 +258,8 @@ EFFECT_LINES: dict[int, tuple[EffectLine, ...]] = {
     53: (EffectLine("Discovery Radius", 1, METRES),),
     57: (EffectLine("Item Drop Rate", 1, PERCENT),),
     59: (EffectLine("Jump Height", 1),),
+    # One-off, like the `60 Contribution EXP` item that stores 60.
+    60: kinds(1, "{kind} EXP", {0: "Contribution"}, 2),
     63: (recovery("Worker Stamina", 1),),
     67: kinds(
         1,
@@ -236,6 +297,7 @@ EFFECT_LINES: dict[int, tuple[EffectLine, ...]] = {
     ),
     94: (EffectLine("Max Energy", 1),),
     95: (EffectLine("Underwater Breathing", 1, SECONDS),),
+    97: kinds(1, "{kind}", _PACKAGES, 2, MINUTES, template="{label} for {amount}"),
     # Mount and ship stats, in the wording of their gear: horseshoes and
     # prows read `Movement Speed`, sails `Turn`, stirrups `Brake`. Speed is
     # marked `(Mount)` so it does not read like the player's type 9.
@@ -302,16 +364,17 @@ EFFECT_LINES: dict[int, tuple[EffectLine, ...]] = {
 }
 
 
-def _unnamed(*_key: int) -> str:
-    """No table names the key yet, so the effect shows the key itself."""
-    return ""
-
 NAMED_EFFECTS: dict[int, NamedEffect] = {
     # The summoned character. Siege objects and placed objects are characters too.
     18: NamedEffect("Summon {name}", character_name),
     # A teleport.dbss point: param_1 is its section, param_2 its key within
-    # the section. The file stores a position but no name.
-    23: NamedEffect("Teleport to point {name}", _unnamed, key_params=(1, 2)),
+    # the section. Points have no name, so the nearest worldmap node places it.
+    23: NamedEffect(
+        "Teleport to point {key}, near {name}",
+        teleport_point_place,
+        key_params=(1, 2),
+        unnamed_template="Teleport to point {key}",
+    ),
     # The node a Node Registration item registers.
     37: NamedEffect("Register Node: {name}", full_node_name),
     # Hidden buffs that items used on pickup apply to unlock a knowledge entry.
@@ -319,6 +382,10 @@ NAMED_EFFECTS: dict[int, NamedEffect] = {
     # Accepts quest `param_2` of chain `param_1`: Cartian Spell's "[Co-op]
     # Eliminating the Threats to Mediah will automatically be accepted".
     69: NamedEffect("Accept Quest: {name}", quest_title, key_params=(1, 2)),
+    # Each piece of a set adds param_2 points to the set skill of param_1,
+    # whose level per point total holds the set effects (Korean names
+    # `세트 효과 2포인트`, "set effect 2 points", store 2).
+    48: NamedEffect("Set Effect Points +{param_2}: {name}", skill_name),
     # [Title] items: "Obtain the Linked Up Morning Light title".
     142: NamedEffect("Obtain Title: {name}", title_name),
 }

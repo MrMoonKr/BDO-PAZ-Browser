@@ -257,3 +257,34 @@ def test_used_by_cell_shows_buff_ids_on_hover() -> None:
 
     cell = used_by_cell(["icon.dds", ""], ["Footprints", "Move to Velia"], ["Buff 1", "Buff 2"], 3)
     assert 'title="Buff 1"' in cell and 'title="Buff 2"' in cell
+
+
+def test_nearest_node_index_places_a_point_like_the_table(point_result: HandlerResult) -> None:
+    from _dbss.teleport.parser import build_teleport_nearest_node_index
+
+    source = point_result.source
+    index = build_teleport_nearest_node_index(source.data, source.file(_WORLDMAP_FILE))
+    record = next(r for r in point_result.records if (r["section"], r["key"]) == _SWAMP_POINT)
+    node_key, metres = index[teleport_point_id(*_SWAMP_POINT)]
+    assert node_key == record["nearest_node_key"]
+    assert metres == record["distance_m"]
+    assert build_teleport_nearest_node_index(source.data, b"not a graph") == {}
+
+
+def test_point_place_reads_name_and_distance(monkeypatch: pytest.MonkeyPatch) -> None:
+    import _common.teleport as teleport
+    from _common.lookup_index import clear_indexes, init_index
+
+    monkeypatch.setattr(teleport, "full_node_name", lambda key: "Altinova Gateway" if key == 1101 else "")
+    clear_indexes()
+    try:
+        init_index(IndexKind.TELEPORT_NEAREST_NODE, {
+            teleport_point_id(0, 340): (1101, 1221),
+            teleport_point_id(0, 341): (4242, 5),
+        })
+        assert teleport.teleport_point_place(0, 340) == "Altinova Gateway (1,221 m)"
+        # A node without a name, or a point without an entry, places nothing.
+        assert teleport.teleport_point_place(0, 341) == ""
+        assert teleport.teleport_point_place(5, 340) == ""
+    finally:
+        clear_indexes()

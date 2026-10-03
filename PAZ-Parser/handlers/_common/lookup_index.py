@@ -61,6 +61,8 @@ class IndexKind(Enum):
     TELEPORT_BUFFS = "teleport_buffs"
     # Korean names of the teleport buffs, the last fallback for naming a point.
     TELEPORT_BUFF_NAME_KR = "teleport_buff_name_kr"
+    # (nearest worldmap node key, metres) of each teleport point.
+    TELEPORT_NEAREST_NODE = "teleport_nearest_node"
 
 
 # kind -> {entity_id: value}

@@ -74,8 +74,8 @@ class FairyEquipSkillAcquireHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
         cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
         return [
-            Column(cols.get("fairyGrade", "Fairy Grade"), sort_key="fairy_grade"),
             Column(cols.get("equipSkillId", "Skill ID"), "num", sort_key="equip_skill_id"),
+            Column(cols.get("fairyGrade", "Fairy Grade"), sort_key="fairy_grade"),
             Column(cols.get("skillName", "Skill Name"), sort_key="skill_name"),
             Column(cols.get("chance", "Chance"), "num", sort_key="chance_pct"),
             Column(cols.get("weight", "Weight"), "num", sort_key="weight"),
@@ -124,8 +124,8 @@ class FairyEquipSkillAcquireHandler(PreviewHandler):
 
         rows = [
             [
-                e(r["grade_name"] or r["acquire_type_id"]),
                 e(r["equip_skill_id"]),
+                e(r["grade_name"] or r["acquire_type_id"]),
                 e(r["skill_name"] or r["loc_id"]),
                 e(f"{round(r['chance_pct'], 2):g}%"),
                 e(f"{r['weight']:,}"),

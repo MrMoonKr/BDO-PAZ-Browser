@@ -146,8 +146,8 @@ class ZodiacSignOrderHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
         cols = load_handler_strings(self.lang, _LANG_DIR).get("orderColumns", {})
         return [
-            Column(cols.get("row", "Row"), "num", sort_key="row"),
             Column(cols.get("personality", "Personality"), "num", sort_key="personality_type"),
+            Column(cols.get("row", "Row"), "num", sort_key="row"),
             Column(cols.get("zodiac", "Zodiac"), sort_key="zodiac_name"),
             Column(cols.get("variant", "Variant"), "num", sort_key="variant"),
             Column(cols.get("triggers", "Triggers"), "num", sort_key="trigger_count"),
@@ -206,8 +206,8 @@ class ZodiacSignOrderHandler(PreviewHandler):
         meta = f"{len(records):,} order records"
         rows = [
             [
-                e(r["row"]),
                 e(r["personality_type"]),
+                e(r["row"]),
                 e(r["zodiac_name"]),
                 e(r["variant"]),
                 e(r["trigger_count"]),

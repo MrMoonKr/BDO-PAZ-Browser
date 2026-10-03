@@ -27,8 +27,8 @@ class KnowledgeLearningOffsetHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
         cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
         return [
-            Column(cols.get("table", "Table"), "num", sort_key="table"),
             Column(cols.get("sourceId", "Source ID"), "num", sort_key="source_id"),
+            Column(cols.get("table", "Table"), "num", sort_key="table"),
             Column(cols.get("dbssOffset", "DBSS Offset"), "num", sort_key="offset"),
             Column(cols.get("size", "Size"), "num", sort_key="size"),
         ]
@@ -57,7 +57,7 @@ class KnowledgeLearningOffsetHandler(PreviewHandler):
         slice_ = records[start : start + page_size]
         meta = f"{len(records):,} offset records"
         rows = [
-            [e(r["table"]), e(r["source_id"]), e(f"0x{r['offset']:08X}"), e(r["size"])]
+            [e(r["source_id"]), e(r["table"]), e(f"0x{r['offset']:08X}"), e(r["size"])]
             for r in slice_
         ]
         return table(meta, self._columns(), rows)
@@ -67,8 +67,8 @@ class KnowledgeLearningHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
         cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
         return [
-            Column(cols.get("sourceType", "Source Type"), sort_key="source_type"),
             Column(cols.get("sourceId", "Source ID"), "num", sort_key="source_id"),
+            Column(cols.get("sourceType", "Source Type"), sort_key="source_type"),
             Column(cols.get("sourceName", "Source Name"), sort_key="source_name"),
             Column(cols.get("knowledgeId", "Knowledge ID"), "num", sort_key="card_id"),
             Column(cols.get("knowledgeName", "Knowledge Name"), sort_key="card_name"),
@@ -122,8 +122,8 @@ class KnowledgeLearningHandler(PreviewHandler):
 
         rows = [
             [
-                e(r["source_type"]),
                 e(r["source_id"]),
+                e(r["source_type"]),
                 e(r["source_name"] or _EMPTY),
                 e(r["card_id"]),
                 e(r["card_name"] or _EMPTY),

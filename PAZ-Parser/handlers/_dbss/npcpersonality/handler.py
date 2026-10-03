@@ -65,8 +65,8 @@ class NpcPersonalityHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
         cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
         return [
-            Column(cols.get("row", "Row"), "num", sort_key="row"),
             Column(cols.get("id", "ID"), "num", sort_key="personality_id"),
+            Column(cols.get("row", "Row"), "num", sort_key="row"),
             Column(cols.get("groupA", "Group A"), "num", sort_key="group_a_id"),
             Column(cols.get("groupB", "Group B"), "num", sort_key="group_b_id"),
             Column(cols.get("groupC", "Group C"), "num", sort_key="group_c_id"),
@@ -117,8 +117,8 @@ class NpcPersonalityHandler(PreviewHandler):
         meta = f"{len(records):,} personality records"
         rows = [
             [
-                e(r["row"]),
                 e(r["personality_id"]),
+                e(r["row"]),
                 e(_group_str(r["group_a_id"])),
                 e(_group_str(r["group_b_id"])),
                 e(_group_str(r["group_c_id"])),

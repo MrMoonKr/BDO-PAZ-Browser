@@ -14,7 +14,10 @@ from __future__ import annotations
 
 import struct
 
+from _bwp.waypoint.parser import is_waypoint_graph, parse_waypoint_graph
 from _common.binary import u32
+from _common.teleport import teleport_point_id
+from .nearest import NamedNode, nearest_node
 
 
 _RECORD = struct.Struct("<IB3fB")
@@ -81,3 +84,22 @@ def parse_teleport_offset_rows(data: bytes) -> list[dict]:
             index, offset, size = _OFFSET_ROW.unpack_from(data, start + row * _OFFSET_ROW.size)
             rows.append({"section": section, "index": index, "offset": offset, "size": size})
     return rows
+
+
+def build_teleport_nearest_node_index(data: bytes, worldmap: bytes) -> dict[int, tuple[int, int]]:
+    """The `TELEPORT_NEAREST_NODE` index: each point to (nearest worldmap node key, metres).
+
+    Built without LOC over every worldmap node; that picks the same node as
+    the table's named-node search on all but one point of client 3458. An
+    unreadable graph yields an empty index.
+    """
+    if not is_waypoint_graph(worldmap):
+        return {}
+    nodes = [NamedNode(node.key, node.name, node.x, node.z) for node in parse_waypoint_graph(worldmap).waypoints]
+    index: dict[int, tuple[int, int]] = {}
+    for record in parse_teleport_records(data):
+        nearest = nearest_node(record["x"], record["z"], nodes)
+        if nearest is not None:
+            point_id = teleport_point_id(record["section"], record["key"])
+            index[point_id] = (nearest.key, round(nearest.distance_m))
+    return index

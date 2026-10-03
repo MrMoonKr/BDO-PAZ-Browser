@@ -367,6 +367,23 @@ def test_korean_title_survives_without_loc() -> None:
         (111, [2, 80000], "Processing Success Rate +8%"),
         # Farming time does not fit the scale.
         (111, [3, 400000], ""),
+        # Flashbang: "Targets within the range will be stunned".
+        (14, [4, 5000], "Stun for 5 sec"),
+        (14, [20, 4000], "Stun (Ignores Resistance) for 4 sec"),
+        # Kind 0 mixes resistances and stuns.
+        (14, [0, 3000], ""),
+        (24, [27500000, 2], "Skill EXP +27,500,000"),
+        (24, [200000, 1], "Guild EXP +200,000"),
+        (60, [0, 60, 1], "Contribution EXP +60"),
+        # Package durations in minutes, worded like the item names.
+        (97, [1, 43200], "Value Pack for 30 days"),
+        (97, [15, 1440], "Secret Book of Old Moon for 1 day"),
+        (97, [2, 25], "Shining Pearl Blessing for 25 min"),
+        (97, [10, 720], "Book of Training - Combat for 12 hours"),
+        # Kind 22 is shared by Premium Value Pack Plus and Blessing of Cron Stones.
+        (97, [22, 10080, 2], ""),
+        # Set points of a set skill; without LOC the skill shows its number.
+        (48, [56050, 1], "Set Effect Points +1: 56050"),
         # Light Iron Horseshoe +0 and Epheria: Old Wind Sail on bdocodex.
         (98, [1, 20000], "Movement Speed (Mount) +2%"),
         (98, [2, 5000], "Turn +0.5%"),
@@ -381,7 +398,7 @@ def test_korean_title_survives_without_loc() -> None:
         (38, [15074, 0], "Learn Knowledge: 15074"),
         (37, [2070, 0], "Register Node: 2070"),
         (142, [3176, 0], "Obtain Title: 3176"),
-        # No table names a teleport point, so it always shows the key.
+        # Without the TELEPORT_NEAREST_NODE index the point shows its key alone.
         (23, [0, 340], "Teleport to point 0/340"),
         # A kind outside the confirmed ones.
         (80, [10, 100], ""),
@@ -459,10 +476,12 @@ def test_over_time_text(
         (EffectInput(1, [-15], condition_type=4), {1: "when struck"}),
         # No confirmed meaning: no labels at all.
         (EffectInput(39, [0, 8]), {}),
-        (EffectInput(14, [6, 1350]), {}),
+        (EffectInput(16, [521]), {}),
         (EffectInput(187, [0, 300, 2]), {3: "Earth"}),
         (EffectInput(25, [100000, 2, 2]), {1: "10%", 2: "Life", 3: "Hunting"}),
         (EffectInput(53, [1000]), {1: "10m"}),
+        (EffectInput(97, [15, 21600]), {1: "Secret Book of Old Moon", 2: "15 days"}),
+        (EffectInput(14, [4, 5000]), {1: "Stun", 2: "5 sec"}),
         # A named effect without a name labels nothing.
         (EffectInput(23, [0, 340]), {}),
     ],
@@ -507,3 +526,24 @@ def test_teleport_buff_index_follows_section_and_key(buff_result: HandlerResult)
             record = teleports[buff_id]
             assert teleport_point_id(record["param_1"], record["param_2"]) == point_id
     assert set(names) <= set(teleports)
+
+
+def test_teleport_effect_names_the_nearest_node(monkeypatch: pytest.MonkeyPatch) -> None:
+    import _dbss.buff.effect.formats as formats
+    from dataclasses import replace as replace_effect
+
+    named = replace_effect(formats.NAMED_EFFECTS[23], name_of=lambda section, key: "Marni's Lab (12 m)")
+    monkeypatch.setitem(formats.NAMED_EFFECTS, 23, named)
+    buff = EffectInput(23, [0, 371])
+    assert effect_text(buff) == "Teleport to point 0/371, near Marni's Lab (12 m)"
+    assert param_labels(buff) == {2: "Marni's Lab (12 m)"}
+
+
+@pytest.mark.parametrize(
+    ("minutes", "expected"),
+    [(21600, "15 days"), (1440, "1 day"), (720, "12 hours"), (60, "1 hour"), (25, "25 min"), (0, "0 min")],
+)
+def test_minutes_text(minutes: int, expected: str) -> None:
+    from _dbss.buff.effect.units import minutes_text
+
+    assert minutes_text(minutes) == expected

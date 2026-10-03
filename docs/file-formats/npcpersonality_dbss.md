@@ -112,8 +112,8 @@ Every offset row points at a record that repeats its `personality_id`, and every
 
 | Column            | Type | Notes                                            |
 | ----------------- | ---- | ------------------------------------------------ |
-| Row               | num  | Record index within the file                     |
 | ID                | num  | `personality_id`                                 |
+| Row               | num  | Record index within the file                     |
 | Group A           | num  | `group_a_id`                                     |
 | Group B           | num  | `group_b_id`                                     |
 | Group C           | num  | `group_c_id`                                     |

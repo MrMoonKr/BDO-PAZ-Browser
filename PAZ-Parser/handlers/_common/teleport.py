@@ -8,6 +8,7 @@ indexes key a point by both, packed into one ID.
 from __future__ import annotations
 
 from _common.lookup_index import IndexKind, lookup
+from _common.node import full_node_name
 
 TELEPORT_EFFECT_TYPE = 23
 _KEY_BITS = 16
@@ -31,3 +32,13 @@ def teleport_buff_name_kr(buff_id: int) -> str:
     """The Korean name of a teleport buff, from the TELEPORT_BUFF_NAME_KR index; '' when absent."""
     name = lookup(IndexKind.TELEPORT_BUFF_NAME_KR, buff_id)
     return name if isinstance(name, str) else ""
+
+
+def teleport_point_place(section: int, key: int) -> str:
+    """`Altinova Gateway (221 m)`: the nearest worldmap node, from TELEPORT_NEAREST_NODE; '' without one."""
+    nearest = lookup(IndexKind.TELEPORT_NEAREST_NODE, teleport_point_id(section, key))
+    if not isinstance(nearest, tuple) or len(nearest) != 2:
+        return ""
+    node_key, metres = nearest
+    name = full_node_name(node_key)
+    return f"{name} ({metres:,} m)" if name else ""

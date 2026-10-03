@@ -935,6 +935,7 @@ IDs (`LookupValue`).
 | `NODE_PARENT`    | `exploration.bss`, `mapdata_realexplore2.bwp` | parent node key |
 | `TELEPORT_BUFFS` | `buff.dbss`, `buffoffset.dbss`             | buff IDs (tuple) |
 | `TELEPORT_BUFF_NAME_KR` | `buff.dbss`, `buffoffset.dbss`      | Korean buff name |
+| `TELEPORT_NEAREST_NODE` | `teleport.dbss`, `mapdata_realexplore2.bwp` | `(node key, metres)` |
 
 `CHARACTER_ITEM` maps a character to the one base item that places or summons
 it (`character_id` at `+0xAA` in
@@ -1049,7 +1050,11 @@ those buffs to their Korean names; the point ID packs section and key
 indexes). The `teleport.dbss` Used By column names each buff by its item
 (`BUFF_ITEMS`), else its LOC type 5 text, else the Korean name. Both are built
 in `_dbss/buff/parser.py` and keep only the 654 teleport buffs, so the table
-does not open the 12 MB `buff.dbss`.
+does not open the 12 MB `buff.dbss`. `TELEPORT_NEAREST_NODE` goes the other
+way: each point's nearest worldmap node and its distance, found without LOC
+over every node (`build_teleport_nearest_node_index()` in
+`_dbss/teleport/parser.py`). `teleport_point_place()` turns it into `Marni's
+Lab (12 m)` for the `buff.dbss` Effect text of type 23.
 
 ---
 
