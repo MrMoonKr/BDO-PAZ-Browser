@@ -23,10 +23,11 @@ from .parser import NO_CLASS_TYPE, parse_characterstatic_records
 _LANG_DIR = Path(__file__).parent / "lang"
 # The low byte of `npc_kind` is the character kind; the higher bits are unmapped flags.
 _NPC_KIND_LOW_MASK = 0xFF
+_EMPTY = "-"
 
 
 def _optional(value: int | None) -> str:
-    return e(value) if value is not None else ""
+    return _EMPTY if value is None else e(value)
 
 
 def character_static_offset_handler() -> OffsetTableHandler:
@@ -124,7 +125,7 @@ class CharacterStaticHandler(PreviewHandler):
         for r in slice_:
             row: list[str] = [
                 e(r["character_id"]),
-                icon_cell(r["icon_path"]) if r["icon_path"] else "-",
+                icon_cell(r["icon_path"]) if r["icon_path"] else _EMPTY,
             ]
             if has_loc:
                 row.append(e(r["name"]))
@@ -133,7 +134,7 @@ class CharacterStaticHandler(PreviewHandler):
             row.append(_optional(r["knowledge_id"]))
             row.append(e(r["npc_kind_low"]))
             row.append(_optional(r["class_type"]))
-            row.append(e(r["model_path"] or "-"))
+            row.append(e(r["model_path"] or _EMPTY))
             row.append(e(r["payload_size"]))
             rows.append(row)
 

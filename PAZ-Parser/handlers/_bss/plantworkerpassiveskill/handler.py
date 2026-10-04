@@ -8,7 +8,7 @@ from bdo_preview import PreviewHandler
 from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
-from .display import format_effect, format_effect_type
+from .display import effect_sort_values, format_effect, format_effect_type
 from .parser import parse_plantworkerpassiveskill_records
 
 
@@ -52,9 +52,9 @@ class PlantWorkerPassiveSkillBssHandler(PreviewHandler):
             Column(cols.get("description", "Description"), sort_key="display_description"),
             Column(cols.get("weight", "Weight"), "num", sort_key="acquisition_weight"),
             Column(cols.get("effectType", "Effect Type"), sort_key="effect_type"),
-            Column(cols.get("target", "Target"), sort_key="effect_target"),
-            Column(cols.get("effectA", "Effect A"), "num", sort_key="effect_value_a"),
-            Column(cols.get("effectB", "Effect B"), "num", sort_key="effect_value_b"),
+            Column(cols.get("target", "Target"), sort_key="target_sort_value"),
+            Column(cols.get("effectA", "Effect A"), "num", sort_key="effect_a_sort_value"),
+            Column(cols.get("effectB", "Effect B"), "num", sort_key="effect_b_sort_value"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:
@@ -75,8 +75,15 @@ class PlantWorkerPassiveSkillBssHandler(PreviewHandler):
             row["display_description"] = (
                 _loc_skill_text(row["skill_id"], 1) or row["inline_description"]
             )
-            # 0 means the skill has no second value. None renders a dash and sorts last.
-            row["effect_value_b"] = row["effect_value_b"] or None
+            sort_values = effect_sort_values(
+                row["effect_type"],
+                row["effect_target"],
+                row["effect_value_a"],
+                row["effect_value_b"],
+            )
+            row["target_sort_value"] = sort_values.target
+            row["effect_a_sort_value"] = sort_values.effect_a
+            row["effect_b_sort_value"] = sort_values.effect_b
             records.append(row)
         return records
 

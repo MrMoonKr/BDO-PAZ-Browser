@@ -14,15 +14,19 @@ from _common.offset_table import (
     picked_records,
     size_column,
 )
+from .model import MentalThemeRecord
 from .parser import parse_mentaltheme_records, parse_mentalthemeoffset_records
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
 
 
+_EMPTY = "-"
+
+
 def _reward(amount: int, need_count: int) -> str:
     if amount == 0 and need_count == 0:
-        return "-"
+        return _EMPTY
     return f"+{amount} at {need_count} entries"
 
 
@@ -33,8 +37,47 @@ def _reward_2(
     need_count_2: int,
 ) -> str:
     if amount_1 == amount_2 and need_count_1 == need_count_2:
-        return "-"
+        return _EMPTY
     return _reward(amount_2, need_count_2)
+
+
+def _shown_amount(reward: str, amount: int) -> int | None:
+    """The amount a reward column sorts by; None where the cell shows a dash, so it sorts last."""
+    return None if reward == _EMPTY else amount
+
+
+def _theme_record(record: MentalThemeRecord) -> dict:
+    reward_1 = _reward(record["increase_wp"], record["need_count"])
+    reward_2 = _reward_2(
+        record["increase_wp"],
+        record["need_count"],
+        record["increase_wp_2"],
+        record["need_count_2"],
+    )
+    return {
+        "theme_id": record["theme_id"],
+        "name": record["name"],
+        # 0 marks a root theme. None renders a dash and sorts last.
+        "parent_id": record["parent_id"] or None,
+        "parent_name": record["parent_name"],
+        "energy_reward_1": reward_1,
+        "energy_reward_2": reward_2,
+        "energy_reward_1_amount": _shown_amount(reward_1, record["increase_wp"]),
+        "energy_reward_1_entries": record["need_count"],
+        "energy_reward_2_amount": _shown_amount(reward_2, record["increase_wp_2"]),
+        "energy_reward_2_entries": record["need_count_2"],
+        "entry_count": record["entry_count"],
+        "child_count": record["child_count"],
+        "name_ko": record["name_ko"],
+        "entry_ids": record["entry_ids"],
+        "entry_names": record["entry_names"],
+        "child_ids": record["child_ids"],
+        "payload_offset": record["payload_offset"],
+        "payload_size": record["payload_size"],
+        "unknown_0e": record["unknown_0e"],
+        "unknown_0f": record["unknown_0f"],
+        "terminator": record["terminator"],
+    }
 
 
 def mental_theme_offset_handler() -> OffsetTableHandler:
@@ -80,38 +123,7 @@ class MentalThemeHandler(PreviewHandler):
         if offset_raw is None:
             raise ValueError("mentalthemeoffset.dbss companion not found.")
 
-        records = parse_mentaltheme_records(data, offset_raw)
-        return [
-            {
-                "theme_id": record["theme_id"],
-                "name": record["name"],
-                "parent_id": record["parent_id"] or "",
-                "parent_name": record["parent_name"],
-                "energy_reward_1": _reward(record["increase_wp"], record["need_count"]),
-                "energy_reward_2": _reward_2(
-                    record["increase_wp"],
-                    record["need_count"],
-                    record["increase_wp_2"],
-                    record["need_count_2"],
-                ),
-                "energy_reward_1_amount": record["increase_wp"],
-                "energy_reward_1_entries": record["need_count"],
-                "energy_reward_2_amount": record["increase_wp_2"],
-                "energy_reward_2_entries": record["need_count_2"],
-                "entry_count": record["entry_count"],
-                "child_count": record["child_count"],
-                "name_ko": record["name_ko"],
-                "entry_ids": record["entry_ids"],
-                "entry_names": record["entry_names"],
-                "child_ids": record["child_ids"],
-                "payload_offset": record["payload_offset"],
-                "payload_size": record["payload_size"],
-                "unknown_0e": record["unknown_0e"],
-                "unknown_0f": record["unknown_0f"],
-                "terminator": record["terminator"],
-            }
-            for record in records
-        ]
+        return [_theme_record(record) for record in parse_mentaltheme_records(data, offset_raw)]
 
     def render_records_page(
         self,
@@ -132,9 +144,9 @@ class MentalThemeHandler(PreviewHandler):
         rows = [
             [
                 e(r["theme_id"]),
-                e(r["name"] or "-"),
-                e(r["parent_id"] or "-"),
-                e(r["parent_name"] or "-"),
+                e(r["name"] or _EMPTY),
+                e(r["parent_id"] or _EMPTY),
+                e(r["parent_name"] or _EMPTY),
                 e(r["energy_reward_1"]),
                 e(r["energy_reward_2"]),
                 e(r["entry_count"]),

@@ -2,31 +2,17 @@
 default sort and sorts by each of them."""
 from __future__ import annotations
 
-import importlib
 import re
-from pathlib import Path
 
 import pytest
 
 from table_sort import SORT_ASC, SORT_DESC, TableSort
+from tests.handler_cases import case_file_name, handler_cases
 from tests.models import HandlerCase
 from tests.runner import LoadedCase, load_case
 
-_HANDLERS_DIR = Path(__file__).resolve().parent.parent / "handlers"
 _SORT_KEY_RE = re.compile(r'data-sort-key="([^"]+)"')
 _PAGE_SIZE = 50
-
-
-def _handler_cases() -> list[HandlerCase]:
-    """Every module-level HandlerCase in the handler-local test modules."""
-    cases: dict[str, HandlerCase] = {}
-    for path in sorted(_HANDLERS_DIR.glob("*/*/test_*.py")):
-        module_name = ".".join(path.relative_to(_HANDLERS_DIR).with_suffix("").parts)
-        module = importlib.import_module(module_name)
-        for value in vars(module).values():
-            if isinstance(value, HandlerCase):
-                cases.setdefault(value.internal_path, value)
-    return list(cases.values())
 
 
 def _assert_headers_are_declared(loaded: LoadedCase) -> None:
@@ -69,7 +55,7 @@ def _assert_sorts_every_field(loaded: LoadedCase) -> None:
             assert "<tr>" in html, f"{sort} rendered no rows"
 
 
-@pytest.mark.parametrize("case", _handler_cases(), ids=lambda case: Path(case.internal_path).name)
+@pytest.mark.parametrize("case", handler_cases(), ids=case_file_name)
 def test_handler_sorts_by_every_rendered_column(case: HandlerCase) -> None:
     loaded = load_case(case)
 

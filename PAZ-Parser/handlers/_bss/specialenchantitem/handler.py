@@ -35,6 +35,18 @@ def _level_name(record: dict) -> str:
     return item_level_name(record["item_id"], record["enchant_level"]) or record["name_kr"]
 
 
+def _level_record(record: dict) -> dict:
+    shown_as = display_level_text(record["display_level"])
+    return {
+        **record,
+        # Shown As sorts by display_level. A level with no text (0) renders a
+        # dash, so None makes it sort last.
+        "display_level": record["display_level"] if shown_as else None,
+        "shown_as": shown_as,
+        "name": _level_name(record),
+    }
+
+
 class SpecialEnchantItemBssHandler(PreviewHandler):
     def _strings(self) -> dict:
         return load_handler_strings(self.lang, _LANG_DIR)
@@ -58,14 +70,7 @@ class SpecialEnchantItemBssHandler(PreviewHandler):
         entry: PazEntry,
         companions: dict[str, bytes],
     ) -> list[dict]:
-        return [
-            {
-                **record,
-                "shown_as": display_level_text(record["display_level"]),
-                "name": _level_name(record),
-            }
-            for record in parse_specialenchantitem_records(data)
-        ]
+        return [_level_record(record) for record in parse_specialenchantitem_records(data)]
 
     def render_records_page(
         self,

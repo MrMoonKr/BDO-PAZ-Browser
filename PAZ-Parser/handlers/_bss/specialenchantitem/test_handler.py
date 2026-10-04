@@ -78,6 +78,7 @@ CASE = HandlerCase(
             value=_SOVEREIGN_LONGSWORD,
             expected={
                 "enchant_level": 0,
+                "display_level": None,
                 "shown_as": "",
                 "icon_path": f"{_WEAPON_DIR}/00747201.dds",
                 "name": "Sovereign Longsword",

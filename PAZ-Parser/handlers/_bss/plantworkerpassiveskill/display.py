@@ -16,7 +16,8 @@ in the 2026-09-27 client):
 - type 6, extra work: `effect_target` is the production category,
   `effect_value_a` a plain count
 
-Records keep the raw integers, so sorting and export stay exact.
+Records keep the raw integers, so export stays exact. Each column sorts by the
+raw number its cell shows (`effect_sort_values`), and a dash cell sorts last.
 """
 
 from __future__ import annotations
@@ -95,6 +96,14 @@ class EffectCells(NamedTuple):
     effect_b: str
 
 
+class EffectSortValues(NamedTuple):
+    """The raw numbers the Target, Effect A and Effect B cells show; None for a dash."""
+
+    target: int | None
+    effect_a: int
+    effect_b: int | None
+
+
 def _number(value: float) -> str:
     return f"{value:g}"
 
@@ -120,19 +129,16 @@ def _stat_label(stat: SkillStat | None, raw: int) -> str:
     return STAT_LABELS[stat] if stat is not None else str(raw)
 
 
-def _flat_stats(effect_target: int, value_a: int, value_b: int | None) -> EffectCells:
-    selector = value_b or 0
-    stat = _stat_or_none(selector)
-    target = _stat_label(stat, selector)
+def _flat_stats(effect_target: int, value_a: int, value_b: int) -> EffectCells:
+    stat = _stat_or_none(value_b)
+    target = _stat_label(stat, value_b)
     if effect_target != _GENERIC_TARGET:
         category = WORK_CATEGORY_LABELS.get(effect_target, str(effect_target))
         target = f"{category} {target}"
     return EffectCells(target, _stat_amount(stat, value_a), _EMPTY)
 
 
-def format_effect(
-    effect_type: int, effect_target: int, value_a: int, value_b: int | None
-) -> EffectCells:
+def format_effect(effect_type: int, effect_target: int, value_a: int, value_b: int) -> EffectCells:
     """The Target, Effect A and Effect B cells for one skill's raw parameters."""
     if effect_type == EffectType.FLAT_STATS:
         return _flat_stats(effect_target, value_a, value_b)
@@ -146,7 +152,18 @@ def format_effect(
     if effect_type == EffectType.EXTRA_WORK:
         target = EXTRA_WORK_LABELS.get(effect_target, str(effect_target))
         return EffectCells(target, f"+{value_a}", _EMPTY)
-    return EffectCells(str(effect_target), str(value_a), _EMPTY if value_b is None else str(value_b))
+    return EffectCells(str(effect_target), str(value_a), str(value_b))
+
+
+def effect_sort_values(
+    effect_type: int, effect_target: int, value_a: int, value_b: int
+) -> EffectSortValues:
+    """What the Target, Effect A and Effect B columns sort by, matching `format_effect`."""
+    if effect_type == EffectType.FULL_REFUND:
+        return EffectSortValues(None, effect_target, value_a)
+    if effect_type in EffectType._value2member_map_:
+        return EffectSortValues(effect_target, value_a, None)
+    return EffectSortValues(effect_target, value_a, value_b)
 
 
 def format_effect_type(effect_type: int) -> str:

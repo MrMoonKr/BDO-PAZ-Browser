@@ -199,11 +199,11 @@ Every member has a `characterstatic.dbss` record with `class_type` other than `1
 | Character ID | num  | `character_id`; right-aligned |
 | Icon         | text | Resolved from the character ID through the character icon index; covers about 20% of characters |
 | Name         | text | LOC lookup `str_type=6`, `str_id1=character_id`; shown only when LOC is loaded |
-| NPC Kind     | num  | `npc_kind` low byte (`npc_kind_low` in the handler, which also keeps the full u32 for search and CSV) |
-| Class        | text | `class_type` through LOC `str_type=21`; blank when `101` |
-| Script       | text | `action_script` |
-| Knowledge ID | num  | Extract from `getknowledge(<id>);` (case-insensitive) when present |
+| Action Script | text | `action_script` |
 | Condition    | text | `condition_script` |
+| Knowledge ID | num  | Extract from `getknowledge(<id>);` (case-insensitive) when present; dash otherwise, stored as `None` so it sorts last |
+| NPC Kind     | num  | `npc_kind` low byte (`npc_kind_low` in the handler, which also keeps the full u32 for search and CSV) |
+| Class Type   | num  | `class_type`; dash when `101` (not a player character), stored as `None` so it sorts last |
 | Model        | text | `model_path` |
 | Payload Size | num  | Useful for debugging variable layouts |
 

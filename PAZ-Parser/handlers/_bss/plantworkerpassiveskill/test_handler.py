@@ -17,7 +17,7 @@ from tests.framework import (
     run_case,
 )
 
-from .display import format_effect, format_effect_type
+from .display import effect_sort_values, format_effect, format_effect_type
 
 
 _ICON_FOLDER = "/New_UI_Common_forLua/Skill/WorkerSkill/"
@@ -124,20 +124,37 @@ def test_plantworkerpassiveskill_bss(
     ("params", "shown"),
     [
         ((0, 0, 2_000_000, 1), ("Work Speed", "+2", "-")),  # 1006 Masterly
-        ((0, 0, 70_000, None), ("Move Speed", "+7%", "-")),  # 1302
+        ((0, 0, 70_000, 0), ("Move Speed", "+7%", "-")),  # 1302
         ((0, 0, 7_000, 2), ("Luck", "+0.7", "-")),  # 1502
         ((0, 9, 5_000_000, 1), ("Cannon/Siege Weapon Work Speed", "+5", "-")),  # 1009 Siege Knowledge
         ((1, 7_000, 1_000_000, 1_000_000), ("-", "0.7%", "100%")),  # 1203 Thrifty C
-        ((2, 1, 200_000, None), ("Work Speed", "+0.2", "-")),  # 1902 Craftsmanship
-        ((2, 0, 5_000, None), ("Move Speed", "+0.5%", "-")),  # 1901 Leg Work
-        ((6, 5004, 3, None), ("Siege Weapons", "+3", "-")),  # 1923
-        ((6, 9999, 3, None), ("9999", "+3", "-")),  # a category not seen yet
+        ((2, 1, 200_000, 0), ("Work Speed", "+0.2", "-")),  # 1902 Craftsmanship
+        ((2, 0, 5_000, 0), ("Move Speed", "+0.5%", "-")),  # 1901 Leg Work
+        ((6, 5004, 3, 0), ("Siege Weapons", "+3", "-")),  # 1923
+        ((6, 9999, 3, 0), ("9999", "+3", "-")),  # a category not seen yet
     ],
 )
 def test_effect_cells_show_in_game_units(
-    params: tuple[int, int, int, int | None], shown: tuple[str, str, str]
+    params: tuple[int, int, int, int], shown: tuple[str, str, str]
 ) -> None:
     assert tuple(format_effect(*params)) == shown
+
+
+# Each column sorts by the raw number its cell shows; a dash cell sorts by None.
+@pytest.mark.parametrize(
+    ("params", "sorted_by"),
+    [
+        ((0, 9, 5_000_000, 1), (9, 5_000_000, None)),  # 1009 Siege Knowledge
+        ((1, 7_000, 1_000_000, 1_000_000), (None, 7_000, 1_000_000)),  # 1203 Thrifty C
+        ((2, 1, 200_000, 0), (1, 200_000, None)),  # 1902 Craftsmanship
+        ((6, 5004, 3, 0), (5004, 3, None)),  # 1923
+        ((9, 4, 5, 6), (4, 5, 6)),  # a type not seen yet shows every raw value
+    ],
+)
+def test_effect_sort_values_match_cells(
+    params: tuple[int, int, int, int], sorted_by: tuple[int | None, int, int | None]
+) -> None:
+    assert tuple(effect_sort_values(*params)) == sorted_by
 
 
 @pytest.mark.parametrize(

@@ -121,10 +121,10 @@ Sample records confirmed from `mentaltheme.dbss`, `mentalthemeoffset.dbss`, `men
 | --------------- | ---- | --------------------------------------------------------- |
 | Theme ID        | num  | Primary key                                               |
 | Name            | text | LOC `str_type=9`; fallback to `name_ko`                   |
-| Parent ID       | num  | Link to parent theme                                      |
+| Parent ID       | num  | Link to parent theme; dash for a root theme, stored as `None` so it sorts last |
 | Parent Name     | text | LOC `str_type=9` for `parent_id`                          |
-| Energy Reward 1 | text | Render as `+{increase_wp} at {need_count} entries`        |
-| Energy Reward 2 | text | Render as `-` when it duplicates reward 1; otherwise `+{increase_wp_2} at {need_count_2} entries` |
+| Energy Reward 1 | text | Render as `+{increase_wp} at {need_count} entries`, or `-` when both are `0`; sorts by `energy_reward_1_amount`, `None` for a dash |
+| Energy Reward 2 | text | Render as `-` when it duplicates reward 1 or both values are `0`; otherwise `+{increase_wp_2} at {need_count_2} entries`. Sorts by `energy_reward_2_amount`, `None` for a dash |
 | Entries         | num  | `entry_count`                                             |
 | Children Groups | num  | `child_count`                                             |
 

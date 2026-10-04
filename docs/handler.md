@@ -302,7 +302,14 @@ Picking the field behind a column:
   `get_records()` (`record["item_id"] = record["item_id"] or None`). A `0`
   would sort first ascending even though the cell looks empty; `None` sorts
   last both ways and exports as an empty CSV cell. Keep the parser returning
-  the raw `0` and convert only in the handler.
+  the raw `0` and convert only in the handler. A `0` that the cell shows as
+  `0` (a count, a `+0` level, an enum value) stays `0`.
+- **Sort a derived cell by what it shows.** When a cell's dash depends on more
+  than its own field (a reward shown as `-` because it repeats the one before)
+  or the field means different things per row, add a sort field that holds
+  the shown number or `None`, and keep the raw field for export:
+  `energy_reward_2_amount` in `mentaltheme.dbss`, `effect_sort_values()` in
+  `plantworkerpassiveskill.bss`. `tests/test_empty_cells.py` enforces both rules.
 
 Ordering rules (`table_sort.py`):
 
@@ -492,11 +499,18 @@ user-facing table contract, add a `record_mapper` to `HandlerCase`. The mapper
 receives one raw record and returns the normalized dictionary used by test specs.
 
 `tests/test_handler_sort.py` needs no per-handler code. It collects every
-`HandlerCase` in the handler-local test modules, renders page 1 and checks that
+`HandlerCase` in the handler-local test modules (`tests/handler_cases.py`),
+renders page 1 and checks that
 each `data-sort-key` header is in `sortable_fields()`, then sorts by every
 declared field in both directions. A handler that renders no sortable headers,
 or crashes while rendering or sorting, fails there. Parsed LOC is kept per
 fixture and restored between cases, so the whole sweep takes about 25 s.
+
+`tests/test_empty_cells.py` runs over the same cases. It renders every record
+and fails when a sortable cell shows a dash or nothing while its record holds a
+value that is not empty, which would sort that row among the real values (see
+"Store none as None" above). A text value that is itself `-`, such as a name in
+the game data, passes; image cells are skipped. It takes about 25 s too.
 
 Fixtures are input files required by tests. Do not commit extracted game files.
 `PAZ-Parser/tests/fixtures/` is gitignored except for `.gitkeep`. Missing fixtures
