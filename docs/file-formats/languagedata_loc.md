@@ -608,6 +608,21 @@ Group `26` (`"Dim Magic"`) has rows at both `2` and `6`.
 
 ## Open Questions
 
+### Type 26 key
+
+Type 26 holds 84,552 rows over 14,000 IDs, `str_id2` from 0 up, `str_id3`
+and `str_id4` 0; only 1,799 rows on 449 IDs are text, the rest `<null>`.
+`str_id1` looks like an item ID: 10078 is Ramones's Longsword and its rows
+read `Item Effects: Extra Damage to All Species +5 / Enhancement Effects:
+AP, Accuracy, Extra Damage to All Species Increase`, and outfits read
+`Equip Effect: Death Penalty -10% / Set Effect: Combat EXP +10%`. But
+`str_id2` is not the `itemenchant.dbss` enhancement level: weapons have
+rows 1 to 20 and outfits 2 to 4 where the file has blocks for levels 0 or
+0 and 1 only (408 of 449 IDs), and 40 IDs are no item at all (25321 to
+25325 change per `str_id2` like ship parts, `Max Rations +10,000` at 0 to
+`+28,000` at 10). The table that owns these keys is not found yet, so no
+column shows type 26.
+
 ### Type 50 service codes
 
 Which service each `str_id3` code stands for is not known. `12` is the main

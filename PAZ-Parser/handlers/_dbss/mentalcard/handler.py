@@ -23,7 +23,6 @@ _LOC_THEME = 9
 _LOC_DESCRIPTION = 1
 _LOC_ACQUISITION = 2
 _EMPTY = "-"
-_DESCRIPTION_PREVIEW_CHARS = 120
 _LIST_PREVIEW_ITEMS = 3
 
 
@@ -187,7 +186,7 @@ class MentalCardHandler(PreviewHandler):
                 e(r["entry_name"] or _EMPTY),
                 e(r["node_id"]),
                 e(r["node_name"] or _EMPTY),
-                pa_line_cell(r, "description", _DESCRIPTION_PREVIEW_CHARS),
+                pa_line_cell(r, "description"),
                 e(r["min_favor"]),
                 e(r["max_favor"]),
                 e(r["interest"]),

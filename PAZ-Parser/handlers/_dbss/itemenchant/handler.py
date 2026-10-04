@@ -9,8 +9,8 @@ from _common.buff import buff_label, buff_list_cell
 from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.item_grade import item_grade_tagged
 from _common.lang import load_handler_strings
-from _common.loc import loc_text
-from _common.pa_text import pa_cell, pa_fields
+from _common.loc import LOC_NULL, loc_tagged, loc_text
+from _common.pa_text import pa_cell, pa_fields, pa_line_cell
 from _common.skill import skill_buff_ids
 from .parser import (
     parse_itemenchant_records,
@@ -23,10 +23,18 @@ _OFFSET_FILE = "itemenchantoffset.dbss"
 
 # Item names are LOC type 0 keyed by item ID; character names type 6.
 _LOC_TYPE_ITEM = 0
+# LOC type 0 field of the item description.
+_LOC_ITEM_DESCRIPTION = 1
 _LOC_TYPE_CHARACTER = 6
 
 _EMPTY = "-"
 _LIST_PREVIEW_ITEMS = 3
+
+
+def _item_description_tagged(item_id: int) -> str:
+    """The item's LOC description with its PA tags, or ''; the file stores none of its own."""
+    text = loc_tagged(_LOC_TYPE_ITEM, item_id, _LOC_ITEM_DESCRIPTION)
+    return "" if text == LOC_NULL else text
 
 
 def _with_links(record: dict) -> dict:
@@ -36,6 +44,7 @@ def _with_links(record: dict) -> dict:
         **record,
         # In its grade colour, as the game draws item names.
         **pa_fields("item_name", item_grade_tagged(loc_text(_LOC_TYPE_ITEM, record["item_id"]), record["grade"])),
+        **pa_fields("description", _item_description_tagged(record["item_id"])),
         # 0 means "places no character"; None sorts last and exports empty.
         "character_id": record["character_id"] or None,
         "character_name": (
@@ -99,6 +108,7 @@ class ItemEnchantHandler(PreviewHandler):
             Column(cols.get("itemId", "Item ID"), "num", sort_key="item_id"),
             Column(cols.get("icon", "Icon"), sort_key="icon_path"),
             Column(cols.get("item", "Item"), sort_key="item_name"),
+            Column(cols.get("description", "Description"), sort_key="description"),
             Column(cols.get("maxLevel", "Max Level"), "num", sort_key="max_enchant_level"),
             Column(cols.get("objectId", "Object ID"), "num", sort_key="character_id"),
             Column(cols.get("object", "Object"), sort_key="character_name"),
@@ -146,6 +156,7 @@ class ItemEnchantHandler(PreviewHandler):
                 e(record["item_id"]),
                 icon_cell(record["icon_path"]) if record["icon_path"] else _EMPTY,
                 pa_cell(record, "item_name") if record["item_name"] else e(record["item_id"]),
+                pa_line_cell(record, "description"),
                 e(record["max_enchant_level"]),
                 e(record["character_id"]) if record["character_id"] is not None else _EMPTY,
                 e(record["character_name"] or _EMPTY),

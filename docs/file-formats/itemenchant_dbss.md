@@ -30,7 +30,7 @@ item 58011 ([Event] Fence)
 | File                      | Required | Role                                          |
 | ------------------------- | -------- | --------------------------------------------- |
 | `itemenchantoffset.dbss`  | Required | Maps the packed key to a block offset and size |
-| `languagedata_en.loc`     | Optional | Item name for the item ID (`str_type=0`)      |
+| `languagedata_en.loc`     | Optional | Item name and description for the item ID (`str_type=0`, `str_id4` 0 and 1) |
 | `skill.dbss`              | Optional | The buffs of `skill_key_1` and `skill_key_2`, through the `SKILL_BUFFS` lookup index |
 
 All multi-byte values are little-endian.
@@ -287,6 +287,7 @@ One row per item, read from its level-0 block. Higher levels only feed Max Level
 | Item ID       | num  | `item_id` from the key                            |
 | Icon          | text | First block string, prefixed `ui_texture/icon/`   |
 | Item          | text | LOC `str_type=0`, `str_id1=item_id`, in its `grade` colour |
+| Description   | text | LOC `str_type=0`, `str_id4=1`, in its game colours, on one line and cut; the file stores no description. 61,837 of 70,284 items have one on client 3458 |
 | Max Level     | num  | Highest `enchant_level` among the item's keys; `0` when it cannot be enhanced |
 | Object ID     | num  | `character_id` of the placed object or summoned pet; dash when `0` |
 | Object        | text | LOC `str_type=6`, `str_id1=character_id`          |

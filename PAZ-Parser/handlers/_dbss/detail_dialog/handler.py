@@ -22,7 +22,6 @@ _FIELD_GREETING = 0
 _FIELD_OPTION_TITLE = 2
 _EMPTY = "-"
 _LIST_PREVIEW_ITEMS = 3
-_GREETING_PREVIEW_CHARS = 120
 
 
 def _dialog_text(record: DialogRecord, text_id: int, field: int, has_loc: bool) -> str:
@@ -152,7 +151,7 @@ class DetailDialogHandler(PreviewHandler):
                 e(r["character_id"]),
                 e(r["dialog_index"]),
                 e(r["character"] or _EMPTY),
-                pa_line_cell(r, "greeting", _GREETING_PREVIEW_CHARS),
+                pa_line_cell(r, "greeting"),
                 e(r["option_count"]),
                 pa_list_cell(r[pa_key("option_titles")], _LIST_PREVIEW_ITEMS),
                 pa_list_cell(r[pa_key("leases")], _LIST_PREVIEW_ITEMS),

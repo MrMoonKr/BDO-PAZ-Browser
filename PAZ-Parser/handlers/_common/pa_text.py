@@ -36,6 +36,8 @@ _ALPHA_MAX = 255
 _SPAN_CLOSE = "</span>"
 _EMPTY = "-"
 _ELLIPSIS = "…"
+# Visible characters a one-line cell keeps of a long text.
+LINE_PREVIEW_CHARS = 120
 
 # The "Show game text tags" setting, applied by the app and the CLI at start
 # and on save, like the LOC language.
@@ -149,7 +151,7 @@ def pa_cell(record: dict, field: str, max_chars: int | None = None) -> str:
     return pa_html(record[pa_key(field)], max_chars=max_chars) if record[field] else _EMPTY
 
 
-def pa_line_cell(record: dict, field: str, max_chars: int) -> str:
+def pa_line_cell(record: dict, field: str, max_chars: int = LINE_PREVIEW_CHARS) -> str:
     """`pa_cell` on one line for long text: line breaks and runs of spaces
     become one space, then the text is cut after `max_chars`."""
     if not record[field]:

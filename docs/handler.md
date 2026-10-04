@@ -746,8 +746,8 @@ pa_cell(r, "description")
 pa_cell(r, "objective", 140)
 
 # Long text (descriptions, greetings) on one line: line breaks become spaces,
-# then the text is cut after max_chars
-pa_line_cell(r, "description", 120)
+# then the text is cut after max_chars (LINE_PREVIEW_CHARS, 120, by default)
+pa_line_cell(r, "description")
 
 # A list field: pa_list_fields() puts the plain list under the field and the
 # tagged list under pa_key()

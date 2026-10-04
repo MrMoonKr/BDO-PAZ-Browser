@@ -81,6 +81,7 @@ CASE = HandlerCase(
                 "second_string",
                 "block_size",
                 "item_name",
+                "description",
                 "character_id",
                 "character_name",
                 "skill_keys",
@@ -97,6 +98,8 @@ CASE = HandlerCase(
         TargetTest(col="item_id", value=_BALACS_LUNCHBOX, expected={"grade": 3}),
         # Item names are drawn in their grade colour.
         PaFieldTest(field="item_name"),
+        # Descriptions keep their game colours (LOC type 0 field 1).
+        PaFieldTest(field="description"),
         # The furniture case: icon path comes from the block, not the item ID.
         TargetTest(
             col="item_id",

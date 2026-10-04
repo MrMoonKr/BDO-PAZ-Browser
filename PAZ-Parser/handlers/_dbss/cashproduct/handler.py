@@ -21,7 +21,6 @@ _LANG_DIR = Path(__file__).parent / "lang"
 _OFFSET_FILE = "cashproductoffset.dbss"
 
 _EMPTY = "-"
-_DESCRIPTION_PREVIEW_CHARS = 120
 
 
 class CashProductOffsetHandler(PreviewHandler):
@@ -127,7 +126,7 @@ class CashProductHandler(PreviewHandler):
                 pa_cell(record, "product"),
                 e(record["item_id"] or _EMPTY),
                 pa_cell(record, "item_name"),
-                pa_line_cell(record, "description", _DESCRIPTION_PREVIEW_CHARS),
+                pa_line_cell(record, "description"),
             ]
             for record in slice_
         ]
