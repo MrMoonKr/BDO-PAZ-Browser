@@ -3,8 +3,6 @@ records, and text shows its game colours without the tags."""
 from __future__ import annotations
 
 import re
-import struct
-import zlib
 
 import pytest
 
@@ -12,8 +10,9 @@ from bdo_models import PazEntry
 from bdo_preview import get_handler
 from table_sort import TableSort
 
-# (str_type, str_id1, str_id2, str_id3, str_id4, text)
-_ROWS = [
+from tests.loc_data import LocRow, loc_bytes
+
+_ROWS: list[LocRow] = [
     (6, 300, 0, 0, 0, "gamma"),
     (5, 100, 0, 0, 0, "Alpha"),
     (6, 200, 0, 0, 0, ""),
@@ -21,19 +20,9 @@ _ROWS = [
 ]
 
 
-def _loc_bytes(rows: list[tuple[int, int, int, int, int, str]]) -> bytes:
-    body = b"".join(
-        struct.pack("<IIIHBB", len(text), str_type, id1, id2, id3, id4)
-        + text.encode("utf-16-le")
-        + b"\0\0\0\0"
-        for str_type, id1, id2, id3, id4, text in rows
-    )
-    return struct.pack("<I", len(body)) + zlib.compress(body)
-
-
 @pytest.fixture
 def loc() -> tuple:
-    data = _loc_bytes(_ROWS)
+    data = loc_bytes(_ROWS)
     entry = PazEntry("t.paz", "ads/languagedata_en.loc", 0, len(data), len(data), 0, 0)
     return get_handler("languagedata_en.loc", ".loc"), data, entry
 
@@ -91,7 +80,7 @@ def test_loc_sort_does_not_build_all_record_dicts(loc: tuple, monkeypatch: pytes
 
 
 def test_loc_text_draws_the_colour_without_the_tags() -> None:
-    data = _loc_bytes([(5, 48723, 0, 0, 0, "<PAColor0xffe9bd23>Boon & Co<PAOldColor>")])
+    data = loc_bytes([(5, 48723, 0, 0, 0, "<PAColor0xffe9bd23>Boon & Co<PAOldColor>")])
     entry = PazEntry("t.paz", "ads/languagedata_en.loc", 0, len(data), len(data), 0, 0)
     handler = get_handler("languagedata_en.loc", ".loc")
 

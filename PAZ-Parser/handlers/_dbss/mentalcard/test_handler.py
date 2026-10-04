@@ -13,6 +13,7 @@ from tests.framework import (
     DeclaredCountTest,
     HandlerCase,
     HandlerResult,
+    PaFieldTest,
     RangeTest,
     SchemaTest,
     TargetTest,
@@ -31,12 +32,14 @@ CASE = HandlerCase(
     companion_files={"mentalcardoffset.dbss": "mentalcardoffset.dbss"},
     loc_file="languagedata_en.loc",
     uses_loc=True,
-    loc_fields=["Knowledge Name", "Category Name"],
+    loc_fields=["Knowledge Name", "Category Name", "Description"],
     internal_path="gamecommondata/binary/mentalcard.dbss",
     lookup_indexes={IndexKind.KNOWLEDGE_CHARACTERS: _KNOWLEDGE_CHARACTERS},
     tests=[
-        SchemaTest(required_keys=["entry_id", "entry_name", "node_id", "node_name", "min_favor", "max_favor", "interest", "combo_text", "buff_type", "combo_value", "valid_turn", "apply_turn", "icon_path", "obtain", "learned_from", "position", "position_text"]),
+        SchemaTest(required_keys=["entry_id", "entry_name", "node_id", "node_name", "min_favor", "max_favor", "interest", "combo_text", "buff_type", "combo_value", "valid_turn", "apply_turn", "icon_path", "description", "obtain", "learned_from", "position", "position_text"]),
         DeclaredCountTest(declared=header_count()),
+        # Recipe cards name their ingredients in yellow.
+        PaFieldTest(field="description"),
         RangeTest(col="min_favor", min_val=0, max_val=math.inf),
         RangeTest(col="max_favor", min_val=0, max_val=math.inf),
         RangeTest(col="interest", min_val=0, max_val=math.inf),
@@ -103,7 +106,7 @@ def _card(buff_type: int, value: float = 0.0, valid_turn: int = 0, apply_turn: i
     return MentalCardRecord(
         card_id=1, theme_id=1, min_favor=0.0, max_favor=0.0, interest=0.0,
         buff_type=buff_type, varied_value=value, valid_turn=valid_turn, apply_turn=apply_turn,
-        name_kr="", icon_path="", acquisition_kr="", position=(0.0, 0.0, 0.0),
+        name_kr="", description_kr="", icon_path="", acquisition_kr="", position=(0.0, 0.0, 0.0),
     )
 
 

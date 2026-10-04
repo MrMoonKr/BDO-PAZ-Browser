@@ -735,7 +735,7 @@ twin of `loc_text()`), then:
 
 ```python
 from _common.loc import loc_tagged
-from _common.pa_text import pa_cell, pa_fields, pa_key, pa_list_cell, pa_list_fields
+from _common.pa_text import pa_cell, pa_fields, pa_key, pa_line_cell, pa_list_cell, pa_list_fields
 
 # get_records: `description` plain, `_description_pa` tagged
 record = {**record, **pa_fields("description", loc_tagged(5, buff_id))}
@@ -744,6 +744,10 @@ record = {**record, **pa_fields("description", loc_tagged(5, buff_id))}
 # visible text like truncate()
 pa_cell(r, "description")
 pa_cell(r, "objective", 140)
+
+# Long text (descriptions, greetings) on one line: line breaks become spaces,
+# then the text is cut after max_chars
+pa_line_cell(r, "description", 120)
 
 # A list field: pa_list_fields() puts the plain list under the field and the
 # tagged list under pa_key()
@@ -760,7 +764,13 @@ An icon list label in colour goes through `icon_html_label_cell()` /
 `icon_html_list_cell()`, which take labels that are already safe HTML
 (`pa_html()` output); `icon_label_cell()` / `icon_list_cell()` escape plain
 labels. `buff_list_cell()` draws each buff's first line in its colours this
-way. Item names (LOC type 0 field 0) carry no tags, so item lists stay plain.
+way. Item names (LOC type 0 field 0) carry no tags; `item_name_tagged()` and
+`item_key_list_cell()` in `_common/item_key.py` draw them in their grade colour.
+
+A LOC type whose keys hold a part the caller cannot know up front reads all of
+its rows through `loc_type_entries(str_type)` (read-only, built once per loaded
+LOC): type 50 keeps a service code in `str_id3`, see
+`_dbss/cashproduct/text.py`.
 
 A handler test checks a `pa_fields` text with `PaFieldTest(field="text")` from
 `tests/framework.py`: every plain value is its tagged copy without tags, and
@@ -808,7 +818,7 @@ Examples:
 
 ```text
 _common/
-├── loc.py
+├── loc.py               # LOC index: loc_lookup(), loc_tagged() / loc_text(), loc_type_entries()
 ├── binary.py
 ├── buff.py              # buff icon paths and LOC type 5 buff text
 ├── character.py         # character names (LOC type 6)
@@ -821,7 +831,7 @@ _common/
 ├── inline_text.py       # decode_inline_text(): the stored \n escape of inline text
 ├── item_key.py          # item keys (enchant_level << 24 | item_id), LOC type 0 names, per-level icons
 ├── knowledge.py         # knowledge entry names (LOC type 34)
-├── pa_text.py           # game text tags: pa_fields() / pa_cell() for records, pa_html(), argb_css()
+├── pa_text.py           # game text tags: pa_fields() / pa_cell() / pa_line_cell() for records, pa_html(), argb_css()
 ├── record_reader.py     # RecordReader: walks one variable-length record in order
 └── skill.py             # skill keys (skill_no << 16 | level) and LOC type 10 names
 ```

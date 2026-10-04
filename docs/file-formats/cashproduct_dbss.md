@@ -30,7 +30,7 @@ product 117722 -> Icon/New_Icon/09_Cash/03_Product/00105099.dds
 | File                     | Required | Role                                           |
 | ------------------------ | -------- | ---------------------------------------------- |
 | `cashproductoffset.dbss` | Required | Maps product ID to a block offset and size     |
-| `languagedata_en.loc`    | Optional | English name for the linked item (`str_type=0`) |
+| `languagedata_en.loc`    | Optional | Product name and description (`str_type=50`), name of the linked item (`str_type=0`) |
 
 All multi-byte values are little-endian.
 
@@ -136,15 +136,17 @@ start at `New_Icon/` and take the prefix `ui_texture/icon/`.
 
 ## Suggested UI Layout
 
-| Column  | Type | Notes                                                        |
-| ------- | ---- | ------------------------------------------------------------ |
-| Item ID | num  | Linked `item_id`; dash when absent, stored as `None` so it sorts last                            |
-| Icon    | text | The item's own icon, resolved from `item_id`, not the tile   |
-| Item    | text | LOC name in the user's language, in its grade colour (`ITEM_GRADE`); falls back to Korean `name` |
+| Column      | Type | Notes                                                        |
+| ----------- | ---- | ------------------------------------------------------------ |
+| Product ID  | num  | `product_id`                                                 |
+| Icon        | text | The item's own icon, resolved from `item_id`, not the tile   |
+| Product     | text | LOC type 50 field 0 in its game colours; falls back to the Korean `name` |
+| Item ID     | num  | Linked `item_id`; dash when absent, stored as `None` so it sorts last |
+| Item        | text | LOC name of the linked item in its grade colour (`ITEM_GRADE`); dash without a linked item |
+| Description | text | LOC type 50 field 3 in its game colours, on one line and cut |
 
-`product_icon_path` and `product_id` are parsed but not shown. The tile is
-marketing art for the offer rather than an item icon, and the product ID is the
-shop key rather than anything the reader is looking up.
+`product_icon_path` is parsed but not shown: the tile is marketing art for the
+offer rather than an item icon.
 
 ---
 
@@ -153,10 +155,14 @@ shop key rather than anything the reader is looking up.
 - Product IDs and item IDs are separate ID spaces. Product 117722 grants item
   340916 and uses icon `00105099`, three unrelated numbers. Only this file ties
   them together.
-- The block's display text is Korean only; English names come from LOC via the
-  linked item ID, not from this file.
+- The block's display text is Korean only. LOC type 50 holds the product's
+  own name and description, keyed by `product_id` and a service code in
+  `str_id3` (see `languagedata_loc.md`, Type 50). The product name differs
+  from the linked item's name on about a third of the products: `Premium
+  Pearl Box - 10,000+1,500` grants `Pearl Box - 10,000+1,500`, and
+  `Polar Bear (Tier 3)` grants `[Pet] Polar Bear (Tier 3)`.
 - Descriptions embed `<PAColor0xFFE9BD23>` and `<PAOldColor>` markup, the same
-  convention handled by `_common/pa_color.py`.
+  tags as LOC text.
 - `cashproductoffset.dbss` is the only offset companion observed so far with no
   `PABR` magic and no trailer, so the shared offset-table helpers do not apply.
 - 17 `gamecommondata` tables store inline icon paths. This file is second by

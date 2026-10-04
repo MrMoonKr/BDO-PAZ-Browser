@@ -10,7 +10,7 @@ from _common.html import Column, e, icon_cell, join_limited, sort_keys, table
 from _common.knowledge import LOC_KNOWLEDGE, knowledge_name
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_tagged, loc_text
-from _common.pa_text import pa_cell, pa_fields
+from _common.pa_text import pa_cell, pa_fields, pa_line_cell
 from _common.lookup_index import IndexKind, lookup
 from .combo import combo_text, has_combo
 from .parser import MentalCardRecord, parse_mentalcard_offset_records, parse_mentalcard_records
@@ -19,9 +19,11 @@ from .parser import MentalCardRecord, parse_mentalcard_offset_records, parse_men
 _LANG_DIR = Path(__file__).parent / "lang"
 _OFFSET_FILE = "mentalcardoffset.dbss"
 _LOC_THEME = 9
-# LOC type 34 sub-field holding the English "how to obtain" text.
+# LOC type 34 sub-fields of the description and the "how to obtain" text.
+_LOC_DESCRIPTION = 1
 _LOC_ACQUISITION = 2
 _EMPTY = "-"
+_DESCRIPTION_PREVIEW_CHARS = 120
 _LIST_PREVIEW_ITEMS = 3
 
 
@@ -108,6 +110,7 @@ class MentalCardHandler(PreviewHandler):
             Column(cols.get("knowledgeName", "Knowledge Name"), sort_key="entry_name"),
             Column(cols.get("categoryId", "Category ID"), "num", sort_key="node_id"),
             Column(cols.get("categoryName", "Category Name"), sort_key="node_name"),
+            Column(cols.get("description", "Description"), sort_key="description"),
             Column(cols.get("minFavor", "Min Favor"), "num", sort_key="min_favor"),
             Column(cols.get("maxFavor", "Max Favor"), "num", sort_key="max_favor"),
             Column(cols.get("interest", "Interest"), "num", sort_key="interest"),
@@ -149,6 +152,11 @@ class MentalCardHandler(PreviewHandler):
                 **_combo_fields(record),
                 "icon_path": record.icon_path,
                 **pa_fields(
+                    "description",
+                    (loc_tagged(LOC_KNOWLEDGE, record.card_id, _LOC_DESCRIPTION) if has_loc else "")
+                    or record.description_kr,
+                ),
+                **pa_fields(
                     "obtain",
                     (loc_tagged(LOC_KNOWLEDGE, record.card_id, _LOC_ACQUISITION) if has_loc else "")
                     or record.acquisition_kr,
@@ -179,6 +187,7 @@ class MentalCardHandler(PreviewHandler):
                 e(r["entry_name"] or _EMPTY),
                 e(r["node_id"]),
                 e(r["node_name"] or _EMPTY),
+                pa_line_cell(r, "description", _DESCRIPTION_PREVIEW_CHARS),
                 e(r["min_favor"]),
                 e(r["max_favor"]),
                 e(r["interest"]),

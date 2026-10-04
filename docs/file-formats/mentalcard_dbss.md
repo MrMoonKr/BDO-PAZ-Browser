@@ -148,10 +148,11 @@ Stored as no combo and shown as "None": `4024` Lost Lamb, `6066` Heidel Church B
 | Knowledge Name  | text | LOC `str_type=34`, `str_id4=0`; fallback to `name_ko`    |
 | Category ID     | num  | `theme_id` (u16, not the full u32)                       |
 | Category Name   | text | LOC `str_type=9` for `theme_id`                          |
+| Description     | text | LOC `str_type=34`, `str_id4=1` in its game colours (recipe cards name their ingredients in yellow); fallback to `description_ko`; on one line and cut |
 | Favor           | text | `{min_favor} to {max_favor}`                             |
 | Interest        | num  | `interest`                                               |
 | Combo           | text | `After {apply_turn + 1} turns: {Favor or Interest Level} +{varied_value} for {valid_turn} turns`; dash when `buff_type` is `4` |
-| Obtain          | text | LOC `str_type=34`, `str_id4=2`; fallback to `acquisition_ko` |
+| Obtain          | text | LOC `str_type=34`, `str_id4=2` in its game colours; fallback to `acquisition_ko` |
 | Learned From    | list | Distinct LOC type `6` names of the characters in `lookup(IndexKind.KNOWLEDGE_CHARACTERS, card_id)`, in ID order, first three then a count; a character without a name shows its ID; unsortable |
 | Position        | text | `x, y, z` rounded; dash when all zero                    |
 

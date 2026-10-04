@@ -9,7 +9,7 @@ goes back to the previous one, so colours nest as a stack.
   shows every tag as dimmed text.
 - `argb_css()` turns one ARGB value into a CSS colour, also for colours stored
   as u32s rather than in tag text (`dropuitaginfo.bss`).
-- `pa_fields()` / `pa_list_fields()` / `pa_cell()` are the record side: a plain field for search,
+- `pa_fields()` / `pa_list_fields()` / `pa_cell()` / `pa_line_cell()` are the record side: a plain field for search,
   sort and CSV next to its tagged copy (`_description_pa`) for the cell. See
   "Display-Only Fields" in docs/handler.md.
 
@@ -147,6 +147,14 @@ def pa_cell(record: dict, field: str, max_chars: int | None = None) -> str:
     `max_chars` cuts long text, see `pa_html`.
     """
     return pa_html(record[pa_key(field)], max_chars=max_chars) if record[field] else _EMPTY
+
+
+def pa_line_cell(record: dict, field: str, max_chars: int) -> str:
+    """`pa_cell` on one line for long text: line breaks and runs of spaces
+    become one space, then the text is cut after `max_chars`."""
+    if not record[field]:
+        return _EMPTY
+    return pa_html(" ".join(record[pa_key(field)].split()), max_chars=max_chars)
 
 
 def pa_list_cell(raws: Sequence[str], max_items: int) -> str:

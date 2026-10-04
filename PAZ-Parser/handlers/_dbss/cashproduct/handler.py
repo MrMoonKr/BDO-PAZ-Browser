@@ -9,17 +9,19 @@ from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.icon_index import IconKind, icon_path
 from _common.lang import load_handler_strings
 from _common.item_key import item_name_tagged
-from _common.pa_text import pa_cell, pa_fields
+from _common.pa_text import pa_cell, pa_fields, pa_line_cell
 from .parser import (
     parse_cashproduct_records,
     parse_cashproductoffset_records,
 )
+from .text import product_texts
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
 _OFFSET_FILE = "cashproductoffset.dbss"
 
 _EMPTY = "-"
+_DESCRIPTION_PREVIEW_CHARS = 120
 
 
 class CashProductOffsetHandler(PreviewHandler):
@@ -66,9 +68,12 @@ class CashProductHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
         cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
         return [
-            Column(cols.get("itemId", "Item ID"), "num", sort_key="item_id"),
+            Column(cols.get("productId", "Product ID"), "num", sort_key="product_id"),
             Column(cols.get("icon", "Icon"), sort_key="icon_path"),
+            Column(cols.get("product", "Product"), sort_key="product"),
+            Column(cols.get("itemId", "Item ID"), "num", sort_key="item_id"),
             Column(cols.get("item", "Item"), sort_key="item_name"),
+            Column(cols.get("description", "Description"), sort_key="description"),
         ]
 
     def sortable_fields(self) -> frozenset[str]:
@@ -91,15 +96,17 @@ class CashProductHandler(PreviewHandler):
             raise ValueError(f"{_OFFSET_FILE} companion not found.")
 
         records = parse_cashproduct_records(data, offset_raw)
+        texts = product_texts()
         for record in records:
             # 0 means no linked item. None renders a dash and sorts last.
             item_id = record["item_id"] = record["item_id"] or None
             # The item's own icon, not the shop tile the product stores.
             record["icon_path"] = icon_path(IconKind.ITEM, item_id) if item_id else ""
-            # LOC already answers in the user's language; the block's Korean
-            # name is only a fallback for products with no linked item.
-            tagged = item_name_tagged(item_id) if item_id else ""
-            record.update(pa_fields("item_name", tagged or record["product_name"]))
+            record.update(pa_fields("item_name", item_name_tagged(item_id) if item_id else ""))
+            # User language first; the block's Korean name stands in without LOC.
+            text = texts.get(record["product_id"])
+            record.update(pa_fields("product", (text.name if text else "") or record["product_name"]))
+            record.update(pa_fields("description", text.description if text else ""))
 
         return records
 
@@ -115,9 +122,12 @@ class CashProductHandler(PreviewHandler):
         meta = f"{len(records):,} cash products · {linked:,} linked items"
         rows = [
             [
-                e(record["item_id"] or _EMPTY),
+                e(record["product_id"]),
                 icon_cell(record["icon_path"]) if record["icon_path"] else _EMPTY,
+                pa_cell(record, "product"),
+                e(record["item_id"] or _EMPTY),
                 pa_cell(record, "item_name"),
+                pa_line_cell(record, "description", _DESCRIPTION_PREVIEW_CHARS),
             ]
             for record in slice_
         ]

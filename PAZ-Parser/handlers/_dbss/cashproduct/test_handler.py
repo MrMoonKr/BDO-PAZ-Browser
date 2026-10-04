@@ -9,6 +9,7 @@ from tests.framework import (
     DeclaredCountTest,
     HandlerCase,
     HandlerResult,
+    PaFieldTest,
     RangeTest,
     SchemaTest,
     TargetTest,
@@ -27,7 +28,7 @@ CASE = HandlerCase(
     companion_files={"cashproductoffset.dbss": "cashproductoffset.dbss"},
     loc_file="languagedata_en.loc",
     uses_loc=True,
-    loc_fields=["Item"],
+    loc_fields=["Product", "Item", "Description"],
     internal_path="gamecommondata/binary/cashproduct.dbss",
     tests=[
         SchemaTest(
@@ -39,8 +40,12 @@ CASE = HandlerCase(
                 "block_size",
                 "item_name",
                 "icon_path",
+                "product",
+                "description",
             ],
         ),
+        PaFieldTest(field="product"),
+        PaFieldTest(field="description"),
         DeclaredCountTest(declared=header_count()),
         RangeTest(col="item_id", min_val=0, max_val=0xFFFFFF),
         TargetTest(
@@ -66,6 +71,23 @@ CASE = HandlerCase(
                 "item_name": "[Guardian] Shell Belle Outfit Set",
                 "icon_path": f"{_DERIVED_DIR}/00340916.png",
             },
+        ),
+        # The product name comes from LOC type 50, not from the item: the item
+        # is the bare pet, the product names its tier in colour.
+        TargetTest(
+            col="product_id",
+            value=112655,
+            expected={
+                "product": "Polar Bear (Tier 3)",
+                "_product_pa": "Polar Bear <PAColor0xffe9bd23>(Tier 3)<PAOldColor>",
+            },
+        ),
+        # Rows under service code 12, which nearly every product uses, win over
+        # the product's code 1 rows ("... (Used once per day)").
+        TargetTest(
+            col="product_id",
+            value=21007,
+            expected={"product": "[Loyalty] Unknown Dye Box"},
         ),
     ],
 )

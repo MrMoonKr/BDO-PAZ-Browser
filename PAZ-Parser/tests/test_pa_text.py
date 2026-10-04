@@ -11,6 +11,7 @@ from _common.pa_text import (
     pa_fields,
     pa_html,
     pa_key,
+    pa_line_cell,
     pa_list_fields,
     set_show_pa_tags,
     strip_pa_tags,
@@ -188,6 +189,16 @@ def test_pa_cell_draws_the_tagged_copy() -> None:
 
 def test_pa_cell_of_blank_text_is_a_dash() -> None:
     assert pa_cell(pa_fields("title", "<PAColor0xffe9bd23> <PAOldColor>"), "title") == "-"
+
+
+def test_pa_line_cell_joins_lines_and_cuts() -> None:
+    record = pa_fields("description", "Box\n\n<PAColor0xffe9bd23>Contains:<PAOldColor>\n- Gloves x1")
+
+    assert pa_line_cell(record, "description", 12) == f"Box {_GOLD_OPEN}Contains…</span>"
+
+
+def test_pa_line_cell_of_blank_text_is_a_dash() -> None:
+    assert pa_line_cell(pa_fields("description", "\n"), "description", 12) == "-"
 
 
 def test_max_chars_cuts_inside_a_colour_and_closes_it() -> None:

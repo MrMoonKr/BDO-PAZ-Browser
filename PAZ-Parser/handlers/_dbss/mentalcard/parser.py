@@ -45,6 +45,7 @@ class MentalCardRecord:
     valid_turn: int
     apply_turn: int
     name_kr: str
+    description_kr: str
     icon_path: str
     acquisition_kr: str
     position: tuple[float, float, float]
@@ -66,7 +67,7 @@ def _parse_record(data: bytes, row: PabrOffsetRow) -> MentalCardRecord:
         raise ValueError(f"record at 0x{row.offset:X} holds card {card_id}, index says {row.entry_id}")
 
     name_kr = reader.text(wide=True)
-    reader.text(wide=True)  # description
+    description_kr = reader.text(wide=True)
     reader.skip(_BODY_FLAGS_SIZE)
     icon_path = reader.text(wide=False)
     acquisition_kr = reader.text(wide=True)
@@ -87,6 +88,7 @@ def _parse_record(data: bytes, row: PabrOffsetRow) -> MentalCardRecord:
         valid_turn=valid_turn,
         apply_turn=apply_turn,
         name_kr=name_kr,
+        description_kr=description_kr,
         icon_path=f"{ICON_ROOT}{icon_path.lower()}" if icon_path else "",
         acquisition_kr=acquisition_kr,
         position=position,

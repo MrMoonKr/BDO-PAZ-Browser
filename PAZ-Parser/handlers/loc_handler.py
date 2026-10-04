@@ -44,6 +44,7 @@ _TYPE_NAMES = {
     37: "UI string sheets",
     39: "Audio voice lines",
     44: "Central Market categories",
+    50: "Pearl Shop products",
     52: "Item-set bonus text",
     54: "NPC gift/confession response dialogue",
     63: "Adventure log metadata",

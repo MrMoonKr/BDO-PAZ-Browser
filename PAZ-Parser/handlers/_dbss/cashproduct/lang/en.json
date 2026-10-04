@@ -1,8 +1,11 @@
 {
   "columns": {
-    "itemId": "Item ID",
+    "productId": "Product ID",
     "icon": "Icon",
-    "item": "Item"
+    "product": "Product",
+    "itemId": "Item ID",
+    "item": "Item",
+    "description": "Description"
   },
   "offsetColumns": {
     "productId": "Product ID",

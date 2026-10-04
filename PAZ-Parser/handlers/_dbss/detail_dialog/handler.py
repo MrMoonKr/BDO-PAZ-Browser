@@ -9,7 +9,7 @@ from _common.character import character_name
 from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup
-from _common.pa_text import pa_fields, pa_html, pa_key, pa_list_cell, pa_list_fields, strip_pa_tags
+from _common.pa_text import pa_fields, pa_key, pa_line_cell, pa_list_cell, pa_list_fields, strip_pa_tags
 from .lease import lease_text_tagged
 from .parser import DialogRecord, parse_detail_dialog_offset_rows, parse_detail_dialog_records, split_key
 
@@ -23,14 +23,6 @@ _FIELD_OPTION_TITLE = 2
 _EMPTY = "-"
 _LIST_PREVIEW_ITEMS = 3
 _GREETING_PREVIEW_CHARS = 120
-
-
-def _greeting_cell(record: dict) -> str:
-    """The greeting on one line in its game colours, cut for the table cell."""
-    if not record["greeting"]:
-        return _EMPTY
-    one_line = " ".join(record[pa_key("greeting")].split())
-    return pa_html(one_line, max_chars=_GREETING_PREVIEW_CHARS)
 
 
 def _dialog_text(record: DialogRecord, text_id: int, field: int, has_loc: bool) -> str:
@@ -160,7 +152,7 @@ class DetailDialogHandler(PreviewHandler):
                 e(r["character_id"]),
                 e(r["dialog_index"]),
                 e(r["character"] or _EMPTY),
-                _greeting_cell(r),
+                pa_line_cell(r, "greeting", _GREETING_PREVIEW_CHARS),
                 e(r["option_count"]),
                 pa_list_cell(r[pa_key("option_titles")], _LIST_PREVIEW_ITEMS),
                 pa_list_cell(r[pa_key("leases")], _LIST_PREVIEW_ITEMS),

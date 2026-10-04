@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import struct
 import zlib
+from collections.abc import Mapping
+from types import MappingProxyType
 
 from _common.binary import u32
 # Re-exported: handlers import strip_pa_tags from here.
@@ -26,12 +28,19 @@ _LOC_INDEX: dict[tuple[int, int, int, int, int], str] | None = None
 _LOC_PREFIX: dict[tuple[int, int], list[str]] | None = None
 # all text values in file order
 _LOC_ALL:   list[str] | None = None
+# str_type -> its keys and texts, built on the first `loc_type_entries()` call
+# for the `_LOC_INDEX` held in `_LOC_BY_TYPE_SOURCE`
+_LOC_BY_TYPE: dict[int, Mapping[tuple[int, int, int, int, int], str]] = {}
+_LOC_BY_TYPE_SOURCE: object | None = None
 
 
 def init_loc(raw: bytes | None) -> None:
     """Parse a languagedata_*.loc file. Pass None to clear all LOC data."""
-    global _LOC_INDEX, _LOC_PREFIX, _LOC_ALL
+    global _LOC_INDEX, _LOC_PREFIX, _LOC_ALL, _LOC_BY_TYPE_SOURCE
 
+    # Let go of the old index's per-type copies now, not on the next lookup.
+    _LOC_BY_TYPE.clear()
+    _LOC_BY_TYPE_SOURCE = None
     if raw is None:
         _LOC_INDEX = None
         _LOC_PREFIX = None
@@ -106,6 +115,27 @@ def loc_lookup_prefix(str_type: int, str_id1: int) -> list[str]:
         return []
 
     return list(_LOC_PREFIX.get((str_type, str_id1), []))
+
+
+def loc_type_entries(str_type: int) -> Mapping[tuple[int, int, int, int, int], str]:
+    """Every key of one type with its text, read-only, or empty when not loaded.
+
+    For types whose keys hold a part no caller knows up front, such as the
+    service code in `str_id3` of type 50. The first call per type walks the
+    whole index once.
+    """
+    global _LOC_BY_TYPE_SOURCE
+
+    if _LOC_INDEX is None:
+        return MappingProxyType({})
+    if _LOC_BY_TYPE_SOURCE is not _LOC_INDEX:
+        _LOC_BY_TYPE.clear()
+        _LOC_BY_TYPE_SOURCE = _LOC_INDEX
+    entries = _LOC_BY_TYPE.get(str_type)
+    if entries is None:
+        entries = MappingProxyType({key: text for key, text in _LOC_INDEX.items() if key[0] == str_type})
+        _LOC_BY_TYPE[str_type] = entries
+    return entries
 
 
 def loc_all_texts() -> list[str]:

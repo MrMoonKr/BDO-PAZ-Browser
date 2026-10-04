@@ -10,6 +10,7 @@
     "knowledgeName": "Knowledge Name",
     "categoryId": "Category ID",
     "categoryName": "Category Name",
+    "description": "Description",
     "minFavor": "Min Favor",
     "maxFavor": "Max Favor",
     "interest": "Interest",

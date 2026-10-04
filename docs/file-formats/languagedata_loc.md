@@ -81,6 +81,7 @@ are `str_id2 | str_id3 << 16`. Their `key0` is `str_type` and their `id` is
 | 38       | Other systems                                                                              |
 | 39       | Audio voice lines                                                                          |
 | 44       | Central Market categories, `str_id1` = main category; see Type 44 below                    |
+| 50       | Pearl Shop product names and descriptions, `str_id1` = `cashproduct.dbss` product_id, `str_id3` = service code; see Type 50 below |
 | 52       | Item-set bonus text, `str_id1` = `skillpiece.dbss` key; see Type 52 below                  |
 | 54       | NPC gift/confession response dialogue, `str_id1` = NPC ID                                  |
 | 63       | Journal quest adventure log metadata, `str_id1` = journal_key, `str_id2` = book_key         |
@@ -468,6 +469,31 @@ and wagons, `+ 0` to `DEC (X)` for accessories, grades for Alchemy Stones, cryst
 Crystals, class names for Pearl Items and colours for Dyes. Materials, Enhancement,
 Consumables, Furniture and Lightstones have none.
 
+### Type 50, Pearl Shop products (`cashproduct.dbss`)
+
+Type 50 holds 105,534 rows over 29,130 IDs on client 3458. `str_id1` is the
+`cashproduct.dbss` `product_id` (all 28,945 products have rows), `str_id2` is
+`0`, `str_id3` is a service code and `str_id4` selects the string:
+
+| str_id4 | Meaning            | Rows (code 12) | Example                                                    |
+| ------- | ------------------ | -------------- | ---------------------------------------------------------- |
+| 0       | Product name       | 29,115         | `"Polar Bear <PAColor0xffe9bd23>(Tier 3)<PAOldColor>"`      |
+| 1       | Name, first part   | 29,115         | `"[Dosa] Yeoreum"`                                          |
+| 2       | Name, second part  | 18,040         | `"Gloves"`                                                  |
+| 3       | Description        | 29,115         | `"... <PAColor0xffe9bd23>※ Contains:<PAOldColor> ..."`      |
+
+Fields 1 and 2 split the name in two where it is long; field 1 repeats the
+whole name otherwise. Names and descriptions carry `<PAColor>` tags.
+
+One code covers nearly every product of a file: `12` on 105,385 of the en
+rows (also the main code of the de, fr and sp files) and `8` in the ru file.
+A few products also or only have rows under other codes (en: `1` on 23
+products, `26`, `28`, `6`, `20` and `0` on a handful). Under code `1` the
+same product can read differently, e.g. product 21007 is `[Loyalty] Unknown
+Dye Box` under 12 and `[Loyalty] Unknown Dye Box (Used once per day)` under 1.
+The app reads the code most products use and falls back to a product's lowest
+code. Type 71 keeps `12` in `str_id3` too.
+
 ### Type 52, item-set bonus text (`skillpiece.dbss`)
 
 Type 52 holds 448 rows over 93 IDs. `str_id1` is the `skillpiece.dbss`
@@ -562,6 +588,12 @@ Group `26` (`"Dim Magic"`) has rows at both `2` and `6`.
   and also the ru if you need another one.
 
 ## Open Questions
+
+### Type 50 service codes
+
+Which service each `str_id3` code stands for is not known. `12` is the main
+code of the en, de, fr and sp files and `8` of the ru file; `1`, `6`, `20`,
+`26` and `28` hold a few products each, some of them old Loyalty items.
 
 ### Type 20 group owner
 
