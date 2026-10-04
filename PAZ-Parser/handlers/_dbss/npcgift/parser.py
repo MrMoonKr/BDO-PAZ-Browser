@@ -1,18 +1,14 @@
 from __future__ import annotations
 
 from _common.binary import u16 as _u16, u32 as _u32
+from _common.character import character_name
 from _common.item_key import item_name
-from _common.loc import is_loc_loaded, loc_lookup, loc_lookup_prefix, strip_pa_tags
+from _common.loc import is_loc_loaded, loc_lookup_prefix, strip_pa_tags
 
 from .model import NpcGiftDataRecord, NpcGiftFlatRecord, NpcGiftOffsetRecord
 
 _OFFSET_RECORD_SIZE = 10  # u16 npc_id + u32 data_offset + u16 data_size + u16 padding
 _GIFT_ROW_SIZE = 12       # u32 item_id + u32 amity_a + u32 amity_b
-
-
-def _npc_name(npc_id: int) -> str:
-    raw = loc_lookup(6, npc_id)
-    return strip_pa_tags(raw) if raw else ""
 
 
 def _dialogue_en(npc_id: int) -> str:
@@ -64,7 +60,7 @@ def parse_npcgift_records(data: bytes) -> list[NpcGiftFlatRecord]:
         gift_count = _u32(data, pos + 2)
         pos += 6
 
-        npc_name = _npc_name(npc_id) if loc else ""
+        npc_name = character_name(npc_id)
 
         for _ in range(gift_count):
             if pos + _GIFT_ROW_SIZE > len(data):
@@ -115,7 +111,7 @@ def parse_npcgiftdata_records(data: bytes) -> list[NpcGiftDataRecord]:
         inline_text = data[pos:pos + text_bytes].decode("utf-16-le", errors="replace")
         pos += text_bytes + 4
 
-        npc_name = _npc_name(npc_id) if loc else ""
+        npc_name = character_name(npc_id)
 
         en_text = _dialogue_en(npc_id) if loc else ""
         if en_text:

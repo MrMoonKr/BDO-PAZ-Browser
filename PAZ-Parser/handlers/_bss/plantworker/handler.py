@@ -5,21 +5,15 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
+from _common.character import character_name
 from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.lang import load_handler_strings
-from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 from .display import LUCK_SCALE, MOVE_SPEED_SCALE, WORK_SPEED_SCALE, format_stat, worker_name_cell
 from .grade import worker_grade
 from .parser import parse_plantworker_records
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
-
-
-def _worker_name(worker_id: int) -> str:
-    if not is_loc_loaded():
-        return ""
-    return strip_pa_tags(loc_lookup(6, worker_id))
 
 
 class PlantWorkerBssHandler(PreviewHandler):
@@ -48,7 +42,7 @@ class PlantWorkerBssHandler(PreviewHandler):
         records: list[dict] = []
         for record in parse_plantworker_records(data):
             row = dict(record)
-            row["name"] = _worker_name(record["worker_id"])
+            row["name"] = character_name(record["worker_id"])
             row["worker_grade"] = worker_grade(
                 record["grade_class"], record["worker_id"], row["name"]
             )

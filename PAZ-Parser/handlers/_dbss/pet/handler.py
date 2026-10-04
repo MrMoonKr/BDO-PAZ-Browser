@@ -5,9 +5,9 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
+from _common.character import character_name
 from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.lang import load_handler_strings
-from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, size_column
 from .parser import (
     parse_pet_records,
@@ -147,13 +147,10 @@ class PetDbssHandler(PreviewHandler):
             raise ValueError("petoffset.dbss companion not found.")
         grade_raw = companions.get("petgrade.dbss")
         records = parse_pet_records(data, offset_raw, grade_raw)
-        has_loc = is_loc_loaded()
         strings = load_handler_strings(self.lang, _LANG_DIR)
         grade_names = strings.get("grades", {})
         for record in records:
-            loc_name = ""
-            if has_loc:
-                loc_name = strip_pa_tags(loc_lookup(6, record["pet_id"])).strip()
+            loc_name = character_name(record["pet_id"])
             record["pet_name"] = loc_name
             record["display_name"] = loc_name or str(record["species"])
             grade = record.get("grade")
