@@ -11,6 +11,8 @@ from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup
 from _common.pa_text import pa_fields, pa_key, pa_line_cell, pa_list_cell, pa_list_fields, strip_pa_tags
 from _common.lease import lease_text_tagged
+from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, size_column
+from _common.pabr_offset import PabrOffsetRow
 from .parser import DialogRecord, parse_detail_dialog_offset_rows, parse_detail_dialog_records, split_key
 
 
@@ -55,51 +57,33 @@ def _record_dict(record: DialogRecord, has_loc: bool) -> dict:
     }
 
 
-class DetailDialogOffsetHandler(PreviewHandler):
-    def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        return [
-            Column(cols.get("characterId", "Character ID"), "num", sort_key="character_id"),
-            Column(cols.get("dialog", "Dialog"), "num", sort_key="dialog_index"),
-            Column(cols.get("dbssOffset", "DBSS Offset"), "num", sort_key="dbss_offset"),
-            Column(cols.get("size", "Size"), "num", sort_key="size"),
-        ]
+def _dialog_offset_record(row: PabrOffsetRow) -> dict:
+    character_id, dialog_index = split_key(row.entry_id)
+    return {
+        "key": row.entry_id,
+        "character_id": character_id,
+        "dialog_index": dialog_index,
+        "dbss_offset": row.offset,
+        "size": row.size,
+    }
 
-    def sortable_fields(self) -> frozenset[str]:
-        return sort_keys(self._columns())
 
-    def get_records(
-        self,
-        data: bytes,
-        entry: PazEntry,
-        companions: dict[str, bytes],
-    ) -> list[dict]:
-        records = []
-        for row in parse_detail_dialog_offset_rows(data):
-            character_id, dialog_index = split_key(row.entry_id)
-            records.append({
-                "key": row.entry_id,
-                "character_id": character_id,
-                "dialog_index": dialog_index,
-                "dbss_offset": row.offset,
-                "size": row.size,
-            })
-        return records
+def _read_dialog_offsets(data: bytes) -> list[dict]:
+    return [_dialog_offset_record(row) for row in parse_detail_dialog_offset_rows(data)]
 
-    def render_records_page(
-        self,
-        records: list[dict],
-        page: int,
-        page_size: int,
-    ) -> str:
-        start = page * page_size
-        slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} offset records"
-        rows = [
-            [e(r["character_id"]), e(r["dialog_index"]), e(f"0x{r['dbss_offset']:08X}"), e(r["size"])]
-            for r in slice_
-        ]
-        return table(meta, self._columns(), rows)
+
+def detail_dialog_offset_handler() -> OffsetTableHandler:
+    """`detail_dialogoffset.dbss`, and `base_dialogoffset.dbss` with the same layout and keys."""
+    return OffsetTableHandler(
+        _LANG_DIR,
+        [
+            OffsetColumn("character_id", "characterId", "Character ID"),
+            OffsetColumn("dialog_index", "dialog", "Dialog"),
+            offset_column("dbss_offset", "dbssOffset", "DBSS Offset"),
+            size_column("size", "size", "Size"),
+        ],
+        _read_dialog_offsets,
+    )
 
 
 class DetailDialogHandler(PreviewHandler):

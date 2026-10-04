@@ -13,6 +13,13 @@ from _common.lang import load_handler_strings
 from _common.lookup_index import IndexKind, index_entries, lookup
 from _common.pa_text import pa_cell, pa_fields, pa_html, pa_key
 from _common.pabr_offset import parse_pabr_offset_rows
+from _common.offset_table import (
+    OffsetColumn,
+    OffsetTableHandler,
+    offset_column,
+    offset_records,
+    size_column,
+)
 from .effect import EffectInput, effect_text, param_labels
 from .parser import PARAM_COUNT, parse_buff_records
 from .title import extract_title_pa, title_leaders
@@ -78,43 +85,16 @@ def _title_cell(record: dict) -> str:
     return f'<span class="inherited-cell" title="{e(tooltip)}">{title}</span>'
 
 
-class BuffOffsetHandler(PreviewHandler):
-    def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        return [
-            Column(cols.get("buffId", "Buff ID"), "num", sort_key="buff_id"),
-            Column(cols.get("dataOffset", "Data Offset"), "num", sort_key="offset"),
-            Column(cols.get("size", "Size"), "num", sort_key="size"),
-        ]
-
-    def sortable_fields(self) -> frozenset[str]:
-        return sort_keys(self._columns())
-
-    def get_records(
-        self,
-        data: bytes,
-        entry: PazEntry,
-        companions: dict[str, bytes],
-    ) -> list[dict]:
-        return [
-            {"buff_id": row.entry_id, "offset": row.offset, "size": row.size}
-            for row in parse_pabr_offset_rows(data)
-        ]
-
-    def render_records_page(
-        self,
-        records: list[dict],
-        page: int,
-        page_size: int,
-    ) -> str:
-        start = page * page_size
-        slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} offset records"
-        rows = [
-            [e(r["buff_id"]), e(f"0x{r['offset']:08X}"), e(r["size"])]
-            for r in slice_
-        ]
-        return table(meta, self._columns(), rows)
+def buff_offset_handler() -> OffsetTableHandler:
+    return OffsetTableHandler(
+        _LANG_DIR,
+        [
+            OffsetColumn("buff_id", "buffId", "Buff ID"),
+            offset_column("offset", "dataOffset", "Data Offset"),
+            size_column("size", "size", "Size"),
+        ],
+        offset_records(parse_pabr_offset_rows, "buff_id"),
+    )
 
 
 def _add_inherited_titles(records: list[dict]) -> None:

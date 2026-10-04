@@ -12,6 +12,13 @@ from _common.loc import is_loc_loaded
 from _common.html import Column, e, flag_cell, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.pabr_offset import parse_pabr_offset_rows
+from _common.offset_table import (
+    OffsetColumn,
+    OffsetTableHandler,
+    offset_column,
+    offset_records,
+    size_column,
+)
 from .parser import ROLE_COUNT, parse_characterspawntype_records
 from .role_labels import role_label, role_label_overrides, role_tooltip
 
@@ -30,43 +37,16 @@ def _role_column(idx: int, label_overrides: Mapping[str, str]) -> Column:
     return Column(e(label), "num", f'title="{e(role_tooltip(idx))}"', sort_key=_role_field(idx))
 
 
-class CharacterSpawnTypeOffsetHandler(PreviewHandler):
-    def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        return [
-            Column(cols.get("characterId", "Character ID"), "num", sort_key="character_id"),
-            Column(cols.get("byteOffset", "Byte Offset"), "num", sort_key="offset"),
-            Column(cols.get("size", "Size"), "num", sort_key="size"),
-        ]
-
-    def sortable_fields(self) -> frozenset[str]:
-        return sort_keys(self._columns())
-
-    def get_records(
-        self,
-        data: bytes,
-        entry: PazEntry,
-        companions: dict[str, bytes],
-    ) -> list[dict]:
-        return [
-            {"character_id": row.entry_id, "offset": row.offset, "size": row.size}
-            for row in parse_pabr_offset_rows(data)
-        ]
-
-    def render_records_page(
-        self,
-        records: list[dict],
-        page: int,
-        page_size: int,
-    ) -> str:
-        start = page * page_size
-        slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} offset records"
-        rows = [
-            [e(r["character_id"]), e(f"0x{r['offset']:08X}"), e(r["size"])]
-            for r in slice_
-        ]
-        return table(meta, self._columns(), rows)
+def character_spawn_type_offset_handler() -> OffsetTableHandler:
+    return OffsetTableHandler(
+        _LANG_DIR,
+        [
+            OffsetColumn("character_id", "characterId", "Character ID"),
+            offset_column("offset", "byteOffset", "Byte Offset"),
+            size_column("size", "size", "Size"),
+        ],
+        offset_records(parse_pabr_offset_rows, "character_id"),
+    )
 
 
 class CharacterSpawnTypeHandler(PreviewHandler):

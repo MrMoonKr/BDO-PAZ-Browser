@@ -9,6 +9,12 @@ from _common.binary import parse_offset_table
 from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.pa_text import pa_cell, pa_fields
+from _common.offset_table import (
+    OffsetColumn,
+    OffsetTableHandler,
+    offset_column,
+    offset_map_records,
+)
 from _bss.stringtable.parser import GAME_SHEET
 from _bss.stringtable.text import STRINGTABLE_FILE, ui_key_hashes, ui_key_tagged
 from .model import TitleBuffRecord
@@ -34,43 +40,15 @@ def _tier_text(record: TitleBuffRecord, lines: list[str]) -> str:
     return lines[record["tier_id"]] if lines else record["label_kr"] + record["effect_kr"]
 
 
-class TitleBuffListOffsetHandler(PreviewHandler):
-    def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        return [
-            Column(cols.get("buffId", "Buff ID"), "num", sort_key="buff_id"),
-            Column(cols.get("offset", "Offset"), "num", sort_key="offset"),
-        ]
-
-    def sortable_fields(self) -> frozenset[str]:
-        return sort_keys(self._columns())
-
-    def get_records(
-        self,
-        data: bytes,
-        entry: PazEntry,
-        companions: dict[str, bytes],
-    ) -> list[dict]:
-        offset_map = parse_offset_table(data)
-        return [
-            {"buff_id": buff_id, "offset": offset}
-            for buff_id, (offset, size) in sorted(offset_map.items())
-        ]
-
-    def render_records_page(
-        self,
-        records: list[dict],
-        page: int,
-        page_size: int,
-    ) -> str:
-        start = page * page_size
-        slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} entries"
-        rows = [
-            [e(r["buff_id"]), e(f"0x{r['offset']:08X}")]
-            for r in slice_
-        ]
-        return table(meta, self._columns(), rows)
+def title_buff_list_offset_handler() -> OffsetTableHandler:
+    return OffsetTableHandler(
+        _LANG_DIR,
+        [
+            OffsetColumn("buff_id", "buffId", "Buff ID"),
+            offset_column("offset", "offset", "Offset"),
+        ],
+        offset_map_records("buff_id"),
+    )
 
 
 class TitleBuffListHandler(PreviewHandler):

@@ -9,6 +9,7 @@ from _common.html import Column, e, join_limited, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup
 from _common.pa_text import pa_cell, pa_fields, strip_pa_tags
+from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, size_column
 from .parser import parse_journalquest_offset_records, parse_journalquest_records
 
 
@@ -29,47 +30,23 @@ def _journal_text(group_id: int, entry_no: int, field_id: int) -> str:
     return strip_pa_tags(_journal_tagged(group_id, entry_no, field_id)).strip()
 
 
-class JournalQuestOffsetHandler(PreviewHandler):
-    def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        return [
-            Column(cols.get("group", "Group"), "num", sort_key="group_id"),
-            Column(cols.get("entry", "Entry"), "num", sort_key="entry_no"),
-            Column(cols.get("offset", "Offset"), "num", sort_key="byte_offset"),
-            Column(cols.get("size", "Size"), "num", sort_key="byte_size"),
-        ]
+def _offset_meta(records: list[dict]) -> str:
+    groups = len({record["group_id"] for record in records})
+    return f"{len(records):,} entries · {groups:,} groups"
 
-    def sortable_fields(self) -> frozenset[str]:
-        return sort_keys(self._columns())
 
-    def get_records(
-        self,
-        data: bytes,
-        entry: PazEntry,
-        companions: dict[str, bytes],
-    ) -> list[dict]:
-        return parse_journalquest_offset_records(data)
-
-    def render_records_page(
-        self,
-        records: list[dict],
-        page: int,
-        page_size: int,
-    ) -> str:
-        start = page * page_size
-        slice_ = records[start : start + page_size]
-        groups = len({r["group_id"] for r in records})
-        meta = f"{len(records):,} entries · {groups:,} groups"
-        rows = [
-            [
-                e(r["group_id"]),
-                e(r["entry_no"]),
-                e(f"0x{r['byte_offset']:08X}"),
-                e(r["byte_size"]),
-            ]
-            for r in slice_
-        ]
-        return table(meta, self._columns(), rows)
+def journal_quest_offset_handler() -> OffsetTableHandler:
+    return OffsetTableHandler(
+        _LANG_DIR,
+        [
+            OffsetColumn("group_id", "group", "Group"),
+            OffsetColumn("entry_no", "entry", "Entry"),
+            offset_column("byte_offset", "offset", "Offset"),
+            size_column("byte_size", "size", "Size"),
+        ],
+        parse_journalquest_offset_records,
+        meta=_offset_meta,
+    )
 
 
 class JournalQuestDbssHandler(PreviewHandler):

@@ -3,171 +3,170 @@ from __future__ import annotations
 from bdo_preview import register_handler
 
 from .title.handler import TitleDbssHandler
-from .titlebuff.handler import TitleBuffListHandler, TitleBuffListOffsetHandler
-from .titleoffset.handler import TitleOffsetHandler
-from .mentalcard.handler import MentalCardHandler, MentalCardOffsetHandler
-from .detail_dialog.handler import DetailDialogHandler, DetailDialogOffsetHandler
+from .titlebuff.handler import TitleBuffListHandler, title_buff_list_offset_handler
+from .titleoffset.handler import title_offset_handler
+from .mentalcard.handler import MentalCardHandler, mental_card_offset_handler
+from .detail_dialog.handler import DetailDialogHandler, detail_dialog_offset_handler
 from .base_dialog.handler import BaseDialogHandler
-from .dialogtext.handler import DialogTextHandler, DialogTextOffsetHandler
-from .mentaltheme.handler import MentalThemeHandler, MentalThemeOffsetHandler
+from .dialogtext.handler import DialogTextHandler, dialog_text_offset_handler
+from .mentaltheme.handler import MentalThemeHandler, mental_theme_offset_handler
 from .knowledgelearning.handler import (
     KnowledgeLearningHandler,
-    KnowledgeLearningOffsetHandler,
+    knowledge_learning_offset_handler,
 )
-from .npcpersonality.handler import NpcPersonalityHandler, NpcPersonalityOffsetHandler
+from .npcpersonality.handler import NpcPersonalityHandler, npc_personality_offset_handler
 from .quest.handler import QuestDbssHandler
 from .questgroup.handler import QuestGroupDbssHandler
 from .worldquest.handler import WorldQuestDbssHandler
-from .worldmapmonster.handler import WorldMapMonsterHandler, WorldMapMonsterOffsetHandler
+from .worldmapmonster.handler import WorldMapMonsterHandler, world_map_monster_offset_handler
 from .cashproduct.handler import (
     CashProductHandler,
-    CashProductOffsetHandler,
+    cash_product_offset_handler,
 )
 from .itemenchant.handler import (
     ItemEnchantHandler,
-    ItemEnchantOffsetHandler,
+    item_enchant_offset_handler,
 )
-from .journalquest.handler import JournalQuestDbssHandler, JournalQuestOffsetHandler
+from .journalquest.handler import JournalQuestDbssHandler, journal_quest_offset_handler
 from .npcgift.handler import (
-    NpcGiftOffsetHandler,
+    npc_gift_offset_handler,
     NpcGiftHandler,
-    NpcGiftDataOffsetHandler,
     NpcGiftDataHandler,
 )
 from .zodiacsign.handler import (
     ZodiacSignHandler,
-    ZodiacSignOffsetHandler,
+    zodiac_sign_offset_handler,
     ZodiacSignOrderHandler,
-    ZodiacSignOrderOffsetHandler,
+    zodiac_sign_order_offset_handler,
 )
-from .plantzone.handler import PlantZoneOffsetHandler, PlantZoneHandler
-from .itemsubgroup.handler import ItemSubgroupHandler, ItemSubgroupOffsetHandler
+from .plantzone.handler import plant_zone_offset_handler, PlantZoneHandler
+from .itemsubgroup.handler import ItemSubgroupHandler, item_subgroup_offset_handler
 from .characterspawntype.handler import (
-    CharacterSpawnTypeOffsetHandler,
+    character_spawn_type_offset_handler,
     CharacterSpawnTypeHandler,
 )
 from .characterobject.handler import (
-    CharacterObjectOffsetHandler,
+    character_object_offset_handler,
     CharacterObjectHandler,
 )
 from .characterstatic.handler import (
-    CharacterStaticOffsetHandler,
+    character_static_offset_handler,
     CharacterStaticHandler,
 )
 from .pet.handler import (
     PetDbssHandler,
     PetGradeHandler,
-    PetGradeOffsetHandler,
-    PetOffsetHandler,
+    pet_grade_offset_handler,
+    pet_offset_handler,
 )
-from .petaction.handler import PetActionHandler, PetActionOffsetHandler
-from .petexp.handler import PetExpHandler, PetExpOffsetHandler
-from .petskill.handler import PetSkillHandler, PetSkillOffsetHandler
+from .petaction.handler import PetActionHandler, pet_action_offset_handler
+from .petexp.handler import PetExpHandler, pet_exp_offset_handler
+from .petskill.handler import PetSkillHandler, pet_skill_offset_handler
 from .petequipskillaquire.handler import (
     PetEquipSkillAcquireHandler,
-    PetEquipSkillAcquireOffsetHandler,
+    pet_equip_skill_acquire_offset_handler,
 )
 from .fairyequipskillaquire.handler import (
     FairyEquipSkillAcquireHandler,
-    FairyEquipSkillAcquireOffsetHandler,
+    fairy_equip_skill_acquire_offset_handler,
 )
 from .fairyskillchange.handler import (
     FairySkillChangeHandler,
-    FairySkillChangeOffsetHandler,
+    fairy_skill_change_offset_handler,
 )
-from .employeename.handler import EmployeeNameHandler, EmployeeNameOffsetHandler
-from .buff.handler import BuffHandler, BuffOffsetHandler
-from .skill.handler import SkillHandler, SkillOffsetHandler
+from .employeename.handler import EmployeeNameHandler, employee_name_offset_handler
+from .buff.handler import BuffHandler, buff_offset_handler
+from .skill.handler import SkillHandler, skill_offset_handler
 from .skilltype.handler import SkillTypeHandler
 from .skillsimply.handler import SkillSimplyHandler
 from .skillsimply.parser import parse_skillsimply_offset_rows
-from .teleport.handler import TeleportHandler, TeleportOffsetHandler
+from .teleport.handler import TeleportHandler, teleport_offset_handler
 
 
 def register_dbss_handlers() -> None:
-    register_handler("titleoffset.dbss", TitleOffsetHandler())
+    register_handler("titleoffset.dbss", title_offset_handler())
     register_handler("title.dbss", TitleDbssHandler())
-    register_handler("titlebufflistoffset.dbss", TitleBuffListOffsetHandler())
+    register_handler("titlebufflistoffset.dbss", title_buff_list_offset_handler())
     register_handler("titlebufflist.dbss", TitleBuffListHandler())
-    register_handler("mentalcardoffset.dbss", MentalCardOffsetHandler())
+    register_handler("mentalcardoffset.dbss", mental_card_offset_handler())
     register_handler("mentalcard.dbss", MentalCardHandler())
-    register_handler("detail_dialogoffset.dbss", DetailDialogOffsetHandler())
+    register_handler("detail_dialogoffset.dbss", detail_dialog_offset_handler())
     register_handler("detail_dialog.dbss", DetailDialogHandler())
     # base_dialogoffset.dbss has the layout and keys of detail_dialogoffset.dbss.
-    register_handler("base_dialogoffset.dbss", DetailDialogOffsetHandler())
+    register_handler("base_dialogoffset.dbss", detail_dialog_offset_handler())
     register_handler("base_dialog.dbss", BaseDialogHandler())
-    register_handler("skilloffset.dbss", SkillOffsetHandler())
+    register_handler("skilloffset.dbss", skill_offset_handler())
     register_handler("skill.dbss", SkillHandler())
     # skilltypeoffset.dbss has the layout and keys of skilloffset.dbss.
-    register_handler("skilltypeoffset.dbss", SkillOffsetHandler())
+    register_handler("skilltypeoffset.dbss", skill_offset_handler())
     register_handler("skilltype.dbss", SkillTypeHandler())
-    register_handler("skillsimplyoffset.dbss", SkillOffsetHandler(parse_skillsimply_offset_rows))
+    register_handler("skillsimplyoffset.dbss", skill_offset_handler(parse_skillsimply_offset_rows))
     register_handler("skillsimply.dbss", SkillSimplyHandler())
-    register_handler("dialogtextoffset.dbss", DialogTextOffsetHandler())
+    register_handler("dialogtextoffset.dbss", dialog_text_offset_handler())
     register_handler("dialogtext.dbss", DialogTextHandler())
-    register_handler("mentalthemeoffset.dbss", MentalThemeOffsetHandler())
+    register_handler("mentalthemeoffset.dbss", mental_theme_offset_handler())
     register_handler("mentaltheme.dbss", MentalThemeHandler())
-    register_handler("knowledgelearningoffset.dbss", KnowledgeLearningOffsetHandler())
+    register_handler("knowledgelearningoffset.dbss", knowledge_learning_offset_handler())
     register_handler("knowledgelearning.dbss", KnowledgeLearningHandler())
-    register_handler("npcpersonalityoffset.dbss", NpcPersonalityOffsetHandler())
+    register_handler("npcpersonalityoffset.dbss", npc_personality_offset_handler())
     register_handler("npcpersonality.dbss", NpcPersonalityHandler())
     register_handler("quest.dbss", QuestDbssHandler())
     register_handler("questgroup.dbss", QuestGroupDbssHandler())
     register_handler("worldquest.dbss", WorldQuestDbssHandler())
     register_handler("cashproduct.dbss", CashProductHandler())
-    register_handler("cashproductoffset.dbss", CashProductOffsetHandler())
+    register_handler("cashproductoffset.dbss", cash_product_offset_handler())
     register_handler("itemenchant.dbss", ItemEnchantHandler())
-    register_handler("itemenchantoffset.dbss", ItemEnchantOffsetHandler())
-    register_handler("itemsubgroupoffset.dbss", ItemSubgroupOffsetHandler())
+    register_handler("itemenchantoffset.dbss", item_enchant_offset_handler())
+    register_handler("itemsubgroupoffset.dbss", item_subgroup_offset_handler())
     register_handler("itemsubgroup.dbss", ItemSubgroupHandler())
-    register_handler("journalquestoffset.dbss", JournalQuestOffsetHandler())
+    register_handler("journalquestoffset.dbss", journal_quest_offset_handler())
     register_handler("journalquest.dbss", JournalQuestDbssHandler())
-    register_handler("npcgiftoffset.dbss", NpcGiftOffsetHandler())
+    register_handler("npcgiftoffset.dbss", npc_gift_offset_handler())
     register_handler("npcgift.dbss", NpcGiftHandler())
-    register_handler("npcgiftdataoffset.dbss", NpcGiftDataOffsetHandler())
+    register_handler("npcgiftdataoffset.dbss", npc_gift_offset_handler())
     register_handler("npcgiftdata.dbss", NpcGiftDataHandler())
-    register_handler("zodiacsignoffset.dbss", ZodiacSignOffsetHandler())
+    register_handler("zodiacsignoffset.dbss", zodiac_sign_offset_handler())
     register_handler("zodiacsign.dbss", ZodiacSignHandler())
-    register_handler("zodiacsignorderoffset.dbss", ZodiacSignOrderOffsetHandler())
+    register_handler("zodiacsignorderoffset.dbss", zodiac_sign_order_offset_handler())
     register_handler("zodiacsignorder.dbss", ZodiacSignOrderHandler())
-    register_handler("plantzoneoffset.dbss", PlantZoneOffsetHandler())
+    register_handler("plantzoneoffset.dbss", plant_zone_offset_handler())
     register_handler("plantzone.dbss", PlantZoneHandler())
-    register_handler("characterspawntypeoffset.dbss", CharacterSpawnTypeOffsetHandler())
+    register_handler("characterspawntypeoffset.dbss", character_spawn_type_offset_handler())
     register_handler("characterspawntype.dbss", CharacterSpawnTypeHandler())
-    register_handler("characterobjectoffset.dbss", CharacterObjectOffsetHandler())
+    register_handler("characterobjectoffset.dbss", character_object_offset_handler())
     register_handler("characterobject.dbss", CharacterObjectHandler())
-    register_handler("characterstaticoffset.dbss", CharacterStaticOffsetHandler())
+    register_handler("characterstaticoffset.dbss", character_static_offset_handler())
     register_handler("characterstatic.dbss", CharacterStaticHandler())
-    register_handler("petoffset.dbss", PetOffsetHandler())
-    register_handler("petgradeoffset.dbss", PetGradeOffsetHandler())
+    register_handler("petoffset.dbss", pet_offset_handler())
+    register_handler("petgradeoffset.dbss", pet_grade_offset_handler())
     register_handler("petgrade.dbss", PetGradeHandler())
     register_handler("pet.dbss", PetDbssHandler())
-    register_handler("petactionoffset.dbss", PetActionOffsetHandler())
+    register_handler("petactionoffset.dbss", pet_action_offset_handler())
     register_handler("petaction.dbss", PetActionHandler())
-    register_handler("petexpoffset.dbss", PetExpOffsetHandler())
+    register_handler("petexpoffset.dbss", pet_exp_offset_handler())
     register_handler("petexp.dbss", PetExpHandler())
-    register_handler("petskilloffset.dbss", PetSkillOffsetHandler())
+    register_handler("petskilloffset.dbss", pet_skill_offset_handler())
     register_handler("petskill.dbss", PetSkillHandler())
     register_handler(
         "petequipskillaquireoffset.dbss",
-        PetEquipSkillAcquireOffsetHandler(),
+        pet_equip_skill_acquire_offset_handler(),
     )
     register_handler("petequipskillaquire.dbss", PetEquipSkillAcquireHandler())
     register_handler(
         "fairyequipskillaquireoffset.dbss",
-        FairyEquipSkillAcquireOffsetHandler(),
+        fairy_equip_skill_acquire_offset_handler(),
     )
     register_handler("fairyequipskillaquire.dbss", FairyEquipSkillAcquireHandler())
     register_handler(
         "fairyskillchangeoffset.dbss",
-        FairySkillChangeOffsetHandler(),
+        fairy_skill_change_offset_handler(),
     )
     register_handler("fairyskillchange.dbss", FairySkillChangeHandler())
-    register_handler("employeenameoffset.dbss", EmployeeNameOffsetHandler())
+    register_handler("employeenameoffset.dbss", employee_name_offset_handler())
     register_handler("employeename.dbss", EmployeeNameHandler())
-    register_handler("buffoffset.dbss", BuffOffsetHandler())
+    register_handler("buffoffset.dbss", buff_offset_handler())
     register_handler("buff.dbss", BuffHandler())
-    register_handler("worldmapmonsteroffset.dbss", WorldMapMonsterOffsetHandler())
+    register_handler("worldmapmonsteroffset.dbss", world_map_monster_offset_handler())
     register_handler("worldmapmonster.dbss", WorldMapMonsterHandler())
-    register_handler("teleportoffset.dbss", TeleportOffsetHandler())
+    register_handler("teleportoffset.dbss", teleport_offset_handler())
     register_handler("teleport.dbss", TeleportHandler())

@@ -14,6 +14,7 @@ from _common.lang import load_handler_strings
 from _common.pabr_offset import PabrOffsetRow, parse_pabr_u32_offset_rows
 from _common.pa_text import pa_cell, pa_fields, pa_key, pa_list_cell, pa_list_fields
 from _common.skill import skill_description_tagged, skill_name_tagged, split_skill_key
+from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, size_column
 from .parser import SkillRecord, parse_skill_records
 
 
@@ -57,60 +58,39 @@ def _record_dict(record: SkillRecord) -> dict:
     }
 
 
-class SkillOffsetHandler(PreviewHandler):
+def _skill_offset_record(row: PabrOffsetRow) -> dict:
+    skill_no, level = split_skill_key(row.entry_id)
+    return {
+        "skill_key": row.entry_id,
+        "skill_no": skill_no,
+        "level": level,
+        "dbss_offset": row.offset,
+        "size": row.size,
+    }
+
+
+def skill_offset_handler(
+    parse_rows: Callable[[bytes], list[PabrOffsetRow]] = parse_pabr_u32_offset_rows,
+) -> OffsetTableHandler:
     """Skill cluster offset tables: rows keyed by skill key.
 
     `skilloffset.dbss` and `skilltypeoffset.dbss` are PABR tables, the default;
     `skillsimplyoffset.dbss` passes its bare-row reader.
     """
 
-    def __init__(self, parse_rows: Callable[[bytes], list[PabrOffsetRow]] = parse_pabr_u32_offset_rows) -> None:
-        self._parse_rows = parse_rows
+    def read(data: bytes) -> list[dict]:
+        return [_skill_offset_record(row) for row in parse_rows(data)]
 
-    def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        return [
-            Column(cols.get("skillNo", "Skill No"), "num", sort_key="skill_no"),
-            Column(cols.get("level", "Level"), "num", sort_key="level"),
-            Column(cols.get("dbssOffset", "DBSS Offset"), "num", sort_key="dbss_offset"),
-            Column(cols.get("size", "Size"), "num", sort_key="size"),
-        ]
-
-    def sortable_fields(self) -> frozenset[str]:
-        return sort_keys(self._columns())
-
-    def get_records(
-        self,
-        data: bytes,
-        entry: PazEntry,
-        companions: dict[str, bytes],
-    ) -> list[dict]:
-        records = []
-        for row in self._parse_rows(data):
-            skill_no, level = split_skill_key(row.entry_id)
-            records.append({
-                "skill_key": row.entry_id,
-                "skill_no": skill_no,
-                "level": level,
-                "dbss_offset": row.offset,
-                "size": row.size,
-            })
-        return records
-
-    def render_records_page(
-        self,
-        records: list[dict],
-        page: int,
-        page_size: int,
-    ) -> str:
-        start = page * page_size
-        slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} offset records"
-        rows = [
-            [e(r["skill_no"]), e(r["level"]), e(f"0x{r['dbss_offset']:08X}"), e(r["size"])]
-            for r in slice_
-        ]
-        return table(meta, self._columns(), rows)
+    return OffsetTableHandler(
+        _LANG_DIR,
+        [
+            OffsetColumn("skill_no", "skillNo", "Skill No"),
+            OffsetColumn("level", "level", "Level"),
+            offset_column("dbss_offset", "dbssOffset", "DBSS Offset"),
+            size_column("size", "size", "Size"),
+        ],
+        read,
+    )
 
 
 class SkillHandler(PreviewHandler):

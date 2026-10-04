@@ -9,6 +9,14 @@ from _common.html import Column, e, join_limited, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded
 from _common.pa_text import pa_key, pa_list_cell
+from _common.offset_table import (
+    OffsetColumn,
+    OffsetTableHandler,
+    offset_column,
+    offset_records,
+    offset_text,
+    size_column,
+)
 from .parser import parse_dialogtext_offset_rows, parse_dialogtext_records
 from .text import line_text_tagged, plain_text, voice_name
 
@@ -19,43 +27,16 @@ _EMPTY = "-"
 _LIST_PREVIEW_ITEMS = 3
 
 
-class DialogTextOffsetHandler(PreviewHandler):
-    def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        return [
-            Column(cols.get("key", "Key"), "num", sort_key="key"),
-            Column(cols.get("dbssOffset", "DBSS Offset"), "num", sort_key="dbss_offset"),
-            Column(cols.get("size", "Size"), "num", sort_key="size"),
-        ]
-
-    def sortable_fields(self) -> frozenset[str]:
-        return sort_keys(self._columns())
-
-    def get_records(
-        self,
-        data: bytes,
-        entry: PazEntry,
-        companions: dict[str, bytes],
-    ) -> list[dict]:
-        return [
-            {"key": row.entry_id, "dbss_offset": row.offset, "size": row.size}
-            for row in parse_dialogtext_offset_rows(data)
-        ]
-
-    def render_records_page(
-        self,
-        records: list[dict],
-        page: int,
-        page_size: int,
-    ) -> str:
-        start = page * page_size
-        slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} offset records"
-        rows = [
-            [e(f"0x{r['key']:08X}"), e(f"0x{r['dbss_offset']:08X}"), e(r["size"])]
-            for r in slice_
-        ]
-        return table(meta, self._columns(), rows)
+def dialog_text_offset_handler() -> OffsetTableHandler:
+    return OffsetTableHandler(
+        _LANG_DIR,
+        [
+            OffsetColumn("key", "key", "Key", offset_text),
+            offset_column("dbss_offset", "dbssOffset", "DBSS Offset"),
+            size_column("size", "size", "Size"),
+        ],
+        offset_records(parse_dialogtext_offset_rows, "key", "dbss_offset"),
+    )
 
 
 class DialogTextHandler(PreviewHandler):

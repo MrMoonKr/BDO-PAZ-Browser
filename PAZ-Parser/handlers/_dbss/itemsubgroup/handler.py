@@ -9,6 +9,13 @@ from _common.html import Column, e, sort_keys, table
 from _common.item_key import item_key_list_cell, item_key_text
 from _common.lang import load_handler_strings
 from _common.pabr_offset import parse_pabr_offset_rows
+from _common.offset_table import (
+    OffsetColumn,
+    OffsetTableHandler,
+    offset_column,
+    offset_records,
+    size_column,
+)
 from .parser import parse_itemsubgroup_records
 
 
@@ -17,43 +24,16 @@ _OFFSET_FILE = "itemsubgroupoffset.dbss"
 _LIST_PREVIEW_ITEMS = 8
 
 
-class ItemSubgroupOffsetHandler(PreviewHandler):
-    def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        return [
-            Column(cols.get("subgroupKey", "Subgroup Key"), "num", sort_key="subgroup_key"),
-            Column(cols.get("dataOffset", "Data Offset"), "num", sort_key="offset"),
-            Column(cols.get("size", "Size"), "num", sort_key="size"),
-        ]
-
-    def sortable_fields(self) -> frozenset[str]:
-        return sort_keys(self._columns())
-
-    def get_records(
-        self,
-        data: bytes,
-        entry: PazEntry,
-        companions: dict[str, bytes],
-    ) -> list[dict]:
-        return [
-            {"subgroup_key": row.entry_id, "offset": row.offset, "size": row.size}
-            for row in parse_pabr_offset_rows(data)
-        ]
-
-    def render_records_page(
-        self,
-        records: list[dict],
-        page: int,
-        page_size: int,
-    ) -> str:
-        start = page * page_size
-        slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} offset records"
-        rows = [
-            [e(r["subgroup_key"]), e(f"0x{r['offset']:08X}"), e(r["size"])]
-            for r in slice_
-        ]
-        return table(meta, self._columns(), rows)
+def item_subgroup_offset_handler() -> OffsetTableHandler:
+    return OffsetTableHandler(
+        _LANG_DIR,
+        [
+            OffsetColumn("subgroup_key", "subgroupKey", "Subgroup Key"),
+            offset_column("offset", "dataOffset", "Data Offset"),
+            size_column("size", "size", "Size"),
+        ],
+        offset_records(parse_pabr_offset_rows, "subgroup_key"),
+    )
 
 
 class ItemSubgroupHandler(PreviewHandler):

@@ -7,6 +7,13 @@ from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
+from _common.offset_table import (
+    OffsetColumn,
+    OffsetTableHandler,
+    offset_column,
+    picked_records,
+    size_column,
+)
 from .parser import parse_mentaltheme_records, parse_mentalthemeoffset_records
 
 
@@ -30,52 +37,16 @@ def _reward_2(
     return _reward(amount_2, need_count_2)
 
 
-class MentalThemeOffsetHandler(PreviewHandler):
-    def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        return [
-            Column(cols.get("themeId", "Theme ID"), "num", sort_key="theme_id"),
-            Column(cols.get("payloadOffset", "Payload Offset"), "num", sort_key="payload_offset"),
-            Column(cols.get("payloadSize", "Payload Size"), "num", sort_key="payload_size"),
-        ]
-
-    def sortable_fields(self) -> frozenset[str]:
-        return sort_keys(self._columns())
-
-    def get_records(
-        self,
-        data: bytes,
-        entry: PazEntry,
-        companions: dict[str, bytes],
-    ) -> list[dict]:
-        records = parse_mentalthemeoffset_records(data)
-        return [
-            {
-                "theme_id": record["theme_id"],
-                "payload_offset": record["payload_offset"],
-                "payload_size": record["payload_size"],
-            }
-            for record in records
-        ]
-
-    def render_records_page(
-        self,
-        records: list[dict],
-        page: int,
-        page_size: int,
-    ) -> str:
-        start = page * page_size
-        slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} offset records"
-        rows = [
-            [
-                e(r["theme_id"]),
-                e(f"0x{r['payload_offset']:08X}"),
-                e(r["payload_size"]),
-            ]
-            for r in slice_
-        ]
-        return table(meta, self._columns(), rows)
+def mental_theme_offset_handler() -> OffsetTableHandler:
+    return OffsetTableHandler(
+        _LANG_DIR,
+        [
+            OffsetColumn("theme_id", "themeId", "Theme ID"),
+            offset_column("payload_offset", "payloadOffset", "Payload Offset"),
+            size_column("payload_size", "payloadSize", "Payload Size"),
+        ],
+        picked_records(parse_mentalthemeoffset_records, ("theme_id", "payload_offset", "payload_size")),
+    )
 
 
 class MentalThemeHandler(PreviewHandler):

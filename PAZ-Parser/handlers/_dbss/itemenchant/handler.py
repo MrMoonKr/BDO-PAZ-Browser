@@ -12,6 +12,7 @@ from _common.lang import load_handler_strings
 from _common.loc import LOC_NULL, loc_tagged, loc_text
 from _common.pa_text import pa_cell, pa_fields, pa_line_cell
 from _common.skill import skill_buff_ids
+from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, size_column
 from .parser import (
     parse_itemenchant_records,
     parse_itemenchantoffset_records,
@@ -59,46 +60,17 @@ def _with_links(record: dict) -> dict:
     }
 
 
-class ItemEnchantOffsetHandler(PreviewHandler):
-    def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        return [
-            Column(cols.get("itemId", "Item ID"), "num", sort_key="item_id"),
-            Column(cols.get("enchantLevel", "Enchant Level"), "num", sort_key="enchant_level"),
-            Column(cols.get("dataOffset", "Data Offset"), "num", sort_key="data_offset"),
-            Column(cols.get("dataSize", "Data Size"), "num", sort_key="data_size"),
-        ]
-
-    def sortable_fields(self) -> frozenset[str]:
-        return sort_keys(self._columns())
-
-    def get_records(
-        self,
-        data: bytes,
-        entry: PazEntry,
-        companions: dict[str, bytes],
-    ) -> list[dict]:
-        return parse_itemenchantoffset_records(data)
-
-    def render_records_page(
-        self,
-        records: list[dict],
-        page: int,
-        page_size: int,
-    ) -> str:
-        start = page * page_size
-        slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} offset records"
-        rows = [
-            [
-                e(record["item_id"]),
-                e(record["enchant_level"]),
-                e(f"0x{record['data_offset']:08X}"),
-                e(f"{record['data_size']:,}"),
-            ]
-            for record in slice_
-        ]
-        return table(meta, self._columns(), rows)
+def item_enchant_offset_handler() -> OffsetTableHandler:
+    return OffsetTableHandler(
+        _LANG_DIR,
+        [
+            OffsetColumn("item_id", "itemId", "Item ID"),
+            OffsetColumn("enchant_level", "enchantLevel", "Enchant Level"),
+            offset_column("data_offset", "dataOffset", "Data Offset"),
+            size_column("data_size", "dataSize", "Data Size"),
+        ],
+        parse_itemenchantoffset_records,
+    )
 
 
 class ItemEnchantHandler(PreviewHandler):

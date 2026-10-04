@@ -10,6 +10,7 @@ from _common.item_key import item_key_list_cell
 from _common.lang import load_handler_strings
 from _common.node import node_name
 from _common.production_items import production_item_fields
+from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, size_column
 from .parser import WORKER_SPECIES_NAMES, parse_offset_records, parse_plantzone_records
 
 
@@ -22,44 +23,16 @@ def _species_name(species: int) -> str:
     return WORKER_SPECIES_NAMES[species] if species < len(WORKER_SPECIES_NAMES) else str(species)
 
 
-class PlantZoneOffsetHandler(PreviewHandler):
-    def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        return [
-            Column(cols.get("recordId", "Record ID"), "num", sort_key="record_id"),
-            Column(cols.get("dataOffset", "Data Offset"), "num", sort_key="data_offset"),
-            Column(cols.get("dataSize", "Data Size"), "num", sort_key="data_size"),
-        ]
-
-    def sortable_fields(self) -> frozenset[str]:
-        return sort_keys(self._columns())
-
-    def get_records(
-        self,
-        data: bytes,
-        entry: PazEntry,
-        companions: dict[str, bytes],
-    ) -> list[dict]:
-        return parse_offset_records(data)
-
-    def render_records_page(
-        self,
-        records: list[dict],
-        page: int,
-        page_size: int,
-    ) -> str:
-        start = page * page_size
-        slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} offset records"
-        rows = [
-            [
-                e(r["record_id"]),
-                e(f"0x{r['data_offset']:08X}"),
-                e(r["data_size"]),
-            ]
-            for r in slice_
-        ]
-        return table(meta, self._columns(), rows)
+def plant_zone_offset_handler() -> OffsetTableHandler:
+    return OffsetTableHandler(
+        _LANG_DIR,
+        [
+            OffsetColumn("record_id", "recordId", "Record ID"),
+            offset_column("data_offset", "dataOffset", "Data Offset"),
+            size_column("data_size", "dataSize", "Data Size"),
+        ],
+        parse_offset_records,
+    )
 
 
 class PlantZoneHandler(PreviewHandler):

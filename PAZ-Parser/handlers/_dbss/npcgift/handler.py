@@ -11,6 +11,7 @@ from _common.icon_index import IconKind, icon_path
 from _common.item_grade import item_grade, item_grade_tagged
 from _common.lang import load_handler_strings
 from _common.pa_text import pa_cell, pa_key
+from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, size_column
 from .parser import (
     parse_gift_offset_records,
     parse_npcgift_records,
@@ -21,54 +22,21 @@ from .parser import (
 _LANG_DIR = Path(__file__).parent / "lang"
 
 
-class _NpcGiftOffsetHandler(PreviewHandler):
-    """Shared handler for npcgiftoffset.dbss and npcgiftdataoffset.dbss, identical layout."""
-
-    def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        return [
-            Column(cols.get("npcId", "NPC ID"), "num", sort_key="npc_id"),
-            Column(cols.get("dataOffset", "Data Offset"), "num", sort_key="data_offset"),
-            Column(cols.get("dataSize", "Data Size"), "num", sort_key="data_size"),
-        ]
-
-    def sortable_fields(self) -> frozenset[str]:
-        return sort_keys(self._columns())
-
-    def get_records(
-        self,
-        data: bytes,
-        entry: PazEntry,
-        companions: dict[str, bytes],
-    ) -> list[dict]:
-        return [dict(r) for r in parse_gift_offset_records(data)]
-
-    def render_records_page(
-        self,
-        records: list[dict],
-        page: int,
-        page_size: int,
-    ) -> str:
-        start = page * page_size
-        slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} offset records"
-        rows = [
-            [
-                e(r["npc_id"]),
-                e(f"0x{r['data_offset']:08X}"),
-                e(r["data_size"]),
-            ]
-            for r in slice_
-        ]
-        return table(meta, self._columns(), rows)
+def _read_gift_offsets(data: bytes) -> list[dict]:
+    return [dict(record) for record in parse_gift_offset_records(data)]
 
 
-class NpcGiftOffsetHandler(_NpcGiftOffsetHandler):
-    pass
-
-
-class NpcGiftDataOffsetHandler(_NpcGiftOffsetHandler):
-    pass
+def npc_gift_offset_handler() -> OffsetTableHandler:
+    """`npcgiftoffset.dbss` and `npcgiftdataoffset.dbss`, which share one layout."""
+    return OffsetTableHandler(
+        _LANG_DIR,
+        [
+            OffsetColumn("npc_id", "npcId", "NPC ID"),
+            offset_column("data_offset", "dataOffset", "Data Offset"),
+            size_column("data_size", "dataSize", "Data Size"),
+        ],
+        _read_gift_offsets,
+    )
 
 
 class NpcGiftHandler(PreviewHandler):

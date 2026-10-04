@@ -12,6 +12,13 @@ from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_tagged
 from _common.pa_text import pa_cell, pa_fields, pa_line_cell
 from _common.lookup_index import IndexKind, lookup
+from _common.offset_table import (
+    OffsetColumn,
+    OffsetTableHandler,
+    offset_column,
+    offset_records,
+    size_column,
+)
 from .combo import combo_text, has_combo
 from .parser import MentalCardRecord, parse_mentalcard_offset_records, parse_mentalcard_records
 
@@ -60,43 +67,16 @@ def _learned_from(card_id: int) -> list[str]:
     return list(dict.fromkeys(names))
 
 
-class MentalCardOffsetHandler(PreviewHandler):
-    def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        return [
-            Column(cols.get("cardId", "Knowledge ID"), "num", sort_key="card_id"),
-            Column(cols.get("dbssOffset", "DBSS Offset"), "num", sort_key="dbss_offset"),
-            Column(cols.get("size", "Size"), "num", sort_key="size"),
-        ]
-
-    def sortable_fields(self) -> frozenset[str]:
-        return sort_keys(self._columns())
-
-    def get_records(
-        self,
-        data: bytes,
-        entry: PazEntry,
-        companions: dict[str, bytes],
-    ) -> list[dict]:
-        return [
-            {"card_id": row.entry_id, "dbss_offset": row.offset, "size": row.size}
-            for row in parse_mentalcard_offset_records(data)
-        ]
-
-    def render_records_page(
-        self,
-        records: list[dict],
-        page: int,
-        page_size: int,
-    ) -> str:
-        start = page * page_size
-        slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} offset records"
-        rows = [
-            [e(r["card_id"]), e(f"0x{r['dbss_offset']:08X}"), e(r["size"])]
-            for r in slice_
-        ]
-        return table(meta, self._columns(), rows)
+def mental_card_offset_handler() -> OffsetTableHandler:
+    return OffsetTableHandler(
+        _LANG_DIR,
+        [
+            OffsetColumn("card_id", "cardId", "Knowledge ID"),
+            offset_column("dbss_offset", "dbssOffset", "DBSS Offset"),
+            size_column("size", "size", "Size"),
+        ],
+        offset_records(parse_mentalcard_offset_records, "card_id", "dbss_offset"),
+    )
 
 
 class MentalCardHandler(PreviewHandler):

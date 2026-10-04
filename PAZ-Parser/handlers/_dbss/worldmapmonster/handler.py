@@ -9,6 +9,13 @@ from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.hunting_ground import hunting_ground_name
 from _common.lang import load_handler_strings
 from _common.loc import loc_text
+from _common.offset_table import (
+    OffsetColumn,
+    OffsetTableHandler,
+    offset_column,
+    offset_records,
+    size_column,
+)
 from .parser import parse_worldmapmonster_offset_rows, parse_worldmapmonster_records
 
 
@@ -46,43 +53,16 @@ def _hunting_ground_text(key: int | None) -> str:
     return hunting_ground_name(key) or str(key)
 
 
-class WorldMapMonsterOffsetHandler(PreviewHandler):
-    def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        return [
-            Column(cols.get("key", "Key"), "num", sort_key="key"),
-            Column(cols.get("byteOffset", "Byte Offset"), "num", sort_key="offset"),
-            Column(cols.get("size", "Size"), "num", sort_key="size"),
-        ]
-
-    def sortable_fields(self) -> frozenset[str]:
-        return sort_keys(self._columns())
-
-    def get_records(
-        self,
-        data: bytes,
-        entry: PazEntry,
-        companions: dict[str, bytes],
-    ) -> list[dict]:
-        return [
-            {"key": row.entry_id, "offset": row.offset, "size": row.size}
-            for row in parse_worldmapmonster_offset_rows(data)
-        ]
-
-    def render_records_page(
-        self,
-        records: list[dict],
-        page: int,
-        page_size: int,
-    ) -> str:
-        start = page * page_size
-        slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} offset records"
-        rows = [
-            [e(r["key"]), e(f"0x{r['offset']:08X}"), e(r["size"])]
-            for r in slice_
-        ]
-        return table(meta, self._columns(), rows)
+def world_map_monster_offset_handler() -> OffsetTableHandler:
+    return OffsetTableHandler(
+        _LANG_DIR,
+        [
+            OffsetColumn("key", "key", "Key"),
+            offset_column("offset", "byteOffset", "Byte Offset"),
+            size_column("size", "size", "Size"),
+        ],
+        offset_records(parse_worldmapmonster_offset_rows, "key"),
+    )
 
 
 class WorldMapMonsterHandler(PreviewHandler):

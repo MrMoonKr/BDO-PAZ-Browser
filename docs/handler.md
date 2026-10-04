@@ -113,20 +113,20 @@ Group all registrations for one format in a registration module.
 
 from bdo_preview import register_handler
 
-from .titleoffset.handler import TitleOffsetHandler
+from .titleoffset.handler import title_offset_handler
 from .title.handler import TitleDbssHandler
-from .titlebuff.handler import (
-    TitleBuffListOffsetHandler,
-    TitleBuffListHandler,
-)
+from .titlebuff.handler import TitleBuffListHandler, title_buff_list_offset_handler
 
 
 def register_dbss_handlers() -> None:
-    register_handler("titleoffset.dbss", TitleOffsetHandler())
+    register_handler("titleoffset.dbss", title_offset_handler())
     register_handler("title.dbss", TitleDbssHandler())
-    register_handler("titlebufflistoffset.dbss", TitleBuffListOffsetHandler())
+    register_handler("titlebufflistoffset.dbss", title_buff_list_offset_handler())
     register_handler("titlebufflist.dbss", TitleBuffListHandler())
 ```
+
+Offset companions register a factory call instead of a class (see
+[Offset Tables](#offset-tables)).
 
 ---
 
@@ -835,6 +835,7 @@ _common/
 ├── duration.py          # format_duration(): milliseconds as "1h 30m", "45s", "1.5s"
 ├── html.py
 ├── hunting_ground.py    # drop window hunting ground names by key (LOC type 116)
+├── offset_table.py      # OffsetTableHandler: the one preview handler for every offset companion
 ├── pabr_offset.py       # offset companions: u16 or u32 keys, with or without PABR magic
 ├── prefixed_string.py   # length-prefixed strings: strict and lenient readers
 ├── inline_text.py       # decode_inline_text(): the stored \n escape of inline text
@@ -903,6 +904,41 @@ Rule of thumb:
 
 - Used by only DBSS → `_dbss/common/`
 - Used by multiple formats → `_common/`
+
+### Offset Tables
+
+An offset companion (`*offset.dbss`: a key, a byte offset and a size per row)
+gets no handler class of its own. Its package defines a factory that returns an
+`OffsetTableHandler` from `_common/offset_table.py`, and the registration
+module registers the factory's result:
+
+```python
+def buff_offset_handler() -> OffsetTableHandler:
+    return OffsetTableHandler(
+        _LANG_DIR,
+        [
+            OffsetColumn("buff_id", "buffId", "Buff ID"),
+            offset_column("offset", "dataOffset", "Data Offset"),
+            size_column("size", "size", "Size"),
+        ],
+        offset_records(parse_pabr_offset_rows, "buff_id"),
+    )
+```
+
+- Each column names the record field it shows and sorts by, its label key in
+  the `offsetColumns` block of `lang/<lang>.json` and its English label.
+  `offset_column()` shows `0x0001A2B0`, `size_column()` shows `1,024`, and a
+  plain `OffsetColumn` shows the number; pass `text=` for another form (a hash
+  key through `offset_text`, a pet key as `0x5A06 (23046)`).
+- The reader turns the file into records and keeps the format's field names,
+  which its parser, its tests and the CSV export share: `offset_records()` for
+  the shared rows of `_common/pabr_offset.py`, `offset_map_records()` for
+  `parse_offset_table()` files, `picked_records()` to keep some fields of a
+  parsed row, or the format's own reader when a key splits into several
+  fields (`skill_offset_handler()`, `detail_dialog_offset_handler()`).
+- `lang_dir=None` shows the English labels (a package without a lang folder),
+  `lang_block=` names another label block, and `meta=` replaces the
+  "N offset records" header (`journalquestoffset.dbss` counts its groups).
 
 ---
 

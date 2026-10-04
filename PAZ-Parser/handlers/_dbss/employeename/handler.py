@@ -8,50 +8,23 @@ from bdo_preview import PreviewHandler
 from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
+from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, size_column
 from .parser import parse_employeename_records, parse_employeenameoffset_records
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
 
 
-class EmployeeNameOffsetHandler(PreviewHandler):
-    def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        return [
-            Column(cols.get("employeeNameId", "Employee Name ID"), "num", sort_key="employee_name_id"),
-            Column(cols.get("dataOffset", "Data Offset"), "num", sort_key="data_offset"),
-            Column(cols.get("dataSize", "Data Size"), "num", sort_key="data_size"),
-        ]
-
-    def sortable_fields(self) -> frozenset[str]:
-        return sort_keys(self._columns())
-
-    def get_records(
-        self,
-        data: bytes,
-        entry: PazEntry,
-        companions: dict[str, bytes],
-    ) -> list[dict]:
-        return parse_employeenameoffset_records(data)
-
-    def render_records_page(
-        self,
-        records: list[dict],
-        page: int,
-        page_size: int,
-        ) -> str:
-        start = page * page_size
-        slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} offset records"
-        rows = [
-            [
-                e(r["employee_name_id"]),
-                e(f"0x{r['data_offset']:08X}"),
-                e(r["data_size"]),
-            ]
-            for r in slice_
-        ]
-        return table(meta, self._columns(), rows)
+def employee_name_offset_handler() -> OffsetTableHandler:
+    return OffsetTableHandler(
+        _LANG_DIR,
+        [
+            OffsetColumn("employee_name_id", "employeeNameId", "Employee Name ID"),
+            offset_column("data_offset", "dataOffset", "Data Offset"),
+            size_column("data_size", "dataSize", "Data Size"),
+        ],
+        parse_employeenameoffset_records,
+    )
 
 
 class EmployeeNameHandler(PreviewHandler):

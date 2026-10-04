@@ -8,6 +8,7 @@ from bdo_preview import PreviewHandler
 from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
+from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, size_column
 from .parser import (
     parse_pet_records,
     parse_petgrade_records_with_offsets,
@@ -19,44 +20,20 @@ from .parser import (
 _LANG_DIR = Path(__file__).parent / "lang"
 
 
-class PetOffsetHandler(PreviewHandler):
-    def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        return [
-            Column(cols.get("petId", "Pet ID"), "num", sort_key="pet_id"),
-            Column(cols.get("dataOffset", "Data Offset"), "num", sort_key="data_offset"),
-            Column(cols.get("dataSize", "Data Size"), "num", sort_key="data_size"),
-        ]
+def _pet_key_text(value: int) -> str:
+    return f"0x{value:04X} ({value})"
 
-    def sortable_fields(self) -> frozenset[str]:
-        return sort_keys(self._columns())
 
-    def get_records(
-        self,
-        data: bytes,
-        entry: PazEntry,
-        companions: dict[str, bytes],
-    ) -> list[dict]:
-        return parse_petoffset_records(data)
-
-    def render_records_page(
-        self,
-        records: list[dict],
-        page: int,
-        page_size: int,
-    ) -> str:
-        start = page * page_size
-        slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} pet offset records"
-        rows = [
-            [
-                e(f"0x{r['pet_id']:04X} ({r['pet_id']})"),
-                e(f"0x{r['data_offset']:08X}"),
-                e(r["data_size"]),
-            ]
-            for r in slice_
-        ]
-        return table(meta, self._columns(), rows)
+def pet_offset_handler() -> OffsetTableHandler:
+    return OffsetTableHandler(
+        _LANG_DIR,
+        [
+            OffsetColumn("pet_id", "petId", "Pet ID", _pet_key_text),
+            offset_column("data_offset", "dataOffset", "Data Offset"),
+            size_column("data_size", "dataSize", "Data Size"),
+        ],
+        parse_petoffset_records,
+    )
 
 
 class PetGradeHandler(PreviewHandler):
@@ -118,48 +95,19 @@ class PetGradeHandler(PreviewHandler):
         return table(meta, self._columns(), rows)
 
 
-class PetGradeOffsetHandler(PreviewHandler):
-    def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("gradeOffsetColumns", {})
-        return [
-            Column(cols.get("key", "Key"), "num", sort_key="key"),
-            Column(cols.get("species", "Species"), "num", sort_key="species"),
-            Column(cols.get("variant", "Variant"), "num", sort_key="variant"),
-            Column(cols.get("dataOffset", "Data Offset"), "num", sort_key="data_offset"),
-            Column(cols.get("dataSize", "Data Size"), "num", sort_key="data_size"),
-        ]
-
-    def sortable_fields(self) -> frozenset[str]:
-        return sort_keys(self._columns())
-
-    def get_records(
-        self,
-        data: bytes,
-        entry: PazEntry,
-        companions: dict[str, bytes],
-    ) -> list[dict]:
-        return parse_petgradeoffset_records(data)
-
-    def render_records_page(
-        self,
-        records: list[dict],
-        page: int,
-        page_size: int,
-    ) -> str:
-        start = page * page_size
-        slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} pet grade offset records"
-        rows = [
-            [
-                e(f"0x{r['key']:04X} ({r['key']})"),
-                e(r["species"]),
-                e(r["variant"]),
-                e(f"0x{r['data_offset']:08X}"),
-                e(r["data_size"]),
-            ]
-            for r in slice_
-        ]
-        return table(meta, self._columns(), rows)
+def pet_grade_offset_handler() -> OffsetTableHandler:
+    return OffsetTableHandler(
+        _LANG_DIR,
+        [
+            OffsetColumn("key", "key", "Key", _pet_key_text),
+            OffsetColumn("species", "species", "Species"),
+            OffsetColumn("variant", "variant", "Variant"),
+            offset_column("data_offset", "dataOffset", "Data Offset"),
+            size_column("data_size", "dataSize", "Data Size"),
+        ],
+        parse_petgradeoffset_records,
+        lang_block="gradeOffsetColumns",
+    )
 
 
 class PetDbssHandler(PreviewHandler):

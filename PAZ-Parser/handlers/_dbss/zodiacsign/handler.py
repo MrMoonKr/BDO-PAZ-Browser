@@ -9,6 +9,7 @@ from _common.html import Column, e, sort_keys, table, truncate
 from _common.lang import load_handler_strings
 from _common.zodiacsign.loc import zodiac_name, zodiac_trait
 from _common.zodiacsign.parser import parse_zodiacsign_records
+from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, picked_records
 from .parser import (
     parse_zodiacsignoffset_records,
     parse_zodiacsignorder_records,
@@ -79,43 +80,15 @@ class ZodiacSignHandler(PreviewHandler):
         return table(meta, self._columns(), rows)
 
 
-class ZodiacSignOffsetHandler(PreviewHandler):
-    def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        return [
-            Column(cols.get("zodiacId", "Zodiac ID"), "num", sort_key="zodiac_id"),
-            Column(cols.get("dataOffset", "Data Offset"), "num", sort_key="data_offset"),
-        ]
-
-    def sortable_fields(self) -> frozenset[str]:
-        return sort_keys(self._columns())
-
-    def get_records(
-        self,
-        data: bytes,
-        entry: PazEntry,
-        companions: dict[str, bytes],
-    ) -> list[dict]:
-        records = parse_zodiacsignoffset_records(data)
-        return [
-            {"zodiac_id": rec["zodiac_id"], "data_offset": rec["data_offset"]}
-            for rec in records
-        ]
-
-    def render_records_page(
-        self,
-        records: list[dict],
-        page: int,
-        page_size: int,
-    ) -> str:
-        start = page * page_size
-        slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} offset records"
-        rows = [
-            [e(r["zodiac_id"]), e(f"0x{r['data_offset']:08X}")]
-            for r in slice_
-        ]
-        return table(meta, self._columns(), rows)
+def zodiac_sign_offset_handler() -> OffsetTableHandler:
+    return OffsetTableHandler(
+        _LANG_DIR,
+        [
+            OffsetColumn("zodiac_id", "zodiacId", "Zodiac ID"),
+            offset_column("data_offset", "dataOffset", "Data Offset"),
+        ],
+        picked_records(parse_zodiacsignoffset_records, ("zodiac_id", "data_offset")),
+    )
 
 
 class ZodiacSignOrderHandler(PreviewHandler):
@@ -191,41 +164,13 @@ class ZodiacSignOrderHandler(PreviewHandler):
         return table(meta, self._columns(), rows)
 
 
-class ZodiacSignOrderOffsetHandler(PreviewHandler):
-    def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("orderOffsetColumns", {})
-        return [
-            Column(cols.get("personalityType", "Personality Type"), "num", sort_key="personality_type"),
-            Column(cols.get("dataOffset", "Data Offset"), "num", sort_key="data_offset"),
-        ]
-
-    def sortable_fields(self) -> frozenset[str]:
-        return sort_keys(self._columns())
-
-    def get_records(
-        self,
-        data: bytes,
-        entry: PazEntry,
-        companions: dict[str, bytes],
-    ) -> list[dict]:
-        records = parse_zodiacsignorderoffset_records(data)
-        return [
-            {"personality_type": rec["personality_type"], "data_offset": rec["data_offset"]}
-            for rec in records
-        ]
-
-    def render_records_page(
-        self,
-        records: list[dict],
-        page: int,
-        page_size: int,
-    ) -> str:
-        start = page * page_size
-        slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} offset records"
-        rows = [
-            [e(r["personality_type"]), e(f"0x{r['data_offset']:08X}")]
-            for r in slice_
-        ]
-        return table(meta, self._columns(), rows)
-
+def zodiac_sign_order_offset_handler() -> OffsetTableHandler:
+    return OffsetTableHandler(
+        _LANG_DIR,
+        [
+            OffsetColumn("personality_type", "personalityType", "Personality Type"),
+            offset_column("data_offset", "dataOffset", "Data Offset"),
+        ],
+        picked_records(parse_zodiacsignorderoffset_records, ("personality_type", "data_offset")),
+        lang_block="orderOffsetColumns",
+    )

@@ -9,6 +9,7 @@ from _common.equipskill_roll import flatten_roll_rows, read_skill_loc_ids
 from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
+from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, size_column
 from .parser import (
     FAIRY_GRADES,
     parse_fairyequipskillaquire_records,
@@ -29,45 +30,17 @@ def _skill_name(loc_id: int) -> str:
     return strip_pa_tags(loc_lookup(_LOC_TYPE, loc_id, 0, 0, 0)).strip()
 
 
-class FairyEquipSkillAcquireOffsetHandler(PreviewHandler):
-    def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        return [
-            Column(cols.get("acquireTypeId", "Acquire Type ID"), "num", sort_key="acquire_type_id"),
-            Column(cols.get("dataOffset", "Data Offset"), "num", sort_key="data_offset"),
-            Column(cols.get("dataSize", "Data Size"), "num", sort_key="data_size"),
-            Column(cols.get("recordStart", "Record Start"), "num", sort_key="record_start"),
-        ]
-
-    def sortable_fields(self) -> frozenset[str]:
-        return sort_keys(self._columns())
-
-    def get_records(
-        self,
-        data: bytes,
-        entry: PazEntry,
-        companions: dict[str, bytes],
-    ) -> list[dict]:
-        return parse_fairyequipskillaquireoffset_records(data)
-
-    def render_records_page(
-        self,
-        records: list[dict],
-        page: int,
-        page_size: int,
-    ) -> str:
-        start = page * page_size
-        slice_ = records[start : start + page_size]
-        rows = [
-            [
-                e(r["acquire_type_id"]),
-                e(f"0x{r['data_offset']:08X}"),
-                e(r["data_size"]),
-                e(f"0x{r['record_start']:08X}"),
-            ]
-            for r in slice_
-        ]
-        return table(f"{len(records):,} fairy roll offset records", self._columns(), rows)
+def fairy_equip_skill_acquire_offset_handler() -> OffsetTableHandler:
+    return OffsetTableHandler(
+        _LANG_DIR,
+        [
+            OffsetColumn("acquire_type_id", "acquireTypeId", "Acquire Type ID"),
+            offset_column("data_offset", "dataOffset", "Data Offset"),
+            size_column("data_size", "dataSize", "Data Size"),
+            offset_column("record_start", "recordStart", "Record Start"),
+        ],
+        parse_fairyequipskillaquireoffset_records,
+    )
 
 
 class FairyEquipSkillAcquireHandler(PreviewHandler):

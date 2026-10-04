@@ -8,9 +8,11 @@ from bdo_preview import PreviewHandler
 from _common.loc import loc_lookup
 from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
+from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, picked_records
 from .parser import parse_npcpersonality_records, parse_npcpersonalityoffset_records
 
 _LANG_DIR = Path(__file__).parent / "lang"
+
 
 def _decode_personality_type(code: int) -> str:
     major = code // 100
@@ -22,43 +24,15 @@ def _group_str(group_id: int) -> str:
     return "-" if group_id == 0 else str(group_id)
 
 
-class NpcPersonalityOffsetHandler(PreviewHandler):
-    def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        return [
-            Column(cols.get("personalityId", "Personality ID"), "num", sort_key="personality_id"),
-            Column(cols.get("dataOffset", "Data Offset"), "num", sort_key="data_offset"),
-        ]
-
-    def sortable_fields(self) -> frozenset[str]:
-        return sort_keys(self._columns())
-
-    def get_records(
-        self,
-        data: bytes,
-        entry: PazEntry,
-        companions: dict[str, bytes],
-    ) -> list[dict]:
-        records = parse_npcpersonalityoffset_records(data)
-        return [
-            {"personality_id": rec["personality_id"], "data_offset": rec["data_offset"]}
-            for rec in records
-        ]
-
-    def render_records_page(
-        self,
-        records: list[dict],
-        page: int,
-        page_size: int,
-    ) -> str:
-        start = page * page_size
-        slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} offset records"
-        rows = [
-            [e(r["personality_id"]), e(f"0x{r['data_offset']:08X}")]
-            for r in slice_
-        ]
-        return table(meta, self._columns(), rows)
+def npc_personality_offset_handler() -> OffsetTableHandler:
+    return OffsetTableHandler(
+        _LANG_DIR,
+        [
+            OffsetColumn("personality_id", "personalityId", "Personality ID"),
+            offset_column("data_offset", "dataOffset", "Data Offset"),
+        ],
+        picked_records(parse_npcpersonalityoffset_records, ("personality_id", "data_offset")),
+    )
 
 
 class NpcPersonalityHandler(PreviewHandler):

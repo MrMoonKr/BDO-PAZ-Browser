@@ -14,6 +14,13 @@ from _common.lang import load_handler_strings
 from _common.lookup_index import IndexKind, lookup
 from _common.pabr_offset import parse_pabr_offset_rows
 from _common.pa_text import pa_cell, pa_fields
+from _common.offset_table import (
+    OffsetColumn,
+    OffsetTableHandler,
+    offset_column,
+    offset_records,
+    size_column,
+)
 from .parser import parse_characterobject_records
 
 _LANG_DIR = Path(__file__).parent / "lang"
@@ -21,43 +28,16 @@ _OFFSET_FILE = "characterobjectoffset.dbss"
 _EMPTY = "-"
 
 
-class CharacterObjectOffsetHandler(PreviewHandler):
-    def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        return [
-            Column(cols.get("characterId", "Character ID"), "num", sort_key="character_id"),
-            Column(cols.get("byteOffset", "Byte Offset"), "num", sort_key="offset"),
-            Column(cols.get("size", "Size"), "num", sort_key="size"),
-        ]
-
-    def sortable_fields(self) -> frozenset[str]:
-        return sort_keys(self._columns())
-
-    def get_records(
-        self,
-        data: bytes,
-        entry: PazEntry,
-        companions: dict[str, bytes],
-    ) -> list[dict]:
-        return [
-            {"character_id": row.entry_id, "offset": row.offset, "size": row.size}
-            for row in parse_pabr_offset_rows(data)
-        ]
-
-    def render_records_page(
-        self,
-        records: list[dict],
-        page: int,
-        page_size: int,
-    ) -> str:
-        start = page * page_size
-        slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} offset records"
-        rows = [
-            [e(r["character_id"]), e(f"0x{r['offset']:08X}"), e(r["size"])]
-            for r in slice_
-        ]
-        return table(meta, self._columns(), rows)
+def character_object_offset_handler() -> OffsetTableHandler:
+    return OffsetTableHandler(
+        _LANG_DIR,
+        [
+            OffsetColumn("character_id", "characterId", "Character ID"),
+            offset_column("offset", "byteOffset", "Byte Offset"),
+            size_column("size", "size", "Size"),
+        ],
+        offset_records(parse_pabr_offset_rows, "character_id"),
+    )
 
 
 class CharacterObjectHandler(PreviewHandler):
@@ -158,5 +138,3 @@ def _item_id(character_id: int) -> int | None:
     """
     item_id = lookup(IndexKind.CHARACTER_ITEM, character_id)
     return item_id if isinstance(item_id, int) else None
-
-

@@ -4,14 +4,9 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, sort_keys, table
+from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, size_column
 from .parser import parse_petexp_records, parse_petexpoffset_records
 
-
-_OFFSET_COLUMNS = [
-    Column("EXP Table ID", "num", sort_key="exp_table_id"),
-    Column("Data Offset", "num", sort_key="data_offset"),
-    Column("Data Size", "num", sort_key="data_size"),
-]
 
 _COLUMNS = [
     Column("EXP Table ID", "num", sort_key="exp_table_id"),
@@ -21,36 +16,16 @@ _COLUMNS = [
 ]
 
 
-class PetExpOffsetHandler(PreviewHandler):
-    def sortable_fields(self) -> frozenset[str]:
-        return sort_keys(_OFFSET_COLUMNS)
-
-    def get_records(
-        self,
-        data: bytes,
-        entry: PazEntry,
-        companions: dict[str, bytes],
-    ) -> list[dict]:
-        return parse_petexpoffset_records(data)
-
-    def render_records_page(
-        self,
-        records: list[dict],
-        page: int,
-        page_size: int,
-    ) -> str:
-        start = page * page_size
-        slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} pet exp offset records"
-        rows = [
-            [
-                e(r["exp_table_id"]),
-                e(f"0x{r['data_offset']:08X}"),
-                e(r["data_size"]),
-            ]
-            for r in slice_
-        ]
-        return table(meta, _OFFSET_COLUMNS, rows)
+def pet_exp_offset_handler() -> OffsetTableHandler:
+    return OffsetTableHandler(
+        None,
+        [
+            OffsetColumn("exp_table_id", "expTableId", "EXP Table ID"),
+            offset_column("data_offset", "dataOffset", "Data Offset"),
+            size_column("data_size", "dataSize", "Data Size"),
+        ],
+        parse_petexpoffset_records,
+    )
 
 
 class PetExpHandler(PreviewHandler):

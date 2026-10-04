@@ -11,6 +11,7 @@ from _common.lang import load_handler_strings
 from _common.node import full_node_name
 from _common.pa_text import pa_key
 from _common.teleport import teleport_buff_ids
+from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, size_column
 from .nearest import named_nodes, nearest_node
 from .parser import parse_teleport_offset_rows, parse_teleport_records
 from .used_by import used_by_cell, used_by_entries
@@ -21,41 +22,17 @@ _EMPTY = "-"
 _LIST_PREVIEW_ITEMS = 3
 
 
-class TeleportOffsetHandler(PreviewHandler):
-    def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("offsetColumns", {})
-        return [
-            Column(cols.get("index", "Index"), "num", sort_key="index"),
-            Column(cols.get("section", "Section"), "num", sort_key="section"),
-            Column(cols.get("byteOffset", "Byte Offset"), "num", sort_key="offset"),
-            Column(cols.get("size", "Size"), "num", sort_key="size"),
-        ]
-
-    def sortable_fields(self) -> frozenset[str]:
-        return sort_keys(self._columns())
-
-    def get_records(
-        self,
-        data: bytes,
-        entry: PazEntry,
-        companions: dict[str, bytes],
-    ) -> list[dict]:
-        return parse_teleport_offset_rows(data)
-
-    def render_records_page(
-        self,
-        records: list[dict],
-        page: int,
-        page_size: int,
-    ) -> str:
-        start = page * page_size
-        slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} offset records"
-        rows = [
-            [e(r["index"]), e(r["section"]), e(f"0x{r['offset']:08X}"), e(r["size"])]
-            for r in slice_
-        ]
-        return table(meta, self._columns(), rows)
+def teleport_offset_handler() -> OffsetTableHandler:
+    return OffsetTableHandler(
+        _LANG_DIR,
+        [
+            OffsetColumn("index", "index", "Index"),
+            OffsetColumn("section", "section", "Section"),
+            offset_column("offset", "byteOffset", "Byte Offset"),
+            size_column("size", "size", "Size"),
+        ],
+        parse_teleport_offset_rows,
+    )
 
 
 class TeleportHandler(PreviewHandler):
