@@ -30,7 +30,7 @@ class IndexKind(Enum):
     CHARACTER_ICON = "character_icon"
     CHARACTER_ITEM = "character_item"
     KNOWLEDGE_CHARACTERS = "knowledge_characters"
-    # Flat (item_id, cost, ...) pairs; see detail_dialog parser.lease_pairs.
+    # Flat (item_id, cost, ...) pairs; read through _common/lease.py.
     CHARACTER_LEASES = "character_leases"
     SKILL_ICON = "skill_icon"
     # Korean skilltype.dbss names, the fallback when LOC type 10 has none.

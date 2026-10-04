@@ -20,9 +20,10 @@ from __future__ import annotations
 import struct
 from dataclasses import dataclass
 
+from _common.lease import Lease
 from _common.pabr_offset import PabrOffsetRow, parse_pabr_u32_offset_rows
 from _common.record_reader import RecordReader
-from .lease import Lease, parse_lease
+from .lease import parse_lease
 
 _KEY_INDEX_SHIFT = 16
 _CHARACTER_MASK = 0xFFFF
@@ -186,8 +187,3 @@ def build_character_lease_index(data: bytes, offset_data: bytes) -> dict[int, tu
         character_id: tuple(value for pair in pairs for value in pair)
         for character_id, pairs in leases.items()
     }
-
-
-def lease_pairs(value: tuple[int, ...]) -> list[Lease]:
-    """Unpack a `build_character_lease_index` value into leases."""
-    return [Lease(item_id, cost) for item_id, cost in zip(value[::2], value[1::2])]

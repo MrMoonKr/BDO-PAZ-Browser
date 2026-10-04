@@ -5,8 +5,9 @@ from typing import Any
 
 import pytest
 
-from _dbss.detail_dialog.lease import Lease, parse_lease
-from _dbss.detail_dialog.parser import build_character_lease_index, lease_pairs, split_key
+from _common.lease import Lease, lease_pairs
+from _dbss.detail_dialog.lease import parse_lease
+from _dbss.detail_dialog.parser import build_character_lease_index, split_key
 from tests.framework import (
     DeclaredCountTest,
     HandlerCase,

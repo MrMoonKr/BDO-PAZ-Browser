@@ -238,7 +238,7 @@ def test_item_key_list_cell_draws_each_name_in_its_grade_colour() -> None:
 
 def test_lease_text_colours_the_item_by_grade(monkeypatch: pytest.MonkeyPatch) -> None:
     import _common.item_key as item_key
-    from _dbss.detail_dialog.lease import Lease, lease_text, lease_text_tagged
+    from _common.lease import Lease, lease_text_tagged
 
     monkeypatch.setattr(item_key, "item_name", lambda item_id: "Sovereign Longsword")
     init_index(IndexKind.ITEM_GRADE, {_SOVEREIGN_LONGSWORD: 5})
@@ -246,9 +246,8 @@ def test_lease_text_colours_the_item_by_grade(monkeypatch: pytest.MonkeyPatch) -
 
     tagged = f"<PAColor0x{ITEM_GRADE_COLORS[5]:08X}>Sovereign Longsword<PAOldColor> (3 CP)"
     assert lease_text_tagged(lease, has_loc=True) == tagged
-    assert lease_text(lease, has_loc=True) == "Sovereign Longsword (3 CP)"
     # Without LOC the item ID stands in, plain.
-    assert lease_text(lease, has_loc=False) == f"{_SOVEREIGN_LONGSWORD} (3 CP)"
+    assert lease_text_tagged(lease, has_loc=False) == f"{_SOVEREIGN_LONGSWORD} (3 CP)"
 
 
 _TITLE_SHEET = "ui_texture/combine/icon/combine_title_icon_00.dds"

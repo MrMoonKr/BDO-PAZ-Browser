@@ -6,21 +6,18 @@ registry.
 
 from __future__ import annotations
 
-from _common.lookup_index import IndexKind, lookup
-from _dbss.detail_dialog.lease import Lease
-from _dbss.detail_dialog.parser import lease_pairs
+from _common.lease import Lease, dialog_leases
 
 
 def character_leases(character_id: int, stored_item: int, stored_cost: int) -> list[Lease]:
     """Every lease of the character: the dialog leases, with the one stored here.
 
-    The dialog leases come from the `CHARACTER_LEASES` index. Where the dialog
-    and this file disagree on the cost, the game charges the cost stored here
-    (Merio 43501, checked in game), so it replaces the dialog's. Without the
-    index only the stored lease is known.
+    The dialog leases come from `dialog_leases()`. Where the dialog and this
+    file disagree on the cost, the game charges the cost stored here (Merio
+    43501, checked in game), so it replaces the dialog's. Without the
+    `CHARACTER_LEASES` index only the stored lease is known.
     """
-    value = lookup(IndexKind.CHARACTER_LEASES, character_id)
-    leases = lease_pairs(value) if isinstance(value, tuple) else []
+    leases = dialog_leases(character_id)
     if not stored_item:
         return leases
 

@@ -840,6 +840,7 @@ _common/
 ├── inline_text.py       # decode_inline_text(): the stored \n escape of inline text
 ├── item_key.py          # item keys (enchant_level << 24 | item_id), LOC type 0 names, per-level icons
 ├── knowledge.py         # knowledge entry names (LOC type 34)
+├── lease.py             # Lease, its text and dialog_leases() (CHARACTER_LEASES)
 ├── pa_text.py           # game text tags: pa_fields() / pa_cell() / pa_line_cell() for records, pa_html(), argb_css()
 ├── record_reader.py     # RecordReader: walks one variable-length record in order
 └── skill.py             # skill keys (skill_no << 16 | level) and LOC type 10 names
@@ -984,9 +985,11 @@ or several items are left out. The `characterobject.dbss` Item column reads it.
 
 `CHARACTER_LEASES` maps a character to every `buyItemByPoint(...)` lease
 option in its dialogs ([detail_dialog.dbss](file-formats/detail_dialog_dbss.md)),
-in dialog order and without repeats, as flat `(item_id, cost)` pairs that
-`lease_pairs()` in `_dbss/detail_dialog/parser.py` unpacks. The `npcsimply.bss`
-Leases column reads it. Its source is 27 MB, which takes about 2 s to read and
+in dialog order and without repeats, as flat `(item_id, cost)` pairs. It is
+built by `build_character_lease_index()` in `_dbss/detail_dialog/parser.py`.
+Read it through `dialog_leases(character_id)` in `_common/lease.py`, which
+unpacks the pairs with `lease_pairs()`. The `npcsimply.bss` Leases column
+reads it. Its source is 27 MB, which takes about 2 s to read and
 build once per client.
 
 `SKILL_ICON` maps a skill number to the icon its `skilltype.dbss` record
@@ -1032,7 +1035,7 @@ Used By columns) shows item names in their grade colour. The colours are
 own Item column from the record. A single item name column uses
 `item_name_tagged(item_id)` from `_common/item_key.py` with `pa_fields()`
 (`cashproduct.dbss`, `fairyupgraderate.bss`, `characterobject.dbss`), and
-the lease lists use `lease_text_tagged()` from `_dbss/detail_dialog/lease.py`.
+the lease lists use `lease_text_tagged()` from `_common/lease.py`.
 
 Six small tables are indexed although only their own handlers show their
 icons today, so a later table can reuse them without opening the source

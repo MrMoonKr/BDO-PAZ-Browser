@@ -20,12 +20,12 @@ from tests.framework import (
 from tests.runner import load_case
 
 from _bss.npcsimply.leases import character_leases
+from _common.lease import Lease
 from _common.loc import LOC_NULL
 from _common.lookup_index import IndexKind, init_index
 from _dbss.characterspawntype.navi_labels import navi_label
 from _dbss.characterspawntype.parser import ROLE_COUNT
 from _dbss.characterspawntype.role_labels import role_label_overrides
-from _dbss.detail_dialog.lease import Lease
 
 
 # unknown_12 reads 0xFFFF on every row without a lease item.

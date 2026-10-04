@@ -11,7 +11,7 @@ from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded
 from _dbss.characterspawntype.role_labels import role_label, role_label_overrides, role_tooltip, spawn_type_name
 from _common.pa_text import pa_key, pa_list_cell, pa_list_fields
-from _dbss.detail_dialog.lease import lease_text_tagged
+from _common.lease import lease_text_tagged
 from .leases import character_leases
 from .parser import parse_npcsimply_records
 
