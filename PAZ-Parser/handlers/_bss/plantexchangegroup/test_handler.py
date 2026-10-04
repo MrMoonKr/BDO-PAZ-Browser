@@ -5,9 +5,9 @@ from typing import Any
 
 import pytest
 
+from _bss.exploration.parser import build_node_parent_index
 from _bss.plantexchangegroup.node_names import english_group_names
 from _bss.plantexchangegroup.parser import build_production_item_index
-from _bwp.waypoint.parser import neighbours, parse_waypoint_graph
 from _dbss.plantzone.parser import parse_plantzone_records
 from _common.lookup_index import IndexKind
 from _common.pabr_offset import parse_pabr_offset_rows
@@ -22,25 +22,36 @@ from tests.framework import (
     header_count,
     run_case,
 )
+from tests.fixtures import ensure_fixtures, load_binary_fixture
 
 
 _SUBGROUP_FILE = "itemsubgroup.dbss"
 _SUBGROUP_OFFSET_FILE = "itemsubgroupoffset.dbss"
+_WORLDMAP_FILE = "mapdata_realexplore2.bwp"
 # Platerra Mountains lumbering: Elder Tree Timber, Bloody Tree Knot, Elder Tree Sap.
 _LUMBERING_KEY = 1928
 _LUMBERING_ITEMS = (4611, 5005, 5014)
 
+
+def _node_parent_index() -> dict[int, int]:
+    """`NODE_PARENT` built from the installed tables, the way the app builds it."""
+    return build_node_parent_index(load_binary_fixture("exploration.bss"), load_binary_fixture(_WORLDMAP_FILE))
+
+
+_NODE_PARENTS = _node_parent_index()
+
 CASE = HandlerCase(
     handler_name="plantexchangegroup.bss",
     data_file="plantexchangegroup.bss",
-    companion_files={
-        name: name for name in ("plantzone.dbss", "plantzoneoffset.dbss", "mapdata_realexplore2.bwp")
-    },
+    companion_files={name: name for name in ("plantzone.dbss", "plantzoneoffset.dbss")},
     loc_file="languagedata_en.loc",
     uses_loc=True,
     loc_fields=["Name", "Items"],
     internal_path="gamecommondata/binary/plantexchangegroup.bss",
-    lookup_indexes={IndexKind.PRODUCTION_ITEMS: {_LUMBERING_KEY: _LUMBERING_ITEMS}},
+    lookup_indexes={
+        IndexKind.PRODUCTION_ITEMS: {_LUMBERING_KEY: _LUMBERING_ITEMS},
+        IndexKind.NODE_PARENT: _NODE_PARENTS,
+    },
     tests=[
         SchemaTest(
             required_keys=[
@@ -68,10 +79,10 @@ CASE = HandlerCase(
                 "items": ["Elder Tree Timber", "Bloody Tree Knot", "Elder Tree Sap"],
             },
         ),
-        # The zone's worldmap link names the parent: Arehaza, not the Areha Palm
+        # The zone's NODE_PARENT names the parent: Arehaza, not the Areha Palm
         # Forest of its manager family.
         TargetTest(col="production_key", value=992, expected={"name_en": "Arehaza - Specialties"}),
-        # Godu Village has no main node in exploration.bss, only the link.
+        # Godu Village has no main node in exploration.bss, only the worldmap link.
         TargetTest(col="production_key", value=1880, expected={"name_en": "Godu Village - Farming"}),
         # Pohalam Farm teff; not in the installed index, so no items.
         TargetTest(
@@ -97,12 +108,11 @@ def test_plantexchangegroup_bss(spec: Any, plantexchangegroup_result: HandlerRes
     plantexchangegroup_result.check(spec)
 
 
-def test_every_zone_links_to_one_parent(plantexchangegroup_result: HandlerResult) -> None:
-    """The English names rest on this: a production zone's only worldmap link is its parent."""
+def test_every_zone_has_a_node_parent(plantexchangegroup_result: HandlerResult) -> None:
+    """The English names rest on this: every production zone is a sub-node with a parent."""
     source = plantexchangegroup_result.source
-    links = neighbours(parse_waypoint_graph(source.file("mapdata_realexplore2.bwp")))
     zones = parse_plantzone_records(source.file("plantzone.dbss"), source.file("plantzoneoffset.dbss"))
-    assert [zone["record_id"] for zone in zones if len(links.get(zone["record_id"], ())) != 1] == []
+    assert [zone["record_id"] for zone in zones if zone["record_id"] not in _NODE_PARENTS] == []
 
 
 def test_name_is_english_or_the_korean_label(plantexchangegroup_result: HandlerResult) -> None:
@@ -110,39 +120,31 @@ def test_name_is_english_or_the_korean_label(plantexchangegroup_result: HandlerR
         assert record["name"] == (record["name_en"] or record["name_kr"])
 
 
-_NODE_NAMES = {1: "Town", 2: "Farm", 3: "Mine", 4: "Other Town"}
+_ZONE_NAMES = {2: "Town - Farm", 3: "Town - Mine", 4: "Other Town - Farm"}
 
 
-def _names(zones: list[tuple[int, int]], links: dict[int, set[int]]) -> dict[int, str]:
+def _names(zones: list[tuple[int, int]]) -> dict[int, str]:
     return english_group_names(
         [{"record_id": zone, "production_key": key} for zone, key in zones],
-        {key: frozenset(linked) for key, linked in links.items()},
-        lambda key: _NODE_NAMES.get(key, ""),
+        lambda key: _ZONE_NAMES.get(key, ""),
     )
 
 
-def test_group_name_joins_the_linked_parent_and_the_zone() -> None:
-    assert _names([(2, 100), (3, 101)], {2: {1}, 3: {1}}) == {100: "Town - Farm", 101: "Town - Mine"}
+def test_group_name_is_the_name_of_its_zones() -> None:
+    assert _names([(2, 100), (3, 101), (2, 102)]) == {100: "Town - Farm", 101: "Town - Mine", 102: "Town - Farm"}
 
 
 def test_group_name_needs_one_name_across_its_zones() -> None:
     # Two zones under different parents: no single name.
-    assert _names([(2, 100), (3, 100)], {2: {1}, 3: {4}}) == {}
+    assert _names([(2, 100), (4, 100)]) == {}
     # One zone of the key has no name, so the other does not decide alone.
-    assert _names([(2, 100), (9, 100)], {2: {1}, 9: {1}}) == {}
-
-
-def test_group_name_needs_a_single_link() -> None:
-    for links in ({}, {2: {1, 4}}):
-        assert _names([(2, 100)], links) == {}
+    assert _names([(2, 100), (9, 100)]) == {}
 
 
 def test_production_item_index_matches_the_subgroup_table(
     plantexchangegroup_result: HandlerResult,
 ) -> None:
     """Each production key maps to its subgroup's items, or is left out when the subgroup is missing."""
-    from tests.fixtures import ensure_fixtures
-
     paths = ensure_fixtures(replace(
         CASE,
         companion_files={name: name for name in (_SUBGROUP_FILE, _SUBGROUP_OFFSET_FILE)},

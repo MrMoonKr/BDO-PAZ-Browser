@@ -10,7 +10,6 @@ from _common.item_key import item_key_list_cell
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded
 from _common.production_items import production_item_fields
-from _bwp.waypoint.worldmap import worldmap_companion, worldmap_links
 from _dbss.plantzone.parser import parse_plantzone_records
 from .node_names import english_group_names
 from .parser import parse_plantexchangegroup_records
@@ -24,13 +23,13 @@ _LIST_PREVIEW_ITEMS = 8
 
 
 def _english_names(companions: dict[str, bytes]) -> dict[int, str]:
-    """English group names by production key; empty without LOC or the node tables."""
+    """English group names by production key; empty without LOC or the zone tables."""
     zones = companions.get(_ZONE_FILE)
     zone_offsets = companions.get(_ZONE_OFFSET_FILE)
     if not is_loc_loaded() or zones is None or zone_offsets is None:
         return {}
-    # Without the worldmap no zone has a parent, so no key gets a name.
-    return english_group_names(parse_plantzone_records(zones, zone_offsets), worldmap_links(companions))
+    # Without the NODE_PARENT index no zone has a parent, so no key gets a name.
+    return english_group_names(parse_plantzone_records(zones, zone_offsets))
 
 
 class PlantExchangeGroupBssHandler(PreviewHandler):
@@ -52,7 +51,6 @@ class PlantExchangeGroupBssHandler(PreviewHandler):
         return [
             f"{folder}/{_ZONE_FILE}",
             f"{folder}/{_ZONE_OFFSET_FILE}",
-            worldmap_companion(entry),
         ]
 
     def get_records(

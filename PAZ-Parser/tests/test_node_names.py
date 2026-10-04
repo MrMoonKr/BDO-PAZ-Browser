@@ -40,3 +40,15 @@ def test_parent_without_a_name_is_left_out() -> None:
 def test_node_without_a_name_has_none() -> None:
     init_index(IndexKind.NODE_PARENT, {4242: _PARENT})
     assert node.full_node_name(4242) == ""
+
+
+def test_node_with_parent_name_joins_both_names() -> None:
+    init_index(IndexKind.NODE_PARENT, {_SUB_NODE: _PARENT})
+    assert node.node_with_parent_name(_SUB_NODE) == "Bambu Valley - Mining"
+
+
+def test_node_with_parent_name_needs_a_named_parent() -> None:
+    assert node.node_with_parent_name(_SUB_NODE) == ""
+    assert node.node_with_parent_name(_PARENT) == ""
+    init_index(IndexKind.NODE_PARENT, {_SUB_NODE: 9999})
+    assert node.node_with_parent_name(_SUB_NODE) == ""

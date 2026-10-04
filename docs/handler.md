@@ -1126,7 +1126,10 @@ tables, so `BUFF_ITEMS` costs no second read of `itemenchant.dbss`.
 to in the worldmap graph, its parent; sub-nodes with no link or several are
 left out. Read it through `full_node_name()` in `_common/node.py`, which names
 a sub-node `Bambu Valley - Mining` where LOC type 29 alone says `Mining`; the
-`buff.dbss` Effect column uses it for node registration buffs. `node_name()`
+`buff.dbss` Effect column uses it for node registration buffs.
+`node_with_parent_name()` returns that joined name or `''` when the parent or
+a name is missing, for a table with a better fallback than the bare sub-node
+name (`plantexchangegroup.bss` keeps its Korean label). `node_name()`
 in the same module is the plain LOC type 29 name the node tables show. It is
 built by `build_node_parent_index()` in `_bss/exploration/parser.py`.
 

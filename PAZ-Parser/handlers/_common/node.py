@@ -19,11 +19,16 @@ def node_name(node_key: int) -> str:
     return loc_text(LOC_NODE_NAME, node_key)
 
 
-def full_node_name(node_key: int) -> str:
-    """`Bambu Valley - Mining` for a sub-node with a known parent, else `node_name()`."""
+def node_with_parent_name(node_key: int) -> str:
+    """`Bambu Valley - Mining` for a sub-node with a known, named parent, else ''."""
     name = node_name(node_key)
     parent_key = lookup(IndexKind.NODE_PARENT, node_key)
     if not name or not isinstance(parent_key, int):
-        return name
+        return ""
     parent_name = node_name(parent_key)
-    return f"{parent_name} - {name}" if parent_name else name
+    return f"{parent_name} - {name}" if parent_name else ""
+
+
+def full_node_name(node_key: int) -> str:
+    """`Bambu Valley - Mining` for a sub-node with a known parent, else `node_name()`."""
+    return node_with_parent_name(node_key) or node_name(node_key)
