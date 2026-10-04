@@ -37,6 +37,11 @@ class ApiState:
         self._icon_preview_images: dict[str, tuple[Any, str]] = {}
         self._thumbnail_cache: ThumbnailCache | None = None
         self._tree_data: dict = {}
+        # "Show only handled tables": the tree, file search, global search
+        # and extraction see only the entries a binary handler reads.
+        self._handled_only = False
+        # (handled entries, their tree), built on first use per folder load.
+        self._handled_view: tuple[list[PazEntry], dict] | None = None
         self._disk_companions: dict[str, bytes] = {}
         self._status = "Open a PAZ folder to begin."
         self._cached_path: str | None = None
@@ -72,6 +77,8 @@ class ApiState:
         def read_entry(self, internal_path: str) -> bytes: ...
 
         def stream_url(self, internal_path: str) -> str: ...
+
+        def _visible_entries(self) -> list[PazEntry]: ...
 
         def _load_companions_parallel(
             self, handler: PreviewHandler, entry: PazEntry

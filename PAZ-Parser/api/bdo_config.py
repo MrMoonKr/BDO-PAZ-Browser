@@ -25,6 +25,11 @@ def show_pa_tags_setting(cfg: dict) -> bool:
     return cfg.get("show_pa_tags") is True
 
 
+def handled_only_setting(cfg: dict) -> bool:
+    """The "Show only handled tables" setting; off unless saved as true."""
+    return cfg.get("handled_only") is True
+
+
 def save_config(updates: dict) -> None:
     cfg = {**load_config(), **updates}
     try:

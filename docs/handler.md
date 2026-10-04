@@ -149,6 +149,12 @@ Exact filename handlers should be preferred for known formats.
 
 Extension handlers are useful for generic fallback previews.
 
+The **Show only handled tables** setting keeps a file in the tree when
+`is_handled_file()` (`bdo_preview.py`) finds a registered key for it by the
+same order, built-in text and image views aside. A new handler shows up there
+with no second list to update. An extension key such as `.dbss` would count
+every file of that extension as handled, so register known formats by name.
+
 ---
 
 ## Handler Template

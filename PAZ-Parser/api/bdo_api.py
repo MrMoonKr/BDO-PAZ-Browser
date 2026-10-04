@@ -7,14 +7,14 @@ import time
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import Any
 
 import webview
 
-from .bdo_config import load_config, save_config, show_pa_tags_setting
+from .bdo_config import handled_only_setting, load_config, save_config, show_pa_tags_setting
 from .bdo_api_helpers import _DISK_VIRTUAL_PREFIX, _file_icon, _norm, path_matcher
 from .bdo_api_preview import PreviewMixin
 from .bdo_api_search import SearchMixin
+from .bdo_tree import build_tree, collect_entries, count_entries, find_node, handled_entries
 from paz.bdo_cache import load_cache, read_meta_version, save_cache
 from paz.bdo_thumbnail_cache import ThumbnailCache
 from paz.bdo_index_cache import load_index_cache, save_index_cache
@@ -38,16 +38,6 @@ _VALID_LANGUAGES = frozenset(_LOC_LANG_MAP)
 _DEFAULT_TABLE_ROW_HEIGHT = 27
 _MIN_TABLE_ROW_HEIGHT = 20
 _MAX_TABLE_ROW_HEIGHT = 64
-
-
-def _count_entries(node: dict) -> int:
-    total = 0
-    for v in node.values():
-        if isinstance(v, PazEntry):
-            total += 1
-        elif isinstance(v, dict):
-            total += _count_entries(v)
-    return total
 
 
 def _table_row_height(value: object) -> int:
@@ -77,6 +67,7 @@ class Api(PreviewMixin, SearchMixin):
         cfg = load_config()
         set_handler_lang(cfg.get("language", "en"))
         set_show_pa_tags(show_pa_tags_setting(cfg))
+        self._handled_only = handled_only_setting(cfg)
 
     # ── Folder ────────────────────────────────────────────────────────────────
 
@@ -123,6 +114,7 @@ class Api(PreviewMixin, SearchMixin):
             "language": cfg.get("language", "en"),
             "table_row_height": _table_row_height(cfg.get("table_row_height")),
             "show_pa_tags": show_pa_tags_setting(cfg),
+            "handled_only": handled_only_setting(cfg),
         }
 
     def save_settings(
@@ -131,6 +123,7 @@ class Api(PreviewMixin, SearchMixin):
         language: str,
         table_row_height: int | None = None,
         show_pa_tags: bool = False,
+        handled_only: bool = False,
     ) -> dict:
         if language not in _VALID_LANGUAGES:
             return {"ok": False, "error": f"Invalid language: {language}"}
@@ -141,8 +134,10 @@ class Api(PreviewMixin, SearchMixin):
             "language": language,
             "table_row_height": row_height,
             "show_pa_tags": show_pa_tags is True,
+            "handled_only": handled_only is True,
         })
         set_show_pa_tags(show_pa_tags is True)
+        self._handled_only = handled_only is True
         self._reload_loc(language)
         if paz_path != old_cfg.get("last_folder", "") and Path(paz_path).is_dir():
             self._paz_root = Path(paz_path)
@@ -212,7 +207,8 @@ class Api(PreviewMixin, SearchMixin):
         self._icon_data_url_cache.clear()
         self._icon_preview_images.clear()
         self._open_thumbnail_cache(paz_root, current_version)
-        self._tree_data = self._build_tree_data(entries)
+        self._tree_data = build_tree(entries)
+        self._handled_view = None
         self._disk_companions = {}
         if load_loc:
             self._load_disk_companions()
@@ -378,26 +374,26 @@ class Api(PreviewMixin, SearchMixin):
 
     # ── Tree ──────────────────────────────────────────────────────────────────
 
-    def _build_tree_data(self, entries: list[PazEntry]) -> dict:
-        root: dict = {}
-        for entry in entries:
-            parts = _norm(entry.internal_path).split("/")
-            node = root
-            for part in parts[:-1]:
-                node = node.setdefault(part, {})
-            node[parts[-1]] = entry
-        return root
+    def _handled(self) -> tuple[list[PazEntry], dict]:
+        if self._handled_view is None:
+            entries = handled_entries(self._entries)
+            self._handled_view = (entries, build_tree(entries))
+        return self._handled_view
+
+    def _visible_entries(self) -> list[PazEntry]:
+        """The entries the tree shows: all, or only handled ones per the setting."""
+        return self._handled()[0] if self._handled_only else self._entries
+
+    def _visible_tree(self) -> dict:
+        return self._handled()[1] if self._handled_only else self._tree_data
 
     def get_children(self, node_path: str) -> list[dict]:
-        """Return immediate children of a tree node for lazy loading."""
-        node: Any = self._tree_data
-        if node_path:
-            for part in node_path.split("/"):
-                if isinstance(node, dict):
-                    node = node.get(part, {})
-                else:
-                    return []
+        """Return immediate children of a tree node for lazy loading.
 
+        The disk LOC file sits at the root whatever the handled-only setting:
+        it has its own viewer.
+        """
+        node = find_node(self._visible_tree(), node_path)
         if not isinstance(node, dict):
             return []
 
@@ -422,7 +418,7 @@ class Api(PreviewMixin, SearchMixin):
                 "id":          child_path,
                 "name":        name,
                 "type":        "dir",
-                "count":       _count_entries(child_node),
+                "count":       count_entries(child_node),
                 "icon":        "📁",
                 "has_children": bool(child_node),
             })
@@ -443,7 +439,7 @@ class Api(PreviewMixin, SearchMixin):
         """
         is_hit = path_matcher(query)
         results: list[dict] = []
-        for entry in self._entries:
+        for entry in self._visible_entries():
             path = _norm(entry.internal_path)
             name = path.rsplit("/", 1)[-1]
             if is_hit(path):
@@ -469,27 +465,7 @@ class Api(PreviewMixin, SearchMixin):
         if not self._paz_root:
             return {"error": "No PAZ folder loaded"}
 
-        entries: list[PazEntry] = []
-        seen: set[str] = set()
-
-        for path in paths:
-            path = _norm(path)
-            if path in self._entry_map:
-                if path not in seen:
-                    seen.add(path)
-                    entries.append(self._entry_map[path])
-            else:
-                node: Any = self._tree_data
-                for part in path.split("/"):
-                    node = node.get(part, {}) if isinstance(node, dict) else {}
-                collect: list[PazEntry] = []
-                self._collect_recursive(node, collect)
-                for e in collect:
-                    ep = _norm(e.internal_path)
-                    if ep not in seen:
-                        seen.add(ep)
-                        entries.append(e)
-
+        entries = self._selected_entries(paths)
         if not entries:
             return {"error": "No entries to extract"}
 
@@ -524,42 +500,34 @@ class Api(PreviewMixin, SearchMixin):
         threading.Thread(target=run, daemon=True).start()
         return {"total": total}
 
-    def _collect_recursive(self, node: Any, out: list[PazEntry]) -> None:
-        if isinstance(node, PazEntry):
-            out.append(node)
-        elif isinstance(node, dict):
-            for v in node.values():
-                self._collect_recursive(v, out)
+    def _selected_entries(self, paths: list[str]) -> list[PazEntry]:
+        """The files behind selected tree paths, each once, folders expanded.
 
-    def get_selection_size(self, paths: list[str]) -> dict:
-        seen: set[str] = set()
-        total_bytes = 0
-
+        Folders expand through the visible tree, so with the handled-only
+        setting on a folder yields the files it shows. An empty path selects
+        nothing, never the whole archive.
+        """
+        entries: dict[str, PazEntry] = {}
         for path in paths:
             path = _norm(path)
-            if path in self._entry_map:
-                if path not in seen:
-                    seen.add(path)
-                    total_bytes += self._entry_map[path].uncompressed_size
-            else:
-                node: Any = self._tree_data
-                for part in path.split("/"):
-                    node = node.get(part, {}) if isinstance(node, dict) else {}
-                entries: list[PazEntry] = []
-                self._collect_recursive(node, entries)
-                for e in entries:
-                    ep = _norm(e.internal_path)
-                    if ep not in seen:
-                        seen.add(ep)
-                        total_bytes += e.uncompressed_size
+            if not path:
+                continue
+            entry = self._entry_map.get(path)
+            found = [entry] if entry else collect_entries(find_node(self._visible_tree(), path))
+            for e in found:
+                entries.setdefault(_norm(e.internal_path), e)
+        return list(entries.values())
 
-        return {"count": len(seen), "bytes": total_bytes}
+    def get_selection_size(self, paths: list[str]) -> dict:
+        entries = self._selected_entries(paths)
+        return {"count": len(entries), "bytes": sum(e.uncompressed_size for e in entries)}
 
     # ── Plugins ───────────────────────────────────────────────────────────────
 
     def reload_plugins(self) -> None:
         import bdo_preview
         bdo_preview.reload_plugins(Path(__file__).parent.parent / "handlers")
+        self._handled_view = None
         self._reload_loc(load_config().get("language", "en"))
         self._push_js("app.onPluginsReloaded()")
 

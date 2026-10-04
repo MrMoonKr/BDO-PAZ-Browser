@@ -17,6 +17,7 @@ A Python tool for browsing, extracting, and previewing files from **Black Desert
 - **Tab search**, Ctrl+F inline search within hex (byte offset) and parsed (record) tabs; string and hex-pattern modes
 - **Export**, save the current file as raw binary (hex tab) or CSV (parsed tab) via the Entry Details panel
 - **Game text colours**, LOC text shows the colours of its `<PAColor>` tags, as in game; the **Show game text tags** setting (off by default) also shows the tags themselves
+- **Handled tables only**, the **Show only handled tables** setting (off by default) limits the file tree, file search, content search and folder extraction to files with a parsed table view, plus the LOC file
 - **Plugin system**, add handlers for new binary formats by dropping a file into `handlers/`
 - **Caching**, PAZ index is parsed once and cached; subsequent launches load instantly
 

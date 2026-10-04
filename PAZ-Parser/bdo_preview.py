@@ -445,6 +445,19 @@ def get_binary_handlers() -> list[str]:
     return sorted(k for k in _REGISTRY if k not in _BUILTIN_KEYS)
 
 
+def is_handled_file(name: str) -> bool:
+    """True when a registered binary handler, not a built-in view, reads `name`.
+
+    Looks the file up as get_handler() does: full name first, then extension.
+    Runs once per PAZ entry when the handled-only view is built, so it skips
+    `Path` for speed.
+    """
+    name = name.lower()
+    _, dot, ext = name.rpartition(".")
+    keys = (name, f".{ext}") if dot else (name,)
+    return any(key in _REGISTRY and key not in _BUILTIN_KEYS for key in keys)
+
+
 def get_builtin_formats() -> list[str]:
     """Return sorted list of built-in (text/image) format extensions."""
     return sorted(_BUILTIN_KEYS)

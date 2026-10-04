@@ -103,6 +103,7 @@ class SearchMixin(ApiState):
         mode:       "hex" | "string"
         extensions: list of lowercase dotted extensions to scan, e.g. [".bss", ".dbss"].
                     Defaults to [".bss", ".dbss"].
+        Scans only handled files when the handled-only setting is on.
         Fires app.onGlobalSearchDone(results) when complete.
         """
         if not self._entries or not self._paz_root:
@@ -113,7 +114,7 @@ class SearchMixin(ApiState):
             return {"error": "Invalid search pattern"}
 
         exts = {e.lower() for e in (extensions or [".bss", ".dbss"])}
-        candidates = [e for e in self._entries if Path(e.internal_path).suffix.lower() in exts]
+        candidates = [e for e in self._visible_entries() if Path(e.internal_path).suffix.lower() in exts]
         if not candidates:
             return {"error": "No files match the selected extensions"}
 

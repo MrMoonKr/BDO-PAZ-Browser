@@ -62,6 +62,8 @@
     "tableRowHeight": "Table Row Height",
     "showPaTags": "Show game text tags",
     "showPaTagsHint": "Show the <PAColor> tags of game text next to its colours",
+    "handledOnly": "Show only handled tables",
+    "handledOnlyHint": "Limit the file tree and searches to files with a parsed table view",
     "cancel": "Cancel",
     "save": "Save"
   },
