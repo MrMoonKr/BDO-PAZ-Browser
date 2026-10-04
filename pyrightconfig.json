@@ -1,4 +1,4 @@
 {
-  "include": ["PAZ-Parser", "browser.py"],
+  "include": ["PAZ-Parser", "browser.py", "benchmark.py"],
   "extraPaths": ["PAZ-Parser", "PAZ-Parser/handlers"]
 }

@@ -225,6 +225,42 @@ def bdo_decompress(data: bytes, expected_size: int | None = None) -> bytes:
 
 # ── Entry payload reader ──────────────────────────────────────────────────────
 
+def read_raw_payload(archive_path: Path, entry: PazEntry) -> bytes:
+    """The entry's stored bytes, still encrypted and compressed."""
+    with archive_path.open("rb") as paz_stream:
+        paz_stream.seek(entry.offset)
+        raw_payload: bytes = paz_stream.read(entry.compressed_size)
+
+    if len(raw_payload) != entry.compressed_size:
+        raise ValueError(
+            f"Unexpected payload length for {entry.internal_path}: "
+            f"expected {entry.compressed_size}, got {len(raw_payload)}"
+        )
+    return raw_payload
+
+
+def is_encrypted(entry: PazEntry) -> bool:
+    """False for .dbss files, which are stored without ICE encryption."""
+    return not entry.internal_path.endswith(".dbss")
+
+
+def needs_decompress(entry: PazEntry, decrypted: bytes) -> bool:
+    """True when the decrypted payload is BDO-compressed.
+
+    Flagged by a size mismatch or the 0x6E magic byte. The 0x6E check is
+    skipped when the bytes already equal the expected uncompressed size, those
+    bytes are stored raw, not compressed.
+    """
+    return (
+        entry.uncompressed_size > entry.compressed_size
+        or (
+            len(decrypted) > 0
+            and decrypted[0] == 0x6E
+            and len(decrypted) != entry.uncompressed_size
+        )
+    )
+
+
 def read_entry_payload(archive_path: Path, entry: PazEntry) -> bytes:
     """
     Read, decrypt, and decompress a single PAZ entry.
@@ -235,37 +271,10 @@ def read_entry_payload(archive_path: Path, entry: PazEntry) -> bytes:
     Zero padding past the recorded size (the 8-byte ICE block of a stored
     entry) is trimmed, as extraction does.
     """
-    with archive_path.open("rb") as paz_stream:
-        paz_stream.seek(entry.offset)
-        raw_payload: bytes = paz_stream.read(entry.compressed_size)
+    raw_payload = read_raw_payload(archive_path, entry)
+    decrypted = ice_decrypt_bytes(raw_payload) if is_encrypted(entry) else raw_payload
 
-    if len(raw_payload) != entry.compressed_size:
-        raise ValueError(
-            f"Unexpected payload length for {entry.internal_path}: "
-            f"expected {entry.compressed_size}, got {len(raw_payload)}"
-        )
-
-    # .dbss files are stored without ICE encryption.
-    skip_decrypt = entry.internal_path.endswith(".dbss")
-
-    if skip_decrypt:
-        decrypted = raw_payload
-    else:
-        decrypted = ice_decrypt_bytes(raw_payload)
-
-    # Decompress when flagged by size mismatch or the 0x6E magic byte.
-    # Skip the 0x6E check when the raw bytes already equal the expected
-    # uncompressed size, those bytes are stored raw, not compressed.
-    needs_decompress = (
-        entry.uncompressed_size > entry.compressed_size
-        or (
-            len(decrypted) > 0
-            and decrypted[0] == 0x6E
-            and len(decrypted) != entry.uncompressed_size
-        )
-    )
-
-    if needs_decompress:
+    if needs_decompress(entry, decrypted):
         decompressed = bdo_decompress(decrypted, expected_size=entry.uncompressed_size)
         if len(decompressed) != entry.uncompressed_size and len(decrypted) == entry.uncompressed_size:
             print(

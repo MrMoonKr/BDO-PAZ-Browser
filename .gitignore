@@ -19,3 +19,6 @@ docs/paz_tree.md
 PAZ-Parser/paz_config.json
 PAZ-Parser/tests/fixtures/*
 !PAZ-Parser/tests/fixtures/.gitkeep
+
+# Local benchmark results (machine-specific)
+bench-results/

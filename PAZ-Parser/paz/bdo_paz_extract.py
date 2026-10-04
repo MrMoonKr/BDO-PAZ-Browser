@@ -4,6 +4,7 @@ import argparse
 import logging
 import struct
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 from typing import BinaryIO
 
@@ -277,8 +278,29 @@ def extract_all(
             if Path(entry.internal_path).suffix.lower() in allowed_exts
         ]
 
-    total: int = len(entries)
     logging.info("Using meta file: %s", meta_path)
+    counts: ExtractCounts = extract_entries(paz_root, output_root, entries, overwrite)
+    logging.info(
+        "Done, extracted: %d  skipped: %d  failed: %d  total: %d",
+        counts.extracted, counts.skipped, counts.failed, len(entries),
+    )
+
+
+@dataclass(frozen=True)
+class ExtractCounts:
+    extracted: int
+    skipped: int
+    failed: int
+
+
+def extract_entries(
+    paz_root: Path,
+    output_root: Path,
+    entries: list[PazEntry],
+    overwrite: bool,
+) -> ExtractCounts:
+    """Extract `entries` one by one; a failed entry is logged and counted, not raised."""
+    total: int = len(entries)
     logging.info("Entries to process: %d", total)
 
     extracted: int = 0
@@ -303,10 +325,7 @@ def extract_all(
             failed += 1
             logging.error("[%d/%d] FAILED %s: %s", i, total, entry.internal_path, ex)
 
-    logging.info(
-        "Done, extracted: %d  skipped: %d  failed: %d  total: %d",
-        extracted, skipped, failed, total,
-    )
+    return ExtractCounts(extracted=extracted, skipped=skipped, failed=failed)
 
 
 def build_parser() -> argparse.ArgumentParser:
