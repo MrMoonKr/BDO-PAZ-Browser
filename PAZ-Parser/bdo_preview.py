@@ -32,8 +32,11 @@ class PreviewHandler(ABC):
         """Return a named per-data cache value, rebuilding when data object identity changes.
 
         Handlers use this to build an index once per data payload and reuse it across
-        get_record_count / render_data_page / search_records calls without duplicating
-        the id(data) cache pattern.
+        get_record_count / render_data_page / search_records calls.
+
+        The slot keeps the payload itself, not its id(). A freed payload's id can
+        be handed to the next bytes object, and an id-only check would then
+        return the old payload's value for different data.
 
         Usage:
             def _my_index(self, data):
@@ -43,11 +46,10 @@ class PreviewHandler(ABC):
         if cache is None:
             self._handler_caches: dict = {}
             cache = self._handler_caches
-        data_id = id(data)
         slot = cache.get(name)
-        if slot is None or slot[0] != data_id:
+        if slot is None or slot[0] is not data:
             value = build_fn()
-            cache[name] = (data_id, value)
+            cache[name] = (data, value)
             return value
         return slot[1]
 

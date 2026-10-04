@@ -637,7 +637,9 @@ class MyFormatHandler(PreviewHandler):
 ```
 
 `_data_cache(data, name, build_fn)` supports multiple named slots per handler instance
-and rebuilds automatically when a different file is selected. Use a descriptive name
+and rebuilds automatically when a different file is selected. Each slot holds the payload
+it was built from until the next payload replaces it, so a freed payload's `id()` can
+never be mistaken for a new one. Use a descriptive name
 (`"index"`, `"offset_table"`) so slots do not collide if the handler caches more than one
 structure.
 

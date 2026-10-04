@@ -159,3 +159,15 @@ def test_data_cache_survives_data_identity_change() -> None:
     v2 = h._data_cache(data2, "k", lambda: "second")
     assert v1 == "first"
     assert v2 == "second"
+
+
+def test_data_cache_ignores_a_new_payload_at_a_freed_payloads_address() -> None:
+    # CPython hands a freed object's memory, and so its id(), to the next
+    # object of the same size. A cache that only remembers the id would
+    # return the old payload's value for the new one.
+    h = _SimpleHandler()
+    h._data_cache(bytes([1]) * 64, "k", lambda: "old payload")
+
+    for fill in range(2, 50):
+        payload = bytes([fill]) * 64
+        assert h._data_cache(payload, "k", lambda: "new payload") == "new payload"
