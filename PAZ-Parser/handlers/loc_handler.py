@@ -29,6 +29,7 @@ _TYPE_NAMES = {
     10: "Skill names + descriptions",
     11: "City/node names",
     12: "Territories",
+    13: "Skill rank texts",
     15: "Emote/pose names",
     16: "House/facility type names",
     17: "Town/node names (worker select)",

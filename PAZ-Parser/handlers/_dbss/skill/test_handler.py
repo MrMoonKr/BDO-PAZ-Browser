@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from dataclasses import replace
 from typing import Any
 
@@ -28,6 +29,9 @@ _GRAVE_DIGGING_I = 1759 << 16 | 1
 _GRAVE_DIGGING_II = 1760 << 16 | 1
 # Looks like a sentinel, but is the ordinary skill 57005.
 _DEAD_KEY = 0xDEAD0001
+# Ample Storage Lv. 8, a guild skill whose effect text is only in LOC type 13.
+_AMPLE_STORAGE_KEY = 65069 << 16 | 1
+_HANGUL = re.compile("[가-힣]")
 _GRAVE_DIGGING_ICON = "ui_texture/icon/New_Icon/04_PC_Skill/01_PC_Skill/01_PHM_Skill/PHM_Skill_1759.dds"
 
 SKILL_CASE = HandlerCase(
@@ -152,6 +156,14 @@ def test_descriptions_are_display_text(skill_result: HandlerResult) -> None:
     for r in skill_result.records:
         assert "<PA" not in r["description"], r["skill_key"]
         assert r["description"] not in {"<null>", "UNKNOWN"}, r["skill_key"]
+
+
+def test_guild_skill_effect_comes_from_loc_type_13(skill_result: HandlerResult) -> None:
+    """The rank's English text stands in for its Korean `description`."""
+    ample_storage = next(r for r in skill_result.records if r["skill_key"] == _AMPLE_STORAGE_KEY)
+
+    assert "Guild Storage" in ample_storage["description"]
+    assert not _HANGUL.search(ample_storage["description"])
 
 
 

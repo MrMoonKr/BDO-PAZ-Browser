@@ -23,7 +23,7 @@ item 761880  skill_key_1 = 0xBA430001  (itemenchant.dbss +0xCC)
 | `skilloffset.dbss`    | Required | `skill_key → (offset, size)` index into this file               |
 | `buff.dbss`           | Optional | The buffs named by `buff_ids`                                   |
 | `skilltype.dbss`      | Optional | Korean name, kind and icon of the same skill, see [`skilltype.dbss`](skilltype_dbss.md); the app reads name and icon through the `SKILL_NAME_KR` and `SKILL_ICON` lookup indexes |
-| `languagedata_en.loc` | Optional | Skill names and descriptions, LOC type `10`, `str_id1 = skill_no` |
+| `languagedata_en.loc` | Optional | Skill names and descriptions, LOC type `10`, `str_id1 = skill_no`; each rank's own text, LOC type `13`, `str_id1 = skill_no`, `str_id2 = level` |
 
 All multi-byte values are little-endian.
 
@@ -105,7 +105,7 @@ empty name `N` is `17`.
 | `N+55`  | u8[23]     | unknown_n55         | Not decoded                                                     |
 | `N+78`  | u32        | cooldown_ms         | Cooldown in milliseconds; `0` on 22,798 records, see Notes      |
 | `N+82`  | u16[10]    | buff_ids            | `buff.dbss` IDs, zero-padded; see below                          |
-| `N+102` | string     | description         | Korean description, UTF-16; empty on 21,114 records, `UNKNOWN` on 1,284, `<null>` on 43. Usually the Korean source of LOC type `10` `str_id4 = 1`, see Notes. Line breaks are stored as the two characters `\n` (873 on client 3458) and decoded by the parser |
+| `N+102` | string     | description         | Korean description, UTF-16; empty on 21,114 records, `UNKNOWN` on 1,284, `<null>` on 43. The Korean source of LOC type `13` for the same `(skill_no, level)`, and often the same text as LOC type `10` `str_id4 = 1`, see Notes. Line breaks are stored as the two characters `\n` (873 on client 3458) and decoded by the parser |
 | next    | string     | script              | UTF-16 effect script such as `DAM_ATT_2(...)`, `AWAKEN();`, `BATH();`; empty on 21,594 records |
 | next    | u8[36]     | unknown_tail        | Not decoded                                                     |
 | next    | u32        | next_skill_count    | `0` on 25,209 records, `1` on 4,560; up to `75`, see below       |
@@ -176,7 +176,7 @@ and starts with event skills.
 | Level       | num  | `skill_key & 0xFFFF`                                                  |
 | Icon        | icon | `IconKind.SKILL` icon of `skill_no` (the `skilltype.dbss` icon path)  |
 | Name        | text | LOC type `10`, `str_id1 = skill_no`, `str_id4 = 0`; else the `skilltype.dbss` Korean name, else `name` |
-| Description | text | LOC type `10`, `str_id1 = skill_no`, `str_id4 = 1`; else `description` without PA tags; `<null>` and `UNKNOWN` count as empty |
+| Description | text | LOC type `10` `str_id4 = 1`, then the rank's LOC type `13` text when it says something else (blank line between), in their game colours; without either, `description`. `<null>`, `UNKNOWN` and type 13's `0` count as empty |
 | Cooldown    | num  | `cooldown_ms` as a duration (`8s`, `13.5s`, `30m`); empty when `0`; sorts by `cooldown_ms` |
 | Resource    | num  | `resource_cost` (MP or WP, by class); empty when `0`                  |
 | Stamina     | num  | `stamina_cost`; empty when `0`                                        |
@@ -202,22 +202,31 @@ and starts with event skills.
 - `description` holds real text on 7,983 records (client 3458); 43 more
   store the literal `<null>`. Class skills leave it empty, so their LOC
   type `10` `str_id4 = 1` text has no Korean copy here.
-- On 7,324 of them it is the Korean source of LOC type `10` `str_id4 = 1`.
-  These are utility skills whose buffs have no description: knowledge
-  entries ("Adds acquired knowledge to the book.", 5,651), exploration nodes
-  (1,028), workers (540), trade stock refreshes (66) and contribution points
-  (39).
-- 657 are guild skills (skill numbers 62000 to 65999). They store an effect
-  text here, and their LOC `str_id4 = 1` is missing (614) or a usage hint
-  such as `{TextBind:CASTING_CLICK_RMB} after learning the skill` (Healing
-  Touch, 65209). The text is close to the Korean `buff.dbss`
-  description of the skill's buffs but never equal to it: 375 contain every
-  buff text and add a line ("does not stack with the previous rank"), the
-  rest add the war-only condition, the duration and the caster, or reword
-  it. The numbers in it match the buffs' English LOC type `5` text on 587 of
-  610 records. So the buff text cannot stand in for `description`; the Buffs
-  column already shows it, and the Description column falls back to the
-  Korean text for these skills.
+- It is the Korean source of LOC type `13`, keyed `str_id1 = skill_no`,
+  `str_id2 = level`: 28,537 of the 28,869 type 13 keys are `skill.dbss`
+  ranks, and the numbers in the two texts agree on 7,955 of 7,959 pairs.
+  Type 13 stores `0` where `description` is `UNKNOWN` (set effect skills).
+- On 7,324 records it is also the source of LOC type `10` `str_id4 = 1`,
+  the same text: utility skills whose buffs have no description, such as
+  knowledge entries ("Adds acquired knowledge to the book.", 5,651),
+  exploration nodes (1,028), workers (540), trade stock refreshes (66) and
+  contribution points (39).
+- 657 are guild skills (skill numbers 62000 to 65999). Their type 10
+  `str_id4 = 1` is missing (614) or a usage hint such as
+  `{TextBind:CASTING_CLICK_RMB} after learning the skill` (Healing Touch,
+  65209), while type 13 holds the effect (`- Effect: Recover 200 HP every
+  3 sec (only during Node/Conquest War)`). The Description column shows
+  both, the hint first; which order the game tooltip uses is not checked.
+  The effect text is close to the Korean `buff.dbss` description of the
+  skill's buffs but never equal to it: 375 contain every buff text and add
+  a line ("does not stack with the previous rank"), the rest add the
+  war-only condition, the duration and the caster, or reword it. So the
+  buff text cannot stand in for it; the Buffs column shows the buffs.
+- Five guild skill ranks (Monster Extra AP, 65077 to 65081) have Korean
+  text only, so their Description stays Korean.
+- The skill tooltip Lua (`panel_tooltip_skill.luac`) calls `getDescription`
+  on both the skill type and the rank's static data, matching the two
+  texts.
 - `name_hash` is not the `stringtable.bss` key hash (both are unknown
   functions); it is kept as a hash because it is fixed per name and zero
   when the name is empty.

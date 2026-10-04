@@ -6,22 +6,29 @@ Every table in the skill cluster (`skill.dbss`, `skilltype.dbss`,
     skill_key = skill_no << 16 | level
 
 and LOC type 10 names a skill by its number alone, so every rank of one skill
-shares a name. See docs/file-formats/skill_dbss.md.
+shares a name. LOC type 13 holds each rank's own text, keyed by skill number
+and level. See docs/file-formats/skill_dbss.md.
 """
 
 from __future__ import annotations
 
 from collections.abc import Iterable
 
-from _common.loc import LOC_NULL, loc_tagged
+from _common.loc import LOC_NULL, loc_lookup, loc_tagged
 from _common.pa_text import strip_pa_tags
 from _common.lookup_index import IndexKind, lookup
 
 LOC_SKILL = 10
 # LOC type 10 holds the skill name at str_id4 0 and its description at 1.
 _LOC_DESCRIPTION_ID4 = 1
-# Literals some skill.dbss records store instead of a description.
-_KOREAN_PLACEHOLDERS = frozenset({"UNKNOWN", LOC_NULL})
+# LOC type 13, keyed (skill_no, level): the English of a rank's skill.dbss
+# `description`.
+LOC_SKILL_RANK = 13
+# Literals stored instead of a description: skill.dbss keeps UNKNOWN and
+# <null>, and LOC type 13 keeps "0" where the Korean text is UNKNOWN.
+_PLACEHOLDERS = frozenset({"UNKNOWN", LOC_NULL, "0"})
+# Between the skill's text and the rank's own text in one description.
+_PART_SEPARATOR = "\n\n"
 
 _LEVEL_MASK = 0xFFFF
 
@@ -49,23 +56,39 @@ def skill_name(skill_no: int) -> str:
     return strip_pa_tags(skill_name_tagged(skill_no)).strip()
 
 
-def skill_description_tagged(skill_no: int, description_kr: str) -> str:
-    """LOC type 10 description of a skill, else its Korean `skill.dbss` text, else ''.
+def _is_text(tagged: str) -> bool:
+    """True unless `tagged` is blank or a placeholder once its tags are gone."""
+    plain = strip_pa_tags(tagged).strip()
+    return bool(plain) and plain not in _PLACEHOLDERS
 
-    PA tags are kept, for `pa_fields`. The Korean text is the source of the LOC
-    one on most skills, but guild skills store their effect text there instead
-    (see docs/file-formats/skill_dbss.md).
+
+def _plain_words(tagged: str) -> str:
+    return " ".join(strip_pa_tags(tagged).split())
+
+
+def skill_description_tagged(skill_no: int, level: int, description_kr: str) -> str:
+    """A rank's description with its PA tags, for `pa_fields`, or ''.
+
+    The skill's LOC type 10 text, then the rank's own LOC type 13 text when it
+    says something else; guild skills keep a usage hint in the first and
+    their effect in the second. Without either, the rank's Korean
+    `skill.dbss` text, the source of type 13. See
+    docs/file-formats/skill_dbss.md.
     """
-    text = loc_tagged(LOC_SKILL, skill_no, _LOC_DESCRIPTION_ID4)
-    if strip_pa_tags(text).strip() and text != LOC_NULL:
-        return text
+    skill_text = loc_tagged(LOC_SKILL, skill_no, _LOC_DESCRIPTION_ID4)
+    rank_text = loc_lookup(LOC_SKILL_RANK, skill_no, level).strip()
+    parts = [text for text in (skill_text, rank_text) if _is_text(text)]
+    if len(parts) == 2 and _plain_words(parts[0]) == _plain_words(parts[1]):
+        parts = parts[:1]
+    if parts:
+        return _PART_SEPARATOR.join(parts)
     korean = description_kr.strip()
-    return "" if strip_pa_tags(korean).strip() in _KOREAN_PLACEHOLDERS else korean
+    return korean if _is_text(korean) else ""
 
 
-def skill_description(skill_no: int, description_kr: str) -> str:
+def skill_description(skill_no: int, level: int, description_kr: str) -> str:
     """`skill_description_tagged` as plain text."""
-    return strip_pa_tags(skill_description_tagged(skill_no, description_kr)).strip()
+    return strip_pa_tags(skill_description_tagged(skill_no, level, description_kr)).strip()
 
 
 def _skill_buffs(skill_key: int) -> tuple[int, ...]:

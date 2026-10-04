@@ -39,7 +39,7 @@ def _record_dict(record: SkillRecord) -> dict:
         # English, then the Korean skilltype.dbss name, then the internal name.
         **pa_fields("name", skill_name_tagged(record.skill_no) or record.name),
         "internal_name": record.name,
-        **pa_fields("description", skill_description_tagged(record.skill_no, record.description_kr)),
+        **pa_fields("description", skill_description_tagged(record.skill_no, record.level, record.description_kr)),
         # Zero means no cooldown; None sorts last.
         "cooldown_ms": record.cooldown_ms or None,
         "cooldown": format_duration(record.cooldown_ms),

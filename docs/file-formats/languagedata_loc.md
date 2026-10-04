@@ -65,6 +65,7 @@ are `str_id2 | str_id3 << 16`. Their `key0` is `str_type` and their `id` is
 | 10       | Skill names and descriptions, `str_id1` = skill number; see Type 10 below                  |
 | 11       | City names, with some node names mixed in                                                  |
 | 12       | Territory names, `str_id1` = territory 0 to 13; `str_id4=0` nation or realm, `1` territory; see Type 12 below |
+| 13       | Skill rank texts, `str_id1` = skill number, `str_id2` = level; English of the `skill.dbss` `description`, see Type 13 below |
 | 15       | Emote/pose/placeable interaction names                                                     |
 | 16       | House/facility type names                                                                  |
 | 17       | Town/node names, `str_id1` = selection_id from `plantworkerselect.bss`                     |
@@ -199,6 +200,24 @@ display names such as `"Balenos Territory"`.
 | 4       | Kingdom of Valencia  | Valencia        |
 | 12      | Alyaelli             | Outer Edania    |
 | 13      | Alyaelli             | Inner Edania    |
+
+### Type 13, skill rank texts (`skill.dbss`)
+
+Type 13 holds 28,869 rows, one per `str_id1 = skill_no`, `str_id2 = level`
+(`1` on all but 66), `str_id3 = str_id4 = 0`. 28,537 keys are `skill.dbss`
+ranks, and each text is the English of that rank's Korean `description`;
+8,383 are real text, the rest `<null>`, and set effect skills store `0`.
+
+| Key           | Text                                                          |
+| ------------- | ------------------------------------------------------------- |
+| `(65069, 1)`  | `"- Effect:
+Adds 10 slots to the Guild Storage."` (tagged)  |
+| `(61612, 1)`  | `"Can register Exploration Node."`                           |
+| `(15313, 1)`  | `"Summon Cannon"`                                             |
+
+Where type 10 `str_id4 = 1` also exists the two are usually equal; on guild
+skills type 10 holds a usage hint and type 13 the effect. See
+`skill_dbss.md`, Notes.
 
 ### Type 17, town/node names (`plantworkerselect.bss`)
 
