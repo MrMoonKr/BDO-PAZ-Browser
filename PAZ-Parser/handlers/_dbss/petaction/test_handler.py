@@ -12,6 +12,7 @@ from tests.framework import (
     RangeTest,
     SchemaTest,
     TargetTest,
+    UserLanguageTest,
     case_id,
     header_count,
     run_case,
@@ -46,6 +47,8 @@ PETACTION_CASE = HandlerCase(
         DeclaredCountTest(declared=header_count(companion=_OFFSET_FILE)),
         RangeTest(col="action_id_match", min_val=True, max_val=True),
         RangeTest(col="trailing_zeroes", min_val=True, max_val=True),
+        # LOC type 19 names every action, so the Korean fallback never shows.
+        UserLanguageTest(fields=["action_name"]),
         TargetTest(
             col="action_id",
             value=0,

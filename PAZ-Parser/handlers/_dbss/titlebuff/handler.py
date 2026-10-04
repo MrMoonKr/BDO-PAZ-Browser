@@ -9,10 +9,29 @@ from _common.binary import parse_offset_table
 from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.pa_text import pa_cell, pa_fields
-from .parser import extract_titlebuff_records, find_title_effects_en
+from _bss.stringtable.parser import GAME_SHEET
+from _bss.stringtable.text import STRINGTABLE_FILE, ui_key_hashes, ui_key_tagged
+from .model import TitleBuffRecord
+from .parser import parse_titlebuff_records
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
+_OFFSET_FILE = "titlebufflistoffset.dbss"
+# The Title Effects tooltip: one line per tier, in tier order.
+_TOOLTIP_KEY = "LUA_CHARACTERINFO_TITLE_TOOLTIP_DESC"
+
+
+def _tooltip_lines(stringtable: bytes | None, tier_count: int) -> list[str]:
+    """The tooltip lines in the user language with their PA tags, or [] when
+    LOC or `stringtable.bss` is missing or the line count does not match."""
+    hashes = ui_key_hashes(stringtable, [GAME_SHEET])
+    lines = [line.strip() for line in ui_key_tagged(hashes, GAME_SHEET, _TOOLTIP_KEY).splitlines()]
+    return lines if len(lines) == tier_count else []
+
+
+def _tier_text(record: TitleBuffRecord, lines: list[str]) -> str:
+    """The tier's tooltip line, else its inline Korean label and effects."""
+    return lines[record["tier_id"]] if lines else record["label_kr"] + record["effect_kr"]
 
 
 class TitleBuffListOffsetHandler(PreviewHandler):
@@ -68,7 +87,7 @@ class TitleBuffListHandler(PreviewHandler):
 
     def companions(self, entry: PazEntry) -> list[str]:
         folder = entry.internal_path.rsplit("/", 1)[0]
-        return [f"{folder}/titlebufflistoffset.dbss"]
+        return [f"{folder}/{_OFFSET_FILE}", f"{folder}/{STRINGTABLE_FILE}"]
 
     def get_records(
         self,
@@ -76,26 +95,21 @@ class TitleBuffListHandler(PreviewHandler):
         entry: PazEntry,
         companions: dict[str, bytes],
     ) -> list[dict]:
-        offset_raw = companions.get("titlebufflistoffset.dbss")
+        offset_raw = companions.get(_OFFSET_FILE)
         if offset_raw is None:
-            raise ValueError("titlebufflistoffset.dbss companion not found, cannot parse blocks.")
+            raise ValueError(f"{_OFFSET_FILE} companion not found, cannot parse blocks.")
 
-        offset_map = parse_offset_table(offset_raw)
-        records = extract_titlebuff_records(data, offset_map)
-        en_effects = find_title_effects_en()
-
-        result: list[dict] = []
-        for rec in records:
-            debug_u32 = rec["debug_u32"]
-            required_titles = debug_u32["u32_04"]
-            result.append({
-                "level": debug_u32["u32_00"] + 1,
-                "required_titles": required_titles,
-                **pa_fields("text", en_effects.get(required_titles, "")),
-                "offset": rec["offset"],
-            })
-
-        return result
+        records = parse_titlebuff_records(data, parse_offset_table(offset_raw))
+        # User language first; the inline Korean stands in without LOC.
+        lines = _tooltip_lines(companions.get(STRINGTABLE_FILE), len(records))
+        return [
+            {
+                **record,
+                "level": record["tier_id"] + 1,
+                **pa_fields("text", _tier_text(record, lines)),
+            }
+            for record in records
+        ]
 
     def render_records_page(
         self,
@@ -106,15 +120,9 @@ class TitleBuffListHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
 
-        has_text = any(r["text"] for r in records)
-        meta = f"{len(records):,} buff blocks decoded" + ("  ·  effects from loc" if has_text else "")
-
-        rows: list[list] = []
-        for r in slice_:
-            rows.append([
-                e(r["level"]),
-                e(r["required_titles"]),
-                pa_cell(r, "text"),
-            ])
-
+        meta = f"{len(records):,} title effect tiers"
+        rows = [
+            [e(r["level"]), e(r["required_titles"]), pa_cell(r, "text")]
+            for r in slice_
+        ]
         return table(meta, self._columns(), rows)

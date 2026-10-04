@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Stores a compact identity table for service and story NPCs. Each row maps a character ID to its primary NPC service role, inline Korean display strings and, for most rows, a `getknowledge(<id>);` action script that links the NPC to a knowledge ID. English names come from LOC type `6`, keyed by the same character ID.
+Stores a compact identity table for service and story NPCs. Each row maps a character ID to its primary NPC service role, inline Korean display strings and, for most rows, a `getknowledge(<id>);` action script that links the NPC to a knowledge ID. Names and roles in the user's language come from LOC type `6`, keyed by the same character ID: `str_id4` 0 is the name and 1 the role.
 
 Example:
 
@@ -35,7 +35,7 @@ All multi-byte values are little-endian unless noted otherwise.
 
 | Offset  | Type | Field             | Notes                                                                 |
 | ------- | ---- | ----------------- | --------------------------------------------------------------------- |
-| `+0x00` | u16  | character_id      | Character-template key; all 2237 exist in `characterstatic.dbss`; 2198 have a LOC type `6` name, see Notes |
+| `+0x00` | u16  | character_id      | Character-template key; all 2237 exist in `characterstatic.dbss`; all 2238 have a LOC type `6` name in client 3458, see Notes |
 | `+0x02` | u8   | unknown_02        | `1` on 2074 rows; runs of sequential values on related NPCs, see Open Questions |
 | `+0x03` | u8   | zero              | Always 0                                                              |
 | `+0x04` | u32  | kind              | Primary `SpawnType` role; 23 observed values in the range 1-40         |
@@ -121,10 +121,9 @@ This is the same `[string table][u32 rows_end][u32 0]` tail that `playercharacte
 | Column       | Type | Notes                                                     |
 | ------------ | ---- | --------------------------------------------------------- |
 | Character ID | num  | `character_id`                                            |
-| Name (EN)    | text | LOC `str_type=6`, `str_id1=character_id`                  |
+| Name         | text | LOC `str_type=6`, `str_id1=character_id`, `str_id4=0`; the Korean `name_ref` without LOC |
 | Kind         | text | `kind` shown as its role's display name, the same as the `characterspawntype.dbss` role headers (`role_labels.py`); the `SpawnType` name and value are in the tooltip |
-| Name (KR)    | text | `name_ref`                                                |
-| Role         | text | `role_ref`; Korean title/role, blank when empty           |
+| Role         | text | LOC `str_type=6`, `str_id1=character_id`, `str_id4=1` (`<Fruit Vendor>`); the Korean `role_ref` without LOC; blank when LOC holds `<null>` |
 | Knowledge ID | num  | Parsed from `getknowledge(<id>);` in `script_ref`         |
 | Leases       | list | Every lease of the character: the `CHARACTER_LEASES` index (all lease options in `detail_dialog.dbss`), as LOC `str_type=0` item name (in its grade colour) and cost, e.g. `[CP] Container (10 CP)`; the lease stored here keeps its own cost, and is the only one without the index; sorts by count |
 | Script       | text | Raw script string for debugging/export                    |
@@ -135,12 +134,12 @@ This is the same `[string table][u32 rows_end][u32 0]` tail that `playercharacte
 
 - The record table size is exactly `count * 33` bytes; fixed records end at `0x12065` (`0x12086` in the 2026-09-27 client), and the string pool parses exactly up to the 8-byte trailer.
 - `script_ref` points to a `getknowledge(<id>);` UTF-16LE string for 2161 of 2237 records.
-- `name_ref` and `role_ref` point to Korean UTF-8 strings in the same pool. Role strings are often bracketed labels such as `<과일상인>` or `<거점관리인>`.
+- `name_ref` and `role_ref` point to Korean UTF-8 strings in the same pool. Role strings are often bracketed labels such as `<과일상인>` or `<거점관리인>`. LOC type `6` `str_id4=1` holds the same role in the user's language on all 1998 rows with a role (`<과일상인>` is `<Fruit Vendor>`), and `<null>` on the 240 rows whose `role_ref` is empty (client 3458).
 - Every row's character has `npc_kind` low byte `2` (NPC) in `characterstatic.dbss`.
 - `lease_item_id` is the `[CP]` item the NPC leases for contribution points. In client 3458 every one of the 58 values resolves through LOC type `0` to a `[CP]` item: `3001` [CP] Container on the Storage Keepers (and Basquean Ljurik, Bank of Hope), `58008` to `58012` the [CP] fences on Material Vendors, node managers and Old Moon Managers, `16142` [CP] Practice Matchlock, `16143` [CP] Flute, and single items such as `23004` [CP] Kaia Longsword on Kanobas, `693901` [CP] Leight's Hoe on Norma Leight and `45601` / `45602` the Licensed / Acknowledged Adventurer's Seal. `lease_cost` is the same for every NPC with the same item: Container `10`, Strong Fence `10`, Plain Fence `6`, Small Fence `3`, Practice Matchlock `2`, Flute `1`, the Kaia and Nesser gear and Leight's Hoe `50`, Licensed Seal `20`, Acknowledged Seal `60`. Checked in game (2026-09-28): Delorence (`47008`, `3001` / `10`) is a Storage Keeper who leases a [CP] Container for 10 CP.
 - The lease itself is an NPC dialog option in `detail_dialog.dbss` (records keyed `1 << 16 | character_id`). Each option stores a condition script, a title such as `[대여] 작은 울타리` ("[Lease] Small Fence"), the dialog text and the action `buyItemByPoint(item, 0, 1, 5, cost)`. `lease_item_id` and `lease_cost` repeat the item and cost of the NPC's first lease option: the item matches on all 58 rows and the cost on 57. Merio (`43501`) is the exception, `2` here and `1` in his dialog; in game his Matchlock lease costs 2 (checked 2026-09-28), the same as the other Matchlock NPCs, so the charged cost follows `lease_cost` and the dialog's `1` is stale. NPCs with several lease options keep only the first here (Kanobas `23004` of his 25 Kaia weapons, Basquean Ljurik the Container and not the Excellent Adventurer's Seal `45603` at 100 CP), and Wale (`40605`) has a Small Fence lease in his dialog but no lease item here.
 - `has_lease_condition` is `1` exactly when that option has a condition script, on all 58 lease rows (client 3458). The Containers, Flutes and Matchlocks check that you do not own one yet (`!getitemcount(3001,0)>0;`), the Kaia and Nesser gear add a level, quest and class check, and the fences of Martina Finto (`40024`) and Mercianne Moretti (`41085`) are quest-gated: Martina's reads `!iscontentsgroupopen(0,4017);<or>iscontentsgroupopen(0,4017);!clearquest(21125,64);<or>iscontentsgroupopen(0,4017);clearquest(21125,64);clearquest(21125,74);`, which item databases show as "Not finished quest: Tracking Giath, or finished Tracking Giath and Sands of Time". The fence NPCs with `0` (Zaaira `40002` and the others) have an empty condition.
-- 39 characters have no LOC type `6` name in the current English file: `47623`, `47753`, `47772` to `47807` and `61267`. The handler shows `-` for them; their Korean name stays in its own column.
+- Every character has a LOC type `6` name in client 3458. Older clients missed 39 (`47623`, `47753`, `47772` to `47807` and `61267`); the handler shows the Korean `name_ref` for such a row.
 
 ---
 

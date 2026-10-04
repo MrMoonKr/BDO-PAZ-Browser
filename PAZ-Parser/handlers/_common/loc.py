@@ -26,8 +26,6 @@ def decompress_loc(raw: bytes) -> bytes | None:
 _LOC_INDEX: dict[tuple[int, int, int, int, int], str] | None = None
 # (str_type, str_id1) -> text values in file order
 _LOC_PREFIX: dict[tuple[int, int], list[str]] | None = None
-# all text values in file order
-_LOC_ALL:   list[str] | None = None
 # str_type -> its keys and texts, built on the first `loc_type_entries()` call
 # for the `_LOC_INDEX` held in `_LOC_BY_TYPE_SOURCE`
 _LOC_BY_TYPE: dict[int, Mapping[tuple[int, int, int, int, int], str]] = {}
@@ -36,7 +34,7 @@ _LOC_BY_TYPE_SOURCE: object | None = None
 
 def init_loc(raw: bytes | None) -> None:
     """Parse a languagedata_*.loc file. Pass None to clear all LOC data."""
-    global _LOC_INDEX, _LOC_PREFIX, _LOC_ALL, _LOC_BY_TYPE_SOURCE
+    global _LOC_INDEX, _LOC_PREFIX, _LOC_BY_TYPE_SOURCE
 
     # Let go of the old index's per-type copies now, not on the next lookup.
     _LOC_BY_TYPE.clear()
@@ -44,7 +42,6 @@ def init_loc(raw: bytes | None) -> None:
     if raw is None:
         _LOC_INDEX = None
         _LOC_PREFIX = None
-        _LOC_ALL = None
         return
 
     data = decompress_loc(raw)
@@ -53,7 +50,6 @@ def init_loc(raw: bytes | None) -> None:
 
     index:     dict[tuple[int, int, int, int, int], str] = {}
     prefix:    dict[tuple[int, int], list[str]] = {}
-    all_texts: list[str] = []
 
     pos = 0
     while pos + 16 <= len(data):
@@ -73,11 +69,9 @@ def init_loc(raw: bytes | None) -> None:
 
         index[(str_type, str_id1, str_id2, str_id3, str_id4)] = text
         prefix.setdefault((str_type, str_id1), []).append(text)
-        all_texts.append(text)
 
     _LOC_INDEX  = index
     _LOC_PREFIX = prefix
-    _LOC_ALL    = all_texts
 
 
 # ── Public API ────────────────────────────────────────────────────────────────
@@ -136,10 +130,3 @@ def loc_type_entries(str_type: int) -> Mapping[tuple[int, int, int, int, int], s
         entries = MappingProxyType({key: text for key, text in _LOC_INDEX.items() if key[0] == str_type})
         _LOC_BY_TYPE[str_type] = entries
     return entries
-
-
-def loc_all_texts() -> list[str]:
-    """All text values in file order, for content-based scanning."""
-    if _LOC_ALL is None:
-        return []
-    return _LOC_ALL

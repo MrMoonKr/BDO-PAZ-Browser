@@ -4,7 +4,11 @@ from typing import TypedDict
 
 
 class TitleBuffRecord(TypedDict):
-    buff_id: int
+    tier_id: int
     offset: int
-    raw_text: str
-    debug_u32: dict[str, int]
+    required_titles: int
+    unknown_08: int
+    unknown_09: int
+    unknown_0a: int
+    label_kr: str
+    effect_kr: str

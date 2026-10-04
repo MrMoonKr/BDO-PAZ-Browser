@@ -2,7 +2,6 @@
   "columns": {
     "actionId": "Action ID",
     "actionName": "Action Name",
-    "nameKr": "Name (KR)",
     "icon": "Icon"
   },
   "offsetColumns": {

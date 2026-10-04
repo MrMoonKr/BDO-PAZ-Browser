@@ -137,7 +137,7 @@ A parallel lookup index with one entry per main-file record.
 | Column       | Type | Notes                                                        |
 | ------------ | ---- | ------------------------------------------------------------ |
 | Character ID | num  | `character_id`, right-aligned                                |
-| Name (EN)    | text | LOC `str_type=6`, `str_id1=character_id`                     |
+| Name         | text | LOC `str_type=6`, `str_id1=character_id`; shown only when LOC is loaded |
 | One per role | num  | a green ✓ when set, else a red ✗; header is the handler's `roleLabels` name (see Notes), else the English Navi label, else the `SpawnType` name; the name and value are in the tooltip; only roles set on some row are shown |
 
 ---

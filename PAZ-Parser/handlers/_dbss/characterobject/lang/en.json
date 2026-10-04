@@ -7,7 +7,7 @@
   "columns": {
     "characterId": "Character ID",
     "icon": "Icon",
-    "nameEn": "Name (EN)",
+    "name": "Name",
     "itemId": "Item ID",
     "itemName": "Item",
     "objectKind": "Kind",

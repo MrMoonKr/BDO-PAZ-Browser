@@ -125,7 +125,7 @@ char16[char_count]  (UTF-16 LE, no null terminator)
 
 ### Localisation
 
-English names and trait descriptions are in `languagedata_en.loc` under `str_type=7`, keyed by `str_id1=zodiac_id`:
+Names and trait descriptions in the user's language are in the LOC file under `str_type=7`, keyed by `str_id1=zodiac_id`:
 
 | str_id4 | Field             |
 | ------- | ----------------- |
@@ -204,11 +204,10 @@ Maps each personality type (2 variants × 12 signs = 24 records) to a slot-trigg
 | Column        | Type | Notes                                             |
 | ------------- | ---- | ------------------------------------------------- |
 | ID            | num  | `zodiac_id`                                       |
-| Name          | text | LOC `str_type=7`, `str_id1=zodiac_id`, `str_id4=0` |
+| Name          | text | LOC `str_type=7`, `str_id1=zodiac_id`, `str_id4=0`; the inline Korean `constellation_name` without LOC |
 | Stars         | num  | Number of stars in the constellation              |
 | Pairs         | num  | Number of connecting line pairs                   |
-| Constellation | text | `constellation_name`, the inline Korean name       |
-| Traits (EN)   | text | LOC `str_id4=1` English trait text; when LOC is not loaded the column is Traits (KR) with the inline Korean `trait_text` |
+| Traits        | text | LOC `str_id4=1` trait text; the inline Korean `trait_text` without LOC |
 
 ---
 

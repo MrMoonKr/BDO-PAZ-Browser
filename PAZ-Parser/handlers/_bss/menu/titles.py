@@ -10,8 +10,6 @@ from collections.abc import Iterable
 
 from _bss.stringtable.text import KeyHashes, ui_key_hashes, ui_key_text
 
-STRINGTABLE_FILE = "stringtable.bss"
-
 
 def title_hashes(stringtable: bytes | None, records: Iterable[dict]) -> dict[str, dict[str, int]]:
     """Key hashes of every sheet the records' titles use."""

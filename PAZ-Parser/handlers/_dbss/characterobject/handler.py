@@ -68,7 +68,7 @@ class CharacterObjectHandler(PreviewHandler):
             Column(cols.get("icon", "Icon"), sort_key="icon_path"),
         ]
         if has_loc:
-            columns.append(Column(cols.get("nameEn", "Name (EN)"), sort_key="name_en"))
+            columns.append(Column(cols.get("name", "Name"), sort_key="name"))
         columns.append(Column(cols.get("itemId", "Item ID"), "num", sort_key="item_id"))
         if has_loc:
             columns.append(Column(cols.get("itemName", "Item"), sort_key="item_name"))
@@ -86,7 +86,6 @@ class CharacterObjectHandler(PreviewHandler):
         folder = entry.internal_path.rsplit("/", 1)[0]
         return [
             f"{folder}/{_OFFSET_FILE}",
-            f"{folder}/languagedata_en.loc",
         ]
 
     def get_records(
@@ -111,7 +110,7 @@ class CharacterObjectHandler(PreviewHandler):
             records_out.append({
                 "character_id": r.character_id,
                 "icon_path": icon_path(IconKind.CHARACTER, r.character_id),
-                "name_en": character_name(r.character_id),
+                "name": character_name(r.character_id),
                 "item_id": item_id,
                 **pa_fields("item_name", item_name_tagged(item_id) if has_loc and item_id is not None else ""),
                 "object_kind": r.object_kind,
@@ -141,7 +140,7 @@ class CharacterObjectHandler(PreviewHandler):
                 icon_cell(r["icon_path"]) if r["icon_path"] else _EMPTY,
             ]
             if has_loc:
-                row.append(e(r["name_en"]))
+                row.append(e(r["name"]))
             row.append(e(r["item_id"] or _EMPTY))
             if has_loc:
                 row.append(pa_cell(r, "item_name"))

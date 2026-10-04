@@ -12,6 +12,7 @@ from tests.framework import (
     RangeTest,
     SchemaTest,
     TargetTest,
+    UserLanguageTest,
     case_id,
     header_count,
     run_case,
@@ -19,6 +20,7 @@ from tests.framework import (
 from tests.runner import load_case
 
 from _bss.npcsimply.leases import character_leases
+from _common.loc import LOC_NULL
 from _common.lookup_index import IndexKind, init_index
 from _dbss.characterspawntype.navi_labels import navi_label
 from _dbss.characterspawntype.parser import ROLE_COUNT
@@ -35,7 +37,7 @@ CASE = HandlerCase(
     companion_files={},
     loc_file="languagedata_en.loc",
     uses_loc=True,
-    loc_fields=["Name (EN)"],
+    loc_fields=["Name", "Role"],
     internal_path="gamecommondata/binary/npcsimply.bss",
     tests=[
         SchemaTest(
@@ -47,6 +49,7 @@ CASE = HandlerCase(
                 "kind_label",
                 "name_kr",
                 "role_kr",
+                "role",
                 "script",
                 "knowledge_id",
                 "unknown_02",
@@ -60,6 +63,8 @@ CASE = HandlerCase(
         ),
         DeclaredCountTest(declared=header_count(offset=4)),
         RangeTest(col="kind", min_val=0, max_val=ROLE_COUNT - 1),
+        # LOC type 6 names and titles every NPC in this file.
+        UserLanguageTest(fields=["name", "role"]),
         RangeTest(col="has_lease_condition", min_val=0, max_val=1),
         TargetTest(
             col="character_id",
@@ -82,6 +87,8 @@ CASE = HandlerCase(
                 "kind_name": "ShopMerchant",
                 "name_kr": "잭슨",
                 "role_kr": "<과일상인>",
+                # LOC type 6 field 1, the user-language title.
+                "role": "<Fruit Vendor>",
                 "script": "",
                 "knowledge_id": None,
             },
@@ -160,3 +167,9 @@ def test_character_leases_keeps_the_stored_cost() -> None:
         init_index(IndexKind.CHARACTER_LEASES, None)
     # Without the index only the stored lease is known.
     assert character_leases(7, 100, 2) == [Lease(100, 2)]
+
+
+def test_npcsimply_loc_null_title_reads_as_no_role(npcsimply_result: HandlerResult) -> None:
+    """LOC keeps `<null>` for a character without a title; the role stays empty."""
+    nulls = [record["character_id"] for record in npcsimply_result.records if record["role"] == LOC_NULL]
+    assert not nulls, f"<null> shown as a role on characters {nulls[:5]}"

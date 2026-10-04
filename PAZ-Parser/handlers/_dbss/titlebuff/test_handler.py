@@ -12,6 +12,7 @@ from tests.framework import (
     PaFieldTest,
     SchemaTest,
     TargetTest,
+    UserLanguageTest,
     case_id,
     header_count,
     run_case,
@@ -21,18 +22,29 @@ from tests.framework import (
 BUFF_CASE = HandlerCase(
     handler_name="titlebufflist.dbss",
     data_file="titlebufflist.dbss",
-    companion_files={"titlebufflistoffset.dbss": "titlebufflistoffset.dbss"},
+    companion_files={
+        "titlebufflistoffset.dbss": "titlebufflistoffset.dbss",
+        "stringtable.bss": "stringtable.bss",
+    },
     loc_file="languagedata_en.loc",
     uses_loc=True,
     loc_fields=["Text"],
     internal_path="gamecommondata/binary/titlebufflist.dbss",
     tests=[
-        SchemaTest(required_keys=["level", "required_titles", "text", "offset"]),
+        SchemaTest(required_keys=["tier_id", "level", "required_titles", "label_kr", "effect_kr", "text", "offset"]),
         DeclaredCountTest(declared=header_count(companion="titlebufflistoffset.dbss")),
         # The first tier follows the u32 count.
         TargetTest(col="level", value=1, expected={"offset": 4}),
+        # The inline Korean is the full tooltip line, label and effects.
+        TargetTest(
+            col="level",
+            value=1,
+            expected={"label_kr": "칭호 50개 습득 : ", "effect_kr": "행운 잠재력 <PAColor0xFF00BAFF>+1단계<PAOldColor>"},
+        ),
         # The effect values are coloured (`Luck +1` in blue).
         PaFieldTest(field="text"),
+        # The tooltip comes from its UI string key, not a search for English text.
+        UserLanguageTest(fields=["text"]),
     ],
 )
 

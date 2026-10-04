@@ -69,7 +69,7 @@ class CharacterStaticHandler(PreviewHandler):
             Column(cols.get("icon", "Icon"), sort_key="icon_path"),
         ]
         if has_loc:
-            columns.append(Column(cols.get("nameEn", "Name (EN)"), sort_key="name_en"))
+            columns.append(Column(cols.get("name", "Name"), sort_key="name"))
         columns += [
             Column(cols.get("actionScript", "Action Script"), sort_key="action_script"),
             Column(cols.get("conditionScript", "Condition"), sort_key="condition_script"),
@@ -89,7 +89,6 @@ class CharacterStaticHandler(PreviewHandler):
         folder = entry.internal_path.rsplit("/", 1)[0]
         return [
             f"{folder}/characterstaticoffset.dbss",
-            f"{folder}/languagedata_en.loc",
         ]
 
     def get_records(
@@ -112,7 +111,7 @@ class CharacterStaticHandler(PreviewHandler):
             {
                 "character_id": r["character_id"],
                 "icon_path": icon_path(IconKind.CHARACTER, r["character_id"]),
-                "name_en": character_name(r["character_id"]),
+                "name": character_name(r["character_id"]),
                 "action_script": r["action_script"],
                 "condition_script": r["condition_script"],
                 "knowledge_id": r["knowledge_id"],
@@ -148,7 +147,7 @@ class CharacterStaticHandler(PreviewHandler):
                 icon_cell(r["icon_path"]) if r["icon_path"] else "-",
             ]
             if has_loc:
-                row.append(e(r["name_en"]))
+                row.append(e(r["name"]))
             row.append(e(r["action_script"]))
             row.append(e(r["condition_script"]))
             row.append(_optional(r["knowledge_id"]))

@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.character import character_name
+from _common.character import character_name, character_title
 from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded
@@ -44,10 +44,9 @@ class NpcSimplyBssHandler(PreviewHandler):
         cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
         return [
             Column(cols.get("characterId", "Character ID"), "num", sort_key="character_id"),
-            Column(cols.get("name", "Name (EN)"), sort_key="name"),
+            Column(cols.get("name", "Name"), sort_key="name"),
             Column(cols.get("kind", "Kind"), sort_key="kind_label"),
-            Column(cols.get("nameKr", "Name (KR)"), sort_key="name_kr"),
-            Column(cols.get("role", "Role"), sort_key="role_kr"),
+            Column(cols.get("role", "Role"), sort_key="role"),
             Column(cols.get("knowledgeId", "Knowledge ID"), "num", sort_key="knowledge_id"),
             Column(cols.get("leases", "Leases"), sort_key="lease_count"),
             Column(cols.get("script", "Script"), sort_key="script"),
@@ -68,7 +67,9 @@ class NpcSimplyBssHandler(PreviewHandler):
             {
                 **record,
                 **_lease_fields(record, has_loc),
-                "name": character_name(record["character_id"]),
+                # User language first; the inline Korean stands in without LOC.
+                "name": character_name(record["character_id"]) or record["name_kr"],
+                "role": character_title(record["character_id"]) or record["role_kr"],
                 "kind_name": spawn_type_name(record["kind"]),
                 "kind_label": role_label(record["kind"], role_labels),
             }
@@ -90,8 +91,7 @@ class NpcSimplyBssHandler(PreviewHandler):
                 e(record["character_id"]),
                 e(record["name"] or _EMPTY),
                 _kind_cell(record),
-                e(record["name_kr"] or _EMPTY),
-                e(record["role_kr"]),
+                e(record["role"] or _EMPTY),
                 e(_EMPTY if record["knowledge_id"] is None else record["knowledge_id"]),
                 pa_list_cell(record[pa_key("leases")], _LIST_PREVIEW_ITEMS),
                 e(record["script"]),

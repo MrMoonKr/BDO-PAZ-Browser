@@ -7,11 +7,28 @@ from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.lang import load_handler_strings
-from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
+from _common.loc import loc_text
 from .parser import parse_petaction_records, parse_petactionoffset_records
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
+_LOC_PET_ACTION = 19
+
+
+def _with_action_name(record: dict) -> dict:
+    """The record named in the user language, else Korean, else its icon suffix.
+
+    The Korean name is the real one; the icon suffix is only a guess ("Like"
+    for Joy), so it is the last resort.
+    """
+    icon_action_name = record["action_name"]
+    loc_name = loc_text(_LOC_PET_ACTION, record["action_id"])
+    return {
+        **record,
+        "icon_action_name": icon_action_name,
+        "has_loc_name": bool(loc_name),
+        "action_name": loc_name or record["name_kr"] or icon_action_name,
+    }
 
 
 class PetActionOffsetHandler(PreviewHandler):
@@ -61,7 +78,6 @@ class PetActionHandler(PreviewHandler):
             Column(cols.get("actionId", "Action ID"), "num", sort_key="action_id"),
             Column(cols.get("icon", "Icon"), sort_key="icon_path"),
             Column(cols.get("actionName", "Action Name"), sort_key="action_name"),
-            Column(cols.get("nameKr", "Name (KR)"), sort_key="name_kr"),
         ]
 
     def sortable_fields(self) -> frozenset[str]:
@@ -71,7 +87,6 @@ class PetActionHandler(PreviewHandler):
         folder = entry.internal_path.rsplit("/", 1)[0]
         return [
             f"{folder}/petactionoffset.dbss",
-            f"{folder}/languagedata_en.loc",
         ]
 
     def get_records(
@@ -83,19 +98,7 @@ class PetActionHandler(PreviewHandler):
         offset_raw = companions.get("petactionoffset.dbss")
         if offset_raw is None:
             raise ValueError("petactionoffset.dbss companion not found.")
-        records = parse_petaction_records(data, offset_raw)
-        has_loc = is_loc_loaded()
-        for record in records:
-            icon_action_name = record["action_name"]
-            record["icon_action_name"] = icon_action_name
-            loc_name = ""
-            if has_loc:
-                loc_name = strip_pa_tags(loc_lookup(19, record["action_id"])).strip()
-            record["has_loc_name"] = bool(loc_name)
-            # The Korean name is the real one; the icon suffix is only a guess
-            # ("Like" for Joy), so it is the last resort.
-            record["action_name"] = loc_name or record["name_kr"] or icon_action_name
-        return records
+        return [_with_action_name(record) for record in parse_petaction_records(data, offset_raw)]
 
     def render_records_page(
         self,
@@ -114,7 +117,6 @@ class PetActionHandler(PreviewHandler):
                 e(r["action_id"]),
                 icon_cell(r["icon_path"]),
                 e(r["action_name"]),
-                e(r["name_kr"]),
             ]
             for r in slice_
         ]

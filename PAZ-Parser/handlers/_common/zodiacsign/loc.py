@@ -1,19 +1,23 @@
+"""Zodiac sign names and traits in the user's language.
+
+LOC type 7 keys a sign by its zodiac ID: `str_id4` 0 is the name and 1 the
+trait list. `zodiacsign.dbss` keeps the Korean of both inline, the fallback
+when LOC is not loaded.
+"""
+
 from __future__ import annotations
 
-from _common.loc import loc_lookup, strip_pa_tags
+from _common.loc import loc_text
+
+LOC_ZODIAC = 7
+_LOC_TRAIT_ID4 = 1
 
 
-def resolve_loc_type7(
-    zodiac_ids: list[int],
-) -> tuple[dict[int, str], dict[int, str]]:
-    """Return (names, traits) keyed by zodiac_id from the loc index."""
-    names:  dict[int, str] = {}
-    traits: dict[int, str] = {}
-    for zid in zodiac_ids:
-        name  = loc_lookup(7, zid, 0, 0, 0)
-        trait = loc_lookup(7, zid, 0, 0, 1)
-        if name:
-            names[zid]  = name
-        if trait:
-            traits[zid] = strip_pa_tags(trait)
-    return names, traits
+def zodiac_name(zodiac_id: int, korean: str = "") -> str:
+    """LOC name of a sign, else its Korean constellation name, else `#<id>`."""
+    return loc_text(LOC_ZODIAC, zodiac_id) or korean or f"#{zodiac_id}"
+
+
+def zodiac_trait(zodiac_id: int, korean: str = "") -> str:
+    """LOC trait list of a sign, else its Korean trait text."""
+    return loc_text(LOC_ZODIAC, zodiac_id, _LOC_TRAIT_ID4) or korean

@@ -244,6 +244,13 @@ Picking the field behind a column:
   record and render from that field. The sort and the cell then agree, and the
   logic lives in one place. `title.dbss` stores `title`, `requirement`,
   `category` and `is_special` this way.
+- **Text in the user's language, one column.** A text column shows the loaded
+  LOC text (the language picked in settings) and falls back to the inline
+  Korean only when LOC has no row: `character_name(id) or record["name_kr"]`.
+  Keep the raw `*_kr` field on the record, but never render it as its own
+  column or label a column `(EN)` / `(KR)`. Never find LOC text by searching
+  for an English phrase, since other languages miss it. Cover the column with
+  `UserLanguageTest`.
 - **Columns that come and go stay declared.** A LOC name column that only
   renders with LOC loaded, or flag columns that only render when a flag is set
   somewhere, still belong in `sortable_fields()`. Otherwise a saved sort on
@@ -331,7 +338,7 @@ Example:
 PAZ-Parser/
 ├── tests/
 │   ├── framework.py          # public re-export for test helpers
-│   ├── specs.py              # DeclaredCountTest, TargetTest, SchemaTest, RangeTest
+│   ├── specs.py              # DeclaredCountTest, TargetTest, SchemaTest, RangeTest, PaFieldTest, UserLanguageTest
 │   ├── declared.py           # header_count(), fixed_rows(): counts read from the input
 │   ├── case_input.py         # CaseInput: the data file and companion bytes a case parsed
 │   ├── models.py             # HandlerCase, HandlerResult
@@ -379,6 +386,8 @@ Available specs:
 | `TargetTest` | Finds records by column value and checks one or more expected rows. |
 | `SchemaTest` | Checks required keys exist on every row. |
 | `RangeTest` | Checks every value in one column is within a min/max range. `None` (an empty cell) is skipped. |
+| `PaFieldTest` | Checks a `pa_fields` text: the plain field is its tagged copy without tags, and some row keeps a game colour. |
+| `UserLanguageTest` | Checks no row shows Korean in the given text fields with English LOC loaded, so a missed LOC lookup fails. |
 
 `HandlerResult.check(spec)` runs a spec against the parsed records and the input
 bytes (`CaseInput`: the data file and its companions by basename). Only
@@ -821,7 +830,7 @@ _common/
 ├── loc.py               # LOC index: loc_lookup(), loc_tagged() / loc_text(), loc_type_entries()
 ├── binary.py
 ├── buff.py              # buff icon paths and LOC type 5 buff text
-├── character.py         # character names (LOC type 6)
+├── character.py         # character names and titles (LOC type 6)
 ├── class_type.py        # class types: LOC type 21 names, class bit masks
 ├── duration.py          # format_duration(): milliseconds as "1h 30m", "45s", "1.5s"
 ├── html.py
@@ -848,7 +857,8 @@ strings at unknown positions, `read_prefixed_at()` reads a prefix at a known
 position and returns the next one; `read_prefixed_utf16()` and
 `find_prefixed_ascii()` are for text whose position is only a guess.
 
-Name a character with `character_name()` from `character.py` (LOC type 6), a
+Name a character with `character_name()` from `character.py` (LOC type 6; its
+title, `<Storage Keeper>`, with `character_title()`), a
 knowledge entry with `knowledge_name()` from `knowledge.py` (LOC type 34), a
 worldmap node with `node_name()` or `full_node_name()` from `node.py` (LOC
 type 29, see `NODE_PARENT` under Lookup Indexes) and a title with

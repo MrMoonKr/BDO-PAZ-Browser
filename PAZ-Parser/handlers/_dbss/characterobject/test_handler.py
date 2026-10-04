@@ -33,7 +33,7 @@ OBJECT_CASE = HandlerCase(
     tests=[
         SchemaTest(
             required_keys=[
-                "character_id", "icon_path", "name_en", "item_id", "item_name",
+                "character_id", "icon_path", "name", "item_id", "item_name",
                 "object_kind", "model_path",
             ]
         ),
@@ -43,7 +43,7 @@ OBJECT_CASE = HandlerCase(
             col="character_id",
             value=16111,
             expected={
-                "name_en": "Golden Hand Vase",
+                "name": "Golden Hand Vase",
                 "object_kind": 2,
                 "model_path": "00_Common/Pot/Pot_Base_48.pam",
                 # Not in the installed index, so no item and a dash.
@@ -65,7 +65,7 @@ OBJECT_CASE = HandlerCase(
             col="character_id",
             value=1001,
             expected={
-                "name_en": "Metal Processing Tool",
+                "name": "Metal Processing Tool",
                 "object_kind": 2,
                 "model_path": "00_Common/Crafting/Crafting_Smithing_01.pam",
             },

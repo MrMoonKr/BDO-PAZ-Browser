@@ -75,7 +75,7 @@ Follows the last entry.
 | Column    | Type | Notes                                               |
 | --------- | ---- | --------------------------------------------------- |
 | Zodiac ID | num  | `zodiac_id`                                         |
-| Name      | text | Prefer LOC str_type=7, str_id1=zodiac_id, str_id4=0 |
+| Name      | text | LOC `str_type=7`, `str_id1=zodiac_id`, `str_id4=0`; the Korean `constellation_name` from `zodiacsign.dbss` without LOC |
 
 ---
 

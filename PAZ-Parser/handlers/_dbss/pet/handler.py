@@ -186,7 +186,6 @@ class PetDbssHandler(PreviewHandler):
         return [
             f"{folder}/petoffset.dbss",
             f"{folder}/petgrade.dbss",
-            f"{folder}/languagedata_en.loc",
         ]
 
     def get_records(

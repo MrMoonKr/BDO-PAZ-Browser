@@ -14,13 +14,12 @@ from _common.pa_text import pa_cell, pa_fields
 from _common.skill import skill_name_tagged, split_skill_key
 from _bss.skillgroup.parser import skill_keys_by_group
 from _bss.stringtable.parser import GAME_SHEET, parse_key_hashes
-from _bss.stringtable.text import ui_hash_text
+from _bss.stringtable.text import STRINGTABLE_FILE, ui_hash_text
 from .parser import ClassGrid, SkillCell, Tab, card_column, parse_ui_skillgroup
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
 _SKILLGROUP_FILE = "skillgroup.bss"
-_STRINGTABLE_FILE = "stringtable.bss"
 _EMPTY = "-"
 
 
@@ -62,7 +61,7 @@ def _cell_dict(
 
 
 def _game_key_hashes(companions: dict[str, bytes]) -> dict[str, int]:
-    data = companions.get(_STRINGTABLE_FILE)
+    data = companions.get(STRINGTABLE_FILE)
     return parse_key_hashes(data, GAME_SHEET) if data is not None else {}
 
 
@@ -97,7 +96,7 @@ class UiSkillGroupBssHandler(PreviewHandler):
 
     def companions(self, entry: PazEntry) -> list[str]:
         folder = entry.internal_path.rsplit("/", 1)[0]
-        return [f"{folder}/{_SKILLGROUP_FILE}", f"{folder}/{_STRINGTABLE_FILE}"]
+        return [f"{folder}/{_SKILLGROUP_FILE}", f"{folder}/{STRINGTABLE_FILE}"]
 
     def get_records(
         self,

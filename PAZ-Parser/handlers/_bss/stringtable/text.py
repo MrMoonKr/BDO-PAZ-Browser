@@ -13,6 +13,8 @@ from collections.abc import Iterable, Mapping
 from _common.loc import loc_lookup, strip_pa_tags
 from .parser import SHEET_LOC_ID2, parse_sheet_key_hashes
 
+# The companion name for tables that read their keys' hashes from it.
+STRINGTABLE_FILE = "stringtable.bss"
 LOC_UI_STRING = 37
 # LOC str_id3 of a key's text, in lookup order: some keys only have variant 1.
 _LOC_VARIANTS = (0, 1)
@@ -49,7 +51,13 @@ def ui_hash_text(sheet: str, key_hash: int) -> str:
     return strip_pa_tags(ui_hash_tagged(sheet, key_hash)).strip()
 
 
-def ui_key_text(hashes: KeyHashes, sheet: str, key: str) -> str:
-    """LOC type 37 text of a UI string key, or '' when the sheet, hash or text is missing."""
+def ui_key_tagged(hashes: KeyHashes, sheet: str, key: str) -> str:
+    """LOC type 37 text of a UI string key with its PA tags, or '' when the
+    sheet, hash or text is missing."""
     key_hash = hashes.get(sheet, {}).get(key)
-    return "" if key_hash is None else ui_hash_text(sheet, key_hash)
+    return "" if key_hash is None else ui_hash_tagged(sheet, key_hash)
+
+
+def ui_key_text(hashes: KeyHashes, sheet: str, key: str) -> str:
+    """`ui_key_tagged` without its PA tags."""
+    return strip_pa_tags(ui_key_tagged(hashes, sheet, key)).strip()

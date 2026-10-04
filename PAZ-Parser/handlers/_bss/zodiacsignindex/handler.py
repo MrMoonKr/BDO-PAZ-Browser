@@ -7,7 +7,7 @@ from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
-from _common.zodiacsign.loc import resolve_loc_type7
+from _common.zodiacsign.loc import zodiac_name
 from _common.zodiacsign.parser import parse_zodiacsign_records
 from .parser import parse_zodiacsignindex_records
 
@@ -43,8 +43,9 @@ class ZodiacSignIndexHandler(PreviewHandler):
             raise ValueError("zodiacsign.dbss companion not found.")
 
         records = parse_zodiacsignindex_records(data)
-        valid_ids = {rec["zodiac_id"] for rec in parse_zodiacsign_records(zodiacsign_raw)}
-        loc_names, _ = resolve_loc_type7([rec["zodiac_id"] for rec in records])
+        korean_names = {
+            rec["zodiac_id"]: rec["constellation_name"] for rec in parse_zodiacsign_records(zodiacsign_raw)
+        }
 
         result: list[dict] = []
         for rec in records:
@@ -52,8 +53,8 @@ class ZodiacSignIndexHandler(PreviewHandler):
             result.append({
                 "slot": rec["slot"],
                 "zodiac_id": zodiac_id,
-                "name": loc_names.get(zodiac_id, f"#{zodiac_id}"),
-                "known": zodiac_id in valid_ids,
+                "name": zodiac_name(zodiac_id, korean_names.get(zodiac_id, "")),
+                "known": zodiac_id in korean_names,
             })
 
         return result

@@ -1,66 +1,53 @@
+"""Parser for `titlebufflist.dbss`, the Title Effects tiers.
+
+One block per tier, found through `titlebufflistoffset.dbss`:
+
+    u32 tier_id | u32 required_titles | u8 unknown_08 | u8 unknown_09
+    | u16 unknown_0a | u64 n + utf16 label_kr | u64 n + utf16 effect_kr
+    | u32 reserved
+
+`label_kr` reads "칭호 50개 습득 : " and `effect_kr` holds the bonuses with
+their values in PA colour tags. Full layout in
+docs/file-formats/titlebufflist_dbss.md.
+"""
+
 from __future__ import annotations
 
-import re
+import struct
 
-from _common.loc import loc_all_texts, strip_pa_tags
-
-from _common.binary import debug_u32_fields
-from _common.constants import PA_COLOR_MARKER
+from _common.record_reader import RecordReader
 from .model import TitleBuffRecord
 
-
-def find_title_effects_en() -> dict[int, str]:
-    entries = loc_all_texts()
-    result: dict[int, str] = {}
-
-    for text in entries:
-        if "Acquire x50: Luck" not in text:
-            continue
-
-        for line in text.splitlines():
-            match = re.match(r"Acquire x([\d,]+):\s*(.+)", line)
-
-            if not match:
-                continue
-
-            required = int(match.group(1).replace(",", ""))
-            result[required] = line
-
-        if result:
-            break
-
-    return result
+_HEAD = struct.Struct("<IIBBH")
+_RESERVED_SIZE = 4
 
 
-def decode_titlebuff_text(block: bytes) -> str:
-    start = block.find(PA_COLOR_MARKER)
+def _parse_tier(data: bytes, offset: int, size: int, tier_id: int) -> TitleBuffRecord:
+    reader = RecordReader(data, offset, offset + size, f"title effect tier {tier_id}")
+    _, required_titles, unknown_08, unknown_09, unknown_0a = reader.unpack(_HEAD)
+    label_kr = reader.text(wide=True)
+    effect_kr = reader.text(wide=True)
+    reader.skip(_RESERVED_SIZE)
+    if not reader.at_end():
+        raise ValueError(f"title effect tier {tier_id} has {reader.remaining()} unread bytes")
+    return TitleBuffRecord(
+        tier_id=tier_id,
+        offset=offset,
+        required_titles=required_titles,
+        unknown_08=unknown_08,
+        unknown_09=unknown_09,
+        unknown_0a=unknown_0a,
+        label_kr=label_kr,
+        effect_kr=effect_kr,
+    )
 
-    if start == -1:
-        return "-"
 
-    text = block[start:].decode("utf-16-le", errors="ignore")
-    text = text.replace("\x00", "")
-
-    return " ".join(text.split())
-
-
-def extract_titlebuff_records(
+def parse_titlebuff_records(
     data: bytes,
     offset_map: dict[int, tuple[int, int]],
 ) -> list[TitleBuffRecord]:
-    records: list[TitleBuffRecord] = []
-
-    for buff_id, (offset, size) in sorted(offset_map.items()):
-        if offset + size > len(data):
-            continue
-
-        block = data[offset:offset + size]
-
-        records.append(TitleBuffRecord(
-            buff_id=buff_id,
-            offset=offset,
-            raw_text=strip_pa_tags(decode_titlebuff_text(block)),
-            debug_u32=debug_u32_fields(block),
-        ))
-
-    return records
+    """Every tier in tier order."""
+    return [
+        _parse_tier(data, offset, size, tier_id)
+        for tier_id, (offset, size) in sorted(offset_map.items())
+    ]

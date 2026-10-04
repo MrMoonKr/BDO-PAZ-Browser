@@ -47,9 +47,9 @@ SPAWN_TYPE_CASE = HandlerCase(
     internal_path="gamecommondata/binary/characterspawntype.dbss",
     record_mapper=_spawn_type_record,
     tests=[
-        SchemaTest(required_keys=["character_id", "name_en", "roles", "active_roles"]),
+        SchemaTest(required_keys=["character_id", "name", "roles", "active_roles"]),
         DeclaredCountTest(declared=header_count()),
-        TargetTest(col="character_id", value=47727, expected={"name_en": "Jackson"}),
+        TargetTest(col="character_id", value=47727, expected={"name": "Jackson"}),
         # Read as a u32, this row looked like entity 82176: the NormalNpc byte
         # sat in the high half of the ID.
         TargetTest(col="character_id", value=16640, expected={"active_roles": ["NormalNpc"]}),

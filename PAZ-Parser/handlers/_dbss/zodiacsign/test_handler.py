@@ -11,6 +11,7 @@ from tests.framework import (
     HandlerResult,
     SchemaTest,
     TargetTest,
+    UserLanguageTest,
     case_id,
     header_count,
     run_case,
@@ -26,15 +27,17 @@ CASE = HandlerCase(
     loc_fields=["Name", "Traits"],
     internal_path="gamecommondata/binary/zodiacsign.dbss",
     tests=[
-        SchemaTest(required_keys=["zodiac_id", "name", "float_count", "pairs_count", "constellation_name", "en_trait"]),
+        SchemaTest(required_keys=["zodiac_id", "name", "float_count", "pairs_count", "constellation_name", "trait"]),
         DeclaredCountTest(declared=header_count()),
+        # LOC type 7 names every sign and lists its traits.
+        UserLanguageTest(fields=["name", "trait"]),
         TargetTest(
             col="zodiac_id",
             value=1,
             expected={
                 "name": "Hammer",
                 "constellation_name": "망치자리",
-                "en_trait": "Brave, Conservative, Righteous, Collaborative, Hot-Blooded.  ",
+                "trait": "Brave, Conservative, Righteous, Collaborative, Hot-Blooded.",
             },
         ),
         TargetTest(
@@ -43,7 +46,7 @@ CASE = HandlerCase(
             expected={
                 "name": "Black Dragon",
                 "constellation_name": "검은용자리",
-                "en_trait": "Wealth and Fame, Noble, Delicate, Sensitive, Sociable.",
+                "trait": "Wealth and Fame, Noble, Delicate, Sensitive, Sociable.",
             },
         ),
         TargetTest(
@@ -52,7 +55,7 @@ CASE = HandlerCase(
             expected={
                 "name": "Goblin",
                 "constellation_name": "고블린자리",
-                "en_trait": "Linguist, Strong Beliefs, Intellectual, Materialistic, Wise.",
+                "trait": "Linguist, Strong Beliefs, Intellectual, Materialistic, Wise.",
             },
         ),
     ],

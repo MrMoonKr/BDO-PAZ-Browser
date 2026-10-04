@@ -8,7 +8,8 @@ from bdo_preview import PreviewHandler
 from _common.html import Column, e, sort_keys, sprite_icon_cell, table
 from _common.lang import load_handler_strings
 from .parser import parse_menu_records
-from .titles import STRINGTABLE_FILE, menu_title, title_hashes
+from _bss.stringtable.text import STRINGTABLE_FILE
+from .titles import menu_title, title_hashes
 
 
 _LANG_DIR = Path(__file__).parent / "lang"

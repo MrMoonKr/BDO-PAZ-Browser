@@ -6,7 +6,7 @@
   },
   "columns": {
     "characterId": "Character ID",
-    "nameEn": "Name (EN)",
+    "name": "Name",
     "icon": "Icon",
     "actionScript": "Action Script",
     "conditionScript": "Condition",

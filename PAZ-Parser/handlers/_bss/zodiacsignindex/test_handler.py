@@ -12,6 +12,7 @@ from tests.framework import (
     RangeTest,
     SchemaTest,
     TargetTest,
+    UserLanguageTest,
     case_id,
     header_count,
     run_case,
@@ -31,6 +32,7 @@ CASE = HandlerCase(
         DeclaredCountTest(declared=header_count(offset=4)),
         # Every listed ID is a sign in zodiacsign.dbss.
         RangeTest(col="known", min_val=True, max_val=True),
+        UserLanguageTest(fields=["name"]),
         TargetTest(col="zodiac_id", value=1, expected={"name": "Hammer"}),
         TargetTest(col="zodiac_id", value=12, expected={"name": "Goblin"}),
     ],

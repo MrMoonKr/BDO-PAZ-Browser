@@ -8,7 +8,8 @@ from bdo_preview import PreviewHandler
 from _common.html import Column, e, sort_keys, sprite_icon_cell, table
 from _common.lang import load_handler_strings
 from _bss.menu.parser import parse_menu_records
-from _bss.menu.titles import STRINGTABLE_FILE, menu_title, title_hashes
+from _bss.menu.titles import menu_title, title_hashes
+from _bss.stringtable.text import STRINGTABLE_FILE
 from .parser import parse_submenu_records
 
 

@@ -1,9 +1,8 @@
 {
   "columns": {
     "characterId": "Character ID",
-    "name": "Name (EN)",
+    "name": "Name",
     "kind": "Kind",
-    "nameKr": "Name (KR)",
     "role": "Role",
     "knowledgeId": "Knowledge ID",
     "leases": "Leases",

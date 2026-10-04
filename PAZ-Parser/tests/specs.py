@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import re
 from typing import Any, Protocol
 
 from _common.pa_text import pa_key, strip_pa_tags
@@ -110,6 +111,31 @@ class PaFieldTest:
         if not any("<PAColor" in record[tagged_key] for record in records):
             raise AssertionError(f"PaFieldTest no {tagged_key} holds a <PAColor> tag")
         return f"PaFieldTest {self.field} keeps its game colours"
+
+
+# Hangul syllables. English text can hold other non-ASCII letters (`Nymphamaré`).
+_HANGUL = re.compile("[가-힣]")
+
+
+@dataclass(frozen=True)
+class UserLanguageTest:
+    """With English LOC loaded, no row shows Korean in these text fields.
+
+    Each field is a user-facing column that reads LOC first and falls back to
+    the inline Korean, so a Korean value means the LOC lookup was missed. A
+    field may hold a string or a list of strings.
+    """
+
+    fields: list[str]
+
+    def check(self, records: list[dict], source: CaseInput) -> str:
+        for pos, record in enumerate(records):
+            for field in self.fields:
+                value = record[field]
+                texts = value if isinstance(value, list) else [value]
+                if any(_HANGUL.search(text) for text in texts):
+                    raise AssertionError(f"UserLanguageTest records[{pos}].{field}={value!r} is Korean")
+        return f"UserLanguageTest no Korean in {', '.join(self.fields)}"
 
 
 def _assert_subset(record: dict, expected: dict[str, Any], label: str) -> None:

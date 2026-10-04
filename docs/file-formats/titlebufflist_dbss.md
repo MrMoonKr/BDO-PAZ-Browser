@@ -19,7 +19,7 @@ Acquire x70: Luck +2 / Max Energy +1
 | File                       | Required | Role                               |
 | -------------------------- | -------- | ---------------------------------- |
 | `titlebufflistoffset.dbss` | Required | Provides block offsets and sizes   |
-| `languagedata_en.loc`      | Optional | English display text for each tier |
+| `stringtable.bss`          | Optional | Key hash of the tooltip text in LOC, see Localised Text |
 
 All multi-byte values are little-endian.
 
@@ -52,7 +52,14 @@ Observed entries: 18 in the pre-2026-09-27 test fixture and in the 2026-09-27 cl
 | -------- | ------ | --------------- | ---------------------------------------------------------------- | ---------- |
 | `+0x00`  | u32    | internal_id     | Zero-based buff/effect row ID, same as the offset file entry_id | High       |
 | `+0x04`  | u32    | required_titles | Title count to unlock this tier                                  | High       |
-| `+0x08+` | varies | text_payload    | Embedded UTF-16LE Korean effect text and PAColor markup          | High       |
+| `+0x08`  | u8     | unknown_08      | `1` on all 18 tiers                                              | High       |
+| `+0x09`  | u8     | unknown_09      | `0` on all 18 tiers                                              | High       |
+| `+0x0A`  | u16    | unknown_0a      | `58501 + internal_id` on all 18 tiers, see Open Questions        | High       |
+| `+0x0C`  | u64 + utf16le[n] | label_kr | Korean tier label, `칭호 50개 습득 : ` ("50 titles acquired: "); the u64 counts UTF-16 code units | High |
+| varies   | u64 + utf16le[n] | effect_kr | Korean effects with PAColor markup, `행운 잠재력 <PAColor0xFF00BAFF>+1단계<PAOldColor>` | High |
+| varies   | u32    | reserved        | `0` on all 18 tiers; the block ends here                         | High       |
+
+Checked on all 18 blocks of client 3458: each one ends exactly after `reserved`. An earlier version of this doc left everything after `required_titles` as one text payload, and the parser read only from the first PAColor tag, so the Korean fallback showed just `+1단계`.
 
 #### internal_id / Display Level
 
@@ -76,13 +83,11 @@ The offset file's `entry_id` and block `internal_id` represent the same row. Dis
 
 ## Embedded Korean Text
 
-The DBSS block contains Korean text directly:
+The DBSS block contains Korean text directly, `label_kr` followed by `effect_kr`:
 
 ```text
 칭호 50개 습득 : 행운 잠재력 <PAColor0xFF00BAFF>+1단계<PAOldColor>
 ```
-
-Decode the payload as UTF-16LE. The leading binary/header bytes should not be displayed as text.
 
 ### PAColor Tags
 
@@ -100,15 +105,9 @@ These tags color the bonus numbers in the Title Effects tooltip, not individual 
 
 ---
 
-## English Text
+## Localised Text
 
-The official English text appears in `languagedata_en.loc` as one multiline tooltip entry containing all Title Effects lines:
-
-```text
-str_type: 37, str_id1: 3723587620, str_id2: 1, str_id3: 0, str_id4: 0
-```
-
-Example content:
+The tooltip in the user's language is one multiline UI string, `GAME` sheet key `LUA_CHARACTERINFO_TITLE_TOOLTIP_DESC` (key hash `3723587620`, LOC `str_type=37`, `str_id1=3723587620`, `str_id2=1`). `stringtable.bss` gives the hash and keeps the same Korean text; `RESOURCE` key `PANEL_CHARACTERINFO_TITLE_TOOLTIP_DESC` holds a copy. Each line is one tier, in `internal_id` order (18 lines, 18 tiers):
 
 ```text
 Acquire x50: Luck <PAColor0xff00baff>+1<PAOldColor>
@@ -116,13 +115,7 @@ Acquire x60: Luck <PAColor0xff00baff>+2<PAOldColor>
 Acquire x70: Luck <PAColor0xff00baff>+2<PAOldColor> / Max Energy <PAColor0xff00baff>+1<PAOldColor>
 ```
 
-Recommended lookup:
-
-1. Parse `languagedata_en.loc`.
-2. Find the multiline entry containing `Acquire x50: Luck`.
-3. Split it into lines.
-4. Map each line by the `Acquire x{required_titles}:` prefix.
-5. Use `required_titles` from the DBSS row to select the matching English line.
+Pick the line by `internal_id`, not by matching the `Acquire x50:` prefix, since other languages word the prefix differently.
 
 ---
 
@@ -132,7 +125,7 @@ Recommended lookup:
 | --------------- | --------------------------------------------------------- |
 | Level           | `internal_id + 1`                                         |
 | Required Titles | `required_titles`                                         |
-| Text            | Parsed from `languagedata_en.loc` by required title count, values in their game colours |
+| Text            | Line `internal_id` of the LOC tooltip, values in their game colours; `label_kr` + `effect_kr` without LOC or `stringtable.bss`, or when the line count differs from the tier count |
 
 ---
 
@@ -165,6 +158,6 @@ Recommended lookup:
 
 ## Open Questions
 
-### Unknown Payload Bytes
+### What do `unknown_08`, `unknown_09` and `unknown_0a` encode?
 
-Exact meaning of the bytes after `required_titles` (`+0x08`) and before the first visible Korean text marker.
+`unknown_0a` counts up from `58501` with the tier. Buffs `58501` to `58503` are the title Luck buffs (`(칭호) 행운 1레벨` to `3레벨`, Luck +1 to +3), but tier 3 (`58503`) gives Luck +2 / Max Energy +1, so it is not the tier's buff. `unknown_08` is always `1` and `unknown_09` always `0`.

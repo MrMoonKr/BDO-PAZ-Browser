@@ -29,7 +29,7 @@ STATIC_CASE = HandlerCase(
     tests=[
         SchemaTest(
             required_keys=[
-                "character_id", "name_en", "action_script", "condition_script",
+                "character_id", "name", "action_script", "condition_script",
                 "knowledge_id", "npc_kind", "npc_kind_low", "class_type", "model_path", "payload_size",
             ]
         ),
@@ -39,7 +39,7 @@ STATIC_CASE = HandlerCase(
             col="character_id",
             value=16640,
             expected={
-                "name_en": "Dev Plant210",
+                "name": "Dev Plant210",
                 "action_script": "",
                 "knowledge_id": None,
                 "npc_kind": 8,

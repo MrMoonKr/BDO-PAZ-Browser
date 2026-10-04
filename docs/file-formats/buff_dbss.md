@@ -755,7 +755,7 @@ Value `2` (647 rows) holds 600-minute elixir-style buffs and value `38` the Adve
 | Buff ID     | num  | `buff_id`; right-aligned                                            |
 | Icon        | text | `icon_path`, resolved under `ui_texture/icon/`; dash when empty     |
 | Title       | text | Coloured first line of the description when more lines follow; else the title of the headline buff it is applied with, dimmed (see Notes); dash otherwise |
-| Internal Name | text | Korean `name`; labelled internal because no English form exists   |
+| Internal Name | text | Korean `name`; labelled internal because LOC has no form of it in any language. Kept as its own column next to Title by choice (2026-10-04): it is the only text on many untitled buffs |
 | Description | text | LOC `str_type=5`, `str_id1=buff_id`; falls back to the inline Korean description, `<null>` counts as empty |
 | Effect      | text | The parameters as text for the confirmed effect types (see Effect text); dash otherwise |
 | Applied By  | list | Base items whose skills apply the buff (`BUFF_ITEMS` lookup index), with item icons and grade colours; sorts by count |

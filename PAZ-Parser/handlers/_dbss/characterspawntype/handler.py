@@ -75,7 +75,7 @@ class CharacterSpawnTypeHandler(PreviewHandler):
         role_labels = role_label_overrides(self.lang)
         columns = [Column(cols.get("characterId", "Character ID"), "num", sort_key="character_id")]
         if has_loc:
-            columns.append(Column(cols.get("nameEn", "Name (EN)"), sort_key="name_en"))
+            columns.append(Column(cols.get("name", "Name"), sort_key="name"))
         columns.extend(_role_column(i, role_labels) for i in active_roles)
         return columns
 
@@ -107,7 +107,7 @@ class CharacterSpawnTypeHandler(PreviewHandler):
         return [
             {
                 "character_id": r["character_id"],
-                "name_en": character_name(r["character_id"]),
+                "name": character_name(r["character_id"]),
                 "roles": r["roles"],
             }
             for r in parse_characterspawntype_records(data)
@@ -130,7 +130,7 @@ class CharacterSpawnTypeHandler(PreviewHandler):
         for r in slice_:
             row = [e(r["character_id"])]
             if has_loc:
-                row.append(e(r["name_en"]))
+                row.append(e(r["name"]))
             for i in active:
                 row.append(flag_cell(bool(r["roles"][i])))
             rows.append(row)
