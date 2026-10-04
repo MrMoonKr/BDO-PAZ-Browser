@@ -169,6 +169,29 @@ BUFF_CASE = HandlerCase(
             value=39562,
             expected={"effect_type": 38, "param_1": 11216, "effect": "Learn Knowledge: Tuntaros"},
         ),
+        # Item 64639 reads "Employment Contract: Goblin Worker" and
+        # "Affiliation: Calpheon City" on bdocodex.
+        TargetTest(
+            col="buff_id",
+            value=64039,
+            expected={
+                "effect_type": 103,
+                "effect": "Employment Contract: Skilled Goblin Worker (Calpheon City)",
+            },
+        ),
+        # Summon: Keeper Marg clears the movement speed buff 8972 of group 521.
+        TargetTest(col="buff_id", value=8974, expected={"effect_type": 16, "effect": "Remove Group 521"}),
+        TargetTest(col="buff_id", value=59158, expected={"effect_type": 72, "effect": "Trent Stable +1"}),
+        TargetTest(
+            col="buff_id",
+            value=58322,
+            expected={"effect_type": 17, "effect": "Learn Skill: Lightning Chain I"},
+        ),
+        TargetTest(
+            col="buff_id",
+            value=51837,
+            expected={"effect_type": 101, "effect": "Gain Western Camp Officer Knowledge"},
+        ),
         # Applied by no item in the installed index: an empty list, None to sort last.
         TargetTest(
             col="buff_id",
@@ -392,7 +415,60 @@ def test_korean_title_survives_without_loc() -> None:
         (187, [200, 0, 2], "AP +200"),
         (187, [250, 500, 1], "AP +250, DP +500"),
         (187, [0, -100, 0], "DP -100"),
+        # "Remove Group 44812": a group key, written without separators.
+        (16, [44812], "Remove Group 44812"),
+        (66, [1], "Energy Recovery +1"),
+        (106, [3, 50000], "All Damage Reduction +5%"),
+        (107, [30000, 0], "Gathering Item Drop Rate +3%"),
+        # A single gathering tool reads only "Gathering Luck increases."
+        (107, [300000, 4], ""),
+        (121, [50000], "Auto-fishing Time -5%"),
+        (181, [0, 100000], "Breath EXP +10%"),
+        # Kind 3 is one passive, "training EXP" in Korean.
+        (181, [3, 200000], ""),
+        (56, [100000], "Amity +10%"),
+        # One parameter per speed: "Attack/Casting Speed +10%".
+        (160, [0, 100000, 100000], "Attack Speed +10%, Casting Speed +10%"),
+        # Breakthrough Crystal: Attack Speed reads "Attack Speed Limit +1".
+        (68, [1, 1], "Attack Speed Limit +1"),
+        (71, [8, 1], "Inventory +8"),
+        # Confirmed from their items in game (Endless Ocean Draught, [Event]
+        # Giddy-up Ghost Horsie!, Oceanbound Otter Fishing Rod).
+        (19, [150000], "Sailor EXP +15%"),
+        (47, [150000], "Horse Capture Rate +15%"),
+        (51, [150000], "Mount Skill EXP +15%"),
+        (62, [0, 5], "Skill Points +5"),
+        (100, [1], "Character Slots +1"),
+        (131, [1000000], "Trade Item Price +100%"),
+        (134, [900000], "Swimming Speed +90%"),
+        (196, [61], "Set Level to 61"),
+        (200, [30000], "Prize Catch Fish Rate +3%"),
+        # Sun Orb (red, like the Sun Aura's orb) reads "Moon's Aura" in its tooltip.
+        (186, [1, 1, 0], "Sun Aura Fixed Stat +1"),
+        (186, [0, 1, 0], "Selected Aura Stat +1"),
+        # No amount stored: firecrackers and skills that reveal names.
+        (84, [0], "Reveal Hidden Names"),
+        (168, [0], "No Guard Gauge recovery"),
+        (76, [100000, 0], "Karma +100,000"),
+        (76, [-30000, 1], "Guild Karma -30,000"),
+        # Hans' Contract: "Raises Naval Fame by 2,500".
+        (76, [2500, 2], "Naval Fame +2,500"),
+        (112, [500000, 0], "Item Drop Amount +50%"),
+        (126, [1, 50000], "Chance to Catch Rare Fish +5%"),
+        # Kind 2 is blue fish; its skills read "a high-quality fish".
+        (126, [2, 50000], "Chance to Catch High-quality Fish +5%"),
+        (169, [100000], "Target's Recovery -10%"),
+        # Storage kinds are fixed names; 0 is every town.
+        (72, [0, 16, 1, 0], "All Towns Storage +16"),
+        (72, [126, 1, 0, 1], "Stable +1 in town 126"),
+        (73, [0, 0], "Trade Refresh: Balenos"),
+        # Territories whose English and Korean texts disagree stay unlabelled.
+        (73, [0, 3], ""),
         # A character or knowledge entry with no LOC name falls back to its ID.
+        (73, [1, 40010], "Trade Refresh: 40010"),
+        (17, [827, 0, 1], "Learn Skill: 827"),
+        (101, [30010], "Gain Knowledge of theme 30010"),
+        (103, [7552, 77], "Employment Contract: 7552/77"),
         (18, [27542, 0], "Summon 27542"),
         (69, [11485, 30], "Accept Quest: 11485/30"),
         (38, [15074, 0], "Learn Knowledge: 15074"),
@@ -476,7 +552,9 @@ def test_over_time_text(
         (EffectInput(1, [-15], condition_type=4), {1: "when struck"}),
         # No confirmed meaning: no labels at all.
         (EffectInput(39, [0, 8]), {}),
-        (EffectInput(16, [521]), {}),
+        (EffectInput(16, [521]), {1: "Group"}),
+        (EffectInput(72, [0, 8, 1, 0]), {1: "All Towns"}),
+        (EffectInput(73, [0, 5]), {2: "Southwestern Calpheon"}),
         (EffectInput(187, [0, 300, 2]), {3: "Earth"}),
         (EffectInput(25, [100000, 2, 2]), {1: "10%", 2: "Life", 3: "Hunting"}),
         (EffectInput(53, [1000]), {1: "10m"}),
@@ -529,14 +607,29 @@ def test_teleport_buff_index_follows_section_and_key(buff_result: HandlerResult)
 
 
 def test_teleport_effect_names_the_nearest_node(monkeypatch: pytest.MonkeyPatch) -> None:
-    import _dbss.buff.effect.formats as formats
+    import _dbss.buff.effect.named as named
     from dataclasses import replace as replace_effect
 
-    named = replace_effect(formats.NAMED_EFFECTS[23], name_of=lambda section, key: "Marni's Lab (12 m)")
-    monkeypatch.setitem(formats.NAMED_EFFECTS, 23, named)
+    (teleport,) = named.NAMED_EFFECTS[23]
+    patched = replace_effect(teleport, name_of=lambda section, key: "Marni's Lab (12 m)")
+    monkeypatch.setitem(named.NAMED_EFFECTS, 23, (patched,))
     buff = EffectInput(23, [0, 371])
     assert effect_text(buff) == "Teleport to point 0/371, near Marni's Lab (12 m)"
     assert param_labels(buff) == {2: "Marni's Lab (12 m)"}
+
+
+def test_worker_contract_names_worker_and_town(monkeypatch: pytest.MonkeyPatch) -> None:
+    import _dbss.buff.effect.named as named
+
+    monkeypatch.setattr(named, "character_name", lambda key: {7552: "Skilled Goblin Worker"}.get(key, ""))
+    monkeypatch.setattr(named, "town_name", lambda key: {77: "Calpheon City"}.get(key, ""))
+    buff = EffectInput(103, [7552, 77])
+    assert effect_text(buff) == "Employment Contract: Skilled Goblin Worker (Calpheon City)"
+    assert param_labels(buff) == {2: "Skilled Goblin Worker (Calpheon City)"}
+    # A town without a name leaves the worker alone.
+    assert effect_text(EffectInput(103, [7552, 1])) == "Employment Contract: Skilled Goblin Worker"
+    # Storage names its town the same way.
+    assert effect_text(EffectInput(72, [77, 8, 0, 0])) == "Calpheon City Storage +8"
 
 
 @pytest.mark.parametrize(

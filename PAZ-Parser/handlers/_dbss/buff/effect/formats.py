@@ -1,23 +1,17 @@
 """What each confirmed effect type's parameters mean, one entry per type.
 
 Every entry drives both the Effect text and the labels of the Param columns,
-so a type is described once. The evidence for each type is in
+so a type is described once. The types whose parameters are the key of
+something LOC names are in `named.py`. The evidence for each type is in
 docs/file-formats/buff_dbss.md (Enum Values and Effect text).
 """
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 
-from _common.character import character_name
-from _common.knowledge import knowledge_name
-from _common.node import full_node_name
-from _common.quest.quest import quest_title
-from _common.skill import skill_name
-from _common.teleport import teleport_point_place
-from _common.title import title_name
-from .units import CRAFT_SECONDS, FLAT, METRES, MINUTES, PERCENT, SECONDS, WEIGHT, Unit
+from .units import CRAFT_SECONDS, FLAT, KEY, METRES, MINUTES, PERCENT, SECONDS, WEIGHT, Unit
 
 
 @dataclass(frozen=True)
@@ -74,22 +68,6 @@ def kinds(
         )
         for kind, name in names.items()
     )
-
-
-@dataclass(frozen=True)
-class NamedEffect:
-    """An effect whose parameters are the key of something LOC names.
-
-    `name_of` receives the values of `key_params`. A template may hold
-    `{name}`, `{key}` (`244/1`) and `{param_1}` to `{param_10}`; without a
-    name, `unnamed_template` is used when given, else `template` with the key
-    in place of the name.
-    """
-
-    template: str
-    name_of: Callable[..., str]
-    key_params: tuple[int, ...] = (1,)
-    unnamed_template: str = ""
 
 
 @dataclass(frozen=True)
@@ -192,12 +170,20 @@ _RESISTANCES = {
     8: "All",
 }
 
+# `param_1` of types 89 (flat) and 181 (per million). Kind 3 of type 181 is a
+# single passive (`단련 경험치`, "training EXP") and stays unlabelled.
+_BREATH_STRENGTH_HEALTH = {0: "Breath", 1: "Strength", 2: "Health"}
+
 EFFECT_LINES: dict[int, tuple[EffectLine, ...]] = {
     2: (EffectLine("Max HP", 1),),
+    # Removes the buffs of group param_1: "Remove Group 44812".
+    16: (EffectLine("Remove Group", 1, KEY, value_label="Group"),),
     14: kinds(1, "{kind}", _CROWD_CONTROL, 2, SECONDS, template="{label} for {amount}"),
     # One-off EXP; the amount matches the number in all 47 item names that
     # carry one (`Guild EXP (200,000)`).
     24: kinds(2, "{kind} EXP", {0: "Combat", 1: "Guild", 2: "Skill"}, 1),
+    # Endless Ocean Draught: "Sailor EXP +15%".
+    19: (EffectLine("Sailor EXP", 1, PERCENT),),
     3: (EffectLine("HP Recovery", 1),),
     5: (EffectLine("Max MP/WP/SP", 1),),
     6: (EffectLine("MP/WP/SP Recovery", 1),),
@@ -253,14 +239,46 @@ EFFECT_LINES: dict[int, tuple[EffectLine, ...]] = {
         2,
         PERCENT,
     ),
+    # [Event] Giddy-up Ghost Horsie!: "Horse Capture Rate +15%" (47) and
+    # "Mount Skill EXP +15%" (51).
+    47: (EffectLine("Horse Capture Rate", 1, PERCENT),),
     50: (EffectLine("Mount EXP", 1, PERCENT),),
+    51: (EffectLine("Mount Skill EXP", 1, PERCENT),),
     52: (EffectLine("Fall Damage", 1, PERCENT, is_negated=True),),
     53: (EffectLine("Discovery Radius", 1, METRES),),
+    # NPC amity gain, `친밀도 획득`: the villa and music buffs read `Amity +10%`.
+    56: (EffectLine("Amity", 1, PERCENT),),
     57: (EffectLine("Item Drop Rate", 1, PERCENT),),
     59: (EffectLine("Jump Height", 1),),
     # One-off, like the `60 Contribution EXP` item that stores 60.
     60: kinds(1, "{kind} EXP", {0: "Contribution"}, 2),
+    # `Skill Points (5)` stores 5; param_1 0 is combat (`전투`) on all.
+    62: kinds(1, "Skill Points", {0: "Combat"}, 2),
     63: (recovery("Worker Stamina", 1),),
+    # Natural energy regeneration, `기운 자연 회복량`.
+    66: (EffectLine("Energy Recovery", 1),),
+    # Stat limits, worded as the Breakthrough Crystals (15642 to 15648) read:
+    # `Attack Speed Limit +1`, `Gathering Limit +1`. Kinds as in type 67.
+    68: kinds(
+        1,
+        "{kind} Limit",
+        {
+            0: "Movement Speed",
+            1: "Attack Speed",
+            2: "Casting Speed",
+            3: "Critical Hit Rate",
+            4: "Luck",
+            5: "Fishing",
+            6: "Gathering",
+        },
+        2,
+    ),
+    # Inventory slots, like `Inventory +8 Expansion`. param_2 is 1 on the
+    # time-limited variants (`- 기간`), which store no duration.
+    71: (EffectLine("Inventory", 1),),
+    # Karma, Guild Karma and Naval Fame, flat: `Karma Recovery Scroll` stores
+    # 100000, Hans' Contract "Raises Naval Fame by 2,500" stores 2500.
+    76: kinds(2, "{kind}", {0: "Karma", 1: "Guild Karma", 2: "Naval Fame"}, 1),
     67: kinds(
         1,
         "{kind}",
@@ -277,7 +295,7 @@ EFFECT_LINES: dict[int, tuple[EffectLine, ...]] = {
     ),
     79: (recovery("Energy", 1),),
     80: kinds(1, "{kind} EXP", _LIFE_SKILLS, 2),
-    89: kinds(1, "{kind} EXP", {0: "Breath", 1: "Strength", 2: "Health"}, 2),
+    89: kinds(1, "{kind} EXP", _BREATH_STRENGTH_HEALTH, 2),
     90: (EffectLine("Death Penalty Resistance", 1, PERCENT),),
     91: (EffectLine("Durability Reduction Resistance", 1, PERCENT),),
     93: kinds(
@@ -308,7 +326,15 @@ EFFECT_LINES: dict[int, tuple[EffectLine, ...]] = {
         2,
         PERCENT,
     ),
+    100: (EffectLine("Character Slots", 1),),
     105: kinds(1, "Ignore {kind} Resistance", _RESISTANCES, 2, PERCENT),
+    # The rate counterpart of type 43, `모든 피해 감소율`; param_1 is 3 on all.
+    106: kinds(1, "All Damage Reduction", {3: "All"}, 2, PERCENT),
+    # param_2 1 and 2 do not change the English text, as on type 57.
+    112: (EffectLine("Item Drop Amount", 1, PERCENT),),
+    # param_2 2 to 7 limit it to one gathering tool (sap, hoe, pickaxe) on
+    # single buffs that read only "Gathering Luck increases."; no label.
+    107: (EffectLine("Gathering Item Drop Rate", 1, PERCENT, when={2: 0}),),
     108: (EffectLine("Knowledge Gain Chance", 1, PERCENT),),
     109: (EffectLine("Higher Grade Knowledge Gain Chance", 1, PERCENT),),
     # Kind 3 cuts farming time on two buffs whose names do not fit this
@@ -327,6 +353,36 @@ EFFECT_LINES: dict[int, tuple[EffectLine, ...]] = {
         ),
         *kinds(1, "Processing Success Rate", {2: "Processing"}, 2, PERCENT),
     ),
+    # Movement, attack and casting speed as rates, each in its own parameter:
+    # `Attack/Casting Speed +10%` stores 100000 in param_2 and param_3.
+    160: (
+        EffectLine("Movement Speed", 1, PERCENT),
+        EffectLine("Attack Speed", 2, PERCENT),
+        EffectLine("Casting Speed", 3, PERCENT),
+    ),
+    # Kind 1 is yellow fish (`희귀`, "Rare Fish" in the fish descriptions),
+    # kind 2 blue (`고급`, "High-quality Fish"), as the skills that apply them
+    # read: `Increase chance to catch a high-quality fish (5%)`. The kind 2
+    # buff texts say "Rare Fish" too, which is stale.
+    126: kinds(
+        1,
+        "Chance to Catch {kind} Fish",
+        {1: "Rare", 2: "High-quality"},
+        2,
+        PERCENT,
+    ),
+    # Healing reduction stored positive: "Target's Recovery -10%".
+    169: (EffectLine("Target's Recovery", 1, PERCENT, is_negated=True),),
+    # Token of Desert Trading (409) reads "Trade Goods Price Doubled" for
+    # 1000000; item 408 reads "+50%" for 750000, which its Korean name gives.
+    131: (EffectLine("Trade Item Price", 1, PERCENT),),
+    134: (EffectLine("Swimming Speed", 1, PERCENT),),
+    # Patrigio's Pocket Watch sets the character to level 61.
+    196: (EffectLine("Set Level to", 1, is_signed=False),),
+    # Oceanbound Otter Fishing Rod: "Prize Catch Fish Rate +3%".
+    200: (EffectLine("Prize Catch Fish Rate", 1, PERCENT),),
+    # A cut stored positive: "Auto-fishing Time -5%".
+    121: (EffectLine("Auto-fishing Time", 1, PERCENT, is_negated=True),),
     # param_1 picks a rate (0) or a flat amount (2).
     120: (
         *kinds(1, "Monster Damage Reduction Rate", {0: "Rate"}, 2, PERCENT),
@@ -355,6 +411,23 @@ EFFECT_LINES: dict[int, tuple[EffectLine, ...]] = {
             kind_labels={1: "All"},
         ),
     ),
+    181: kinds(1, "{kind} EXP", _BREATH_STRENGTH_HEALTH, 2, PERCENT),
+    # Black Shrine aura orbs: param_1 1 adds param_2 to the aura of param_3
+    # (Sun Orb, red like the Sun Aura's orb), 0 to the aura the player picks
+    # (Light Orb: "Selected Aura Stat +1"). The Sun and Moon Orb tooltips
+    # name each other's aura.
+    186: (
+        *(
+            EffectLine(
+                f"{name} Aura Fixed Stat",
+                2,
+                when={1: 1, 3: attribute},
+                kind_labels={1: "Fixed", 3: name},
+            )
+            for attribute, name in _MORNING_LIGHT_ATTRIBUTES.items()
+        ),
+        EffectLine("Selected Aura Stat", 2, when={1: 0}, kind_labels={1: "Selected"}),
+    ),
     # Flat AP and DP from Land of the Morning Light buffs and bosses.
     187: tuple(
         EffectLine(stat, value_param, when={3: attribute}, kind_labels={3: name})
@@ -364,30 +437,14 @@ EFFECT_LINES: dict[int, tuple[EffectLine, ...]] = {
 }
 
 
-NAMED_EFFECTS: dict[int, NamedEffect] = {
-    # The summoned character. Siege objects and placed objects are characters too.
-    18: NamedEffect("Summon {name}", character_name),
-    # A teleport.dbss point: param_1 is its section, param_2 its key within
-    # the section. Points have no name, so the nearest worldmap node places it.
-    23: NamedEffect(
-        "Teleport to point {key}, near {name}",
-        teleport_point_place,
-        key_params=(1, 2),
-        unnamed_template="Teleport to point {key}",
-    ),
-    # The node a Node Registration item registers.
-    37: NamedEffect("Register Node: {name}", full_node_name),
-    # Hidden buffs that items used on pickup apply to unlock a knowledge entry.
-    38: NamedEffect("Learn Knowledge: {name}", knowledge_name),
-    # Accepts quest `param_2` of chain `param_1`: Cartian Spell's "[Co-op]
-    # Eliminating the Threats to Mediah will automatically be accepted".
-    69: NamedEffect("Accept Quest: {name}", quest_title, key_params=(1, 2)),
-    # Each piece of a set adds param_2 points to the set skill of param_1,
-    # whose level per point total holds the set effects (Korean names
-    # `세트 효과 2포인트`, "set effect 2 points", store 2).
-    48: NamedEffect("Set Effect Points +{param_2}: {name}", skill_name),
-    # [Title] items: "Obtain the Linked Up Morning Light title".
-    142: NamedEffect("Obtain Title: {name}", title_name),
+# Types that store no amount and always read the same.
+FIXED_TEXTS: dict[int, str] = {
+    # Firecracker (Red): "Subjects within the range cannot hide their name";
+    # Shai's Come Out, Come Out: "Reveals hidden enemies and names".
+    84: "Reveal Hidden Names",
+    # The English text of all 16 buffs, from Corsair skills such as Flow:
+    # Raging Torrent.
+    168: "No Guard Gauge recovery",
 }
 
 OVER_TIME_EFFECTS: dict[int, OverTimeEffect] = {

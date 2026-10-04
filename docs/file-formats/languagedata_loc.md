@@ -61,14 +61,14 @@ are `str_id2 | str_id3 << 16`. Their `key0` is `str_type` and their `id` is
 | 6        | Character names (NPCs, monsters, gathering nodes, objects, houses), `str_id1` = character ID; `str_id4=1` is a secondary label such as `<Open>` |
 | 7        | Zodiac sign data, `str_id1` = zodiac_id (1–12), `str_id4` selects sub-field                |
 | 8        | Mount skill names                                                                          |
-| 9        | Knowledge category (theme) names, `str_id1` = `mentaltheme.dbss` theme_id                  |
+| 9        | Knowledge category (theme) names, `str_id1` = `mentaltheme.dbss` theme_id; also the bookshelf themes of `buff.dbss` type 101 |
 | 10       | Skill names and descriptions, `str_id1` = skill number; see Type 10 below                  |
 | 11       | City names, with some node names mixed in                                                  |
 | 12       | Territory names, `str_id1` = territory 0 to 13; `str_id4=0` nation or realm, `1` territory; see Type 12 below |
 | 13       | Skill rank texts, `str_id1` = skill number, `str_id2` = level; English of the `skill.dbss` `description`, see Type 13 below |
 | 15       | Emote/pose/placeable interaction names                                                     |
 | 16       | House/facility type names                                                                  |
-| 17       | Town/node names, `str_id1` = selection_id from `plantworkerselect.bss`                     |
+| 17       | Town/node names, `str_id1` = selection_id from `plantworkerselect.bss`; also the towns of the `buff.dbss` worker contracts and storage expansions |
 | 18       | Quest and journal page text; two key domains share this type, see Type 18 sub-fields below |
 | 19       | Pet action labels, `str_id1` = `petaction.dbss` action_id                                  |
 | 20       | "You have learned about [x]." knowledge messages, keyed by `str_id1` + `str_id2`           |

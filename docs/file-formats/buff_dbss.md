@@ -198,21 +198,35 @@ English text, by item names and bdocodex tooltips (see Effect text).
 | ----- | ---: | ----------------------------- | ----------------------------------------------------------------- |
 | 4     | 268  | MP/WP/SP over time            | `param_1` per tick, signed; `tick_ms` the interval; `condition_type` `1` = per hit instead. Without either it is a one-off refill, unlabelled (see Effect text) |
 | 14    | 172  | Crowd control                 | `param_1` = kind, `param_2` = duration in ms (`Stun for 5 sec`), see Effect text; `param_4` `1` on every labelled kind |
+| 16    | 355  | Remove buffs                  | `param_1` = buff `group` to remove (`Remove Group 44812`); `param_2` `15` on the bleed, poison and burn cures, others open |
+| 17    | 177  | Learn skill                   | `param_1` = skill (LOC type 10 name); `param_3` `1` on all |
+| 19    | 6    | Sailor EXP                    | `param_1` per million                                             |
 | 23    | 654  | Teleport                      | `param_1` = [teleport.dbss](teleport_dbss.md) section, `param_2` = key within it; see Effect text |
 | 24    | 95   | One-off EXP                   | `param_1` = amount, flat; `param_2` = `0` Combat, `1` Guild, `2` Skill |
 | 29    | 249  | Weight Limit                  | `param_1` in ten-thousandths of an LT (`1000000` = 100 LT)        |
 | 37    | 1,031 | Node registration            | `param_1` = node key (LOC type 29 name); `param_2` `1` on 37 town, city and investment bank nodes, meaning unknown |
+| 47    | 6    | Horse Capture Rate            | `param_1` per million                                             |
 | 48    | 123  | Set effect points             | `param_1` = set skill (LOC type 10 name), `param_2` = points the piece adds; see Effect text |
 | 50    | 144  | Mount EXP                     | `param_1` per million                                             |
+| 51    | 7    | Mount Skill EXP               | `param_1` per million                                             |
 | 52    | 40   | Fall Damage reduction         | `param_1` per million, stored positive and shown negative (`500000` = `Fall Damage -50%`); `param_2` `1` on one 15 sec buff, meaning unknown |
 | 53    | 9    | Discovery Radius              | `param_1` in centimetres (`1000` = `+10m`); `param_2` `2000` / `4000` on two old grape salads that read `Vision Range Increase`, unlabelled |
+| 56    | 28   | Amity                         | `param_1` per million (`Amity +10%`)                              |
 | 57    | 225  | Item Drop Rate                | `param_1` per million; `param_2` `1` or `2` on 6 buffs with the same text, meaning unknown |
 | 59    | 31   | Jump Height                   | `param_1` = amount                                                |
 | 60    | 59   | One-off Contribution EXP      | `param_1` = `0` on all, `param_2` = amount; `param_3` `1` on all, meaning unknown |
+| 62    | 10   | Skill points                  | `param_1` = `0` combat (`전투`) on all, `param_2` = points (`Skill Points (5)`) |
 | 63    | 11   | Worker Stamina recovery       | `param_1` = amount, one-off (`Recover 2 Worker Stamina`)          |
+| 66    | 87   | Energy Recovery               | `param_1` = amount (natural regeneration, `기운 자연 회복량`)        |
 | 67    | 660  | Stat ranks                    | `param_1` = stat: `0` Movement Speed, `1` Attack Speed, `2` Casting Speed, `3` Critical Hit, `4` Luck, `5` Fishing Speed, `6` Gathering Speed; `param_2` = ranks, can be negative |
+| 68    | 16   | Stat limits                   | `param_1` = stat as in type 67, worded `0` Movement Speed, `1` Attack Speed, `2` Casting Speed, `3` Critical Hit Rate, `4` Luck, `5` Fishing, `6` Gathering; `param_2` = steps (`Attack Speed Limit +1`) |
 | 69    | 670  | Accept quest                  | `param_1` = quest chain, `param_2` = quest (LOC type 18 title); see Effect text |
+| 71    | 31   | Inventory slots               | `param_1` = slots (`Inventory +8 Expansion`); `param_2` `1` on time-limited variants, which store no duration |
+| 72    | 214  | Storage, stable, wharf and lodging slots | `param_1` = town (LOC type 17), `0` all towns; `param_2` = slots; `param_4` = `0` Storage, `1` Stable, `2` Wharf, `3` Worker's Lodging; `param_3` `1` on time-limited variants |
+| 73    | 66   | Trade refresh                 | `param_1` = `0` territory, `1` trade manager; `param_2` = territory (`0` Balenos, `1` Serendia, `5` Southwestern Calpheon, `6` Southeastern Calpheon; `2` to `4` open) or NPC (LOC type 6) |
+| 76    | 39   | Karma and fame                | `param_1` = amount, signed; `param_2` = `0` Karma, `1` Guild Karma, `2` Naval Fame |
 | 79    | 44   | Energy recovery               | `param_1` = amount, one-off (`Recover 10 Energy`); every buff has no duration |
+| 84    | 50   | Reveal hidden names           | No amount; `param_1` `10`, `3` or `300` on 4 buffs, meaning unknown |
 | 89    | 62   | Breath/Strength/Health EXP    | `param_1` = `0` Breath, `1` Strength, `2` Health; `param_2` = amount |
 | 90    | 42   | Death Penalty Resistance      | `param_1` per million (`30000` = +3%)                             |
 | 91    | 18   | Durability Reduction Resistance | `param_1` per million                                           |
@@ -220,14 +234,31 @@ English text, by item names and bdocodex tooltips (see Effect text).
 | 95    | 22   | Underwater Breathing          | `param_1` in milliseconds (`15000` = +15 sec)                     |
 | 97    | 226  | Packages                      | `param_1` = package, `param_2` = duration in minutes (`21600` = 15 days); see Effect text |
 | 98    | 1,093 | Mount and ship stats         | `param_1` = `0` Acceleration, `1` Movement Speed (shown as `Movement Speed (Mount)`), `2` Turn, `3` Brake; `param_2` per million |
+| 100   | 1    | Character slots               | `param_1` = slots                                                 |
+| 101   | 191  | Gain knowledge of a theme     | `param_1` = knowledge theme (LOC type 9, `mentaltheme.dbss`); bookshelves and their parchments |
+| 103   | 535  | Worker contract               | `param_1` = worker (LOC type 6), `param_2` = town (LOC type 17)   |
+| 106   | 163  | All Damage Reduction rate     | `param_1` = `3`, `param_2` per million                            |
+| 107   | 64   | Gathering Item Drop Rate      | `param_1` per million; `param_2` `2` to `7` limit it to one gathering tool, unlabelled |
 | 108   | 102  | Knowledge Gain Chance         | `param_1` per million                                             |
 | 109   | 66   | Higher Grade Knowledge Gain Chance | `param_1` per million                                        |
 | 111   | 196  | Craft time and success rate   | `param_1` = `0` Alchemy Time, `1` Cooking Time, `2` Processing Success Rate; `param_2` = time cut per million of 20 sec (`250000` = `-5 sec`), or the rate per million. `3` (farming time, 2 buffs) does not fit the time scale and stays unlabelled |
+| 112   | 21   | Item Drop Amount              | `param_1` per million; `param_2` `1` or `2` on 5 buffs with the same text, meaning unknown |
 | 120   | 116  | Monster Damage Reduction      | `param_1` = `0` rate, `param_2` per million; `param_1` = `2` flat, `param_2` = amount |
+| 121   | 58   | Auto-fishing Time             | `param_1` per million, stored positive and shown negative (`50000` = `-5%`) |
+| 126   | 48   | Fish grade chance             | `param_1` = `1` Rare Fish (yellow, `희귀`), `2` High-quality Fish (blue, `고급`); `param_2` per million |
+| 131   | 2    | Trade Item Price              | `param_1` per million (desert trade tokens)                       |
+| 134   | 9    | Swimming Speed                | `param_1` per million                                             |
 | 136   | 219  | Extra AP Against Monsters / Adventurers | `param_1` = against monsters, `param_2` = against adventurers; no buff sets both |
 | 142   | 673  | Obtain title                  | `param_1` = title ID (LOC type 1 name, `title.dbss` key)         |
 | 149   | 246  | Life skill mastery            | `param_1` = life skill (type 80 numbering), `15` all; `param_3` = amount; `param_2` see below |
+| 160   | 29   | Movement, attack and casting speed rates | `param_1` Movement Speed, `param_2` Attack Speed, `param_3` Casting Speed, each per million and signed |
+| 168   | 16   | No Guard Gauge recovery       | No parameters                                                     |
+| 169   | 37   | Healing reduction             | `param_1` per million, shown negative (`Target's Recovery -10%`)  |
+| 181   | 58   | Breath/Strength/Health EXP %  | `param_1` = kind as in type 89, `3` one training-EXP passive (unlabelled); `param_2` per million |
+| 186   | 4    | Black Shrine aura stat        | `param_1` = `1` fixed aura, `0` the aura the player picks (Light Orb); `param_2` = points; `param_3` = aura as type 187: `0` Sun, `1` Moon, `2` Earth |
 | 187   | 298  | Flat AP and DP                | `param_1` = AP, `param_2` = DP, both can be set; `param_3` = Land of the Morning Light attribute: `0` Sun, `1` Moon, `2` Earth |
+| 196   | 1    | Set level                     | `param_1` = level (`Patrigio's Pocket Watch`, 61)                 |
+| 200   | 1    | Prize Catch Fish Rate         | `param_1` per million (Oceanbound Otter Fishing Rod, `+3%`)       |
 
 The `param_1` life skills of type 80, from the English text of its buffs:
 `0` Gathering, `1` Fishing, `2` Hunting, `3` Cooking, `4` Alchemy, `5`
@@ -248,11 +279,13 @@ may be what it marks, unconfirmed.
 
 The browser's Effect column renders the parameters of every type above in the
 game's wording (`All AP +8`, `Life EXP +15%`, `Alchemy EXP +2,560,350`), from
-`_dbss/buff/effect/`; other types, the kinds left unlabelled and a zero
-amount show a dash. The same entry per type (`formats.py`) labels the Param columns,
-so `param_1` of a type 46 buff reads `3 (Kamasylvian Monsters)`. Of the 8,135 buffs with a
-one-line LOC type 5 text and an Effect, 83% start with exactly that text on
-client 3458, and 88% leaving out types 23, 48, 142 and 187, whose texts name
+`_dbss/buff/effect/`; types 84 and 168, which store no amount, read one
+fixed text each; other types, the kinds left unlabelled and a zero
+amount show a dash. The same entry per type (`formats.py`, or `named.py` for
+the types whose parameters name a LOC entry) labels the Param columns,
+so `param_1` of a type 46 buff reads `3 (Kamasylvian Monsters)`. Of the 8,458 buffs with a
+one-line LOC type 5 text and an Effect, 82% start with exactly that text on
+client 3458, and 87% leaving out types 23, 48, 142 and 187, whose texts name
 the place, set, title or event first (`Morning Earth: AP -60 for 3600 sec`). The rest
 are the drift described in Notes (`Weight Limit +100 LT` on a buff that stores
 150 LT), a `- Effect:` prefix, or placeholder text such as `UNKNOWN` and `Not
@@ -369,6 +402,132 @@ The batch of 2026-10-03 was checked the same three ways:
   `param_3` (`Hunting EXP +10%` on `2`, `Life EXP` on `15`), so the column
   now names it too instead of always `Life EXP`.
 
+The batch of 2026-10-04 was checked the same way, mostly against item names
+and bdocodex tooltips, since most of these buffs have no text:
+
+- **103**, worker contracts: `param_1` is the worker (LOC type 6) and
+  `param_2` the town (LOC type 17); every one of the 535 buffs has both names.
+  Item 64639 reads `Usage effect: Employment Contract: Goblin Worker` and
+  `Affiliation: Calpheon City` on bdocodex, and its buff 64039 stores `7552`
+  (Skilled Goblin Worker) and `77` (Calpheon City). `Giant Worker (Velia)`,
+  the column's name, equals an item name on 393 of 533 buffs; the rest differ
+  in wording (`Worker for QA: Time` against the LOC name `QA Worker: Time`,
+  `Artisan Demibeast Worker` against `Demibeast Artisan Worker`).
+- **16**, remove buffs: `param_1` is a buff `group`. 50 of the 54 names that
+  say `Group 44679 제거` ("remove group 44679") store that number (the four
+  misses are one Enslar run shifted by one), 18 English texts read `Remove
+  Group 44812`, and 331 of the 355 values are a group in this file; the others
+  look like groups of other buff files (furniture, NPC buffs). Summon: Keeper
+  Marg's removal buffs clear its own effects: 8974 removes group 521, which
+  holds the movement speed buff 8972, 8975 group 2341 (the MP recovery 8973)
+  and 19117 group 2300 (the `Marg's Rage` headline 19113). The bleed, poison
+  and burn cures (`출혈 해제`, 51265 to 51267) store `param_2` `15`; groups
+  2061 to 2063 hold over 200 levels each, so it is not a level cap.
+- **72**, storage expansions: 163 of 176 coupons name what the column writes
+  (`Trent Stable +1 Expansion Coupon` stores town `126`, kind `1`, `1` slot).
+  The misses are Byeot County and Moodle Village, which LOC type 17 calls
+  `Nopsae's Byeot County` and `Nampo's Moodle Village`, one wharf filed under
+  Dallae Pier, and `Change Velia Storage Slot Limit (4)`, which stores 8.
+  Town `0` is every town (`모든 지역`, 19 buffs). `param_3` `1` marks the
+  `- 30일` and `- 기간` ("period") variants, which have no item and no
+  duration.
+- **71**, inventory slots: every item name matches (`Inventory +8 Expansion`
+  stores `8`); `param_2` `1` is the time-limited variant as in type 72.
+- **76**: the amount equals the one in 29 of the 31 item names that state
+  one (`Guild Karma (1,500)`, `Reduce Karma -30,000`); the misses are test
+  items (`Increase Guild Karma +100` stores 5000). Naval Fame Recovery Scroll
+  (970072) reads `Naval Fame +100,000` on bdocodex and stores 100000.
+  Hans' Contract (65838) reads `Raises Naval Fame by 2,500` on bdocodex,
+  which its buff stores, while its Korean name says `+5000`.
+- **17**, learn skill: the Secret Books apply it with the skill in `param_1`
+  (`Wizard/Witch Secret Book - Lightning Chain`, buff 58322, skill 827
+  `Lightning Chain I`); 130 of 175 item names contain the skill name, the
+  rest are renamed skills (`[Secret Book] Pilgrim's Steps V` teaches
+  `Pilgrim's Blessing V`). The ten buffs with text all read `UNKNOWN`.
+- **101**: bookshelves and their parchments. `param_1` is a knowledge theme
+  (LOC type 9): Fleece Decorated Bookshelf (18517) reads `There is a chance
+  you may obtain Knowledge` and `Furniture - Wardrobe (Gain Cooking
+  Knowledge)` on bdocodex, and its buff 51509 stores theme 30010, `Cooking`,
+  with the text `Get one piece of Cooking knowledge.` 125 of 186 parchment
+  names (`Bookshelf with Knowledge on Officers of the Western Camp`, theme
+  104 `Western Camp Officer`) contain the theme name; the rest reword it.
+- **73**, trade refresh: under `param_1` `1`, `param_2` is a trade manager
+  (LOC type 6 `Bahar`, secondary label `<Trade Manager>`), named in Korean
+  by town (`무역 Refresh : 벨리아`, "trade refresh: Velia"). Under `0`, a
+  territory: the seven Trade Pass items 63001 to 63007 read `Restocks the
+  trading items available for purchase in trading shops of Balenos`, then
+  Serendia, Calpheon Territory, Mediah, Balenos Territories, Southwestern
+  and Southeastern Calpheon. The Korean names give Balenos, Northern and
+  Southern Serendia, Calpheon, Mediah and the same two Calpheon halves, so
+  `2` to `4` disagree and stay unlabelled.
+- **68**, stat limits: the Breakthrough Crystals 15642 to 15648 apply
+  59001 to 59007 (kinds `0` to `6`, `1` step) and read `Attack Speed Limit
+  +1`, `Casting Speed Limit +1`, `Luck Limit +1` and `Gathering Limit +1` on
+  bdocodex; the Movement Speed and Critical Hit crystals leave out "Limit",
+  and the buff texts read `Costume - Attack Speed Limit Increased`. The
+  `+2` buffs (59977 to 59983) belong to a QA earring.
+- **19**, **47**, **51**, **62**, **100**, **134**, **196** and **200**, from
+  their items, which I checked in game: Endless Ocean Draught (890074) lists
+  `Sailor EXP +15%` (48934, `150000`), [Event] Giddy-up Ghost Horsie!
+  (830271) `Mount Skill EXP +15%` and `Horse Capture Rate +15%` (47528 and
+  47529), the Oceanbound Otter Fishing Rod (59455) `Prize Catch Fish Rate
+  +3%` (48060, `30000`); the Skill Points (1) to (10) items store their
+  count, the Character Slot Expansion Coupon `1`, Patrigio's Pocket Watch
+  `61`. The type 134 texts match on all three that state one (`Swimming
+  Speed +90%`).
+- **131**: Token of Desert Trading 409 reads `Trade Goods Price Doubled` on
+  bdocodex for `1000000`; 408 reads `Trade Item Price +50%` but stores
+  `750000`, which its Korean name (`무역품 가격 상승(75%)`) gives.
+- **84** and **168** store no amount and always read one text. Firecracker
+  (Red) (219) applies 50425 and reads `Subjects within the range cannot
+  hide their name` and `cannot conceal themselves`; I confirmed in game that
+  it shows hidden names. The skill buffs read `Reveals hidden enemies and
+  names` (Shai's Come Out, Come Out) and `Remove stealth, Reveal hidden
+  names` (Archer's Shadebound Beam and Arrow Explosion). All 16 type 168
+  buffs read `No Guard Gauge recovery` (Corsair's Flow: Raging Torrent and
+  Mareca: Spiral Soak).
+- Read but left as a dash: **83** crop growth (`param_2` `0` fertilizer,
+  `1` water, `2` temperature; the windbreaks read `Crop Growth Buff:
+  Temperature 15` in game while storing `150000` in `param_3`, and the
+  waters named 15 store `350000`, so the amount scale is open), **125**
+  idle training (Book of Training, `1000000` on all), **153** light
+  radius (Light of Illezra, Atanis Firefly; `5` on all), **164** Central
+  Market Silver Collection +5% (`param_1` `1` on Old Moon Trade Pass, "for
+  one transaction", `-1` on Rich Merchant's Ring; the 5% is not stored),
+  **179** the Elvia weapon blessings (`param_1` `153` Valtarra, `154`
+  Okiara, `155` Narc) and **184** Satiated (no parameters).
+- **186**, the Black Shrine (Boss Blitz) aura orbs: Sun Orb (66664) stores
+  `param_3` `0` but reads `Moon's Aura Fixed Stat +1` on bdocodex, and Moon
+  Orb (66665, `1`) reads `Sun's Aura`. The icons settle it: the Sun Orb is
+  red, the Moon Orb blue and the Earth Orb green, the colours of the fixed
+  orb in each aura of the Black Shrine window (Sun Aura red, Moon Aura blue,
+  Earth Aura green), so `param_3` follows type 187 and the two tooltips are
+  swapped. Light Orb (66667, `param_1` `0`) reads `Selected Aura Stat +1`
+  and goes to the aura the player picks in that window.
+- **56** (Amity) and **160** (speeds) match the numbers of every text that
+  states one, 23 and 29 (`Attack/Casting Speed +10%` stores `100000` in
+  `param_2` and `param_3`; the column writes each speed on its own).
+- **66**, **106**, **107**, **112**, **121**, **126**, **169** and **181**
+  have English text: 15 of 15, 19 of 69 (the other numbers agree on 67 of
+  68 texts, which word monster buffs as `Monster - Damage -10% for 120 sec`),
+  12 of 14, 18 of 18, 28 of 28, 17 of 18, 28 of 28 and 22 of 25 one-line
+  texts match; the misses are `UNKNOWN` placeholders, prose and one stale
+  `+2%`. 106 is the rate counterpart of type 43 (`모든 피해 감소율`, "all
+  damage reduction rate") and writes `All Damage Reduction +5%`. Type 181
+  kind `2` (Health, `건강`) has no English text but follows type 89. Type 107
+  `param_2` `2` to `7` read only `Gathering Luck increases.` and stay
+  unlabelled.
+- **126**, fish grades: fish are white, green, blue, yellow and red (prize
+  fish), and the fish item descriptions name the middle three on a line of
+  their own: the 104 that say `- Common Fish` are all green, the 46 `-
+  High-quality Fish` all blue and the 86 `- Rare Fish` all yellow. The skills that apply the buffs name the kind in
+  LOC type 10: kind `1` (`희귀`, "rare") on `Increase chance to catch a rare
+  fish (5%)` (skills 53080 to 53090), kind `2` (`고급`, "high grade") on
+  `Increase chance to catch a high-quality fish (5%)` (53069 to 53079 and
+  53091 to 53094) and the older `Chance to Catch Large Fish +1%` (52301 to
+  52305). The kind 2 buff texts read `Chance to Catch Rare Fish`, the
+  stale side.
+
 Type 142 renders as `Obtain Title: Back Home Again`, from LOC type 1; the
 items that apply it read `Using this item will grant you the Olvium Frontia!
 title` or `Effect: Obtain the ... title`. 53 titles have no LOC name and show
@@ -452,7 +611,7 @@ tooltip over several buffs, all lasting 60 min:
 | 8972    | 9           | `param_1` `100000`            | The Movement Speed +10% itself                    |
 | 8973    | 4           | `param_1` `250`, `tick_ms` `10000` | The MP recovery: 250 every 10 sec            |
 | 8999    | 18          | `param_1` `60136`             | Summons Keeper Marg                               |
-| 8974, 8975, 19117 | 16 | `param_1` `521`, `2341`, `2300` | Removal buffs that clear the previous summon's effects |
+| 8974, 8975, 19117 | 16 | `param_1` `521`, `2341`, `2300` | Remove the groups of 8972, 8973 and 19113, the previous summon's effects |
 
 Summon: Keeper Arne (2246) shares 8972 to 8975 and has its own 19114
 (`Arne's Touch`), 8998 and 19118. The in-game skill tooltip reads `Marg's

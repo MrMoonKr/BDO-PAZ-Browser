@@ -7,9 +7,9 @@ from bdo_preview import PreviewHandler
 
 from _common.character import character_name
 from _common.html import Column, e, icon_cell, join_limited, sort_keys, table
-from _common.knowledge import LOC_KNOWLEDGE, knowledge_name
+from _common.knowledge import LOC_KNOWLEDGE, knowledge_name, theme_name
 from _common.lang import load_handler_strings
-from _common.loc import is_loc_loaded, loc_tagged, loc_text
+from _common.loc import is_loc_loaded, loc_tagged
 from _common.pa_text import pa_cell, pa_fields, pa_line_cell
 from _common.lookup_index import IndexKind, lookup
 from .combo import combo_text, has_combo
@@ -18,7 +18,6 @@ from .parser import MentalCardRecord, parse_mentalcard_offset_records, parse_men
 
 _LANG_DIR = Path(__file__).parent / "lang"
 _OFFSET_FILE = "mentalcardoffset.dbss"
-_LOC_THEME = 9
 # LOC type 34 sub-fields of the description and the "how to obtain" text.
 _LOC_DESCRIPTION = 1
 _LOC_ACQUISITION = 2
@@ -143,7 +142,7 @@ class MentalCardHandler(PreviewHandler):
                 # LOC first; the Korean source name stands in without it.
                 "entry_name": knowledge_name(record.card_id) or record.name_kr,
                 "node_id": record.theme_id,
-                "node_name": loc_text(_LOC_THEME, record.theme_id) if has_loc else "",
+                "node_name": theme_name(record.theme_id) if has_loc else "",
                 # Stored as floats but always whole numbers.
                 "min_favor": round(record.min_favor),
                 "max_favor": round(record.max_favor),

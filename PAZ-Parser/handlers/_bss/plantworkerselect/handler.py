@@ -5,9 +5,10 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
+from _common.character import character_name
 from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
-from _common.loc import loc_text
+from _common.town import town_name
 from _bss.plantworker.display import worker_name_cell
 from _bss.plantworker.grade import worker_grade
 from _bss.plantworker.parser import parse_plantworker_records
@@ -59,9 +60,9 @@ class PlantWorkerSelectBssHandler(PreviewHandler):
             row = dict(record)
             worker = workers.get(row["worker_id"], {})
             row["selection_name"] = (
-                loc_text(17, row["selection_id"]) or str(row["selection_id"])
+                town_name(row["selection_id"]) or str(row["selection_id"])
             )
-            row["worker_name"] = loc_text(6, row["worker_id"])
+            row["worker_name"] = character_name(row["worker_id"])
             row["worker_grade"] = worker_grade(
                 worker.get("grade_class"), row["worker_id"], row["worker_name"] or ""
             )

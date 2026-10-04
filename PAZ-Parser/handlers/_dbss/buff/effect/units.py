@@ -33,6 +33,8 @@ METRES = Unit(100, "m")
 # Cooking and alchemy time cuts are stored per million of 20 seconds:
 # 250000 is 5 sec, 50000 is 1 sec.
 CRAFT_SECONDS = Unit(50_000, " sec")
+# A key written as stored, without thousands separators: `Remove Group 44812`.
+KEY = Unit(formatter=str)
 
 _MINUTES_PER_HOUR = 60
 _MINUTES_PER_DAY = 24 * _MINUTES_PER_HOUR

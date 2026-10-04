@@ -2,17 +2,11 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
-from .formats import (
-    EFFECT_LINES,
-    NAMED_EFFECTS,
-    OVER_TIME_EFFECTS,
-    EffectLine,
-    NamedEffect,
-    OverTimeEffect,
-)
+from .formats import EFFECT_LINES, FIXED_TEXTS, OVER_TIME_EFFECTS, EffectLine, OverTimeEffect
+from .named import NAMED_EFFECTS, NamedEffect
 from .units import format_amount, seconds_text
 
 # Named templates may hold `{param_1}` to `{param_10}`.
@@ -39,10 +33,12 @@ class EffectInput:
         return self.params[number - 1] if number <= len(self.params) else 0
 
 
+def _holds(when: Mapping[int, int], buff: EffectInput) -> bool:
+    return all(buff.param(number) == kind for number, kind in when.items())
+
+
 def _applies(line: EffectLine, buff: EffectInput) -> bool:
-    if buff.param(line.value_param) == 0:
-        return False
-    return all(buff.param(number) == kind for number, kind in line.when.items())
+    return buff.param(line.value_param) != 0 and _holds(line.when, buff)
 
 
 def _applying_lines(buff: EffectInput) -> list[EffectLine]:
@@ -64,6 +60,11 @@ def _line_labels(line: EffectLine, buff: EffectInput) -> dict[int, str]:
     return labels
 
 
+def _named_effect(buff: EffectInput) -> NamedEffect | None:
+    """The first named entry of the buff's type whose `when` holds."""
+    return next((e for e in NAMED_EFFECTS.get(buff.effect_type, ()) if _holds(e.when, buff)), None)
+
+
 def _named_key(effect: NamedEffect, buff: EffectInput) -> tuple[list[int], str]:
     """The key values and their LOC name, '' when LOC has none."""
     key = [buff.param(number) for number in effect.key_params]
@@ -73,6 +74,8 @@ def _named_key(effect: NamedEffect, buff: EffectInput) -> tuple[list[int], str]:
 def _named_text(effect: NamedEffect, buff: EffectInput) -> str:
     """`Summon Rock Golem`, or the key when LOC has no name for it."""
     key, name = _named_key(effect, buff)
+    if not name and not effect.is_key_shown:
+        return ""
     key_text = "/".join(str(value) for value in key)
     params = {f"param_{number}": buff.param(number) for number in range(1, _PARAM_COUNT + 1)}
     if name:
@@ -117,12 +120,15 @@ def _over_time_text(effect: OverTimeEffect, buff: EffectInput) -> str:
 
 def effect_text(buff: EffectInput) -> str:
     """`All AP +8` for a confirmed effect type, else ''. A zero amount yields '' too."""
+    fixed = FIXED_TEXTS.get(buff.effect_type)
+    if fixed is not None:
+        return fixed
     over_time = OVER_TIME_EFFECTS.get(buff.effect_type)
     if over_time is not None:
         return _over_time_text(over_time, buff)
-    named = NAMED_EFFECTS.get(buff.effect_type)
-    if named is not None:
-        return _named_text(named, buff)
+    if buff.effect_type in NAMED_EFFECTS:
+        named = _named_effect(buff)
+        return _named_text(named, buff) if named is not None else ""
     return ", ".join(_line_text(line, buff) for line in _applying_lines(buff))
 
 
@@ -137,8 +143,10 @@ def param_labels(buff: EffectInput) -> dict[int, str]:
     if over_time is not None:
         trigger = _over_time_trigger(over_time, buff)
         return {1: trigger} if trigger else {}
-    named = NAMED_EFFECTS.get(buff.effect_type)
-    if named is not None:
+    if buff.effect_type in NAMED_EFFECTS:
+        named = _named_effect(buff)
+        if named is None:
+            return {}
         _, name = _named_key(named, buff)
         return {named.key_params[-1]: name} if name else {}
     labels: dict[int, str] = {}
