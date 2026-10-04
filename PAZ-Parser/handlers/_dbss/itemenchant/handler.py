@@ -87,7 +87,7 @@ class ItemEnchantHandler(PreviewHandler):
             Column(cols.get("buffs", "Buffs"), sort_key="buff_count"),
         ]
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(self._columns())
 
     def companions(self, entry: PazEntry) -> list[str]:

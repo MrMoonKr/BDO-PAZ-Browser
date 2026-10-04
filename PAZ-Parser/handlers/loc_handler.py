@@ -217,7 +217,7 @@ class LocHandler(PreviewHandler):
     def get_record_count(self, data: bytes, entry: PazEntry, companions: dict[str, bytes]) -> int:
         return len(self._index(data).records)
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(_COLUMNS)
 
     def _build_sort_order(

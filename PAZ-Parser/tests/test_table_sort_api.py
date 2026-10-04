@@ -80,8 +80,8 @@ def test_forget_table_sort_leaves_other_files(config_file: Path) -> None:
 # ── Api ──────────────────────────────────────────────────────────────────────
 
 class _NumberHandler(PreviewHandler):
-    def sortable_fields(self) -> frozenset[str]:
-        return frozenset({"v"})
+    def sortable_fields(self) -> tuple[str, ...]:
+        return ("v",)
 
     def get_records(self, data: bytes, entry: PazEntry, companions: dict[str, bytes]) -> list[dict]:
         return [{"v": b} for b in data]
@@ -91,12 +91,13 @@ class _NumberHandler(PreviewHandler):
         return ",".join(str(r["v"]) for r in records[start:start + page_size])
 
 
-def _api_with_cached_file(data: bytes) -> Api:
-    api = Api()
-    api._cached_path = _PATH
-    api._cached_data = data
-    api._cached_handler = _NumberHandler()
-    api._cached_entry = PazEntry(
+class _FileOrderHandler(_NumberHandler):
+    def default_sort(self) -> TableSort | None:
+        return None
+
+
+def _entry(data: bytes) -> PazEntry:
+    return PazEntry(
         archive_name="test.paz",
         internal_path=_PATH,
         offset=0,
@@ -105,7 +106,43 @@ def _api_with_cached_file(data: bytes) -> Api:
         compression_type=0,
         encryption_type=0,
     )
+
+
+def _api_with_cached_file(data: bytes) -> Api:
+    api = Api()
+    api._cached_path = _PATH
+    api._cached_data = data
+    api._cached_handler = _NumberHandler()
+    api._cached_entry = _entry(data)
     return api
+
+
+def _open(data: bytes, handler: PreviewHandler) -> dict:
+    return Api()._build_entry_response(data, _PATH, _entry(data), handler, {}, {})
+
+
+def test_open_uses_default_sort_without_saving_it(config_file: Path) -> None:
+    response = _open(bytes([3, 1, 2]), _NumberHandler())
+
+    assert response["sort"] == {"field": "v", "dir": "desc"}
+    assert response["html"] == "3,2,1"
+    assert not config_file.exists()
+
+
+def test_open_prefers_saved_sort_over_default(config_file: Path) -> None:
+    save_table_sort(_FILE_KEY, TableSort("v", "asc"))
+
+    response = _open(bytes([3, 1, 2]), _NumberHandler())
+
+    assert response["sort"] == {"field": "v", "dir": "asc"}
+    assert response["html"] == "1,2,3"
+
+
+def test_open_without_default_sort_shows_file_order(config_file: Path) -> None:
+    response = _open(bytes([3, 1, 2]), _FileOrderHandler())
+
+    assert response["sort"] is None
+    assert response["html"] == "3,1,2"
 
 
 def test_get_parsed_page_sorts_and_remembers(config_file: Path) -> None:

@@ -26,7 +26,7 @@ class QuestJournalVideoInfoBssHandler(PreviewHandler):
             Column(cols.get("video", "Video"), sort_key="video_path"),
         ]
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(self._columns())
 
     def get_records(

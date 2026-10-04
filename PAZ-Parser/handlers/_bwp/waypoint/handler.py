@@ -4,6 +4,7 @@ from pathlib import Path
 
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
+from table_sort import TableSort
 
 from _common.html import Column, e, join_limited, sort_keys, table
 from _common.lang import load_handler_strings
@@ -55,7 +56,7 @@ class WaypointBwpHandler(PreviewHandler):
             Column(cols.get("links", "Links"), sort_key="link_count"),
         ]
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(self._columns())
 
     def get_records(
@@ -79,9 +80,26 @@ class WaypointBwpHandler(PreviewHandler):
         page_size: int,
     ) -> str:
         if not is_waypoint_graph(data):
-            meta = self._strings().get("messages", {}).get("oldLayout", _OLD_LAYOUT_META)
-            return table(meta, self._columns(), [])
+            return self._old_layout_page()
         return super().render_data_page(data, entry, companions, page, page_size)
+
+    def render_sorted_page(
+        self,
+        data: bytes,
+        entry: PazEntry,
+        companions: dict[str, bytes],
+        page: int,
+        page_size: int,
+        sort: TableSort,
+    ) -> str:
+        # The table opens sorted by default, so the old-layout notice is needed here too.
+        if not is_waypoint_graph(data):
+            return self._old_layout_page()
+        return super().render_sorted_page(data, entry, companions, page, page_size, sort)
+
+    def _old_layout_page(self) -> str:
+        meta = self._strings().get("messages", {}).get("oldLayout", _OLD_LAYOUT_META)
+        return table(meta, self._columns(), [])
 
     def render_records_page(
         self,

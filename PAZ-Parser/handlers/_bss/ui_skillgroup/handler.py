@@ -5,6 +5,7 @@ from pathlib import Path
 
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
+from table_sort import TableSort
 
 from _common.class_type import class_name
 from _common.html import Column, e, icon_cell, sort_keys, table
@@ -91,8 +92,13 @@ class UiSkillGroupBssHandler(PreviewHandler):
             Column(cols.get("skill", "Skill"), sort_key="skill"),
         ]
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(self._columns())
+
+    def default_sort(self) -> TableSort | None:
+        # The skill window order (`_game_order`) spans five fields, so the
+        # table opens in get_records() order instead of one sorted column.
+        return None
 
     def companions(self, entry: PazEntry) -> list[str]:
         folder = entry.internal_path.rsplit("/", 1)[0]

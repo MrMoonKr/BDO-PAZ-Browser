@@ -48,7 +48,7 @@ class PetGradeHandler(PreviewHandler):
             Column(cols.get("dataSize", "Data Size"), "num", sort_key="data_size"),
         ]
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(self._columns())
 
     def companions(self, entry: PazEntry) -> list[str]:
@@ -126,7 +126,7 @@ class PetDbssHandler(PreviewHandler):
             Column(cols.get("grade", "Grade"), sort_key="grade"),
         ]
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(self._columns())
 
     def companions(self, entry: PazEntry) -> list[str]:

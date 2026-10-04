@@ -38,7 +38,7 @@ class GroupCameraDataBssHandler(PreviewHandler):
             Column(cols.get("quote", "Quote"), sort_key="quote"),
         ]
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(self._columns())
 
     def get_records(

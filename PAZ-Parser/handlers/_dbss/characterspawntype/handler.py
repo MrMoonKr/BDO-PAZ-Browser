@@ -59,7 +59,7 @@ class CharacterSpawnTypeHandler(PreviewHandler):
         columns.extend(_role_column(i, role_labels) for i in active_roles)
         return columns
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         # Every role and the name, so a saved sort survives either being hidden.
         return sort_keys(self._columns(range(ROLE_COUNT), has_loc=True))
 

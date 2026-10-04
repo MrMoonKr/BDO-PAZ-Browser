@@ -1,4 +1,5 @@
-"""Every handler with a fixture case renders sortable headers and sorts by each of them."""
+"""Every handler with a fixture case renders sortable headers, opens in its
+default sort and sorts by each of them."""
 from __future__ import annotations
 
 import importlib
@@ -37,7 +38,19 @@ def _assert_headers_are_declared(loaded: LoadedCase) -> None:
     assert rendered, "first page renders no sortable headers"
     # Handlers may declare fields for columns hidden on this page (LOC names,
     # inactive flags) so a saved sort survives, but never render undeclared ones.
-    assert rendered <= fields
+    assert rendered <= set(fields)
+
+
+def _assert_default_sort_is_shown(loaded: LoadedCase) -> None:
+    handler = loaded.handler
+    sort = handler.default_sort()
+    if sort is None:
+        return
+
+    assert sort.field in handler.sortable_fields(), f"default {sort} is not sortable"
+    html = handler.render_sorted_page(loaded.data, loaded.entry, loaded.companions, 0, _PAGE_SIZE, sort)
+    # The header marks the default like a clicked sort, so its column must render.
+    assert sort.field in _SORT_KEY_RE.findall(html), f"default {sort} has no rendered header"
 
 
 def _assert_sorts_every_field(loaded: LoadedCase) -> None:
@@ -61,4 +74,5 @@ def test_handler_sorts_by_every_rendered_column(case: HandlerCase) -> None:
     loaded = load_case(case)
 
     _assert_headers_are_declared(loaded)
+    _assert_default_sort_is_shown(loaded)
     _assert_sorts_every_field(loaded)

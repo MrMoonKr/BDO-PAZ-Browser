@@ -163,7 +163,7 @@ All parsed-view handlers must implement `get_records()` and `render_records_page
 
 - `get_records()` parses the binary and returns all records as plain dicts (no HTML). The base class caches the result per data object using `_data_cache`, so paging, tab search, and CSV export all reuse the same parse without re-reading the file.
 - `render_records_page()` converts one page of records into an HTML fragment.
-- `sortable_fields()` opts the table into sorting, see [Sortable Columns](#sortable-columns).
+- `sortable_fields()` opts the table into sorting, and `default_sort()` picks the order it opens in, see [Sortable Columns](#sortable-columns).
 
 ```python
 # handlers/_example/myfile/handler.py
@@ -182,7 +182,7 @@ _COLUMNS = [
 
 
 class MyFileHandler(PreviewHandler):
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(_COLUMNS)
 
     def companions(self, entry: PazEntry) -> list[str]:
@@ -220,8 +220,8 @@ A handler opts in with two pieces:
 1. Give each sortable `Column` a `sort_key`: the record field (from
    `get_records()`) the column sorts by. Use the raw value, not the rendered
    text: `duration_ms`, not the `1h 30m` string; `offset`, not `0x0000ABCD`.
-2. Return `sort_keys(columns)` from `sortable_fields()`. The API rejects any
-   field not in this set.
+2. Return `sort_keys(columns)` from `sortable_fields()`. It keeps column
+   order, and the API rejects any field not in it.
 
 When the column labels come from the handler's `lang/*.json`, build the list in
 a `_columns()` method and use it in both places:
@@ -234,13 +234,40 @@ def _columns(self) -> list[Column]:
         Column(cols.get("icon", "Icon"), sort_key="icon_path"),
     ]
 
-def sortable_fields(self) -> frozenset[str]:
+def sortable_fields(self) -> tuple[str, ...]:
     return sort_keys(self._columns())
 ```
 
 Columns without a `sort_key`, and plain `(label, css_class, extra_attrs)`
 tuples, render as normal headers you cannot click. A handler that declares no
 fields shows no sortable headers at all.
+
+#### Default Sort
+
+A file without a saved sort opens sorted by `default_sort()`: the first
+sortable column, descending. Since the ID column comes first, most tables
+open with the highest ID on top, and the header shows the sort like a
+clicked one. The default is never saved, so a later change to it reaches
+every file that has no saved sort.
+
+Override `default_sort()` to open on another field from `sortable_fields()`,
+or return `None` to open in `get_records()` order. Use `None` only when no
+single field gives the order: `ui_skillgroup_*.bss` keeps its skill window
+order, which spans class, tab, card column, row and column.
+
+```python
+def default_sort(self) -> TableSort | None:
+    return TableSort("duration_ms", SORT_ASC)
+```
+
+A handler that sorts in `get_records()` (`stringtable.bss` by key hash,
+`skill.dbss` by skill key) keeps that sort: it sets the order of equal values
+under the default sort, of CSV export and of `browser.py --records` and
+`--render`.
+
+The default sort runs on every open, so a page-at-a-time handler should sort
+its first column from its index (see below). On the fixtures it adds under
+50 ms to every table, and about 0.25 s to a 1.38-million-row LOC file.
 
 Picking the field behind a column:
 
@@ -286,14 +313,14 @@ Ordering rules (`table_sort.py`):
 - The sort is stable, so equal values keep their file order.
 
 Clicking a new column sorts it ascending. Clicking the active column flips the
-direction. Both jump to page 1, and paging keeps the sort. While the sorted
-page loads, the clicked header shows a spinner, the rows fade (after 120 ms, so
-fast sorts do not flicker) and headers ignore further clicks. This needs no
-handler code. Each file's sort is
-saved in `paz_config.json` under `table_sort`, keyed by file name and storing
+direction. Both jump to page 1, and paging keeps the sort. The sorted header
+shows an arrow for its direction and keeps the header hover colour. While the
+sorted page loads, the clicked header shows a spinner, the rows fade (after
+120 ms, so fast sorts do not flicker) and headers ignore further clicks. This
+needs no handler code. Each file's sort is saved in `paz_config.json` under `table_sort`, keyed by file name and storing
 the field key (`{"buff.dbss": {"field": "duration_ms", "dir": "desc"}}`). The
 file reopens sorted. If the handler no longer declares that field, the entry is
-dropped and the file opens unsorted.
+dropped and the file opens in its default sort.
 
 The sorted order is cached per field and direction for each loaded file, as a
 compact `array("I")` of record indices. Tab search reports its matches as
@@ -328,7 +355,8 @@ each page renders in a few milliseconds. If a table renders its own HTML instead
 Its records carry scripts thousands of characters long, so `_build_sort_order`
 parses one row at a time and keeps only the sorted field. Every column sorts in
 about 0.5 s on the 19,599-quest fixture, on top of the 0.35 s walk that builds
-the index on open.
+the index on open. The default sort on `packed_quest_id` reads the IDs straight
+from the index instead, so opening the table parses only the first page.
 
 ---
 

@@ -14,6 +14,7 @@ A Python tool for browsing, extracting, and previewing files from **Black Desert
 - **CLI extraction**, extract files by name or glob pattern without opening the GUI
 - **File preview**, text, hex dump, DDS images, and parsed binary tables for known formats
 - **Paged preview**, large files (hex and parsed tabs) are paged; navigate with Prev/Next without loading the full DOM
+- **Sortable tables**, click a column header to sort the whole parsed table, not just the page on screen; a table opens sorted by its first column, highest first, until you click another sort, which is remembered per file
 - **Tab search**, Ctrl+F inline search within hex (byte offset) and parsed (record) tabs; string and hex-pattern modes
 - **Export**, save the current file as raw binary (hex tab) or CSV (parsed tab) via the Entry Details panel
 - **Game text colours**, LOC text shows the colours of its `<PAColor>` tags, as in game; the **Show game text tags** setting (off by default) also shows the tags themselves

@@ -217,9 +217,13 @@ def debug_cell(fields: dict[str, int], highlight_offset: int) -> str:
     return " ".join(parts)
 
 
-def sort_keys(columns: Sequence[Column]) -> frozenset[str]:
-    """Record fields the given columns can be sorted by."""
-    return frozenset(column.sort_key for column in columns if column.sort_key)
+def sort_keys(columns: Sequence[Column]) -> tuple[str, ...]:
+    """Record fields the given columns can be sorted by, in column order.
+
+    The order matters: a table opens sorted by the first one (see
+    ``PreviewHandler.default_sort``).
+    """
+    return tuple(dict.fromkeys(column.sort_key for column in columns if column.sort_key))
 
 
 def header_cell(column: Column) -> str:

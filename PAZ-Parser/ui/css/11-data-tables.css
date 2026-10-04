@@ -33,7 +33,11 @@
 th.sortable {
   cursor: pointer;
 }
-th.sortable:hover {
+/* The sorted column keeps the hover colour. Two classes outrank the per-table
+   `th` colour (`.loc-table th` loads later). */
+th.sortable:hover,
+th.sortable.sort-asc,
+th.sortable.sort-desc {
   color: var(--fg);
 }
 th.sortable::after {

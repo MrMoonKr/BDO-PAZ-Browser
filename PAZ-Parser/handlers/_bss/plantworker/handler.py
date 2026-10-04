@@ -36,7 +36,7 @@ class PlantWorkerBssHandler(PreviewHandler):
             Column(cols.get("baseWorkSpeed", "Work Speed"), "num", sort_key="base_work_speed"),
         ]
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(self._columns())
 
     def get_records(

@@ -51,7 +51,7 @@ class NpcGiftHandler(PreviewHandler):
             Column(cols.get("amity", "Amity"), "num", sort_key="amity"),
         ]
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(self._columns())
 
     def get_records(
@@ -108,7 +108,7 @@ class NpcGiftDataHandler(PreviewHandler):
             Column(cols.get("dialogue", "Dialogue"), sort_key="dialogue"),
         ]
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(self._columns())
 
     def get_records(

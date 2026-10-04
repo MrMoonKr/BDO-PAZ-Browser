@@ -37,7 +37,7 @@ class StringTableBssHandler(PreviewHandler):
             Column(cols.get("text", "Text"), sort_key="text"),
         ]
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(self._columns())
 
     def get_records(
@@ -46,8 +46,9 @@ class StringTableBssHandler(PreviewHandler):
         entry: PazEntry,
         companions: dict[str, bytes],
     ) -> list[dict]:
-        # Hash order by default, since the file stores its rows unsorted; a key
-        # in two sheets keeps its file order (the sort is stable).
+        # Hash order, since the file stores its rows unsorted. CSV export
+        # follows it, and a key in two sheets keeps its file order (the sort
+        # is stable), also under the table's default hash sort.
         rows = sorted(parse_rows(data), key=lambda row: row.key_hash)
         return [_record(row) for row in rows]
 

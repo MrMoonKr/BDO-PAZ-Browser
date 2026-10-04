@@ -40,7 +40,7 @@ class NpcGiftEtcBssHandler(PreviewHandler):
             Column(cols.get("notes", "Notes"), sort_key="notes"),
         ]
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(self._columns())
 
     def get_records(

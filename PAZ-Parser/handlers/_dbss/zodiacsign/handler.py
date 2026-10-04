@@ -34,7 +34,7 @@ class ZodiacSignHandler(PreviewHandler):
             Column(cols.get("traits", "Traits"), sort_key="trait"),
         ]
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(self._columns())
 
     def get_records(
@@ -103,7 +103,7 @@ class ZodiacSignOrderHandler(PreviewHandler):
             Column(cols.get("sequence", "Sequence"), sort_key="sequence"),
         ]
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(self._columns())
 
     def companions(self, entry: PazEntry) -> list[str]:

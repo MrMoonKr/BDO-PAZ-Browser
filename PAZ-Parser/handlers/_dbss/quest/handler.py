@@ -83,7 +83,7 @@ class QuestDbssHandler(PreviewHandler):
             Column(cols.get("familyStat", "Family Stat"), sort_key="family_stat_text"),
         ]
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(self._columns())
 
     def companions(self, entry: PazEntry) -> list[str]:
@@ -155,6 +155,10 @@ class QuestDbssHandler(PreviewHandler):
         # Keeps one value per row rather than caching every parsed record
         # (scripts run to thousands of characters) through get_records().
         index = self._get_index(data, companions)
+        if sort.field == "packed_quest_id":
+            # The default sort: the index already holds the IDs, so the table
+            # opens without parsing every quest.
+            return sort_order_by_values(index.packed_quest_ids, sort.descending)
         values = [self._record_at(data, index, row).get(sort.field) for row in range(len(index))]
         return sort_order_by_values(values, sort.descending)
 

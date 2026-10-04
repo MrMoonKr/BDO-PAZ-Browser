@@ -8,6 +8,7 @@ import pytest
 
 from bdo_models import PazEntry
 from bdo_preview import get_handler
+from table_sort import SORT_DESC, TableSort, sort_order_by_values
 from tests.fixtures import ensure_fixtures
 from tests.framework import (
     DeclaredCountTest,
@@ -179,3 +180,17 @@ def test_quest_dbss_lazy_search(
     record = _record(quest_result, 1510453)
 
     assert record["row"] in handler.search_records(data, entry, companions, "Puzzling Words")
+
+
+def test_quest_dbss_default_sort_reads_ids_from_index(
+    quest_lazy_context: tuple[Any, bytes, PazEntry, dict[str, bytes]],
+    quest_result: HandlerResult,
+) -> None:
+    handler, data, entry, companions = quest_lazy_context
+    sort = handler.default_sort()
+    assert sort == TableSort("packed_quest_id", SORT_DESC)
+
+    expected = sort_order_by_values(
+        [record["packed_quest_id"] for record in quest_result.records], sort.descending
+    )
+    assert list(handler.sorted_order(data, entry, companions, sort)) == expected

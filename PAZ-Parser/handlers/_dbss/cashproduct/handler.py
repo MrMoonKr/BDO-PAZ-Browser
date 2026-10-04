@@ -48,7 +48,7 @@ class CashProductHandler(PreviewHandler):
             Column(cols.get("description", "Description"), sort_key="description"),
         ]
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(self._columns())
 
     def companions(self, entry: PazEntry) -> list[str]:

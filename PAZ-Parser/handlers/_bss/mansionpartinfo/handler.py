@@ -25,7 +25,7 @@ class MansionPartInfoBssHandler(PreviewHandler):
             Column(cols.get("icon", "Icon"), sort_key="icon_path"),
         ]
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(self._columns())
 
     def get_records(

@@ -58,7 +58,7 @@ class CharacterObjectHandler(PreviewHandler):
         ]
         return columns
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         # Includes the name, so a saved sort survives LOC not being loaded.
         return sort_keys(self._columns(has_loc=True))
 

@@ -109,8 +109,21 @@ def _entry() -> PazEntry:
     )
 
 
+class _SortableNumberHandler(_NumberHandler):
+    def sortable_fields(self) -> tuple[str, ...]:
+        return ("v", "w")
+
+
 def test_sortable_fields_default_is_empty() -> None:
-    assert _NumberHandler().sortable_fields() == frozenset()
+    assert _NumberHandler().sortable_fields() == ()
+
+
+def test_default_sort_is_none_without_sortable_fields() -> None:
+    assert _NumberHandler().default_sort() is None
+
+
+def test_default_sort_is_first_sortable_field_descending() -> None:
+    assert _SortableNumberHandler().default_sort() == TableSort("v", "desc")
 
 
 def test_render_sorted_page_sorts_across_all_pages() -> None:
@@ -149,7 +162,12 @@ def test_table_plain_tuple_headers_are_not_sortable() -> None:
     assert '<td class="num">1</td>' in html
 
 
-def test_sort_keys_collects_declared_fields() -> None:
-    columns = [Column("ID", sort_key="buff_id"), Column("Icon"), Column("Size", sort_key="size")]
+def test_sort_keys_collects_declared_fields_in_column_order() -> None:
+    columns = [
+        Column("Size", sort_key="size"),
+        Column("Icon"),
+        Column("ID", sort_key="buff_id"),
+        Column("Size (raw)", sort_key="size"),
+    ]
 
-    assert sort_keys(columns) == frozenset({"buff_id", "size"})
+    assert sort_keys(columns) == ("size", "buff_id")

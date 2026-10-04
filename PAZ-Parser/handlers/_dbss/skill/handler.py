@@ -111,7 +111,7 @@ class SkillHandler(PreviewHandler):
             Column(cols.get("script", "Script"), sort_key="script"),
         ]
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(self._columns())
 
     def companions(self, entry: PazEntry) -> list[str]:
@@ -128,7 +128,9 @@ class SkillHandler(PreviewHandler):
         if offset_raw is None:
             raise ValueError(f"{_OFFSET_FILE} companion not found.")
 
-        # The index order is arbitrary; skill number order puts class skills first.
+        # The index order is arbitrary. Skill key order keeps each skill's
+        # levels in order under the table's default skill number sort, and
+        # gives CSV export class skills first.
         records = sorted(parse_skill_records(data, offset_raw), key=lambda record: record.skill_key)
         return [_record_dict(record) for record in records]
 

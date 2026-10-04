@@ -53,7 +53,7 @@ class PetActionHandler(PreviewHandler):
             Column(cols.get("actionName", "Action Name"), sort_key="action_name"),
         ]
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(self._columns())
 
     def companions(self, entry: PazEntry) -> list[str]:

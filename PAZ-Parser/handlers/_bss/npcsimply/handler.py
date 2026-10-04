@@ -52,7 +52,7 @@ class NpcSimplyBssHandler(PreviewHandler):
             Column(cols.get("script", "Script"), sort_key="script"),
         ]
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(self._columns())
 
     def get_records(

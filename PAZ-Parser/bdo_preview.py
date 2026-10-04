@@ -13,7 +13,7 @@ import sys
 
 from bdo_models import PazEntry
 from record_fields import record_matches
-from table_sort import TableSort, sort_order
+from table_sort import SORT_DESC, TableSort, sort_order
 
 _TEXT_LIMIT = 512 * 1024   # bytes shown in text view
 
@@ -82,14 +82,24 @@ class PreviewHandler(ABC):
         """Render a parsed page from cached records. Override for true streaming/lazy parsing."""
         return self.render_records_page(self._all_records(data, entry, companions), page, page_size)
 
-    def sortable_fields(self) -> frozenset[str]:
-        """Record fields the parsed table can be sorted by.
+    def sortable_fields(self) -> tuple[str, ...]:
+        """Record fields the parsed table can be sorted by, in column order.
 
         Empty by default, which renders non-sortable headers. Handlers opt in
         by giving their columns a ``sort_key`` (``_common.html.Column``) and
         returning ``sort_keys(columns)`` here.
         """
-        return frozenset()
+        return ()
+
+    def default_sort(self) -> TableSort | None:
+        """Sort a table opens with when the file has no saved sort.
+
+        The first sortable column, descending. Override to pick another field
+        from `sortable_fields()`, or return None to keep the `get_records()`
+        order when no single field gives it.
+        """
+        fields = self.sortable_fields()
+        return TableSort(fields[0], SORT_DESC) if fields else None
 
     def render_sorted_page(
         self,

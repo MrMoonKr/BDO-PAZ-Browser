@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Collection
 from pathlib import Path
 
 from table_sort import TableSort
@@ -52,11 +53,11 @@ def _saved_table_sorts() -> dict:
     return sorts if isinstance(sorts, dict) else {}
 
 
-def load_table_sort(file_key: str, sortable_fields: frozenset[str]) -> TableSort | None:
+def load_table_sort(file_key: str, sortable_fields: Collection[str]) -> TableSort | None:
     """The saved sort for a file, if its field is still sortable.
 
     A malformed entry, or one whose field the handler no longer declares, is
-    dropped from the config so the file opens unsorted from then on.
+    dropped from the config so the file opens in its default sort from then on.
     """
     saved = _saved_table_sorts().get(file_key)
     if saved is None:

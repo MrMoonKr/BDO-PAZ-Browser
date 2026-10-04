@@ -29,7 +29,7 @@ def pet_skill_offset_handler() -> OffsetTableHandler:
 
 
 class PetSkillHandler(PreviewHandler):
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(_COLUMNS)
 
     def companions(self, entry: PazEntry) -> list[str]:

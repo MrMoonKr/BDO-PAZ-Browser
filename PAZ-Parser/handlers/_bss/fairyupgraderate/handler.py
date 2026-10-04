@@ -33,7 +33,7 @@ class FairyUpgradeRateBssHandler(PreviewHandler):
             Column(cols.get("itemsForMax", "Items for Max"), "num", sort_key="items_for_max"),
         ]
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(self._columns())
 
     def get_records(

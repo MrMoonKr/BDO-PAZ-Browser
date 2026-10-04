@@ -63,7 +63,7 @@ class MentalThemeHandler(PreviewHandler):
             Column(cols.get("childrenGroups", "Children Groups"), "num", sort_key="child_count"),
         ]
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(self._columns())
 
     def companions(self, entry: PazEntry) -> list[str]:

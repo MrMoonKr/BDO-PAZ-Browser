@@ -61,7 +61,7 @@ class TitleCategoryBssHandler(PreviewHandler):
             Column(cols.get("category", "Category"), sort_key="category"),
         ]
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(self._columns())
 
     def get_records(self, data: bytes, entry: PazEntry, companions: dict[str, bytes]) -> list[dict]:

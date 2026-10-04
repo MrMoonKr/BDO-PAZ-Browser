@@ -25,7 +25,7 @@ class FairySkillChangeHandler(PreviewHandler):
             Column(cols.get("orbCost", "Theiah's Orbs"), "num", sort_key="orb_cost"),
         ]
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(self._columns())
 
     def get_records(

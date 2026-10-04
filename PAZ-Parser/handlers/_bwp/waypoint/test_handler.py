@@ -6,6 +6,8 @@ from typing import Any
 
 import pytest
 
+from bdo_models import PazEntry
+from bdo_preview import get_handler
 from _bwp.waypoint.parser import Group, Route, is_waypoint_graph, neighbours, parse_waypoint_graph
 from tests.fixtures import FIXTURES_DIR, FixtureFetchError, fetch_fixtures
 from tests.framework import (
@@ -148,3 +150,15 @@ def test_old_template_has_not_grown(name: str) -> None:
     assert len(data) <= _OLD_TEMPLATE_SIZES[name], (
         f"{name} grew from {_OLD_TEMPLATE_SIZES[name]} to {len(data)} bytes: check its layout again"
     )
+
+
+def test_old_template_shows_notice_in_default_sort() -> None:
+    name = "mapdata_instancedungeonexplore.bwp"
+    data = _fixture_bytes(name)
+    entry = PazEntry("", f"gamecommondata/waypoint_binary/{name}", 0, 0, 0, 0, 0)
+    handler = get_handler(name, ".bwp")
+    sort = handler.default_sort()
+
+    assert sort is not None
+    file_order = handler.render_data_page(data, entry, {}, 0, 50)
+    assert handler.render_sorted_page(data, entry, {}, 0, 50, sort) == file_order

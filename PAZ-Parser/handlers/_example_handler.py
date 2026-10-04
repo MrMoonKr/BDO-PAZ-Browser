@@ -36,8 +36,11 @@
 #
 # class MyHandler(PreviewHandler):
 #
-#     def sortable_fields(self) -> frozenset[str]:
-#         # Opts the table into server-side sorting by these record fields.
+#     def sortable_fields(self) -> tuple[str, ...]:
+#         # Opts the table into server-side sorting by these record fields, in
+#         # column order. The table opens sorted by the first one, descending;
+#         # override default_sort() to open on another field, or None for
+#         # get_records() order.
 #         return sort_keys(_COLUMNS)
 #
 #     def companions(self, entry: PazEntry) -> list[str]:

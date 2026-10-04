@@ -67,7 +67,7 @@ class JournalQuestDbssHandler(PreviewHandler):
             Column(cols.get("staticModel", "Static Model"), sort_key="static_model"),
         ]
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(self._columns())
 
     def companions(self, entry: PazEntry) -> list[str]:

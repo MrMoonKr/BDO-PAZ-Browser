@@ -49,7 +49,7 @@ class TeleportHandler(PreviewHandler):
             Column(cols.get("usedBy", "Used By"), sort_key="used_by_count"),
         ]
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(self._columns())
 
     def companions(self, entry: PazEntry) -> list[str]:

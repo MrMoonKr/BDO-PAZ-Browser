@@ -124,7 +124,7 @@ class OffsetTableHandler(PreviewHandler):
             for column in self._offset_columns
         ]
 
-    def sortable_fields(self) -> frozenset[str]:
+    def sortable_fields(self) -> tuple[str, ...]:
         return sort_keys(self._columns())
 
     def get_records(

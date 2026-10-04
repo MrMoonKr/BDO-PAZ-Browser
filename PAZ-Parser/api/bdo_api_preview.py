@@ -228,9 +228,10 @@ class PreviewMixin(ApiState):
                 record_count = handler.get_record_count(data, entry, companions)
                 self._te(profile, "backend.lazy_count_ms", start)
                 parsed_total_pages = max(1, (record_count + PARSED_RECORDS_PER_PAGE - 1) // PARSED_RECORDS_PER_PAGE)
-                self._cached_sort = load_table_sort(
+                saved_sort = load_table_sort(
                     table_sort_file_key(internal_path), handler.sortable_fields()
                 )
+                self._cached_sort = saved_sort or handler.default_sort()
                 start = self._ts()
                 html = self._render_parsed_page(0)
                 self._te(profile, "backend.lazy_page_render_ms", start)
