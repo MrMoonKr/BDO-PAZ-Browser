@@ -85,6 +85,7 @@ are `str_id2 | str_id3 << 16`. Their `key0` is `str_type` and their `id` is
 | 50       | Pearl Shop product names and descriptions, `str_id1` = `cashproduct.dbss` product_id, `str_id3` = service code; see Type 50 below |
 | 52       | Item-set bonus text, `str_id1` = `skillpiece.dbss` key; see Type 52 below                  |
 | 54       | NPC gift/confession response dialogue, `str_id1` = NPC ID                                  |
+| 58       | `newquest.bss` group names (`str_id1` = group key, `str_id4=0`) and quest condition lines (`str_id1` = packed quest ID, `str_id2` = group key, `str_id4=1`); see Type 58 below |
 | 63       | Journal quest adventure log metadata, `str_id1` = journal_key, `str_id2` = book_key         |
 | 71       | Employee names, `str_id1` = `employeename.dbss` employee_name_id, `str_id3` = 12           |
 | 113      | Lightstone combination names with their effects (`"[Imperial Chef] Cooking Mastery +30"`, name and effect split by a newline), `str_id1` 1 to 182 |
@@ -527,6 +528,23 @@ record key (87 of the 93 IDs; 89 are also skill numbers in `skill.dbss`).
 
 The selector split follows the notes of
 [bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor).
+
+### Type 58, new quest list (`newquest.bss`)
+
+Type 58 holds 1,883 rows. `str_id4 = 0` rows name the list's groups,
+`str_id1` = the group key in `newquest.bss` (265 keys, 1 to 322); the
+`str_id4 = 1` rows are one condition line per quest of a group,
+`str_id1` = packed quest ID (`quest_id << 16 | chain`), `str_id2` = the
+group key, e.g. `(132178, 3)` `Complete <PAColor0xfff3d900>A Struggle with the
+Seagull<PAOldColor>`. Every `newquest.bss` group and row has its row on client 3458.
+
+Types 28, 42 and 43 have the same two-field shape (names under small IDs,
+condition lines under packed quest IDs with a group in `str_id2`) and name
+recommended quests (`[ADV Support] Inventory Expansion!`), contribution
+quests (`[Contribution] [Lv. 35] Calpheon City`) and main quest chains
+(`Journey Begins`). They likely belong to `recommendationquest.bss`,
+`repetitionquest.bss` and `mainquest.bss`, which are not decoded far enough
+to check.
 
 ### Type 63, journal quest metadata (`journalquest.dbss`)
 

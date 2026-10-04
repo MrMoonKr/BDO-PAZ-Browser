@@ -7,8 +7,8 @@ Defines "new quest" / quest-notice UI sequence data. The decoded first section g
 Example:
 
 ```text
-group 0 -> quest 11059 / 9 -> [Event] Love for Pets
-group 4 -> quest 6809 / 1 -> LOC type 18 title when available
+group 0 (key 1, "[Event] Mastering Life Skills") -> quest 11059 / 9 -> [Event] Love for Pets
+group 4 (key 6, "Krogdalo's Three Seeds") -> quest 6809 / 1 -> LOC type 18 title when available
 ```
 
 ---
@@ -34,7 +34,7 @@ The first group uses a shorter 10-byte header. Every later group uses a 23-byte 
 
 | Offset  | Type | Field           | Observed | Notes                    |
 | ------- | ---- | --------------- | -------- | ------------------------ |
-| `+0x00` | u32  | unknown_00      | `1`      | Meaning not confirmed    |
+| `+0x00` | u32  | group_key       | `1`      | The group's key, see Localization |
 | `+0x04` | u8[3] | padding        | `00 00 00` | Observed zero          |
 | `+0x07` | u8   | quest_ref_count | `2`      | Number of following rows |
 | `+0x08` | u16  | padding         | `0`      | Observed zero            |
@@ -47,7 +47,7 @@ The first group uses a shorter 10-byte header. Every later group uses a 23-byte 
 | `+0x01` | u32  | unknown_01      | Group/sequence value; meaning unknown       |
 | `+0x05` | u32  | unknown_05      | Group/sequence value; meaning unknown       |
 | `+0x09` | u32  | unknown_09      | Observed `0` in sampled headers             |
-| `+0x0D` | u16  | unknown_0d      | Group key / sequence value; meaning unknown |
+| `+0x0D` | u16  | group_key       | The group's key, see Localization; unique per group |
 | `+0x0F` | u32  | unknown_0f      | Group key / sequence value; meaning unknown |
 | `+0x13` | u8   | unknown_13      | Small byte; meaning unknown                 |
 | `+0x14` | u16  | quest_ref_count | Number of following rows                    |
@@ -64,13 +64,30 @@ The first group uses a shorter 10-byte header. Every later group uses a 23-byte 
 | `+0x09` | u32  | unknown_09     | Commonly `2`; other small values appear                                 |
 | `+0x0D` | u32  | unknown_0d     | Observed range `2..1788`; meaning not confirmed                         |
 
-Earlier versions of this doc called the row's `unknown_00` `flags` and `unknown_05` / `unknown_09` / `unknown_0d` `sequence_a` / `sequence_b` / `sequence_c`. In the group headers, the first header's `unknown_00` was `group_key`, and the later header's `unknown_00`, `unknown_01`, `unknown_05`, `unknown_09`, `unknown_0d`, `unknown_0f` and `unknown_13` were `header_flag`, `unknown_a`, `unknown_b`, `unknown_c`, `group_key_a`, `group_key_b` and `unknown_d`.
+Earlier versions of this doc called the row's `unknown_00` `flags` and `unknown_05` / `unknown_09` / `unknown_0d` `sequence_a` / `sequence_b` / `sequence_c`. In the group headers, the later header's `unknown_00`, `unknown_01`, `unknown_05`, `unknown_09`, `unknown_0f` and `unknown_13` were `header_flag`, `unknown_a`, `unknown_b`, `unknown_c`, `group_key_b` and `unknown_d`; `group_key` (`+0x0D`, once `group_key_a`) is now confirmed by LOC.
 
 Derived packed quest ID:
 
 ```text
 packed_quest_id = (quest_id << 16) | quest_chain_id
 ```
+
+## Localization
+
+LOC type `58` holds the English text of this list, keyed by the group's
+`group_key`:
+
+| Key                                              | Text                                         |
+| ------------------------------------------------ | -------------------------------------------- |
+| `str_id1 = group_key`, `str_id4 = 0`             | Group name, e.g. key 1 `[Event] Mastering Life Skills` |
+| `str_id1 = packed_quest_id`, `str_id2 = group_key`, `str_id4 = 1` | The quest's condition line, e.g. `From <PAColor0xfff3d900>Lara <PAOldColor>during the event, once per Family` |
+
+On client 3458 all 232 groups have a name (type 58 has 265, so some
+belong to groups no longer in the file) and all 1,281 rows have a
+condition line. A quest in two groups has a line under each key: quest
+11060 / 1 sits in the groups with keys 2 (`[Event] Black Desert 2019
+Halloween`) and 62 (`[Event] Black Desert 2020 Halloween`). Condition lines carry `<PAColor>`
+tags; group names do not.
 
 ### Text / Markup Payload
 
@@ -100,11 +117,13 @@ Pre-2026-09-27 fixture:
 | ------------ | ---- | ---------------------------------------------------------------- |
 | Main ID      | num  | `quest_chain_id`; LOC type 18 `str_id1`                          |
 | Sub ID       | num  | `quest_id`; LOC type 18 `str_id2`                                |
-| Group        | num  | Decoded group index, `0` to `group_count - 1`                    |
+| Group Key    | num  | `group_key` of the row's group                                   |
+| Group Name   | text | LOC type 58 `str_id1 = group_key`, `str_id4 = 0`                 |
 | Icon         | text | Quest icon resolved from `packed_quest_id` through the quest icon index |
 | Title        | text | Prefer LOC type 18 row with matching main/sub ID and `str_id4=0`, in its game colours |
+| Condition    | text | LOC type 58 `(packed_quest_id, group_key)`, `str_id4 = 1`, in its game colours |
 
-`unknown_05`, `unknown_09` and `unknown_0d` stay on the record for search and export but are not shown.
+`group` (the index in file order), `unknown_05`, `unknown_09` and `unknown_0d` stay on the record for search and export but are not shown.
 
 ---
 
@@ -122,7 +141,7 @@ Pre-2026-09-27 fixture:
 
 ### Group Header Fields
 
-The meaning of the `unknown_*` group header fields is not confirmed.
+The meaning of the other `unknown_*` group header fields is not confirmed.
 
 ### `unknown_05` / `unknown_09` / `unknown_0d` Meaning
 
@@ -130,7 +149,7 @@ The three row u32s look like order, parent, or link indexes, but their exact UI 
 
 ### Duplicate Quest References
 
-29 packed quest IDs appear twice in the decoded quest reference stream. Their UI reason is not confirmed.
+29 packed quest IDs appear twice in the decoded quest reference stream (fixture). Each copy sits in a different group, and LOC type 58 has a condition line under both group keys, so a quest can be listed by two events (11060 / 1 in the 2019 and 2020 Halloween groups). Whether the game shows both copies at once is not confirmed.
 
 ### Text Payload Boundaries
 

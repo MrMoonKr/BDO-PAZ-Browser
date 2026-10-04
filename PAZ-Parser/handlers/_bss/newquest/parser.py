@@ -17,6 +17,14 @@ def _row_count(data: bytes, offset: int, group: int) -> int:
     return u16(data, offset + 0x14)
 
 
+def _group_key(data: bytes, offset: int, group: int) -> int:
+    """The group's key, LOC type 58 `str_id1` of its name: a u32 at the start of
+    the first header, a u16 at `+0x0D` of the later ones."""
+    if group == 0:
+        return u32(data, offset)
+    return u16(data, offset + 0x0D)
+
+
 def _header_size(group: int) -> int:
     if group == 0:
         return _FIRST_GROUP_HEADER_SIZE
@@ -40,6 +48,7 @@ def parse_newquest_records(data: bytes) -> list[NewQuestRecord]:
             break
 
         count = _row_count(data, offset, group)
+        group_key = _group_key(data, offset, group)
         offset += header_size
 
         for row in range(count):
@@ -50,6 +59,7 @@ def parse_newquest_records(data: bytes) -> list[NewQuestRecord]:
             quest_id = u16(data, offset + 3)
             records.append({
                 "group": group,
+                "group_key": group_key,
                 "row": row,
                 "unknown_00": u8(data, offset),
                 "quest_chain_id": quest_chain_id,

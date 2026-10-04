@@ -8,13 +8,18 @@ from bdo_preview import PreviewHandler
 from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.icon_index import IconKind, icon_path
 from _common.lang import load_handler_strings
-from _common.loc import is_loc_loaded
+from _common.loc import is_loc_loaded, loc_lookup, loc_tagged
 from _common.pa_text import pa_cell, pa_fields
 from _common.quest.quest import quest_title_tagged
 from .parser import parse_newquest_records
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
+# LOC type 58 holds the group names, keyed (group_key, 0, 0, 0), and each
+# quest's condition line, keyed (packed_quest_id, group_key, 0, 1).
+_LOC_NEW_QUEST = 58
+_FIELD_GROUP_NAME = 0
+_FIELD_CONDITION = 1
 
 
 class NewQuestBssHandler(PreviewHandler):
@@ -23,9 +28,11 @@ class NewQuestBssHandler(PreviewHandler):
         return [
             Column(cols.get("mainId", "Main ID"), "num", sort_key="quest_chain_id"),
             Column(cols.get("subId", "Sub ID"), "num", sort_key="quest_id"),
-            Column(cols.get("group", "Group"), "num", sort_key="group"),
+            Column(cols.get("groupKey", "Group Key"), "num", sort_key="group_key"),
+            Column(cols.get("groupName", "Group Name"), sort_key="group_name"),
             Column(cols.get("icon", "Icon"), sort_key="icon_path"),
             Column(cols.get("title", "Title"), sort_key="title"),
+            Column(cols.get("condition", "Condition"), sort_key="condition"),
         ]
 
     def sortable_fields(self) -> frozenset[str]:
@@ -44,6 +51,10 @@ class NewQuestBssHandler(PreviewHandler):
             row = dict(record)
             title = quest_title_tagged(record["quest_chain_id"], record["quest_id"]) if has_loc else ""
             row.update(pa_fields("title", title))
+            row.update(pa_fields("group_name", loc_tagged(_LOC_NEW_QUEST, record["group_key"], _FIELD_GROUP_NAME)))
+            row.update(pa_fields("condition", loc_lookup(
+                _LOC_NEW_QUEST, record["packed_quest_id"], record["group_key"], 0, _FIELD_CONDITION,
+            ).strip()))
             row["icon_path"] = icon_path(IconKind.QUEST, record["packed_quest_id"])
             records.append(row)
 
@@ -67,9 +78,11 @@ class NewQuestBssHandler(PreviewHandler):
             [
                 e(record["quest_chain_id"]),
                 e(record["quest_id"]),
-                e(record["group"]),
+                e(record["group_key"]),
+                pa_cell(record, "group_name"),
                 icon_cell(record["icon_path"]) if record["icon_path"] else "-",
                 pa_cell(record, "title"),
+                pa_cell(record, "condition"),
             ]
             for record in slice_
         ]

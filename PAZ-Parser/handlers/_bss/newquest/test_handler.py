@@ -8,6 +8,7 @@ import pytest
 from tests.framework import (
     HandlerCase,
     HandlerResult,
+    PaFieldTest,
     RangeTest,
     SchemaTest,
     TargetTest,
@@ -23,18 +24,21 @@ CASE = HandlerCase(
     companion_files={},
     loc_file="languagedata_en.loc",
     uses_loc=True,
-    loc_fields=["Title"],
+    loc_fields=["Title", "Group Name", "Condition"],
     internal_path="gamecommondata/binary/newquest.bss",
     tests=[
         SchemaTest(
             required_keys=[
                 "group",
+                "group_key",
+                "group_name",
                 "row",
                 "unknown_00",
                 "quest_chain_id",
                 "quest_id",
                 "packed_quest_id",
                 "title",
+                "condition",
                 "unknown_05",
                 "unknown_09",
                 "unknown_0d",
@@ -49,8 +53,12 @@ CASE = HandlerCase(
                 "quest_chain_id": 11059,
                 "quest_id": 9,
                 "title": "[Event] Love for Pets",
+                # The first group's key is the u32 at the start of its header.
+                "group_key": 1,
             },
         ),
+        # Condition lines name NPCs and quests in yellow.
+        PaFieldTest(field="condition"),
         TargetTest(
             col="packed_quest_id",
             value=77129,
@@ -79,3 +87,16 @@ def test_newquest_bss_reaches_last_group(newquest_result: HandlerResult) -> None
     group_count = header_count(offset=4)(newquest_result.source)
 
     assert max(record["group"] for record in newquest_result.records) == group_count - 1
+
+
+def test_every_group_has_a_name_and_every_row_a_condition(newquest_result: HandlerResult) -> None:
+    """LOC type 58 names each group by its key and holds a condition line per quest."""
+    for record in newquest_result.records:
+        assert record["group_name"], record["group"]
+        assert record["condition"], record["packed_quest_id"]
+
+
+def test_group_keys_are_unique_per_group(newquest_result: HandlerResult) -> None:
+    keys = {record["group"]: record["group_key"] for record in newquest_result.records}
+
+    assert len(set(keys.values())) == len(keys)

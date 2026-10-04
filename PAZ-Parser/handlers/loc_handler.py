@@ -48,6 +48,7 @@ _TYPE_NAMES = {
     50: "Pearl Shop products",
     52: "Item-set bonus text",
     54: "NPC gift/confession response dialogue",
+    58: "New quest list",
     63: "Adventure log metadata",
     71: "Employee names",
     113: "Lightstone combinations",

@@ -1,6 +1,8 @@
 {
   "columns": {
-    "group": "Group",
+    "groupKey": "Group Key",
+    "groupName": "Group Name",
+    "condition": "Condition",
     "mainId": "Main ID",
     "subId": "Sub ID",
     "icon": "Icon",
