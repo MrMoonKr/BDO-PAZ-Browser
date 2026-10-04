@@ -7,15 +7,12 @@ from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.lang import load_handler_strings
-from _common.loc import loc_lookup, strip_pa_tags
+from _common.item_key import item_level_name
 from .parser import parse_specialenchantitem_records
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
 _EMPTY = "-"
-
-# Keyed by item ID (str_id1) and enhancement level (str_id2).
-_LOC_ITEM_LEVEL_NAME = 79
 
 # Display levels above +15 are drawn as grades; LOC type 79 names confirm them.
 _FIRST_GRADE_LEVEL = 16
@@ -35,8 +32,7 @@ def display_level_text(display_level: int) -> str:
 
 def _level_name(record: dict) -> str:
     """LOC type 79 name of this item level, else the stored Korean name."""
-    text = loc_lookup(_LOC_ITEM_LEVEL_NAME, record["item_id"], record["enchant_level"])
-    return strip_pa_tags(text).strip() or record["name_kr"]
+    return item_level_name(record["item_id"], record["enchant_level"]) or record["name_kr"]
 
 
 class SpecialEnchantItemBssHandler(PreviewHandler):

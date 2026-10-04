@@ -127,6 +127,13 @@ values are stored once, so levels that keep an icon point at the same entry.
   LOC type 0 name: a grade prefix (`DEC: Fiery Sovereign Mareca`) or a new
   word for the stage (`Desperate Dahn's Gloves` at level 1, `Wailing Dahn's
   Gloves` at level 4).
+- LOC type 79 reaches past this file: 5,298 rows over 925 items on client
+  3458, among them accessories such as `Preonne Belt` whose every level
+  repeats the item name. Level 0 always matches the LOC type 0 name, and a
+  name that differs never repeats across the levels of one item, so
+  `item_key_text()` (`_common/item_key.py`) shows it without the level
+  suffix in every item list. Five more rows key Fallen God's Armor (719898)
+  by its packed item key with `str_id2` 0; they repeat the item ID rows.
 - All 500 icon paths exist on client 3458 once resolved under
   `ui_texture/icon/` and lowercased, as for `itemenchant.dbss`.
 - The 551 items fall into three shapes on client 3458:

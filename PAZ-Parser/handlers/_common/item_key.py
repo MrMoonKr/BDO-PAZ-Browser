@@ -6,7 +6,10 @@ pack an item and its enhancement level into one key:
     item_key = enchant_level << 24 | item_id
 
 Level 0 is the base item. LOC type 0 names an item by its ID alone, so every
-level of one item shares a name. See docs/file-formats/itemenchant_dbss.md.
+level of one item shares a name; LOC type 79 (`str_id1` item ID, `str_id2`
+level) names the levels of a few hundred items on their own (`DEC: Sovereign
+Longsword`, `Wailing Fallen God's Armor`). See
+docs/file-formats/itemenchant_dbss.md and specialenchantitem_bss.md.
 
 A few hundred items also change icon with their level (Sovereign weapons,
 Fallen God armor); `item_key_icon_path()` picks that icon when there is one.
@@ -21,10 +24,11 @@ from collections.abc import Sequence
 from _common.html import icon_html_list_cell
 from _common.icon_index import IconKind, icon_path
 from _common.item_grade import item_grade, item_grade_tagged
-from _common.loc import loc_text
+from _common.loc import loc_lookup, loc_text, strip_pa_tags
 from _common.pa_text import pa_html
 
 LOC_ITEM_NAME = 0
+LOC_ITEM_LEVEL_NAME = 79
 
 _ITEM_ID_MASK = 0x00FFFFFF
 _ENCHANT_LEVEL_SHIFT = 24
@@ -40,6 +44,11 @@ def item_name(item_id: int) -> str:
     return loc_text(LOC_ITEM_NAME, item_id)
 
 
+def item_level_name(item_id: int, enchant_level: int) -> str:
+    """LOC type 79 name of one item level (`DEC: Sovereign Longsword`), or ''."""
+    return strip_pa_tags(loc_lookup(LOC_ITEM_LEVEL_NAME, item_id, enchant_level)).strip()
+
+
 def item_name_tagged(item_id: int) -> str:
     """`item_name` in the item's grade colour, as a `<PAColor>` tag for `pa_fields`, or ''."""
     return item_grade_tagged(item_name(item_id), item_grade(item_id))
@@ -52,13 +61,21 @@ def item_key_icon_path(item_key: int) -> str:
 
 
 def item_key_text(item_key: int) -> str:
-    """`Blackstar Helmet (19)`: the item name, then the level when above 0.
+    """`DEC: Sovereign Longsword` or `Blackstar Helmet (19)`.
 
+    A level whose LOC type 79 name differs from the item name shows that name
+    alone: it carries a grade or a stage word that no other level of the item
+    shares. Any other level shows the item name, then the level when above 0.
     The item ID stands in for a missing name.
     """
     item_id, enchant_level = split_item_key(item_key)
     name = item_name(item_id) or str(item_id)
-    return f"{name} ({enchant_level})" if enchant_level else name
+    if not enchant_level:
+        return name
+    level_name = item_level_name(item_id, enchant_level)
+    if level_name and level_name != name:
+        return level_name
+    return f"{name} ({enchant_level})"
 
 
 def item_key_text_tagged(item_key: int) -> str:

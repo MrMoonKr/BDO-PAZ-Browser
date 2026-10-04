@@ -1061,6 +1061,14 @@ Items column, the `plantzone.dbss` Produced Items column and the
 `dropuihuntinggroundinfo.bss` Items column. A plain item ID is its level 0
 key, so lists of item IDs use it too.
 
+Those lists name each key with `item_key_text()` from the same module. A level
+with its own LOC type 79 name (`str_id1` item ID, `str_id2` level, read with
+`item_level_name()`) shows that name alone, `DEC: Sovereign Longsword` or
+`Wailing Fallen God's Armor`: on client 3458 such a name never repeats across
+the levels of one item. Every other level shows the LOC type 0 name and the
+level, `Blackstar Helmet (19)`, including levels whose LOC type 79 name is just
+the item name (`Preonne Belt (3)`).
+
 `ITEM_GRADE` maps a base item ID to its grade (`+0x06` in
 [itemenchant.dbss](file-formats/itemenchant_dbss.md)), which the game draws
 the name in. `item_key_list_cell()` reads it through
