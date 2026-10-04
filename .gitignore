@@ -11,6 +11,7 @@ files/
 json/
 tools/*
 todo.md
+done.md
 planner.md
 test-scripts/
 tests/fixtures/unpacked/
