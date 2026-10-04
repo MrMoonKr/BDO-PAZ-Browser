@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from _common.binary import u8, u16, u32
-from .model import NewQuestRecord
+from .model import QuestListRecord
 
 
 _MAGIC = b"PABR"
@@ -18,7 +18,7 @@ def _row_count(data: bytes, offset: int, group: int) -> int:
 
 
 def _group_key(data: bytes, offset: int, group: int) -> int:
-    """The group's key, LOC type 58 `str_id1` of its name: a u32 at the start of
+    """The group's key, the LOC `str_id1` of its name: a u32 at the start of
     the first header, a u16 at `+0x0D` of the later ones."""
     if group == 0:
         return u32(data, offset)
@@ -31,16 +31,18 @@ def _header_size(group: int) -> int:
     return _GROUP_HEADER_SIZE
 
 
-def parse_newquest_records(data: bytes) -> list[NewQuestRecord]:
+def parse_quest_list_records(data: bytes) -> list[QuestListRecord]:
+    """Read the quest groups of `newquest.bss`, `mainquest.bss`,
+    `recommendationquest.bss` or `repetitionquest.bss`, which share one layout."""
     if len(data) < _HEADER_SIZE:
         return []
 
     if data[:4] != _MAGIC:
-        raise ValueError("newquest.bss has invalid magic.")
+        raise ValueError("Quest list has invalid magic.")
 
     group_count = u32(data, 4)
     offset = _HEADER_SIZE
-    records: list[NewQuestRecord] = []
+    records: list[QuestListRecord] = []
 
     for group in range(group_count):
         header_size = _header_size(group)

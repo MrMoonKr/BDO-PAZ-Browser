@@ -2,90 +2,48 @@
 
 ## Purpose
 
-Defines the main-quest UI sequence/index data. The first decoded section groups quest IDs into 112 main-quest chains and stores 3,089 quest references. A later payload contains UTF-16 text/markup used by the main quest UI, but its record boundaries are not fully decoded yet.
+Defines the main-quest list: quest IDs grouped into main-quest chains, each group named by LOC type 43, with per quest a condition line (where and when it can be accepted) and two condition scripts. 120 groups and 3,268 quest references on client 3458. All text sits in a string pool at the end of the file (Korean group names, Korean condition lines, scripts).
 
 Example:
 
 ```text
-group 0 -> quest 40022 / 1 -> [Special Growth] Birth of a Prestigious Family
-group 1 -> quest 285 / 1 -> [Warrior Awakening] New Weapon
+group 0 (key 104, "[Special Growth] Taking My Own Path") -> quest 40022 / 1 -> [Special Growth] Birth of a Prestigious Family
+quest 40022 / 2 -> offered after clearquest(40022,1);
 ```
 
 ---
 
 ## File Layout
 
-All multi-byte values are little-endian unless noted otherwise.
+Same layout as [`newquest.bss`](newquest_bss.md), the layout reference: an 8-byte `PABR` header with a group count; per group a 10-byte header, 17-byte quest reference rows and a 13-byte trailer; a string pool; an 8-byte file trailer. One handler reads all four quest lists. Values seen on client 3458:
 
-### Header (8 bytes)
+| Field                                  | Observed                                              |
+| -------------------------------------- | ----------------------------------------------------- |
+| `group_count`                          | `120`                                                 |
+| First group                            | key `104`, `14` rows                                  |
+| Group header `unknown_06`              | `0`, except `1` on key 101 `[Invitation from I] Someone Beckons` |
+| Group trailer start / end index        | Index `2`, the empty string: no event period          |
+| Row `unknown_00`                       | `0`, except `1` on 7 rows, see Open Questions         |
+| Row `unknown_09` (first script)        | Empty string on 2,667 rows, a script on 601           |
+| Row `unknown_0d` (second script)       | Empty string on 1,348 rows, a script on 1,920         |
+| String pool                            | `3,490` strings; `string_count` at `0x0000E3D4`       |
 
-| Offset  | Type    | Field       | Notes                                      |
-| ------- | ------- | ----------- | ------------------------------------------ |
-| `+0x00` | char[4] | magic       | `PABR` (ASCII)                             |
-| `+0x04` | u32     | group_count | Number of decoded quest groups; observed `112` |
-
-### Quest Group Stream
-
-Starts at `+0x08` and runs through file offset `0x0000D72B` in the observed data. It contains 112 groups and 3,089 quest reference rows.
-
-The first group uses a shorter 10-byte header. Groups 1 through 111 use a 22-byte header immediately before their quest reference rows. Header fields are only partially decoded.
-
-#### First Group Header (10 bytes)
-
-| Offset  | Type | Field            | Observed | Notes                    |
-| ------- | ---- | ---------------- | -------- | ------------------------ |
-| `+0x00` | u32  | unknown_00       | `104`    | Meaning not confirmed    |
-| `+0x04` | u8[3] | padding         | `00 00 00` | Observed zero          |
-| `+0x07` | u8   | quest_ref_count  | `14`     | Number of following rows |
-| `+0x08` | u16  | padding          | `0`      | Observed zero            |
-
-#### Later Group Header (22 bytes)
-
-| Offset  | Type | Field            | Observed / Notes                           |
-| ------- | ---- | ---------------- | ------------------------------------------ |
-| `+0x00` | u32  | unknown_00       | Commonly `2`                               |
-| `+0x04` | u32  | unknown_04       | Commonly `2`                               |
-| `+0x08` | u32  | unknown_08       | Observed `0` in sampled headers            |
-| `+0x0C` | u16  | unknown_0c       | Group key / sequence value; meaning unknown |
-| `+0x0E` | u32  | unknown_0e       | Group key / sequence value; meaning unknown |
-| `+0x12` | u16  | quest_ref_count  | Number of following rows                   |
-| `+0x14` | u16  | padding          | Observed `0` in sampled headers            |
-
-### Quest Reference Row (17 bytes, repeated `quest_ref_count` times)
-
-| Offset  | Type | Field          | Notes                                                                 |
-| ------- | ---- | -------------- | --------------------------------------------------------------------- |
-| `+0x00` | u8   | unknown_00     | Observed `0` for 3,082 rows and `1` for 7 rows                        |
-| `+0x01` | u16  | quest_chain_id | LOC type 18 `str_id1`; combines with `quest_id` to form quest key     |
-| `+0x03` | u16  | quest_id       | LOC type 18 `str_id2`; combines with `quest_chain_id` to form quest key |
-| `+0x05` | u32  | unknown_05     | Observed range `1..3341`; likely ordering/index data                  |
-| `+0x09` | u32  | unknown_09     | Commonly `2`; other values appear in later groups                     |
-| `+0x0D` | u32  | unknown_0d     | Observed range `2..3337`; likely parent/next/index data               |
-
-Earlier versions of this doc called the row's `unknown_00` `flags` and `unknown_05` / `unknown_09` / `unknown_0d` `sequence_a..c`, and the group header fields `group_key`, `unknown_a..c` and `group_key_a` / `group_key_b`.
-
-Derived packed quest ID:
+The scripts check prerequisite quests (`clearquest`, `progressquest`), class (`checkClass`), level and content groups (`isContentsGroupOpen`); see String Pool in the `newquest.bss` doc for the two script roles.
 
 ```text
 packed_quest_id = (quest_id << 16) | quest_chain_id
 ```
 
-### Text / Markup Payload
+## Localization
 
-Starts immediately after the decoded quest reference stream at file offset `0x0000D72C`. The payload contains UTF-16-LE Korean text and PA markup such as `<PAColor0xFFf3d900>` and `<PAOldColor>`.
+LOC type `43` holds the English text of this list, keyed by the group's `group_key`:
 
-The first payload bytes resemble another small header followed by UTF-16 text, but record lengths and relationships to the 112 quest groups are not fully confirmed.
+| Key                                                               | Text                                                 |
+| ----------------------------------------------------------------- | ---------------------------------------------------- |
+| `str_id1 = group_key`, `str_id4 = 0`                              | Group name, e.g. key 104 `[Special Growth] Taking My Own Path` |
+| `str_id1 = packed_quest_id`, `str_id2 = group_key`, `str_id4 = 1` | The quest's condition line, e.g. `From <PAColor0xfff3d900>Alustin<PAOldColor> in Velia, complete ...` |
 
----
-
-## Reference Rows
-
-| Group | Row | unknown_00 | Quest Chain ID | Quest ID | unknown_05 | unknown_09 | unknown_0d | Example LOC Title |
-| ----: | --: | ----: | -------------: | -------: | ---------: | ---------: | ---------: | ----------------- |
-| 0     | 0   | `0`   | `40022`        | `1`      | `1`        | `2`        | `3`        | `[Special Growth] Birth of a Prestigious Family` |
-| 0     | 13  | `0`   | `40022`        | `14`     | `17`       | `2`        | `5`        | `[Special Growth] Fughar's Memorandum - Chapter 11` |
-| 1     | 0   | `0`   | `285`          | `1`      | `19`       | `2`        | `20`       | `[Warrior Awakening] New Weapon` |
-| 111   | 0   | `0`   | `9107`         | `1`      | `3335`     | `2`        | `3337`     | `[Edania] King of Edana` |
+On client 3458 all 120 groups have a name (type 43 has 170, keys 1 to 171, so some belong to groups no longer in the file) and all 3,268 rows have a condition line. Condition lines carry `<PAColor>` tags (all but 6); group names do not. The string pool holds the Korean source of both.
 
 ---
 
@@ -93,33 +51,32 @@ The first payload bytes resemble another small header followed by UTF-16 text, b
 
 | Column       | Type | Notes                                                            |
 | ------------ | ---- | ---------------------------------------------------------------- |
-| Group        | num  | Decoded group index `0..111`                                     |
 | Main ID      | num  | `quest_chain_id`; LOC type 18 `str_id1`                          |
 | Sub ID       | num  | `quest_id`; LOC type 18 `str_id2`                                |
-| Title        | text | Prefer LOC type 18 row with matching main/sub ID and `str_id4=0` |
+| Group Key    | num  | `group_key` of the row's group                                   |
+| Group Name   | text | LOC type 43 `str_id1 = group_key`, `str_id4 = 0`                 |
+| Icon         | text | Quest icon resolved from `packed_quest_id` through the quest icon index |
+| Title        | text | Prefer LOC type 18 row with matching main/sub ID and `str_id4=0`, in its game colours |
+| Condition    | text | LOC type 43 `(packed_quest_id, group_key)`, `str_id4 = 1`, in its game colours |
+
+`group` (the index in file order), `unknown_00`, `unknown_05`, `unknown_09` and `unknown_0d` stay on the record for search and export but are not shown. The handler does not read the string pool yet.
 
 ---
 
 ## Notes
 
-- Observed decompressed size is `448,907` bytes.
-- The decoded quest reference stream contains 112 groups and 3,089 unique quest IDs.
-- All 3,089 decoded quest IDs exist in `allquestlist.bss`.
-- Quest reference rows are fixed-width 17-byte records, but group headers are variable or special-cased: the first group has a shorter header than later groups.
-- The decoded quest reference stream ends at offset `0x0000D72C`; the rest of the file is mostly UTF-16-LE text/markup payload.
+- Decompressed size is `447,790` bytes on client 3458.
+- No quest appears twice; every group key is unique.
+- Earlier versions of this doc read the later group header as 22 bytes starting one byte later, so each row took its leading `unknown_00` from the byte before it; the row values were the same. They named the first header's `group_key` `unknown_00` and the later header's `group_key` `unknown_0c`.
 
 ---
 
 ## Open Questions
 
-### Group Header Fields
+### Row Byte `unknown_00`
 
-The meaning of the first group's `unknown_00` and the five `unknown_*` fields of the later group headers is not confirmed.
+`1` on only 7 rows, all in group key 51: quests 6603 / 3 to 8 and 6002 / 13. What it changes is not confirmed.
 
-### Row Fields
+### Shared Fields
 
-The row's `unknown_05`, `unknown_09`, and `unknown_0d` look like order, parent, or link indexes, but their exact UI behavior is not confirmed. `unknown_00` is `1` on only 7 rows.
-
-### Text Payload Boundaries
-
-The UTF-16 text/markup section after `0x0000D72C` is confirmed as text payload, but its record lengths and mapping back to quest groups still need decoding.
+`unknown_06` and the roles of the two scripts are open for all four lists; see the Open Questions of [`newquest.bss`](newquest_bss.md).

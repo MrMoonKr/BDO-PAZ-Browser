@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TypedDict
 
 
-class NewQuestRecord(TypedDict):
+class QuestListRecord(TypedDict):
     group: int
     group_key: int
     row: int

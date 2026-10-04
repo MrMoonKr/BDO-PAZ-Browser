@@ -11,18 +11,27 @@ from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, loc_tagged
 from _common.pa_text import pa_cell, pa_fields
 from _common.quest.quest import quest_title_tagged
-from .parser import parse_newquest_records
+from .parser import parse_quest_list_records
 
 
 _LANG_DIR = Path(__file__).parent / "lang"
-# LOC type 58 holds the group names, keyed (group_key, 0, 0, 0), and each
-# quest's condition line, keyed (packed_quest_id, group_key, 0, 1).
-_LOC_NEW_QUEST = 58
+# Each quest list has its own LOC type with the group names, keyed
+# (group_key, 0, 0, 0), and each quest's condition line, keyed
+# (packed_quest_id, group_key, 0, 1).
+QUEST_LIST_LOC_TYPES: dict[str, int] = {
+    "newquest.bss": 58,
+    "mainquest.bss": 43,
+    "recommendationquest.bss": 28,
+    "repetitionquest.bss": 42,
+}
 _FIELD_GROUP_NAME = 0
 _FIELD_CONDITION = 1
 
 
-class NewQuestBssHandler(PreviewHandler):
+class QuestListBssHandler(PreviewHandler):
+    def __init__(self, loc_type: int) -> None:
+        self._loc_type = loc_type
+
     def _columns(self) -> list[Column]:
         cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
         return [
@@ -47,13 +56,13 @@ class NewQuestBssHandler(PreviewHandler):
         records: list[dict] = []
         has_loc = is_loc_loaded()
 
-        for record in parse_newquest_records(data):
+        for record in parse_quest_list_records(data):
             row = dict(record)
             title = quest_title_tagged(record["quest_chain_id"], record["quest_id"]) if has_loc else ""
             row.update(pa_fields("title", title))
-            row.update(pa_fields("group_name", loc_tagged(_LOC_NEW_QUEST, record["group_key"], _FIELD_GROUP_NAME)))
+            row.update(pa_fields("group_name", loc_tagged(self._loc_type, record["group_key"], _FIELD_GROUP_NAME)))
             row.update(pa_fields("condition", loc_lookup(
-                _LOC_NEW_QUEST, record["packed_quest_id"], record["group_key"], 0, _FIELD_CONDITION,
+                self._loc_type, record["packed_quest_id"], record["group_key"], 0, _FIELD_CONDITION,
             ).strip()))
             row["icon_path"] = icon_path(IconKind.QUEST, record["packed_quest_id"])
             records.append(row)

@@ -2,13 +2,17 @@
 
 ## Purpose
 
-Defines "new quest" / quest-notice UI sequence data. The decoded first section groups quest IDs into blocks of quest reference rows (224 blocks and 1,255 rows in the pre-2026-09-27 fixture, 232 and 1,281 in the 2026-09-27 client). A later payload contains UTF-16-LE Korean text, PA markup, and date strings used by the same UI surface.
+Defines the new-quest (event) list: quest IDs grouped under events such as `[Event] Mastering Life Skills`, each group with an event period, and per quest a condition line and two condition scripts. 232 groups and 1,281 quest references on client 3458. All text sits in a string pool at the end of the file (Korean group names, Korean condition lines, scripts, dates); LOC type 58 holds the English names and condition lines.
+
+[`mainquest.bss`](mainquest_bss.md), [`recommendationquest.bss`](recommendationquest_bss.md) and [`repetitionquest.bss`](repetitionquest_bss.md) share this layout, each with its own LOC type; one handler reads all four. This doc is the layout reference for all four.
 
 Example:
 
 ```text
-group 0 (key 1, "[Event] Mastering Life Skills") -> quest 11059 / 9 -> [Event] Love for Pets
-group 4 (key 6, "Krogdalo's Three Seeds") -> quest 6809 / 1 -> LOC type 18 title when available
+group 0 (key 1, "[Event] Mastering Life Skills", 2018-10-3 10:00 to 2018-11-7 09:59)
+  -> quest 11059 / 9 -> [Event] Love for Pets
+quest 11101 / 11 -> offered while checkperiodbyGmt(0, 2019/9/4-00:00, 2019/9/25-09:00);
+                    ruled out by clearQuest(11101,9);<or>clearQuest(11101,10);<or>...
 ```
 
 ---
@@ -17,54 +21,86 @@ group 4 (key 6, "Krogdalo's Three Seeds") -> quest 6809 / 1 -> LOC type 18 title
 
 All multi-byte values are little-endian unless noted otherwise.
 
+```text
+header (8)
+group[group_count]:
+    group header (10)
+    quest reference row (17) x quest_ref_count
+    group trailer (13)
+string pool: u32 string_count, string entry x string_count
+file trailer (8)
+```
+
 ### Header (8 bytes)
 
 | Offset  | Type    | Field       | Notes                                      |
 | ------- | ------- | ----------- | ------------------------------------------ |
 | `+0x00` | char[4] | magic       | `PABR` (ASCII)                             |
-| `+0x04` | u32     | group_count | Number of decoded quest groups; `224` in the pre-2026-09-27 fixture, `232` in the 2026-09-27 client |
+| `+0x04` | u32     | group_count | Number of quest groups; `232` on client 3458 |
 
-### Quest Group Stream
+### Group Header (10 bytes)
 
-Starts at `+0x08` and runs through file offset `0x00006771` in the pre-2026-09-27 fixture (224 groups, 1,255 quest reference rows) and `0x000069E3` in the 2026-09-27 client (232 groups, 1,281 rows). The file stores no total row count; each group header holds its own.
-
-The first group uses a shorter 10-byte header. Every later group uses a 23-byte header immediately before their quest reference rows. Header fields are only partially decoded.
-
-#### First Group Header (10 bytes)
-
-| Offset  | Type | Field           | Observed | Notes                    |
-| ------- | ---- | --------------- | -------- | ------------------------ |
-| `+0x00` | u32  | group_key       | `1`      | The group's key, see Localization |
-| `+0x04` | u8[3] | padding        | `00 00 00` | Observed zero          |
-| `+0x07` | u8   | quest_ref_count | `2`      | Number of following rows |
-| `+0x08` | u16  | padding         | `0`      | Observed zero            |
-
-#### Later Group Header (23 bytes)
-
-| Offset  | Type | Field           | Observed / Notes                            |
-| ------- | ---- | --------------- | ------------------------------------------- |
-| `+0x00` | u8   | unknown_00      | Observed `0` in sampled headers             |
-| `+0x01` | u32  | unknown_01      | Group/sequence value; meaning unknown       |
-| `+0x05` | u32  | unknown_05      | Group/sequence value; meaning unknown       |
-| `+0x09` | u32  | unknown_09      | Observed `0` in sampled headers             |
-| `+0x0D` | u16  | group_key       | The group's key, see Localization; unique per group |
-| `+0x0F` | u32  | unknown_0f      | Group key / sequence value; meaning unknown |
-| `+0x13` | u8   | unknown_13      | Small byte; meaning unknown                 |
-| `+0x14` | u16  | quest_ref_count | Number of following rows                    |
-| `+0x16` | u8   | padding         | Observed zero in sampled headers            |
+| Offset  | Type | Field           | Notes                                                                   |
+| ------- | ---- | --------------- | ----------------------------------------------------------------------- |
+| `+0x00` | u16  | group_key       | The group's key, see Localization; unique per group                     |
+| `+0x02` | u32  | name index      | String pool index of the Korean group name; `0` for the first group     |
+| `+0x06` | u8   | unknown_06      | `0` on most groups; see Open Questions                                  |
+| `+0x07` | u16  | quest_ref_count | Number of following rows                                                |
+| `+0x09` | u8   | padding         | Observed zero                                                           |
 
 ### Quest Reference Row (17 bytes, repeated `quest_ref_count` times)
 
 | Offset  | Type | Field          | Notes                                                                   |
 | ------- | ---- | -------------- | ----------------------------------------------------------------------- |
-| `+0x00` | u8   | unknown_00     | Observed `0` in all decoded rows                                        |
+| `+0x00` | u8   | unknown_00     | `0` on every row here; `1` on 7 `mainquest.bss` rows                    |
 | `+0x01` | u16  | quest_chain_id | LOC type 18 `str_id1`; combines with `quest_id` to form quest key       |
 | `+0x03` | u16  | quest_id       | LOC type 18 `str_id2`; combines with `quest_chain_id` to form quest key |
-| `+0x05` | u32  | unknown_05     | Observed range `1..1795` (`1..1837` in the 2026-09-27 client); meaning not confirmed |
-| `+0x09` | u32  | unknown_09     | Commonly `2`; other small values appear                                 |
-| `+0x0D` | u32  | unknown_0d     | Observed range `2..1788`; meaning not confirmed                         |
+| `+0x05` | u32  | unknown_05     | String pool index of the Korean condition line, the source of the LOC condition line |
+| `+0x09` | u32  | unknown_09     | String pool index of a condition script, often the empty string; see String Pool |
+| `+0x0D` | u32  | unknown_0d     | String pool index of a second condition script, often the empty string; see String Pool |
 
-Earlier versions of this doc called the row's `unknown_00` `flags` and `unknown_05` / `unknown_09` / `unknown_0d` `sequence_a` / `sequence_b` / `sequence_c`. In the group headers, the later header's `unknown_00`, `unknown_01`, `unknown_05`, `unknown_09`, `unknown_0f` and `unknown_13` were `header_flag`, `unknown_a`, `unknown_b`, `unknown_c`, `group_key_b` and `unknown_d`; `group_key` (`+0x0D`, once `group_key_a`) is now confirmed by LOC.
+### Group Trailer (13 bytes)
+
+| Offset  | Type | Field        | Notes                                                                  |
+| ------- | ---- | ------------ | ---------------------------------------------------------------------- |
+| `+0x00` | u8   | unknown_00   | Observed zero                                                          |
+| `+0x01` | u32  | start index  | String pool index of the event start, e.g. `2019-10-16 04:00`; the empty string in the other three lists |
+| `+0x05` | u32  | end index    | String pool index of the event end, e.g. `2019-11-13 05:59`; always after the start |
+| `+0x09` | u32  | unknown_09   | Observed `0` in every group of the four files                          |
+
+The start of group 1 `[Event] Black Desert 2019 Halloween` is `2019-10-16 04:00`, and its English condition lines read `Oct 16 (after maintenance) - ...`.
+
+### String Pool
+
+Follows the last group trailer: a u32 `string_count`, then `string_count` entries, indexed from `0`.
+
+| Offset  | Type      | Field  | Notes                                     |
+| ------- | --------- | ------ | ----------------------------------------- |
+| `+0x00` | u8        | marker | `1` on every entry                        |
+| `+0x01` | u32       | length | Text length in bytes                      |
+| `+0x05` | u16[]     | text   | UTF-16-LE, `length` bytes, no terminator  |
+
+The pool holds each distinct string once, in first-use order: the group name, then each row's condition line and two scripts, then the trailer's dates. On client 3458 every entry is used (1,840 here). Index `0` is the first group's name, and the empty string sits at a low index (`2` here), which is why the script fields read `2` on so many rows.
+
+The condition lines are the Korean source of the LOC lines and carry the same `<PAColor>` tags. The scripts are client condition calls separated by `;`, with `<or>` between alternatives and `!` for negation: `checkperiodbyGmt(0, 2019/9/4-00:00, 2019/9/25-09:00);`, `clearquest(40022,1);`, `progressquest(...)`, `getLevel()>59;`, `isContentsGroupOpen(0,2177);`, `checkClass(...)`, `getLifeLevel(6)>80;`. Across the four files:
+
+- `unknown_0d` reads as the condition for the quest to be offered: event periods, content groups, level and class checks, prerequisite quests (`mainquest.bss` quest 40022 / 2 needs `clearquest(40022,1);`).
+- `unknown_09` mostly lists the quests that rule this one out: the other branches of a crossroad (7500 / 81 lists 7500 / 82), `do not accept Techthon and Quality Iron` (2001 / 138 lists 2001 / 137), and the other quests of a "once a week per Family" set. No level check ever appears in it.
+
+Neither script holds every condition its LOC line names: of 496 `repetitionquest.bss` lines that start `from Lv. N`, 75 have the level check in a script. The rest is likely checked by the quest itself.
+
+### File Trailer (8 bytes)
+
+| Offset  | Type | Field         | Notes                                                    |
+| ------- | ---- | ------------- | -------------------------------------------------------- |
+| `+0x00` | u32  | pool offset   | File offset of the string pool's `string_count` (`0x69F1` here) |
+| `+0x04` | u32  | unknown_04    | Observed `0`                                             |
+
+### Reading With the Old Framing
+
+The handler still reads the older framing of this doc, which gives the same rows: a 10-byte "first group header" (the group header above, whose u16 key and zero name index read together as a u32 key) and a 23-byte "later group header", which is the previous group's 13-byte trailer followed by the next group's 10-byte header. In that framing the later header's `unknown_00`, `unknown_01`, `unknown_05`, `unknown_09` are the trailer fields, `+0x0D` is `group_key`, `unknown_0f` is the name index, `unknown_13` is `unknown_06` and `+0x14` the row count. The "text payload" after the stream was the last group's trailer, the string pool and the file trailer.
+
+Earlier versions of this doc called the row's `unknown_00` `flags` and `unknown_05` / `unknown_09` / `unknown_0d` `sequence_a` / `sequence_b` / `sequence_c`, and named the header fields `header_flag`, `unknown_a`, `unknown_b`, `unknown_c`, `group_key_a`, `group_key_b` and `unknown_d`.
 
 Derived packed quest ID:
 
@@ -87,27 +123,19 @@ belong to groups no longer in the file) and all 1,281 rows have a
 condition line. A quest in two groups has a line under each key: quest
 11060 / 1 sits in the groups with keys 2 (`[Event] Black Desert 2019
 Halloween`) and 62 (`[Event] Black Desert 2020 Halloween`). Condition lines carry `<PAColor>`
-tags; group names do not.
-
-### Text / Markup Payload
-
-Starts immediately after the decoded quest reference stream (file offset `0x00006772` in the pre-2026-09-27 fixture). The payload contains UTF-16-LE Korean text, PA markup, and date/time strings such as `2018-10-3 10:00` and `2026-05-28 07:00`.
-
-The first payload bytes resemble another small header followed by UTF-16 text, but record lengths and relationships to quest groups are not fully confirmed.
+tags; group names do not. The Korean names and condition lines in the
+string pool are the source of both, so they can stand in where LOC has no row.
 
 ---
 
 ## Reference Rows
 
-Pre-2026-09-27 fixture:
+Client 3458:
 
-| Group | Row | unknown_00 | Quest Chain ID | Quest ID | unknown_05 | unknown_09 | unknown_0d | Example LOC Title |
-| ----: | --: | ---------: | -------------: | -------: | ---------: | ---------: | ---------: | ----------------- |
-| 0     | 0   | `0`   | `11059`        | `9`      | `1`        | `2`        | `2`        | `[Event] Love for Pets` |
-| 0     | 1   | `0`   | `11059`        | `10`     | `1`        | `2`        | `2`        | `[Event] Savory Good Feed` |
-| 1     | 0   | `0`   | `2035`         | `6`      | `6`        | `2`        | `7`        | LOC type 18 title when available |
-| 4     | 0   | `0`   | `6809`         | `1`      | `30`       | `2`        | `2`        | LOC type 18 title when available |
-| 223   | 0   | `0`   | `11593`        | `1`      | `899`      | `2`        | `2`        | `[Event] Crio's Symbol of Joy and Fortune` |
+| Group | Row | Group Key | Quest Chain ID | Quest ID | unknown_05 | unknown_09 | unknown_0d | Example LOC Title |
+| ----: | --: | --------: | -------------: | -------: | ---------: | ---------: | ---------: | ----------------- |
+| 0     | 0   | `1`       | `11059`        | `9`      | `1`        | `2`        | `2`        | `[Event] Love for Pets` |
+| 0     | 1   | `1`       | `11059`        | `10`     | `1`        | `2`        | `2`        | `[Event] Savory Good Feed` |
 
 ---
 
@@ -123,34 +151,28 @@ Pre-2026-09-27 fixture:
 | Title        | text | Prefer LOC type 18 row with matching main/sub ID and `str_id4=0`, in its game colours |
 | Condition    | text | LOC type 58 `(packed_quest_id, group_key)`, `str_id4 = 1`, in its game colours |
 
-`group` (the index in file order), `unknown_05`, `unknown_09` and `unknown_0d` stay on the record for search and export but are not shown.
+`group` (the index in file order), `unknown_05`, `unknown_09` and `unknown_0d` stay on the record for search and export but are not shown. The handler does not read the string pool yet, so the event period and the two scripts are not shown either.
 
 ---
 
 ## Notes
 
-- Observed decompressed size is `816,761` bytes in the pre-2026-09-27 fixture and `820,905` in the 2026-09-27 client.
-- The decoded quest reference stream contains 224 groups and 1,255 rows in the pre-2026-09-27 fixture, 232 groups and 1,281 rows in the 2026-09-27 client.
-- The 1,255 fixture rows contain 1,226 unique quest IDs; 29 quest IDs appear twice.
-- Decoded quest reference rows use the same 17-byte shape as `mainquest.bss`.
-- The decoded quest reference stream ends at offset `0x00006772` in the fixture (`0x000069E4` in the 2026-09-27 client); the rest of the file is mostly UTF-16-LE text/markup payload.
+- Decompressed size is `820,905` bytes on client 3458 (`816,761` with 224 groups and 1,255 rows before 2026-09-27).
+- 27 quests sit in two groups (29 before 2026-09-27); each copy has its own condition line in LOC.
+- The string pool indexes shift whenever a string is added earlier in the file, so `unknown_05` / `unknown_09` / `unknown_0d` are not stable across patches: quest `77129` had `unknown_05 = 899` before 2026-09-27 and `896` after.
 
 ---
 
 ## Open Questions
 
-### Group Header Fields
+### Group Header Byte `unknown_06`
 
-The meaning of the other `unknown_*` group header fields is not confirmed.
+`0` on 227 of 232 groups here, and `1`, `2`, `6` or `8` on the rest (`[Hunting] Sniping, ...` 2, `Krogdalo's Three Seeds` 1, `[Season] Stronger Tuvala Gear` 8). In `recommendationquest.bss` it runs `0` to `8` and groups by theme ([Life] [Leap] gurus at 4 to 7, mounts and outfits at 2), so it may be a category or tab; which UI uses it is not confirmed.
 
-### `unknown_05` / `unknown_09` / `unknown_0d` Meaning
+### Script Roles
 
-The three row u32s look like order, parent, or link indexes, but their exact UI behavior is not confirmed. They are not stable across a patch: quest `77129` has `unknown_05 = 899` in the fixture and `896` in the 2026-09-27 client.
+Which of `unknown_09` and `unknown_0d` hides a quest and which offers it is read from the patterns above, not confirmed. Some `mainquest.bss` rows put a requirement in `unknown_09` with a negation (4015 / 5 `Another Chaser` has `!clearquest(4001,1);`), which fits "hidden while this holds".
 
 ### Duplicate Quest References
 
-29 packed quest IDs appear twice in the decoded quest reference stream (fixture). Each copy sits in a different group, and LOC type 58 has a condition line under both group keys, so a quest can be listed by two events (11060 / 1 in the 2019 and 2020 Halloween groups). Whether the game shows both copies at once is not confirmed.
-
-### Text Payload Boundaries
-
-The UTF-16 text/markup section after `0x00006772` is confirmed as text payload, but its record lengths and mapping back to quest groups still need decoding.
+A quest in two groups has a condition line under both group keys, so a quest can be listed by two events (11060 / 1 in the 2019 and 2020 Halloween groups). Whether the game shows both copies at once is not confirmed.

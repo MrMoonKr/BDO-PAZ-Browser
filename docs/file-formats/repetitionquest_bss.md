@@ -1,0 +1,76 @@
+# `repetitionquest.bss` Format
+
+## Purpose
+
+Defines the repeatable-quest list: daily, weekly and contribution quests grouped under names such as `[Contribution] [Lv. 35] Calpheon City` or `[Throne of Edana] [Weekly] For the Throne`, each group named by LOC type 42, with a condition line per quest. 48 groups and 806 quest references on client 3458. All text sits in a string pool at the end of the file (Korean group names, Korean condition lines, scripts).
+
+Example:
+
+```text
+group 0 (key 51, "[Throne of Edana] [Weekly] For the Throne") -> quest 9108 / 1 -> [Weekly] For the Throne: Aetherion
+```
+
+---
+
+## File Layout
+
+Same layout as [`newquest.bss`](newquest_bss.md), the layout reference: an 8-byte `PABR` header with a group count; per group a 10-byte header, 17-byte quest reference rows and a 13-byte trailer; a string pool; an 8-byte file trailer. One handler reads all four quest lists. Values seen on client 3458:
+
+| Field                                  | Observed                                              |
+| -------------------------------------- | ----------------------------------------------------- |
+| `group_count`                          | `48`                                                  |
+| First group                            | key `51`, `10` rows                                   |
+| Group header `unknown_06`              | `0` on every group                                    |
+| Group trailer start / end index        | Index `31`, the empty string: no event period         |
+| Row `unknown_00`                       | `0` on every row                                      |
+| Row `unknown_09` (first script)        | Empty string on 678 rows, a script on 128             |
+| Row `unknown_0d` (second script)       | Empty string on 517 rows, a script on 289             |
+| String pool                            | `633` strings; `string_count` at `0x000039DE`         |
+
+The empty string sits at index `31` here, so the script fields read `31` on most rows. The scripts check other quests of a weekly set (`clearquest(9108,2);<or>clearquest(9108,3);...`), life skill levels (`getLifeLevel(6)>80;`), content groups and random rolls (`checkRandom`); see String Pool in the `newquest.bss` doc for the two script roles.
+
+```text
+packed_quest_id = (quest_id << 16) | quest_chain_id
+```
+
+## Localization
+
+LOC type `42` holds the English text of this list, keyed by the group's `group_key`:
+
+| Key                                                               | Text                                                 |
+| ----------------------------------------------------------------- | ---------------------------------------------------- |
+| `str_id1 = group_key`, `str_id4 = 0`                              | Group name, e.g. key 51 `[Throne of Edana] [Weekly] For the Throne` |
+| `str_id1 = packed_quest_id`, `str_id2 = group_key`, `str_id4 = 1` | The quest's condition line, e.g. `<PAColor0xfff3d900>from 350 AP & 427 DP <PAOldColor>via the <PAColor0xfff3d900>Throne of Aetherion<PAOldColor> ...` |
+
+On client 3458 all 48 groups have a name (type 42 has 54, keys 1 to 54, so some belong to groups no longer in the file) and all 806 rows have a condition line. Condition lines carry `<PAColor>` tags (all but 1); group names do not. The string pool holds the Korean source of both.
+
+---
+
+## Suggested UI Layout
+
+| Column       | Type | Notes                                                            |
+| ------------ | ---- | ---------------------------------------------------------------- |
+| Main ID      | num  | `quest_chain_id`; LOC type 18 `str_id1`                          |
+| Sub ID       | num  | `quest_id`; LOC type 18 `str_id2`                                |
+| Group Key    | num  | `group_key` of the row's group                                   |
+| Group Name   | text | LOC type 42 `str_id1 = group_key`, `str_id4 = 0`                 |
+| Icon         | text | Quest icon resolved from `packed_quest_id` through the quest icon index |
+| Title        | text | Prefer LOC type 18 row with matching main/sub ID and `str_id4=0`, in its game colours |
+| Condition    | text | LOC type 42 `(packed_quest_id, group_key)`, `str_id4 = 1`, in its game colours |
+
+`group` (the index in file order), `unknown_00`, `unknown_05`, `unknown_09` and `unknown_0d` stay on the record for search and export but are not shown. The handler does not read the string pool yet.
+
+---
+
+## Notes
+
+- Decompressed size is `200,069` bytes on client 3458.
+- One quest sits in two groups, with a condition line under each key: quest 4500 / 131 is in key 3 (`[Contribution] [Lv. 52] Mediah`) and key 45 (`Monster Zone Info`).
+
+---
+
+## Open Questions
+
+### Shared Fields
+
+`unknown_06` and the roles of the two scripts are open for all four lists; see the Open Questions of [`newquest.bss`](newquest_bss.md).

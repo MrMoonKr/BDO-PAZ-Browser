@@ -76,11 +76,14 @@ are `str_id2 | str_id3 << 16`. Their `key0` is `str_type` and their `id` is
 | 22       | Worker skill names and descriptions, `str_id1` = skill ID, `str_id4` selects sub-field     |
 | 23       | NPC dialogue lines, `str_id1` = dialogue ID, `str_id4` = line index                        |
 | 25       | Quest chain/group names, `str_id1` = chain/group ID (matches `questgroup.dbss` group_id)   |
+| 28       | `recommendationquest.bss` group names (`str_id1` = group key, `str_id4=0`) and quest condition lines (`str_id1` = packed quest ID, `str_id2` = group key, `str_id4=1`); see Type 58 below |
 | 29       | Town/node names, `str_id1` = node_id from `planttown.bss`; `str_id4` selects sub-field     |
 | 34       | Knowledge card text, `str_id1` = `mentalcard.dbss` card_id; see Type 34 below              |
 | 37       | UI string sheets, `str_id1` = `stringtable.bss` key hash; see Type 37 below                |
 | 38       | Other systems                                                                              |
 | 39       | Audio voice lines                                                                          |
+| 42       | `repetitionquest.bss` group names (`str_id1` = group key, `str_id4=0`) and quest condition lines (`str_id1` = packed quest ID, `str_id2` = group key, `str_id4=1`); see Type 58 below |
+| 43       | `mainquest.bss` group names (`str_id1` = group key, `str_id4=0`) and quest condition lines (`str_id1` = packed quest ID, `str_id2` = group key, `str_id4=1`); see Type 58 below |
 | 44       | Central Market categories, `str_id1` = main category; see Type 44 below                    |
 | 50       | Pearl Shop product names and descriptions, `str_id1` = `cashproduct.dbss` product_id, `str_id3` = service code; see Type 50 below |
 | 52       | Item-set bonus text, `str_id1` = `skillpiece.dbss` key; see Type 52 below                  |
@@ -529,7 +532,7 @@ record key (87 of the 93 IDs; 89 are also skill numbers in `skill.dbss`).
 The selector split follows the notes of
 [bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor).
 
-### Type 58, new quest list (`newquest.bss`)
+### Types 58, 43, 28 and 42, quest lists (`newquest.bss`, `mainquest.bss`, `recommendationquest.bss`, `repetitionquest.bss`)
 
 Type 58 holds 1,883 rows. `str_id4 = 0` rows name the list's groups,
 `str_id1` = the group key in `newquest.bss` (265 keys, 1 to 322); the
@@ -538,13 +541,15 @@ Type 58 holds 1,883 rows. `str_id4 = 0` rows name the list's groups,
 group key, e.g. `(132178, 3)` `Complete <PAColor0xfff3d900>A Struggle with the
 Seagull<PAOldColor>`. Every `newquest.bss` group and row has its row on client 3458.
 
-Types 28, 42 and 43 have the same two-field shape (names under small IDs,
-condition lines under packed quest IDs with a group in `str_id2`) and name
-recommended quests (`[ADV Support] Inventory Expansion!`), contribution
-quests (`[Contribution] [Lv. 35] Calpheon City`) and main quest chains
-(`Journey Begins`). They likely belong to `recommendationquest.bss`,
-`repetitionquest.bss` and `mainquest.bss`, which are not decoded far enough
-to check.
+Types 43, 28 and 42 have the same two-field shape and hold the text of
+the other three quest lists, which share the `newquest.bss` layout: type 43
+names the `mainquest.bss` chains (key 104 `[Special Growth] Taking My Own
+Path`), type 28 the `recommendationquest.bss` groups (key 165 `[Life 101]
+The Adventurer That Does It All`) and type 42 the `repetitionquest.bss`
+groups (key 51 `[Throne of Edana] [Weekly] For the Throne`). On client 3458
+every group of the three files has a name and every row a condition line.
+Each type has more names than its file has groups (170 for 120, 192 for
+122, 54 for 48).
 
 ### Type 63, journal quest metadata (`journalquest.dbss`)
 
