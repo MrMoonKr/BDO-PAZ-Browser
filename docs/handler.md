@@ -844,7 +844,8 @@ _common/
 ├── lease.py             # Lease, its text and dialog_leases() (CHARACTER_LEASES)
 ├── pa_text.py           # game text tags: pa_fields() / pa_cell() / pa_line_cell() for records, pa_html(), argb_css()
 ├── record_reader.py     # RecordReader: walks one variable-length record in order
-└── skill.py             # skill keys (skill_no << 16 | level) and LOC type 10 names
+├── skill.py             # skill keys (skill_no << 16 | level) and LOC type 10 names
+└── worker.py            # plantation workers: WorkerGrade, worker_name_cell(), stat scales and format_stat()
 ```
 
 Read an offset companion with `parse_pabr_offset_rows()` (PABR magic, count,

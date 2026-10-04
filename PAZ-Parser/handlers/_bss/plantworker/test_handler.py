@@ -16,8 +16,15 @@ from tests.framework import (
     run_case,
 )
 
-from .display import LUCK_SCALE, MOVE_SPEED_SCALE, WORK_SPEED_SCALE, format_stat, worker_name_cell
-from .grade import WorkerGrade, worker_grade
+from _common.worker import (
+    LUCK_SCALE,
+    MOVE_SPEED_SCALE,
+    WORK_SPEED_SCALE,
+    WorkerGrade,
+    format_stat,
+    worker_grade,
+    worker_name_cell,
+)
 
 
 _ICON_FOLDER = "New_UI_Common_forLua/Widget/WorldMap/WorkerIcon/"

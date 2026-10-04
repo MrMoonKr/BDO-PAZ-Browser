@@ -24,7 +24,7 @@ from __future__ import annotations
 from enum import IntEnum
 from typing import NamedTuple
 
-from _bss.plantworker.display import LUCK_SCALE, WORK_SPEED_SCALE
+from _common.worker import LUCK_SCALE, WORK_SPEED_SCALE
 
 
 class EffectType(IntEnum):

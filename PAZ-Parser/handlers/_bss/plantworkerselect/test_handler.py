@@ -18,7 +18,7 @@ from tests.framework import (
     run_case,
 )
 
-from _bss.plantworker.grade import WorkerGrade
+from _common.worker import WorkerGrade
 
 
 _ICON_FOLDER = "New_UI_Common_forLua/Widget/WorldMap/WorkerIcon/"

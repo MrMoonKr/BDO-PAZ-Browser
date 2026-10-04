@@ -9,8 +9,7 @@ from _common.character import character_name
 from _common.html import Column, e, sort_keys, table
 from _common.lang import load_handler_strings
 from _common.town import town_name
-from _bss.plantworker.display import worker_name_cell
-from _bss.plantworker.grade import worker_grade
+from _common.worker import worker_grade, worker_name_cell
 from _bss.plantworker.parser import parse_plantworker_records
 from .parser import parse_plantworkerselect_records
 

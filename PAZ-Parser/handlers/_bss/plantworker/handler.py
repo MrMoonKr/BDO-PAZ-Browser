@@ -8,8 +8,14 @@ from bdo_preview import PreviewHandler
 from _common.character import character_name
 from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.lang import load_handler_strings
-from .display import LUCK_SCALE, MOVE_SPEED_SCALE, WORK_SPEED_SCALE, format_stat, worker_name_cell
-from .grade import worker_grade
+from _common.worker import (
+    LUCK_SCALE,
+    MOVE_SPEED_SCALE,
+    WORK_SPEED_SCALE,
+    format_stat,
+    worker_grade,
+    worker_name_cell,
+)
 from .parser import parse_plantworker_records
 
 
