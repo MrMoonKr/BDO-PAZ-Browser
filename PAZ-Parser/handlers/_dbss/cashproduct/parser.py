@@ -1,12 +1,9 @@
 from __future__ import annotations
 
 from _common.binary import u32
+from _common.pabr_offset import parse_bare_u32_offset_rows
 from _common.prefixed_string import find_prefixed_ascii, read_prefixed_utf16
 
-
-# The offset companion has no PABR magic and no trailer, a u32 count then rows.
-_OFFSET_HEADER_SIZE = 4
-_OFFSET_ROW_SIZE = 12
 
 _BLOCK_HEADER_SIZE = 4
 _NAME_PREFIX_OFFSET = 0x04
@@ -20,28 +17,11 @@ ICON_ROOT = "ui_texture/"
 
 
 def parse_cashproductoffset_records(data: bytes) -> list[dict]:
-    """Parse the product-ID index into plain dicts."""
-    if len(data) < _OFFSET_HEADER_SIZE:
-        raise ValueError("cashproductoffset.dbss is too small to hold a count.")
-
-    count = u32(data, 0)
-    end = _OFFSET_HEADER_SIZE + count * _OFFSET_ROW_SIZE
-    if end > len(data):
-        raise ValueError(
-            f"cashproductoffset.dbss declares {count:,} rows but is only "
-            f"{len(data):,} bytes."
-        )
-
-    records: list[dict] = []
-    for index in range(count):
-        pos = _OFFSET_HEADER_SIZE + index * _OFFSET_ROW_SIZE
-        records.append({
-            "product_id": u32(data, pos),
-            "data_offset": u32(data, pos + 0x04),
-            "data_size": u32(data, pos + 0x08),
-        })
-
-    return records
+    """Parse the product-ID index (no PABR magic, no trailer) into plain dicts."""
+    return [
+        {"product_id": row.entry_id, "data_offset": row.offset, "data_size": row.size}
+        for row in parse_bare_u32_offset_rows(data)
+    ]
 
 
 def _linked_item_id(data: bytes, icon_end: int, block_end: int) -> int:

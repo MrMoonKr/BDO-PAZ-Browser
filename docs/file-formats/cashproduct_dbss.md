@@ -163,8 +163,8 @@ offer rather than an item icon.
   `Polar Bear (Tier 3)` grants `[Pet] Polar Bear (Tier 3)`.
 - Descriptions embed `<PAColor0xFFE9BD23>` and `<PAOldColor>` markup, the same
   tags as LOC text.
-- `cashproductoffset.dbss` is the only offset companion observed so far with no
-  `PABR` magic and no trailer, so the shared offset-table helpers do not apply.
+- `cashproductoffset.dbss` has no `PABR` magic and no trailer: a u32 count,
+  then u32-keyed rows (`parse_bare_u32_offset_rows()`).
 - 17 `gamecommondata` tables store inline icon paths. This file is second by
   volume with 14,750 unique paths, behind `itemenchant.dbss` with 21,768.
 

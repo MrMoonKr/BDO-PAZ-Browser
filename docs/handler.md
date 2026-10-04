@@ -847,9 +847,10 @@ _common/
 
 Read an offset companion with `parse_pabr_offset_rows()` (PABR magic, count,
 u16-keyed rows), `parse_pabr_u32_offset_rows()` (the same with u32 keys, e.g.
-`mentalcardoffset.dbss`) or `parse_bare_offset_rows()` (count, rows), never by
-hand. Several older parsers (`itemenchant`, `plantzone`, `cashproduct` and
-others) still read their offset rows themselves. Walk a record of fixed fields
+`mentalcardoffset.dbss`), `parse_bare_offset_rows()` or
+`parse_bare_u32_offset_rows()` (count, rows), never by hand. A u16 field
+followed by a zero u16 (`plantzoneoffset.dbss` keys, `petoffset.dbss` sizes)
+reads as one u32. Walk a record of fixed fields
 and u64-prefixed strings with `RecordReader(data, start, end, label)`: `unpack`,
 `text(wide=...)`, `skip`, and `at_end()` / `remaining()` for the final size
 check; it raises ValueError as soon as a field runs past the record. For inline

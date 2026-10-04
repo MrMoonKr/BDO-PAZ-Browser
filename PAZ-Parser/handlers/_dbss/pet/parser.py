@@ -2,37 +2,23 @@ from __future__ import annotations
 
 import struct
 
+from _common.pabr_offset import parse_bare_offset_rows, parse_bare_u32_offset_rows
 
-_OFFSET_HEADER_SIZE = 4
-_PET_OFFSET_RECORD_SIZE = 10
+
 _PET_HEADER_SIZE = 32
 _PET_FOOTER_SIZE = 94
 _PETGRADE_HEADER_SIZE = 4
 _PETGRADE_RECORD_SIZE = 12
-_PETGRADE_OFFSET_RECORD_SIZE = 12
+# Each petgrade.dbss offset points past the record's 4-byte key prefix.
+_PETGRADE_KEY_PREFIX_SIZE = 4
 
 
 def parse_petoffset_records(data: bytes) -> list[dict]:
-    if len(data) < _OFFSET_HEADER_SIZE:
-        return []
-
-    (count,) = struct.unpack_from("<I", data, 0)
-    records: list[dict] = []
-
-    for index in range(count):
-        pos = _OFFSET_HEADER_SIZE + index * _PET_OFFSET_RECORD_SIZE
-        if pos + _PET_OFFSET_RECORD_SIZE > len(data):
-            break
-
-        pet_id, data_offset, data_size, padding = struct.unpack_from("<HIHH", data, pos)
-        records.append({
-            "pet_id": pet_id,
-            "data_offset": data_offset,
-            "data_size": data_size,
-            "padding": padding,
-        })
-
-    return records
+    """The offset rows; the u16 size and the zero u16 after it read as one u32."""
+    return [
+        {"pet_id": row.entry_id, "data_offset": row.offset, "data_size": row.size}
+        for row in parse_bare_offset_rows(data)
+    ]
 
 
 def parse_petgrade_records(data: bytes) -> list[dict]:
@@ -64,31 +50,18 @@ def parse_petgrade_records(data: bytes) -> list[dict]:
 
 
 def parse_petgradeoffset_records(data: bytes) -> list[dict]:
-    if len(data) < _PETGRADE_HEADER_SIZE:
-        return []
-
-    (count,) = struct.unpack_from("<I", data, 0)
-    records: list[dict] = []
-
-    for index in range(count):
-        pos = _PETGRADE_HEADER_SIZE + index * _PETGRADE_OFFSET_RECORD_SIZE
-        if pos + _PETGRADE_OFFSET_RECORD_SIZE > len(data):
-            break
-
-        key, padding, data_offset, data_size = struct.unpack_from("<HHII", data, pos)
-        variant = key & 0xFF
-        species = key >> 8
-        records.append({
-            "key": key,
-            "variant": variant,
-            "species": species,
-            "data_offset": data_offset,
-            "data_size": data_size,
-            "record_start": data_offset - 4,
-            "padding": padding,
-        })
-
-    return records
+    """The offset rows; the u16 key and the zero u16 after it read as one u32."""
+    return [
+        {
+            "key": row.entry_id,
+            "variant": row.entry_id & 0xFF,
+            "species": row.entry_id >> 8,
+            "data_offset": row.offset,
+            "data_size": row.size,
+            "record_start": row.offset - _PETGRADE_KEY_PREFIX_SIZE,
+        }
+        for row in parse_bare_u32_offset_rows(data)
+    ]
 
 
 def parse_petgrade_records_with_offsets(data: bytes, offset_data: bytes) -> list[dict]:

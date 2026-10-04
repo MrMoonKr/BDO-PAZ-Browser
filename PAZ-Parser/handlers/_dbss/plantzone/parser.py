@@ -11,8 +11,7 @@ from __future__ import annotations
 
 import struct
 
-_OFFSET_ROW_SIZE = 12
-_OFFSET_HEADER_SIZE = 4
+from _common.pabr_offset import parse_bare_u32_offset_rows
 
 # Record field offsets; the last four are unaligned.
 _UNKNOWN_0E = 0x0E
@@ -29,24 +28,11 @@ WORKER_SPECIES_NAMES: tuple[str, ...] = (
 
 
 def parse_offset_records(data: bytes) -> list[dict]:
-    if len(data) < _OFFSET_HEADER_SIZE:
-        return []
-
-    count = struct.unpack_from("<I", data, 0)[0]
-    records: list[dict] = []
-
-    for i in range(count):
-        pos = _OFFSET_HEADER_SIZE + i * _OFFSET_ROW_SIZE
-        if pos + _OFFSET_ROW_SIZE > len(data):
-            break
-        record_id, _zero, data_offset, data_size = struct.unpack_from("<HHII", data, pos)
-        records.append({
-            "record_id": record_id,
-            "data_offset": data_offset,
-            "data_size": data_size,
-        })
-
-    return records
+    """The offset rows; the u16 record ID and the zero u16 after it read as one u32."""
+    return [
+        {"record_id": row.entry_id, "data_offset": row.offset, "data_size": row.size}
+        for row in parse_bare_u32_offset_rows(data)
+    ]
 
 
 def parse_plantzone_records(data: bytes, offset_data: bytes) -> list[dict]:

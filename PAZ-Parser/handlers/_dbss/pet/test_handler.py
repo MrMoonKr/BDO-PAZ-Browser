@@ -99,7 +99,8 @@ OFFSET_CASE = HandlerCase(
     tests=[
         SchemaTest(required_keys=["pet_id", "data_offset", "data_size"]),
         DeclaredCountTest(declared=header_count()),
-        RangeTest(col="padding", min_val=0, max_val=0),
+        # The u16 size and the zero u16 after it read as one u32.
+        RangeTest(col="data_size", min_val=0, max_val=0xFFFF),
         TargetTest(col="pet_id", value=_CAT, expected={"data_size": _PET_FIXED_SIZE + len(_CAT_ICON)}),
     ],
 )
@@ -157,7 +158,8 @@ GRADE_OFFSET_CASE = HandlerCase(
         SchemaTest(required_keys=["key", "variant", "species", "data_offset", "data_size"]),
         DeclaredCountTest(declared=header_count()),
         RangeTest(col="data_size", min_val=8, max_val=8),
-        RangeTest(col="padding", min_val=0, max_val=0),
+        # The u16 key and the zero u16 after it read as one u32.
+        RangeTest(col="key", min_val=0, max_val=0xFFFF),
         TargetTest(col="key", value=262, expected={"variant": 6, "species": 1}),
         TargetTest(col="key", value=9744, expected={"variant": 16, "species": 38}),
     ],

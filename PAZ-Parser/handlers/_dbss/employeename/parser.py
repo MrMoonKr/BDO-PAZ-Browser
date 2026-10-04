@@ -3,29 +3,14 @@ from __future__ import annotations
 import struct
 
 from _common.binary import u32
-
-
-_OFFSET_ROW_SIZE = 12
-_OFFSET_HEADER_SIZE = 4
+from _common.pabr_offset import parse_bare_u32_offset_rows
 
 
 def parse_employeenameoffset_records(data: bytes) -> list[dict]:
-    count = u32(data, 0)
-    records: list[dict] = []
-
-    for index in range(count):
-        pos = _OFFSET_HEADER_SIZE + index * _OFFSET_ROW_SIZE
-        if pos + _OFFSET_ROW_SIZE > len(data):
-            break
-
-        employee_name_id, offset, size = struct.unpack_from("<III", data, pos)
-        records.append({
-            "employee_name_id": employee_name_id,
-            "data_offset": offset,
-            "data_size": size,
-        })
-
-    return records
+    return [
+        {"employee_name_id": row.entry_id, "data_offset": row.offset, "data_size": row.size}
+        for row in parse_bare_u32_offset_rows(data)
+    ]
 
 
 def parse_employeename_records(data: bytes, offset_data: bytes) -> list[dict]:

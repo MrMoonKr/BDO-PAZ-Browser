@@ -66,6 +66,7 @@ Provides O(1) lookup by (species, variant) key, one entry per main-file record.
 | `+0x08` | u32  | data_size   | Always 8 (= record size minus the 4-byte key prefix)                    |
 
 `record_start = data_offset - 4` gives the position of the full 12-byte record in the main file.
+The parser reads `key` and the padding as one u32 (`parse_bare_u32_offset_rows()`).
 
 ---
 

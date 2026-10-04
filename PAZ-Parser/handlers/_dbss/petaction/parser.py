@@ -3,36 +3,20 @@ from __future__ import annotations
 import struct
 from pathlib import PureWindowsPath
 
-from _common.prefixed_string import read_prefixed_at
+from _common.pabr_offset import parse_bare_u32_offset_rows
+from _common.record_reader import RecordReader
 
 
-_OFFSET_HEADER_SIZE = 4
-_OFFSET_RECORD_SIZE = 12
-_NAME_PREFIX_OFFSET = 0x10
+_HEADER = struct.Struct("<IIII")
 _TRAILER_SIZE = 12
 _MAGIC = 0xDEBA1DCD
 
 
 def parse_petactionoffset_records(data: bytes) -> list[dict]:
-    if len(data) < _OFFSET_HEADER_SIZE:
-        return []
-
-    (count,) = struct.unpack_from("<I", data, 0)
-    records: list[dict] = []
-
-    for index in range(count):
-        pos = _OFFSET_HEADER_SIZE + index * _OFFSET_RECORD_SIZE
-        if pos + _OFFSET_RECORD_SIZE > len(data):
-            break
-
-        action_id, record_offset, record_size = struct.unpack_from("<III", data, pos)
-        records.append({
-            "action_id": action_id,
-            "record_offset": record_offset,
-            "record_size": record_size,
-        })
-
-    return records
+    return [
+        {"action_id": row.entry_id, "record_offset": row.offset, "record_size": row.size}
+        for row in parse_bare_u32_offset_rows(data)
+    ]
 
 
 def _derive_action_name(icon_path: str) -> str:
@@ -44,21 +28,19 @@ def _derive_action_name(icon_path: str) -> str:
 
 
 def _parse_petaction_payload(row: int, offset_record: dict, block: bytes) -> dict:
-    if len(block) < _NAME_PREFIX_OFFSET + _TRAILER_SIZE:
-        raise ValueError(f"pet action record {row} is too small")
-
-    action_id, reserved_04, reserved_08, magic = struct.unpack_from("<IIII", block, 0x00)
+    reader = RecordReader(block, 0, len(block), f"pet action record {row}")
+    action_id, reserved_04, reserved_08, magic = reader.unpack(_HEADER)
     if magic != _MAGIC:
         raise ValueError(f"pet action record {row} has unexpected magic 0x{magic:08X}")
 
     # Two u64-length UTF-16 strings follow: the Korean action name, then the icon path.
-    name_kr, path_prefix = read_prefixed_at(block, _NAME_PREFIX_OFFSET, len(block), wide=True)
-    icon_path, path_end = read_prefixed_at(block, path_prefix, len(block), wide=True)
-    trailer = block[path_end:]
-    if len(trailer) != _TRAILER_SIZE:
+    name_kr = reader.text(wide=True)
+    icon_path = reader.text(wide=True)
+    if reader.remaining() != _TRAILER_SIZE:
         raise ValueError(
-            f"pet action record {row} has {len(trailer)} bytes after the icon path, expected {_TRAILER_SIZE}"
+            f"pet action record {row} has {reader.remaining()} bytes after the icon path, expected {_TRAILER_SIZE}"
         )
+    trailer = block[reader.pos:]
 
     return {
         "row": row,

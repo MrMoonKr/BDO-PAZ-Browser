@@ -140,7 +140,7 @@ Provides the byte ranges for records in `plantzone.dbss`.
 | `+0x04` | u32  | data_offset | Absolute byte offset into `plantzone.dbss`        |
 | `+0x08` | u32  | data_size   | Record payload byte count: `32`, `34`, or `37`    |
 
-Offset rows are not sorted by `data_offset`, but sorted rows cover every byte from `plantzone.dbss +0x04` through EOF with no gaps or overlaps.
+Offset rows are not sorted by `data_offset`, but sorted rows cover every byte from `plantzone.dbss +0x04` through EOF with no gaps or overlaps. The parser reads `record_id` and `zero` as one u32 (`parse_bare_u32_offset_rows()`).
 
 ---
 

@@ -3,16 +3,12 @@ from __future__ import annotations
 import struct
 from collections.abc import Iterator
 
-from _common.binary import u8, u16, u32
+from _common.binary import u8, u16
 from _common.item_key import split_item_key
+from _common.pabr_offset import PabrOffsetRow, parse_pabr_u32_offset_rows
 from _common.prefixed_string import find_prefixed_ascii
 from _dbss.skill.parser import build_skill_buff_index
 
-
-_MAGIC = b"PABR"
-_OFFSET_HEADER_SIZE = 8
-_OFFSET_ROW_SIZE = 12
-_TRAILER_SIZE = 12
 
 # Keys are packed item keys (`_common/item_key.py`). Level 0 is the base item
 # and there is exactly one per item ID; an item has one record per level up to
@@ -37,31 +33,18 @@ _SKILL_KEYS_STRUCT = struct.Struct("<II")
 
 def parse_itemenchantoffset_records(data: bytes) -> list[dict]:
     """Parse the key/offset index into plain dicts."""
-    if len(data) < _OFFSET_HEADER_SIZE or data[:4] != _MAGIC:
-        raise ValueError("itemenchantoffset.dbss has invalid magic.")
+    return [_offset_record(row) for row in parse_pabr_u32_offset_rows(data)]
 
-    count = u32(data, 4)
-    end = _OFFSET_HEADER_SIZE + count * _OFFSET_ROW_SIZE
-    if end > len(data):
-        raise ValueError(
-            f"itemenchantoffset.dbss declares {count:,} rows but is only "
-            f"{len(data):,} bytes."
-        )
 
-    records: list[dict] = []
-    for index in range(count):
-        pos = _OFFSET_HEADER_SIZE + index * _OFFSET_ROW_SIZE
-        key = u32(data, pos)
-        item_id, enchant_level = split_item_key(key)
-        records.append({
-            "key": key,
-            "item_id": item_id,
-            "enchant_level": enchant_level,
-            "data_offset": u32(data, pos + 0x04),
-            "data_size": u32(data, pos + 0x08),
-        })
-
-    return records
+def _offset_record(row: PabrOffsetRow) -> dict:
+    item_id, enchant_level = split_item_key(row.entry_id)
+    return {
+        "key": row.entry_id,
+        "item_id": item_id,
+        "enchant_level": enchant_level,
+        "data_offset": row.offset,
+        "data_size": row.size,
+    }
 
 
 def max_enchant_levels(offset_rows: list[dict]) -> dict[int, int]:

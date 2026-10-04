@@ -116,7 +116,8 @@ Provides O(1) lookup of any pet record by `pet_id`. Records are **not** stored i
 | `+0x08` | u16  | —           | Always 0; padding                                                               |
 
 `record_start = data_offset - 2` gives the position of the 2-byte key prefix in the file.  
-`total_record_size = data_size + 2`.
+`total_record_size = data_size + 2`.  
+The parser reads `data_size` and the padding as one u32 (`parse_bare_offset_rows()`).
 
 ---
 
