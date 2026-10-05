@@ -6,6 +6,9 @@ On an entry, `decrypt` and `decompress` work on bytes already in memory, so
 disk speed and the OS file cache stay out of their numbers. `read` is the
 whole path the app takes to open a file, disk read included. `extract` is what
 `extract_all` does per file: `read`, then the size check and the write to disk.
+`parse` is the handler's `get_records()` on the decoded file, with LOC and the
+lookup indexes loaded as in the app; it only exists for a file with a parsed
+view.
 
 On an archive, `extract` runs `extract_all`'s loop over every entry in it. It
 leaves out `extract_all`'s meta file parse, which reads every entry of the
@@ -20,7 +23,9 @@ from pathlib import Path
 
 from bdo_models import PazEntry
 from cli.errors import CliError
-from cli.parsed_file import find_entry
+from api.bdo_api import Api
+from bdo_preview import get_handler, has_parsed_view
+from cli.parsed_file import ParsedFile, find_entry, load_parsed_file
 from cli.session import open_session
 from paz.bdo_paz_extract import extract_entries, extract_entry
 from paz.bdo_payload_reader import (
@@ -40,7 +45,7 @@ DEFAULT_ENTRY = "morningland_boss_03_02_full.dds"
 # A median-size archive (9 MB, about 800 files) mixing .bwp, .xml, .bss,
 # .dbss and more, compressed and stored, encrypted and plain.
 DEFAULT_ARCHIVE = "pad05889.paz"
-STAGE_NAMES = ("decrypt", "decompress", "read", "extract")
+STAGE_NAMES = ("decrypt", "decompress", "read", "extract", "parse")
 _HASH_CHUNK_BYTES = 1024 * 1024
 
 
@@ -48,6 +53,11 @@ _HASH_CHUNK_BYTES = 1024 * 1024
 class Stage:
     name: str
     run: Callable[[], object]
+    # Untimed, before every run: undoes what a run leaves behind that would
+    # make the next one cheaper.
+    prepare: Callable[[], None] | None = None
+    # Time with the garbage collector on, as the app runs.
+    with_gc: bool = False
 
 
 @dataclass(frozen=True)
@@ -57,10 +67,20 @@ class Workload:
     build_stages: Callable[[Path], list[Stage]]
 
 
-def load_entry_workload(paz_folder: str | None, name: str) -> Workload:
-    """Find `name` in the PAZ folder and read its stored bytes into memory."""
-    paz_root, entries = _open_folder(paz_folder)
-    entry = find_entry(entries, name)
+def load_entry_workload(paz_folder: str | None, name: str, wanted: Sequence[str] | None) -> Workload:
+    """Find `name` in the PAZ folder and read its stored bytes into memory.
+
+    LOC and the lookup indexes, about 5 s more, only load when the `parse`
+    stage will run: `wanted` (None for every stage) asks for it and the file
+    has a parsed view.
+    """
+    api = _open_api(paz_folder)
+    entry = find_entry(api.entries, name)
+    parsed: ParsedFile | None = None
+    if _will_parse(entry, wanted):
+        api = _open_api(paz_folder, with_loc_and_indexes=True)
+        parsed = load_parsed_file(api, entry.internal_path)
+    paz_root = _paz_root(api)
     archive_path = paz_root / entry.archive_name
     try:
         raw = read_raw_payload(archive_path, entry)
@@ -75,14 +95,15 @@ def load_entry_workload(paz_folder: str | None, name: str) -> Workload:
         size_bytes=entry.uncompressed_size,
         sha256=hashlib.sha256(raw).hexdigest(),
     )
-    return Workload(info, lambda scratch: _entry_stages(archive_path, entry, raw, decrypted, scratch))
+    return Workload(info, lambda scratch: _entry_stages(archive_path, entry, raw, decrypted, parsed, scratch))
 
 
 def load_archive_workload(paz_folder: str | None, archive: str) -> Workload:
     """Every entry stored in `archive` (`pad05889.paz`, any case, extension optional)."""
-    paz_root, entries = _open_folder(paz_folder)
+    api = _open_api(paz_folder)
+    paz_root = _paz_root(api)
     wanted = archive_file_name(archive)
-    in_archive = [entry for entry in entries if entry.archive_name.lower() == wanted]
+    in_archive = [entry for entry in api.entries if entry.archive_name.lower() == wanted]
     if not in_archive:
         raise CliError(f"no file of the client is stored in {wanted}.")
     archive_path = paz_root / in_archive[0].archive_name
@@ -129,11 +150,21 @@ def select_stages(stages: Sequence[Stage], wanted: Sequence[str] | None, workloa
     return [stage for stage in stages if stage.name in wanted]
 
 
-def _open_folder(paz_folder: str | None) -> tuple[Path, list[PazEntry]]:
-    api = open_session(paz_folder, load_loc=False, load_indexes=False)
+def _open_api(paz_folder: str | None, *, with_loc_and_indexes: bool = False) -> Api:
+    return open_session(paz_folder, load_loc=with_loc_and_indexes, load_indexes=with_loc_and_indexes)
+
+
+def _paz_root(api: Api) -> Path:
     if api.paz_root is None:
         raise CliError("the PAZ folder did not load.")
-    return api.paz_root, api.entries
+    return api.paz_root
+
+
+def _will_parse(entry: PazEntry, wanted: Sequence[str] | None) -> bool:
+    if wanted is not None and "parse" not in wanted:
+        return False
+    path = Path(entry.internal_path)
+    return has_parsed_view(get_handler(path.name, path.suffix))
 
 
 def _entry_stages(
@@ -141,6 +172,7 @@ def _entry_stages(
     entry: PazEntry,
     raw: bytes,
     decrypted: bytes,
+    parsed: ParsedFile | None,
     scratch: Path,
 ) -> list[Stage]:
     """The stages that apply to the entry, in pipeline order."""
@@ -162,6 +194,12 @@ def _entry_stages(
             ),
         )
     )
+    if parsed is not None:
+        # Every run parses cold: a handler keeps its index per payload, so the
+        # second call on the same bytes would skip building it. The collector
+        # stays on because the app parses with it on, and in a big table its
+        # passes over the loaded LOC and indexes are a real share of the time.
+        stages.append(Stage("parse", parsed.records, prepare=parsed.handler.clear_data_cache, with_gc=True))
     return stages
 
 

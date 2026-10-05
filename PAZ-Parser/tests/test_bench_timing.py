@@ -1,6 +1,9 @@
 """bench.timing and the stage selection helpers of bench.stages."""
 from __future__ import annotations
 
+import gc
+import time
+
 import pytest
 
 from bench.stages import Stage, archive_file_name, parse_stage_names, select_stages
@@ -43,6 +46,45 @@ def test_time_stage_reports_each_timed_run_in_order() -> None:
     assert seen == [1, 2, 3]
 
 
+def test_time_stage_prepares_before_every_run() -> None:
+    order: list[str] = []
+
+    time_stage(
+        lambda: order.append("run"),
+        warmup=1,
+        repeats=2,
+        prepare=lambda: order.append("prepare"),
+        measure_memory=True,
+    )
+
+    assert order == ["prepare", "run"] * 4
+
+
+@pytest.mark.parametrize("with_gc", [False, True])
+def test_time_stage_sets_the_collector_for_the_run_and_restores_it(with_gc: bool) -> None:
+    seen: list[bool] = []
+    was_enabled = gc.isenabled()
+
+    time_stage(lambda: seen.append(gc.isenabled()), warmup=0, repeats=1, with_gc=with_gc)
+
+    assert seen == [with_gc]
+    assert gc.isenabled() == was_enabled
+
+
+class _SlowToFree:
+    def __del__(self) -> None:
+        time.sleep(_FREE_SECONDS)
+
+
+_FREE_SECONDS = 0.2
+
+
+def test_time_stage_frees_the_result_after_the_clock_stops() -> None:
+    timing = time_stage(_SlowToFree, warmup=0, repeats=1)
+
+    assert timing.times_s[0] < _FREE_SECONDS
+
+
 @pytest.mark.parametrize(("warmup", "repeats"), [(-1, 1), (0, 0)])
 def test_time_stage_rejects_impossible_run_counts(warmup: int, repeats: int) -> None:
     with pytest.raises(ValueError):
@@ -66,6 +108,7 @@ def test_stage_timing_needs_a_run() -> None:
 def test_parse_stage_names_accepts_a_comma_list_in_any_case() -> None:
     assert parse_stage_names(None) is None
     assert parse_stage_names(" Decrypt, read ") == ["decrypt", "read"]
+    assert parse_stage_names("parse") == ["parse"]
 
 
 @pytest.mark.parametrize("text", ["", "decrypt,unpack"])

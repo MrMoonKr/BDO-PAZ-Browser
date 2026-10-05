@@ -17,6 +17,8 @@ from .stages import Stage
 
 def profile_stage(stage: Stage, top: int, save_to: Path | None = None) -> str:
     """The `top` entries of `stage` by cumulative time, as pstats prints them."""
+    if stage.prepare is not None:
+        stage.prepare()
     profiler = cProfile.Profile()
     profiler.enable()
     try:

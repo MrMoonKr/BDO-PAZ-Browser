@@ -148,6 +148,16 @@ def test_data_cache_multiple_names_independent() -> None:
     assert h._data_cache(data, "a", lambda: "other") == "alpha"
 
 
+def test_clear_data_cache_rebuilds_for_the_same_data() -> None:
+    h = _SimpleHandler()
+    data = b"hello"
+    h._data_cache(data, "x", lambda: "before")
+
+    h.clear_data_cache()
+
+    assert h._data_cache(data, "x", lambda: "after") == "after"
+
+
 def test_data_cache_survives_data_identity_change() -> None:
     h = _SimpleHandler()
     data1 = bytes(10)

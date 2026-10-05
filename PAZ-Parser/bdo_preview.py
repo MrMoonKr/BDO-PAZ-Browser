@@ -53,6 +53,10 @@ class PreviewHandler(ABC):
             return value
         return slot[1]
 
+    def clear_data_cache(self) -> None:
+        """Drop every `_data_cache` slot, with the payloads and values it kept."""
+        self._handler_caches = {}
+
     def supports_lazy_records(self) -> bool:
         """Return True when the handler supports lazy paging (default: True for all handlers).
 

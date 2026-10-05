@@ -144,8 +144,8 @@ Run both the tests and pyright before committing a Python change; both should pa
 
 ## Benchmarking
 
-`benchmark.py` times the decode path on fixed input, so two runs on the same
-machine can be compared.
+`benchmark.py` times the decode path, and a handler's parse, on fixed input,
+so two runs on the same machine can be compared.
 
 ```bash
 # Time every stage of one entry and save the result
@@ -153,6 +153,9 @@ python benchmark.py run --output before.json
 
 # Extract every file of one .paz archive, as extract_all does
 python benchmark.py run --archive --repeats 5 --output before.json
+
+# Parse one table with LOC and lookup indexes loaded, as the app does
+python benchmark.py run --entry itemenchant.dbss --stages parse --output before.json
 
 # After a change: same command, then compare stage by stage
 python benchmark.py run --output after.json
@@ -172,6 +175,7 @@ The workload is one entry (`--entry`, default
 | `decompress` | BDO decompression of the decrypted entry, from memory |
 | `read` | The app's path to open a file: disk read, decrypt, decompress |
 | `extract` | `extract_all` per file: `read`, then the size check and the write to disk. On an archive, every file in it. The meta file parse is left out: it reads the whole client on every call (over a minute) and would hide the decode time |
+| `parse` | The handler's `get_records()` on the decoded entry, with its companions, LOC in the language picked in the app and the lookup indexes loaded. Only for a file with a parsed view; LOC and the indexes add about 5 s to start-up, so they only load when this stage runs. Every run parses cold (the handler's cached index is dropped first) and runs with the garbage collector on, as in the app. The input hash covers the entry only, not its companions or LOC |
 
 To keep numbers comparable, each run:
 
@@ -186,7 +190,8 @@ To keep numbers comparable, each run:
 - **Keeps the input fixed**: the entry bytes are read into memory once, and
   their SHA-256 is saved so a client patch that changes the file shows up.
 - **Warms up first** (`--warmup`, default 1), then times `--repeats` runs
-  (default 5) with the garbage collector off, as `timeit` does. The minimum
+  (default 5) with the garbage collector off, as `timeit` does (`parse`
+  keeps it on). What a run returns is freed after the clock stops. The minimum
   is the steadiest figure for CPU-bound code; the median and spread show the
   noise.
 - **Saves a fingerprint** with the timings: CPU model, logical CPUs, RAM,

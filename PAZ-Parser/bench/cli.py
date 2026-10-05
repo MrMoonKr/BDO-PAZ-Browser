@@ -57,7 +57,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     commands = parser.add_subparsers(dest="command_name", required=True)
 
-    run = commands.add_parser("run", help="Time the decode stages of one PAZ entry")
+    run = commands.add_parser("run", help="Time the decode and parse stages of one PAZ entry or archive")
     _add_fixture_options(run)
     run.add_argument(
         "--repeats", metavar="N", type=_positive_int, default=DEFAULT_REPEATS,
@@ -94,7 +94,7 @@ def _add_fixture_options(parser: argparse.ArgumentParser) -> None:
     workload = parser.add_mutually_exclusive_group()
     workload.add_argument(
         "--entry", metavar="FILE",
-        help=f"Decode one PAZ file: a path, name or pattern matching one file (default: {DEFAULT_ENTRY})",
+        help=f"Decode (and parse) one PAZ file: a path, name or pattern matching one file (default: {DEFAULT_ENTRY})",
     )
     workload.add_argument(
         "--archive", metavar="PAD", nargs="?", const=DEFAULT_ARCHIVE,
@@ -122,7 +122,7 @@ def _add_fixture_options(parser: argparse.ArgumentParser) -> None:
 def run_benchmark(args: argparse.Namespace) -> int:
     wanted = parse_stage_names(args.stages)
     pin = _pin(args)
-    workload = _load_workload(args)
+    workload = _load_workload(args, wanted)
     machine = describe_machine(REPO_ROOT)
     progress(describe_machine_line(machine))
 
@@ -136,6 +136,8 @@ def run_benchmark(args: argparse.Namespace) -> int:
                 stage.run,
                 args.warmup,
                 args.repeats,
+                prepare=stage.prepare,
+                with_gc=stage.with_gc,
                 measure_memory=args.memory,
                 on_run=_run_reporter(stage.name, args.repeats),
             )
@@ -167,11 +169,13 @@ def run_profile(args: argparse.Namespace) -> int:
     if args.save is not None and (wanted is None or len(wanted) != 1):
         raise CliError("--save needs exactly one stage in --stages, e.g. --stages decrypt.")
     pin = _pin(args)
-    workload = _load_workload(args)
+    workload = _load_workload(args, wanted)
     with tempfile.TemporaryDirectory(prefix="paz-bench-") as scratch:
         for stage in select_stages(workload.build_stages(Path(scratch)), wanted, workload.info.name):
             progress(f"Profiling {stage.name}: {args.warmup} warm-up, then 1 profiled run…")
             for _ in range(args.warmup):
+                if stage.prepare is not None:
+                    stage.prepare()
                 stage.run()
             print(f"== {stage.name} ==")
             print(profile_stage(stage, args.top, args.save))
@@ -181,10 +185,10 @@ def run_profile(args: argparse.Namespace) -> int:
     return 0
 
 
-def _load_workload(args: argparse.Namespace) -> Workload:
+def _load_workload(args: argparse.Namespace, wanted: Sequence[str] | None) -> Workload:
     if args.archive is not None:
         return load_archive_workload(args.paz_folder, args.archive)
-    return load_entry_workload(args.paz_folder, args.entry or DEFAULT_ENTRY)
+    return load_entry_workload(args.paz_folder, args.entry or DEFAULT_ENTRY, wanted)
 
 
 def _pin(args: argparse.Namespace) -> PinState:
