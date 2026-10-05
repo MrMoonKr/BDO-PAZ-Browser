@@ -46,6 +46,15 @@ _OFFSET_FILE = "itemenchantoffset.dbss"
 _BOON_ITEM = 761880
 _BOON_SKILL_KEY = 47683 << 16 | 1
 _BOON_BUFFS = (48723, 48724, 48725, 48726, 48727, 48728)
+# Field checks from itemenchant_dbss.md, in game or on bdocodex (2026-10-05).
+_BASTEER_LONGSWORD = 10011
+_KHARAZAD_NECKLACE = 11697
+_YOUNG_CROW_EARRING = 964704
+_DANDELION_KAMASYLVEN_SWORD = 14732
+_OBSIDIAN_BLACKSTAR_ARMOR = 732052
+_PUMPKIN_GHOST_SEED = 55725
+_APPRENTICES_MEDICINE_BOX = 9866
+_ARSHA_PURGATUM_180_DAYS = 830533
 
 
 def _base_item_count(offsets: bytes) -> int:
@@ -78,6 +87,18 @@ CASE = HandlerCase(
                 "item_id",
                 "name_kr",
                 "max_enchant_level",
+                "required_level",
+                "class_mask",
+                "classes",
+                "vested_type",
+                "family_bound",
+                "binding",
+                "max_durability",
+                "marketable",
+                "family_inventory",
+                "trade_type",
+                "trade",
+                "dyeable",
                 "icon_path",
                 "second_string",
                 "block_size",
@@ -148,6 +169,54 @@ CASE = HandlerCase(
             col="item_id",
             value=_KZARKA_GAUNTLET,
             expected={"max_enchant_level": _PEN, "item_name": "Kzarka Gauntlet", "name_kr": "크자카 권갑"},
+        ),
+        # Main weapons need no level; Kzarka is for two classes, binds never,
+        # sells on the market and can be dyed.
+        TargetTest(
+            col="item_id",
+            value=_KZARKA_GAUNTLET,
+            expected={
+                "required_level": None,
+                "classes": "Striker, Mystic",
+                "binding": "",
+                "marketable": True,
+                "dyeable": True,
+            },
+        ),
+        TargetTest(
+            col="item_id",
+            value=_DANDELION_KAMASYLVEN_SWORD,
+            expected={"required_level": 56},
+        ),
+        TargetTest(
+            col="item_id",
+            value=_BASTEER_LONGSWORD,
+            expected={"binding": "On obtain (Family)", "classes": "Warrior, Valkyrie", "marketable": False},
+        ),
+        TargetTest(
+            col="item_id",
+            value=_ARSHA_PURGATUM_180_DAYS,
+            expected={"binding": "On equip (Character)", "classes": "Seraph"},
+        ),
+        # All playable classes, and all but the newest one.
+        TargetTest(col="item_id", value=_KHARAZAD_NECKLACE, expected={"classes": "All", "marketable": False}),
+        TargetTest(col="item_id", value=_YOUNG_CROW_EARRING, expected={"classes": "All except Agent"}),
+        # Food goes in the Family Inventory and has no durability.
+        TargetTest(
+            col="item_id",
+            value=_BALACS_LUNCHBOX,
+            expected={"family_inventory": True, "max_durability": None, "trade": ""},
+        ),
+        TargetTest(col="item_id", value=_OBSIDIAN_BLACKSTAR_ARMOR, expected={"dyeable": False}),
+        TargetTest(
+            col="item_id",
+            value=_PUMPKIN_GHOST_SEED,
+            expected={"trade_type": 1, "trade": "Trade Manager (Karma loss)"},
+        ),
+        TargetTest(
+            col="item_id",
+            value=_APPRENTICES_MEDICINE_BOX,
+            expected={"trade_type": 3, "trade": "Imperial Crafting Delivery"},
         ),
     ],
 )

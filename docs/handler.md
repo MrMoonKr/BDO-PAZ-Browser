@@ -938,6 +938,10 @@ A class type (`0` Warrior, `8` Sorceress) is named with `class_name()` from
 `class_type.py` (LOC type 21). Skill tables that store a set of classes as a
 bit mask (`skillsimply.dbss` `class_mask`) split it with
 `class_types_in_mask()`; `ALL_CLASSES_MASK` is the "every class" value.
+Items store every playable class as `PLAYABLE_CLASSES_MASK` instead, which
+skips unused class types: test for it with `is_all_classes()`, a superset
+check that keeps working when a class is added, and name the playable
+classes of a mask with `class_names()`.
 
 `html.py` has `truncate(text, max_len)` for long text cells,
 `join_limited(values, max_items)` for list cells, `icon_list_cell(entries,

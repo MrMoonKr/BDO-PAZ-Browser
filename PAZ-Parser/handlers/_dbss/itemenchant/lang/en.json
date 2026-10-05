@@ -5,6 +5,14 @@
     "item": "Item",
     "description": "Description",
     "maxLevel": "Max Level",
+    "requiredLevel": "Req. Level",
+    "classes": "Classes",
+    "binding": "Binding",
+    "durability": "Durability",
+    "marketable": "Marketable",
+    "familyInventory": "Family Inventory",
+    "trade": "Trade",
+    "dyeable": "Dyeable",
     "objectId": "Object ID",
     "object": "Object",
     "buffs": "Buffs"
@@ -14,5 +22,18 @@
     "enchantLevel": "Enchant Level",
     "dataOffset": "Data Offset",
     "dataSize": "Data Size"
+  },
+  "values": {
+    "allClasses": "All",
+    "allExcept": "All except",
+    "bindOnObtain": "On obtain",
+    "bindOnEquip": "On equip",
+    "family": "Family",
+    "character": "Character",
+    "tradeManager": "Trade Manager",
+    "tradeKarma": "Trade Manager (Karma loss)",
+    "tradeImperialCrafting": "Imperial Crafting Delivery",
+    "tradeGuild": "Guild trade",
+    "tradeType": "Type"
   }
 }

@@ -132,15 +132,35 @@ fields that are not yet decoded.
 | `+0x05` | u8   | category     | Item classification                                          |
 | `+0x06` | u8   | grade        | `0` to `5`, the item name colour, see below                  |
 | `+0x07` | ...  | unknown      | Numeric fields                                               |
+| `+0x13` | u8[43] | unknown_13 | Always `0x2E` in all 70,284 base blocks                     |
+| `+0x3E` | u8   | unknown_3e   |                                                              |
 | `+0x3F` | i32  | weight       | Divide by 10,000 for LT                                      |
 | `+0x43` | ...  | unknown      | Numeric fields                                               |
+| `+0x45` | u32  | expiration_minutes | `0` when the item does not expire; set in 4,580 base items |
+| `+0x49` | u8   | vested_type  | When the item binds: `0` never (34,516 base items), `1` when obtained (17,372), `2` when equipped (18,396) |
+| `+0x4A` | u8   | family_bound | `1` binds to the family, `0` to the character; set in 5,942 base items |
+| `+0x4B` | u8   | for_trade    | `1` on trade goods that Trade Managers buy; 2,007 base items |
+| `+0x4C` | u8   | trade_type   | Kind of trade good, only set with `for_trade`, see below     |
+| `+0x4D` | u64  | class_mask   | Classes that can use the item, bit `n` for class ID `n`. All-class items set most bits, so test single bits |
+| `+0x55` | ...  | unknown      | Numeric fields                                               |
+| `+0x61` | u8   | required_level | Character level needed to use the item; `0` or `1` when there is none, above `1` in 3,734 base items |
+| `+0x62` | ...  | unknown      | Numeric fields                                               |
 | `+0x6E` | i64  | buy_price    |                                                              |
 | `+0x76` | i64  | sell_price   |                                                              |
-| `+0x7E` | ...  | unknown      | Numeric fields                                               |
+| `+0x7E` | i32  | repair_price |                                                              |
+| `+0x82` | ...  | unknown      | Numeric fields                                               |
+| `+0xA8` | u8   | dyeable      | `0`: the item cannot be dyed (45,895 base items). `1` (24,373): it can, if it also has dye parts, which this file does not hold, see below. 16 wagon parts store `3` |
+| `+0xA9` | u8   | unknown_a9   |                                                              |
 | `+0xAA` | u16  | character_id | Character the item places or summons; `0` when none. See below |
-| `+0xAC` | u8   | dye_parts    | `0` on all 3,960 object links; across base items `0` (61,650), `1` (4,786), `2` (2,165), `5` (1,052), `10` (218) |
+| `+0xAC` | u8   | unknown_ac   | Not the number of dye slots, see below. `0` on all 3,960 object links; across base items `0` (61,650), `1` (4,786), `2` (2,165), `5` (1,052), `10` (218) |
 | `+0xAD` | u8   | unknown_ad   | `0` in 69,875 base items                                     |
 | `+0xAE` | ...  | unknown      | Numeric fields                                               |
+| `+0xC4` | u8   | personal_trade | `1` when the item can be traded between players; 330 base items |
+| `+0xC5` | u16  | max_durability | `32,767` for items without durability (51,959 base items); equipment mostly `100` or `120` |
+| `+0xC7` | u8   | unknown_c7   |                                                              |
+| `+0xC8` | u8   | market_category | Central Market category; `255` when the item is not listed (56,870 base items) |
+| `+0xC9` | u8   | market_sub_category | Subcategory, in the market's menu order; `255` when not listed |
+| `+0xCA` | u16  | unknown_ca   |                                                              |
 | `+0xCC` | u32  | skill_key_1  | Skill a consumable casts, a [`skill.dbss`](skill_dbss.md) key; its `buff_ids` are the item's buffs; `0` when none |
 | `+0xD0` | u32  | skill_key_2  | Second skill, used by composite meals; `0` when none          |
 | `+0xD4` | ...  | unknown      | Numeric fields up to the name: 16 or 21 bytes in most base blocks, 176 in 597 gear blocks, then a u32 that bdo-data-extractor calls the enchant key (0 in 40,025 base items, never the item ID) |
@@ -149,6 +169,55 @@ fields that are not yet decoded.
 Checked on Balacs Lunchbox (`9359`): `item_type` 2, `grade` 3, `weight`
 1,000 (0.1 LT), `buy_price` 38,775, `sell_price` 1,551, and a non-zero
 `skill_key_1`.
+
+I checked the fields from `expiration_minutes` to `market_sub_category`
+against bdocodex (2026-10-05, client 3458) on 16 items: Kzarka Gauntlet and
+Longbow, Kharazad Necklace, Tuvala Helmet, Basteer Longsword, Black Stone,
+Caphras Stone, Balacs Lunchbox, Magic Crystal of Infinity - Valor,
+Inventory 30% DC Coupon, Cano Toadfish, Young Crow Earring, Kansha
+Hexround, [Seraph] Glorious Arsha Purgatum (180 Days), Fiery Sovereign
+Mareca and Deboreka Earring. Weight, buy, sell and repair price matched on
+all of them, and `max_durability` on every item bdocodex shows durability
+for (100 or 200).
+
+- `expiration_minutes`: the coupon stores 4,320 (3 days, "must be
+  registered within 3 days of receipt") and the 180-day Arsha 259,200.
+- `vested_type` and `family_bound`: Basteer Longsword (`1`, `1`) shows
+  "Bound when obtained (Family)", Kansha Hexround (`1`, `0`) "Bound when
+  obtained (Character)", the Arsha (`2`, `0`) "Bound when equipped
+  (Character)". bdocodex prints a plain "Bound when obtained" on every item
+  with `0`. The tooltip script (`widget/tooltip/panel_tooltip_item`) picks
+  the same texts: vested type `1` shows `LUA_TOOLTIP_ITEM_GETBIND_*`, `2`
+  `LUA_TOOLTIP_ITEM_EQUIPBIND_*`, with `_FAMILY` when `isUserVested()`.
+- `class_mask`: Kzarka Gauntlet `0x880000` is Striker and Mystic, Kzarka
+  Longbow `0x10` Ranger, Basteer Longsword Warrior and Valkyrie, Kansha
+  Hexround bit 35 Agent, the Arsha bit 32 Seraph and Fiery Sovereign Mareca
+  bit 10 Corsair, all as bdocodex lists them.
+- `personal_trade`: Balacs Lunchbox is the only one of the 16 at `1` and
+  the only one bdocodex marks "Personal transaction available".
+- `for_trade`: Cano Toadfish, which Trade Managers buy.
+- `market_category`: Kzarka Gauntlet is `1`/`9` and Kzarka Longbow `1`/`2`,
+  Gauntlet and Longbow in bdocodex's Main Weapon menu (Longsword, Longbow,
+  Amulet, Axe, Blade, Shortsword, Staff, Kriegsmesser, Gauntlet).
+- `trade_type`, from the bdocodex pages of two items per value:
+
+  | Value | Base items | Examples | bdocodex |
+  | ----: | ---------: | -------- | -------- |
+  | 0 | 1,805 | Cano Toadfish, Coal Dust Pouch | Sold to Trade Managers |
+  | 1 | 33 | Pumpkin Ghost Seed, Black Spirit Control Stone | "Selling this item will drop your Karma and amity of the trader" |
+  | 3 | 54 | Apprentice's and Guru's Medicine Box | Delivered to the Imperial Crafting Delivery Manager |
+  | 4 | 109 | Redfin Anthias, Opah, Ribbon Eel | Sold to Trade Managers or used for Cooking; what sets it apart from `0` is open |
+  | 5 | 6 | [Guild] Balenosian Specialty, [Guild] Imperial Trade Package | Guild trade missions |
+
+- `required_level`: every Dandelion Kamasylven Sword row stores `56`, the
+  level its tooltip asks for in game (2026-10-05). Main weapons like Kzarka
+  Gauntlet store `1`, and need no level.
+
+bdo-data-extractor also names a max stack at
+`+0x65` (`0x7FFFFFFF` in 70,159 base items, stackable or not) and a Pearl
+Shop flag at `+0xA4`. Neither bdocodex nor my own items could show those,
+so they stay unchecked here. The only items with a smaller max stack are
+HP / MP Potion (Beginner) (20), Deputy Token (99) and Combat EXP Scroll (61).
 
 The skill keys are fixed fields, read at `+0xCC` and `+0xD0` whatever the
 strings hold. Every enchant level of an item stores the same keys as its base
@@ -159,13 +228,30 @@ Heatstroke/Hypothermia Resistance +10% and more). A few items store `1`
 (skill 0 level 1), which has no `skill.dbss` record and links nothing.
 
 The fixed part of this layout, and the names of `item_type`, `category`,
-`grade`, `dye_parts` and the skill keys, come from
+`grade` and the skill keys, come from
 [bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor/blob/HEAD/FORMATS.md),
 which decodes the whole header from `+0x00` to `+0xD4` (class mask, stack
 size, market category, durability and more). The offsets above were checked
-against this file; the names `category` and `dye_parts` were not. Its
-`dyeable` flag at `+0xA8` does not line up cleanly with `dye_parts`: 2,017
-items have dye parts with `dyeable` at `0`, and 16 store `3` there.
+against this file; the name `category` was not.
+
+The tooltip script shows dye slots only when `isDyeable()` is true and
+`getDyeingPartCount()` is above 0, and "Cannot be dyed"
+(`LUA_TOOLTIP_ITEM_DYE_DYEIMPOSSIBLE`) otherwise, so `dyeable` is one of two
+conditions. Checked in game (2026-10-05):
+
+- Kzarka Gauntlet, [Wizard] Canape Dagger and [Wizard] Python Boxer Briefs
+  store `1`, and have 3, 3 and 1 dye slots.
+- PEN: Sovereign Staff and Fallen God's Armor store `1` but say "Cannot be
+  dyed", so they must have no dye parts.
+- Obsidian Blackstar Armor stores `0` and says "Cannot be dyed".
+- All 553 accessories store `0`, and accessories cannot be dyed. Wagon
+  covers, lamps and wheels store `1`, the parts the dye window's wagon tab
+  offers (`LUA_DYENEW_DYEPART_CARRIAGE_*`).
+
+The part count is not in this block: no header byte, and none of the 18
+bytes after the icon, holds 3 for the dagger and 1 for the briefs.
+bdo-data-extractor calls `unknown_ac` the dye parts, but the dagger and the
+briefs store `0` there and the staff `1`.
 
 #### `grade`
 
@@ -260,6 +346,59 @@ New_Icon/03_ETC/06_Housing/InHouse_Cultivate_Sea_Clam_01_Wall.dds
   -> ui_texture/icon/new_icon/03_etc/06_housing/inhouse_cultivate_sea_clam_01_wall.dds
 ```
 
+### After the icon
+
+Layout from bdo-data-extractor; it reads cleanly in all 70,284 base blocks
+(client 3458). Offsets are relative to the end of the icon text.
+
+| Offset  | Type      | Field         | Notes |
+| ------- | --------- | ------------- | ----- |
+| `+0x00` | u8        | marketable    | `1` when the item can be listed on the Central Market; 13,071 base items |
+| `+0x01` | u8[12]    | unknown_01    |       |
+| `+0x0D` | u8        | family_inventory | `2` when the item can be stored in the Family Inventory (1,106 base items), `0` when not |
+| `+0x0E` | u8        | unknown_0e    |       |
+| `+0x0F` | u8        | unknown_0f    | bdo-data-extractor: bind type. Neither the bound text nor "Cannot be enhanced" comes from it, see below |
+| `+0x10` | u8[2]     | unknown_10    |       |
+| `+0x12` | 3 strings | messages_kr   | Three u64-prefixed UTF-16LE strings, all empty in 56,320 base items. The first is a script on pets (`PETSKILL_REGISTER();`, 8,065 items). The second is the Korean prompt a box shows before it is used, listing what it gives (10,832). The third is the Exchange Info of 110 items, mostly old trash loot, see below |
+| varies  | i64       | unknown_limit | bdo-data-extractor: the market registration limit. In game (2026-10-05) it is neither the listing limit nor the pre-order limit: Black Stone stores 1,000, but I can list 1,001 and more, and pre-order up to 5,000. What it holds is open |
+| varies  | u8        | unknown       |       |
+| varies  | u32       | enhancement_group | `enhancement_type × 1000` plus a family index in 70,268 base items, e.g. Kharazad necklace 21000 |
+| varies  | u32       | enhancement_type  | Enhancement system: `0` none, `1` ordinary weapons and armour, `13` ordinary accessories, `19` Sovereign weapons, `21` Kharazad, `23` Tuvala weapons and armour; the full list is in bdo-data-extractor |
+| varies  | ...       | unknown       | Undecoded remainder, holding `second_string` about 330 bytes in |
+| end-6   | u32       | item_id       | Repeats the item ID, in all 70,284 base blocks |
+| end-2   | u16       | unknown_crystal_group | `0xFFFF` except in 481 base items, e.g. Magic Crystal of Infinity - Valor `100`, which is no longer in the game; bdo-data-extractor: the crystal transfusion group |
+
+`marketable` matches bdocodex on the 16 items checked above: Kharazad
+Necklace, Tuvala Helmet, Basteer Longsword, the coupon, the toadfish and
+the Magic Crystal of Infinity (bdocodex: "cannot be processed nor registered
+on the Central Market") store `0`; Kzarka, Deboreka, Black Stone, Caphras
+Stone and Balacs Lunchbox, all sold on the market, store `1`. The
+`enhancement_type` values above fit the items they were read from.
+
+`family_inventory` is `2` on exactly the kinds of item the Family Inventory
+guide ("What Items to Store") lists: food and elixirs (Balacs Lunchbox,
+Ocean Draught), scrolls (Skill EXP +300% Scroll), pet feed (Organic Feed,
+Cheap Feed), mount feed (Carrot, Dried Briar) and event coins and seals
+([Event] Golden Troupe Coin, [Event] Drieghan Seal). Cooking ingredients such
+as White Truffle Mushroom and Millennial Wild Ginseng store `0`. The tooltip
+script shows a family bag mark when `checkPushFamilyInventory()` is true.
+
+`unknown_0f` is `0` on Kzarka Gauntlet (which I can move freely), `1` on
+Kansha Hexround, `2` on Basteer Longsword and Tuvala Helmet, `3` on Young
+Crow Earring. The bound text on those tooltips comes from `vested_type` and
+`family_bound`. "Cannot be enhanced" does not come from it either: in game
+(2026-10-05) Arsha's Crossbow IV (`0`), [Event] Urugon's Shoes (`2`),
+Kansha Hexround (`1`) and Young Crow Earring (`3`) all say it, and none of
+them has enchant levels, which fits the line better. What it holds is open.
+
+The third string is the tooltip's Exchange Info. Mutant Enhancer stores
+`<오염된 농장지> - 20개 교환: 마녀의 귀장식 1개`, twice more for Mark of Shadow
+and Ogre Ring, and its tooltip in game (2026-10-05) shows the same in
+English under "Exchange Info": `<Contaminated Farm>`, `Exchange 20: Witch's
+Earring x1`, `Exchange 20: Mark of Shadow x1`, `Exchange 100: Ogre Ring x1`.
+The English text is not in the item's LOC rows, so the client must build or
+translate it from somewhere else.
+
 ---
 
 ## Icon Coverage
@@ -291,6 +430,14 @@ One row per item, read from its level-0 block. Higher levels only feed Max Level
 | Item          | text | LOC `str_type=0`, `str_id1=item_id`, else `name_kr` (483 items on client 3458, mostly dev and Hardcore server items), in its `grade` colour |
 | Description   | text | LOC `str_type=0`, `str_id4=1`, in its game colours, on one line and cut; the file stores no description. 61,837 of 70,284 items have one on client 3458 |
 | Max Level     | num  | Highest `enchant_level` among the item's keys; `0` when it cannot be enhanced |
+| Req. Level    | num  | `required_level`; dash when `0` or `1` |
+| Classes       | text | `class_mask` as LOC type 21 class names; "All" when every playable class is set, "All except ..." when up to three are missing |
+| Binding       | text | `vested_type` and `family_bound`: "On obtain (Family)", "On equip (Character)" and so on; dash when the item never binds |
+| Durability    | num  | `max_durability`; dash for `32,767` |
+| Marketable    | flag | `marketable`, after the icon |
+| Family Inventory | flag | `family_inventory` is `2`, after the icon |
+| Trade         | text | `trade_type` of trade goods: Trade Manager (`0` and `4`), Trade Manager (Karma loss) (`1`), Imperial Crafting Delivery (`3`), Guild trade (`5`); dash for other items |
+| Dyeable       | flag | `dyeable`; a tick still needs dye parts on the model, so PEN: Sovereign Staff shows one and cannot be dyed |
 | Object ID     | num  | `character_id` of the placed object or summoned pet; dash when `0` |
 | Object        | text | LOC `str_type=6`, `str_id1=character_id`          |
 | Buffs         | list | Buffs of `skill_key_1`, then `skill_key_2` (`SKILL_BUFFS` lookup index), each once, with buff icon and the first line of its LOC type `5` text in its game colours; sorts by count |
@@ -322,11 +469,29 @@ One row per item, read from its level-0 block. Higher levels only feed Max Level
 
 ### Enchant Data Fields
 
-Only the header fields listed in Block Structure are checked here. The rest
-of the header, and everything after the icon string, are not decoded in this
-doc. bdo-data-extractor maps most of the header and part of the post-icon
-block (market flags, enhancement group and type); those would need checking
-against this file before they are documented here.
+Only the fields named in Block Structure and After the icon are checked
+here. The variable bytes between `+0xD4` and the name, and the remainder
+after `enhancement_type`, are undecoded here and in bdo-data-extractor. The
+fields below have a name there that neither bdocodex nor my own items could
+confirm (2026-10-05):
+
+- **Max stack** (`+0x65`): `0x7FFFFFFF` in 70,159 base items, stackable or
+  not. Only HP / MP Potion (Beginner) (20), Deputy Token (99) and Combat EXP
+  Scroll (61) store a small number; whether their stacks stop there is
+  unchecked.
+- **Pearl Shop flag** (`+0xA4`): `1` in 28,511 base items, which fits the
+  outfits, but no tooltip line shows it.
+- **Trade type `4`**: Redfin Anthias, Opah and 107 other fish. bdocodex says
+  they sell to Trade Managers, like the `0` fish (Cano Toadfish); what sets
+  them apart is open. The Trade column shows both as Trade Manager.
+- **`unknown_0f`** (after the icon, bind type there): neither the bound text
+  nor "Cannot be enhanced" comes from it, see After the icon.
+- **`unknown_limit`** (market registration limit there): neither the
+  listing nor the pre-order limit.
+- **`unknown_crystal_group`** (crystal transfusion group there): the only
+  example, Magic Crystal of Infinity, is no longer in the game.
+- **Dye parts**: `unknown_ac` is not the count, and no byte of the block
+  holds it; where the client gets it (likely the model) is open.
 
 ### Items Without a Record
 

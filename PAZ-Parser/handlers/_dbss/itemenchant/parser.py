@@ -3,7 +3,7 @@ from __future__ import annotations
 import struct
 from collections.abc import Iterator
 
-from _common.binary import u8, u16
+from _common.binary import u8, u16, u64
 from _common.item_key import split_item_key
 from _common.pabr_offset import PabrOffsetRow, parse_pabr_u32_offset_rows
 from _common.prefixed_string import STRING_PREFIX_SIZE, locate_prefixed_ascii, prefixes_ending_at
@@ -20,9 +20,28 @@ ICON_ROOT = "ui_texture/icon/"
 # The item grade, 0 (white) to 5, which colours the item name (`_common/item_grade.py`).
 _GRADE = 0x06
 
+# When the item binds: 0 never, 1 when obtained, 2 when equipped. The flag
+# after it binds to the family instead of the character.
+_VESTED_TYPE = 0x49
+_FAMILY_BOUND = 0x4A
+# 1 on trade goods; the trade type after it says where they go.
+_FOR_TRADE = 0x4B
+_TRADE_TYPE = 0x4C
+# Bit n allows class type n (`_common/class_type.py`).
+_CLASS_MASK = 0x4D
+# Character level needed to use the item; 0 or 1 when there is none.
+_REQUIRED_LEVEL = 0x61
+# 0 when the item can never be dyed. 1 allows it, but only an item whose
+# model has dye parts can be dyed, and this file does not hold those.
+_DYEABLE = 0xA8
+
 # The character this item places or summons (furniture, fences, pets), keyed
 # like characterstatic.dbss and characterobject.dbss; 0 when there is none.
 _CHARACTER_ID = 0xAA
+
+# Stored for items without durability.
+_NO_DURABILITY = 32_767
+_MAX_DURABILITY = 0xC5
 
 # skill_key_1 and skill_key_2: the skills a consumable casts, `skill.dbss`
 # keys whose buff_ids are the item's buffs; 0 when unused. Every level of an
@@ -34,6 +53,11 @@ _SKILL_KEYS_STRUCT = struct.Struct("<II")
 # lowest string prefix in any block sits at +0xF2 (client 3458).
 _FIXED_FIELDS_END = 0xD4
 
+# Relative to the end of the icon text: 1 when the item can be listed on the
+# Central Market, and 2 when it can go in the Family Inventory.
+_MARKETABLE = 0x00
+_FAMILY_INVENTORY = 0x0D
+_FAMILY_INVENTORY_ALLOWED = 2
 
 
 def parse_itemenchantoffset_records(data: bytes) -> list[dict]:
@@ -83,6 +107,32 @@ def _name_kr(data: bytes, start: int, icon_prefix: int) -> str:
     return data[pos + STRING_PREFIX_SIZE:icon_prefix].decode("utf-16-le", errors="replace")
 
 
+def _header_fields(data: bytes, start: int) -> dict:
+    """The confirmed fixed fields of the block at `start`; itemenchant_dbss.md has the evidence."""
+    durability = u16(data, start + _MAX_DURABILITY)
+    for_trade = bool(u8(data, start + _FOR_TRADE))
+    return {
+        "required_level": u8(data, start + _REQUIRED_LEVEL),
+        "class_mask": u64(data, start + _CLASS_MASK),
+        "vested_type": u8(data, start + _VESTED_TYPE),
+        "family_bound": bool(u8(data, start + _FAMILY_BOUND)),
+        # None sorts last and exports empty.
+        "max_durability": None if durability == _NO_DURABILITY else durability,
+        "trade_type": u8(data, start + _TRADE_TYPE) if for_trade else None,
+        "dyeable": bool(u8(data, start + _DYEABLE)),
+    }
+
+
+def _after_icon_fields(data: bytes, icon_end: int | None) -> dict:
+    """The confirmed fields that follow the icon text; False without an icon."""
+    if icon_end is None:
+        return {"marketable": False, "family_inventory": False}
+    return {
+        "marketable": bool(u8(data, icon_end + _MARKETABLE)),
+        "family_inventory": u8(data, icon_end + _FAMILY_INVENTORY) == _FAMILY_INVENTORY_ALLOWED,
+    }
+
+
 def _skill_keys(data: bytes, start: int) -> tuple[int, ...]:
     """The non-zero skill keys of the block at `start`, in slot order."""
     return tuple(key for key in _SKILL_KEYS_STRUCT.unpack_from(data, start + _SKILL_KEYS) if key)
@@ -112,6 +162,7 @@ def parse_itemenchant_records(data: bytes, offset_data: bytes) -> list[dict]:
 
         strings = _block_strings(data, start, end)
         icon_prefix, icon = strings[0] if strings else (None, "")
+        icon_end = None if icon_prefix is None else icon_prefix + STRING_PREFIX_SIZE + len(icon)
         records.append({
             "item_id": row["item_id"],
             "name_kr": "" if icon_prefix is None else _name_kr(data, start, icon_prefix),
@@ -119,6 +170,8 @@ def parse_itemenchant_records(data: bytes, offset_data: bytes) -> list[dict]:
             "icon_path": f"{ICON_ROOT}{icon.lower()}" if icon else "",
             "grade": u8(data, start + _GRADE),
             "character_id": u16(data, start + _CHARACTER_ID),
+            **_header_fields(data, start),
+            **_after_icon_fields(data, icon_end),
             "skill_keys": list(_skill_keys(data, start)),
             "second_string": strings[1][1] if len(strings) > 1 else "",
             "block_size": row["data_size"],

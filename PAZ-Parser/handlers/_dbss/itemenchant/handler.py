@@ -6,13 +6,14 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.buff import buff_label, buff_list_cell
-from _common.html import Column, e, icon_cell, sort_keys, table
+from _common.html import Column, e, flag_cell, icon_cell, sort_keys, table
 from _common.item_grade import item_grade_tagged
 from _common.lang import load_handler_strings
 from _common.loc import LOC_NULL, loc_tagged, loc_text
 from _common.pa_text import pa_cell, pa_fields, pa_line_cell
 from _common.skill import skill_buff_ids
 from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, size_column
+from .labels import binding_label, classes_label, trade_label
 from .parser import (
     parse_itemenchant_records,
     parse_itemenchantoffset_records,
@@ -30,6 +31,8 @@ _LOC_TYPE_CHARACTER = 6
 
 _EMPTY = "-"
 _LIST_PREVIEW_ITEMS = 3
+# A required level of 0 or 1 means the item has none.
+_NO_LEVEL_LIMIT = 1
 
 
 def _item_description_tagged(item_id: int) -> str:
@@ -42,11 +45,16 @@ def _item_name(record: dict) -> str:
     return loc_text(_LOC_TYPE_ITEM, record["item_id"]) or record["name_kr"]
 
 
-def _with_links(record: dict) -> dict:
-    """The parsed record plus its item name, placed character and buffs."""
+def _with_links(record: dict, values: dict[str, str], classes: str) -> dict:
+    """The parsed record plus its item name, placed character, buffs and field labels."""
     buff_ids = skill_buff_ids(record["skill_keys"])
     return {
         **record,
+        # None sorts last and exports empty.
+        "required_level": record["required_level"] if record["required_level"] > _NO_LEVEL_LIMIT else None,
+        "classes": classes,
+        "binding": binding_label(record["vested_type"], record["family_bound"], values),
+        "trade": trade_label(record["trade_type"], values),
         # In its grade colour, as the game draws item names; Korean when LOC has no row.
         **pa_fields("item_name", item_grade_tagged(_item_name(record), record["grade"])),
         **pa_fields("description", _item_description_tagged(record["item_id"])),
@@ -62,6 +70,10 @@ def _with_links(record: dict) -> dict:
         "buffs": [buff_label(buff_id) for buff_id in buff_ids],
         "buff_count": len(buff_ids) or None,
     }
+
+
+def _optional_cell(value: int | None) -> str:
+    return _EMPTY if value is None else e(value)
 
 
 def item_enchant_offset_handler() -> OffsetTableHandler:
@@ -86,6 +98,14 @@ class ItemEnchantHandler(PreviewHandler):
             Column(cols.get("item", "Item"), sort_key="item_name"),
             Column(cols.get("description", "Description"), sort_key="description"),
             Column(cols.get("maxLevel", "Max Level"), "num", sort_key="max_enchant_level"),
+            Column(cols.get("requiredLevel", "Req. Level"), "num", sort_key="required_level"),
+            Column(cols.get("classes", "Classes"), sort_key="classes"),
+            Column(cols.get("binding", "Binding"), sort_key="binding"),
+            Column(cols.get("durability", "Durability"), "num", sort_key="max_durability"),
+            Column(cols.get("marketable", "Marketable"), sort_key="marketable"),
+            Column(cols.get("familyInventory", "Family Inventory"), sort_key="family_inventory"),
+            Column(cols.get("trade", "Trade"), sort_key="trade"),
+            Column(cols.get("dyeable", "Dyeable"), sort_key="dyeable"),
             Column(cols.get("objectId", "Object ID"), "num", sort_key="character_id"),
             Column(cols.get("object", "Object"), sort_key="character_name"),
             Column(cols.get("buffs", "Buffs"), sort_key="buff_count"),
@@ -110,7 +130,11 @@ class ItemEnchantHandler(PreviewHandler):
         if offset_raw is None:
             raise ValueError(f"{_OFFSET_FILE} companion not found.")
 
-        return [_with_links(record) for record in parse_itemenchant_records(data, offset_raw)]
+        values = load_handler_strings(self.lang, _LANG_DIR).get("values", {})
+        records = parse_itemenchant_records(data, offset_raw)
+        # About 150 masks cover all items, so each label is built once.
+        classes = {mask: classes_label(mask, values) for mask in {record["class_mask"] for record in records}}
+        return [_with_links(record, values, classes[record["class_mask"]]) for record in records]
 
     def render_records_page(
         self,
@@ -134,7 +158,15 @@ class ItemEnchantHandler(PreviewHandler):
                 pa_cell(record, "item_name") if record["item_name"] else e(record["item_id"]),
                 pa_line_cell(record, "description"),
                 e(record["max_enchant_level"]),
-                e(record["character_id"]) if record["character_id"] is not None else _EMPTY,
+                _optional_cell(record["required_level"]),
+                e(record["classes"] or _EMPTY),
+                e(record["binding"] or _EMPTY),
+                _optional_cell(record["max_durability"]),
+                flag_cell(record["marketable"]),
+                flag_cell(record["family_inventory"]),
+                e(record["trade"] or _EMPTY),
+                flag_cell(record["dyeable"]),
+                _optional_cell(record["character_id"]),
                 e(record["character_name"] or _EMPTY),
                 buff_list_cell(record["buff_ids"], _LIST_PREVIEW_ITEMS) or _EMPTY,
             ]
