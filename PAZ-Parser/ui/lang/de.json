@@ -162,5 +162,9 @@
     "parsedNotCached": "Keine ausgewerteten Daten zwischengespeichert, lade die Datei neu",
     "invalidSearchPattern": "Ungültiges Suchmuster",
     "noFilesMatchExtensions": "Keine Dateien mit den gewählten Endungen"
+  },
+  "locWarning": {
+    "missing": "Dir fehlt {file} für {language}, daher ist nur die Oberfläche der App auf {language}. Spieltexte in den Tabellen bleiben koreanisch.",
+    "dismiss": "Ausblenden"
   }
 }

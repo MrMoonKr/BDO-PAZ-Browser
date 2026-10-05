@@ -162,5 +162,9 @@
     "parsedNotCached": "No parsed data cached, reload the file",
     "invalidSearchPattern": "Invalid search pattern",
     "noFilesMatchExtensions": "No files match the selected extensions"
+  },
+  "locWarning": {
+    "missing": "You don't have {file} for {language}, so only the app's UI is in {language}. Game text in the tables stays Korean.",
+    "dismiss": "Dismiss"
   }
 }

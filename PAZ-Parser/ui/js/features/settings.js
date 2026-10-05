@@ -6,11 +6,15 @@ export const settingsMethods = {
   _settingsEscHandler: null,
   // The handled-only setting as the modal opened, to spot a change on save.
   _savedHandledOnly: false,
+  // UI language code -> the LOC file this client lacks for it.
+  _missingLoc: {},
 
   async openSettings() {
     const s = await window.pywebview.api.get_settings();
     document.getElementById("settings-paz-path").value = s.paz_path ?? "";
+    this._fillLanguages(s.languages ?? [], s.missing_loc ?? {});
     document.getElementById("settings-language").value = s.language ?? "en";
+    this.showLanguageLocWarning();
     document.getElementById("settings-table-row-height").value = s.table_row_height ?? 27;
     document.getElementById("settings-show-pa-tags").checked = s.show_pa_tags === true;
     document.getElementById("settings-handled-only").checked = s.handled_only === true;
@@ -23,6 +27,23 @@ export const settingsMethods = {
       if (e.key === "Escape") this.closeSettings();
     };
     document.addEventListener("keydown", this._settingsEscHandler);
+  },
+
+  _fillLanguages(languages, missingLoc) {
+    this._missingLoc = missingLoc;
+    const select = document.getElementById("settings-language");
+    select.replaceChildren(...languages.map(({ code, name }) => new Option(name, code)));
+  },
+
+  // The warning icon next to the language list, also for a dismissed corner warning.
+  showLanguageLocWarning() {
+    const select = document.getElementById("settings-language");
+    const file = this._missingLoc[select.value];
+    const icon = document.getElementById("settings-language-warning");
+    icon.hidden = !file;
+    icon.title = file
+      ? t("locWarning.missing", { file, language: select.selectedOptions[0]?.text ?? select.value })
+      : "";
   },
 
   closeSettings() {
@@ -55,6 +76,7 @@ export const settingsMethods = {
     this.closeSettings();
     await loadLang(language);
     applyTranslations();
+    this.checkLocWarning();
     if (this._selectedPath) {
       const node = document.querySelector(".tree-node.selected");
       const name = node?.querySelector(".tree-name")?.textContent ?? "";

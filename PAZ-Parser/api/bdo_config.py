@@ -42,6 +42,12 @@ def records_cache_setting(cfg: dict) -> str:
     return mode if mode in RECORDS_CACHE_MODES else _DEFAULT_RECORDS_CACHE_MODE
 
 
+def dismissed_loc_warnings(cfg: dict) -> frozenset[str]:
+    """Languages whose missing-LOC corner warning was dismissed for good."""
+    codes = cfg.get("loc_warning_dismissed")
+    return frozenset(code for code in codes if isinstance(code, str)) if isinstance(codes, list) else frozenset()
+
+
 def save_config(updates: dict) -> None:
     cfg = {**load_config(), **updates}
     try:

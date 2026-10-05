@@ -27,5 +27,6 @@ export const folderMethods = {
   onFolderLoaded() {
     this._isFolderLoaded = true;
     this._loadTreeRoot();
+    this.checkLocWarning();
   },
 };

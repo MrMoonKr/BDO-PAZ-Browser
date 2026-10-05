@@ -13,12 +13,14 @@ import webview
 from .bdo_api_caches import CacheMixin
 from .bdo_config import (
     RECORDS_CACHE_MODES,
+    dismissed_loc_warnings,
     handled_only_setting,
     load_config,
     records_cache_setting,
     save_config,
     show_pa_tags_setting,
 )
+from .bdo_languages import UI_LANGUAGE_CODES, UI_LANGUAGES, game_language, loc_path, missing_loc_file
 from .bdo_api_helpers import _DISK_VIRTUAL_PREFIX, _file_icon, _norm, path_matcher
 from .bdo_api_preview import PreviewMixin
 from .bdo_api_search import SearchMixin
@@ -36,15 +38,6 @@ from ui_text import ui_text
 
 _COMPANION_POOL = ThreadPoolExecutor(max_workers=4, thread_name_prefix="companion")
 
-_LOC_LANG_MAP: dict[str, tuple[str, ...] | None] = {
-    "en": ("ads", "languagedata_en.loc"),
-    "de": ("ads", "languagedata_de.loc"),
-    "fr": ("ads", "languagedata_fr.loc"),
-    "sp": ("ads", "languagedata_sp.loc"),
-    "ru": ("ads", "languagedata_ru.loc"),
-    "kr": None,
-}
-_VALID_LANGUAGES = frozenset(_LOC_LANG_MAP)
 _DEFAULT_TABLE_ROW_HEIGHT = 27
 _MIN_TABLE_ROW_HEIGHT = 20
 _MAX_TABLE_ROW_HEIGHT = 64
@@ -127,7 +120,36 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
             "handled_only": handled_only_setting(cfg),
             "records_cache": records_cache_setting(cfg),
             "cache_bytes": self._cache_size(),
+            "languages": [{"code": language.code, "name": language.name} for language in UI_LANGUAGES],
+            "missing_loc": self._missing_loc_files(),
         }
+
+    def _missing_loc_files(self) -> dict[str, str]:
+        """UI language code -> the LOC file this client lacks for it."""
+        if self._paz_root is None:
+            return {}
+        missing = {language.code: missing_loc_file(self._paz_root, language.code) for language in UI_LANGUAGES}
+        return {code: name for code, name in missing.items() if name is not None}
+
+    def get_loc_warning(self) -> dict:
+        """The corner warning for the selected language's missing LOC file, or {}.
+
+        Empty once the warning was dismissed for that language; the settings
+        still mark it next to the language list.
+        """
+        cfg = load_config()
+        code = cfg.get("language", "en")
+        language = game_language(code)
+        if language is None or self._paz_root is None or code in dismissed_loc_warnings(cfg):
+            return {}
+        missing = missing_loc_file(self._paz_root, code)
+        return {} if missing is None else {"language": code, "name": language.name, "file": missing}
+
+    def dismiss_loc_warning(self, language: str) -> None:
+        """Keep the corner warning of `language` closed from now on."""
+        dismissed = dismissed_loc_warnings(load_config())
+        if language in UI_LANGUAGE_CODES and language not in dismissed:
+            save_config({"loc_warning_dismissed": sorted({*dismissed, language})})
 
     def save_settings(
         self,
@@ -138,7 +160,7 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
         handled_only: bool = False,
         records_cache: str = "",
     ) -> dict:
-        if language not in _VALID_LANGUAGES:
+        if language not in UI_LANGUAGE_CODES:
             return {"ok": False, "error": ui_text("errors.invalidLanguage", language=language)}
         if records_cache not in RECORDS_CACHE_MODES:
             records_cache = records_cache_setting(load_config())
@@ -166,18 +188,15 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
 
     def _reload_loc(self, language: str) -> None:
         set_handler_lang(language)
-        rel = _LOC_LANG_MAP.get(language)
-        if rel is None or not self._paz_root:
+        path = loc_path(self._paz_root, language) if self._paz_root else None
+        if path is None or not path.exists():
             self._install_loc(None)
             return
-        path = self._paz_root.parent.joinpath(*rel)
-        if path.exists():
-            try:
-                self._install_loc(path.read_bytes())
-            except Exception:
-                pass
-        else:
-            self._install_loc(None)
+        try:
+            self._install_loc(path.read_bytes())
+        except Exception:
+            # Not fatal: the LOC text installed before stays.
+            logging.warning("Could not load LOC file %s", path, exc_info=True)
 
     def _load_entries(self) -> None:
         assert self._paz_root is not None
@@ -328,17 +347,18 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
         if not self._paz_root:
             return
         language = load_config().get("language", "en")
-        rel = _LOC_LANG_MAP.get(language)
-        if rel is not None:
-            path = self._paz_root.parent.joinpath(*rel)
-            if path.exists():
-                try:
-                    raw = path.read_bytes()
-                    self._disk_companions[rel[-1]] = raw
-                    self._install_loc(raw)
-                except Exception:
-                    # Not fatal: tables fall back to their inline text.
-                    logging.warning("Could not load LOC file %s", path, exc_info=True)
+        path = loc_path(self._paz_root, language)
+        if path is None or not path.exists():
+            # No LOC text from the folder loaded before: tables show their own.
+            self._install_loc(None)
+            return
+        try:
+            raw = path.read_bytes()
+            self._disk_companions[path.name] = raw
+            self._install_loc(raw)
+        except Exception:
+            # Not fatal: tables fall back to their inline text.
+            logging.warning("Could not load LOC file %s", path, exc_info=True)
 
     def _load_companion_sync(self, internal_path: str) -> bytes | None:
         entry = self._entry_map.get(_norm(internal_path))

@@ -162,5 +162,9 @@
     "parsedNotCached": "Aucune donnée analysée en cache, rechargez le fichier",
     "invalidSearchPattern": "Motif de recherche non valide",
     "noFilesMatchExtensions": "Aucun fichier ne correspond aux extensions choisies"
+  },
+  "locWarning": {
+    "missing": "Il vous manque {file} pour {language} : seule l'interface de l'application est en {language}. Les textes du jeu dans les tableaux restent en coréen.",
+    "dismiss": "Masquer"
   }
 }

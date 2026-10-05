@@ -122,14 +122,11 @@
             <button onclick="app.browseSettingsPazFolder()" data-i18n-title="settings.browse" title="Browse">…</button>
           </div>
           <label class="settings-label" data-i18n="settings.language">Language</label>
-          <select id="settings-language">
-            <option value="en">English</option>
-            <option value="de">Deutsch</option>
-            <option value="fr">Français</option>
-            <option value="sp">Español</option>
-            <option value="ru">Русский</option>
-            <option value="kr">한국어</option>
-          </select>
+          <div class="settings-language-row">
+            <!-- Filled from get_settings(), the languages the UI is translated into. -->
+            <select id="settings-language" onchange="app.showLanguageLocWarning()"></select>
+            <span id="settings-language-warning" class="settings-warning-icon" hidden>⚠</span>
+          </div>
           <label class="settings-label" data-i18n="settings.tableRowHeight">Table Row Height</label>
           <div class="settings-row-height">
             <input id="settings-table-row-height" type="number" min="20" max="64" step="1" />
@@ -183,6 +180,11 @@
           <div id="icon-preview-path" class="icon-preview-path"></div>
         </div>
       </div>
+    </div>
+
+    <div id="loc-warning" class="loc-warning" role="status" hidden>
+      <span id="loc-warning-text"></span>
+      <button class="loc-warning-close" onclick="app.dismissLocWarning()" data-i18n-title="locWarning.dismiss" title="Dismiss">✕</button>
     </div>
 
     <script type="module" src="app.js"></script>

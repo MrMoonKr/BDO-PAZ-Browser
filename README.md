@@ -19,6 +19,7 @@ A Python tool for browsing, extracting, and previewing files from **Black Desert
 - **Export**, save the current file as raw binary (hex tab) or CSV (parsed tab) via the Entry Details panel
 - **Game text colours**, LOC text shows the colours of its `<PAColor>` tags, as in game; the **Show game text tags** setting (off by default) also shows the tags themselves
 - **Handled tables only**, the **Show only handled tables** setting (off by default) limits the file tree, file search, content search and folder extraction to files with a parsed table view, plus the LOC file
+- **Languages**, the language setting picks both the UI text and the LOC file the tables read game text from (`ads/languagedata_<code>.loc`). A client ships only its region's LOC files; when the picked language's file is missing, a corner warning says only the UI is in that language and the tables show their Korean text. Dismissing it keeps it closed for that language, and the settings still mark the language with a ⚠ icon
 - **Plugin system**, add handlers for new binary formats by dropping a file into `handlers/`
 - **Caching**, PAZ index is parsed once and cached; subsequent launches load instantly
 - **Parsed table cache**, parsed tables are kept on disk next to the PAZ files, so a big table reopens in a fraction of its parse time (`detail_dialog.dbss` 1.3 s to 0.25 s, `itemenchant.dbss` with its default sort 2.1 s to 0.5 s). The **Parsed Table Cache** setting picks Off, Cache tables when opened (default) or Cache all tables in the background, which parses every table A to Z while the app is idle; the status bar shows the table it is on, how far the pass is, and when it waits for you. A table stays cached across a patch that leaves it, its companions and the LOC text or lookup indexes it reads unchanged. **Delete all caches** in the settings removes the parsed table, icon thumbnail and lookup index caches; the PAZ index cache stays, since rebuilding it takes over a minute. In the background mode, the pass then waits for the next start instead of filling the cache again right away
@@ -310,6 +311,7 @@ PAZ-Parser/
 ├── api/                    # pywebview JS API bridge
 │   ├── bdo_api.py          # Routing and dispatch
 │   ├── bdo_api_helpers.py  # Shared constants and utilities (_norm, _file_icon)
+│   ├── bdo_languages.py    # The 13 game languages, their LOC files and UI support
 │   ├── bdo_icon_images.py  # Icon thumbnails, the icon popup image and sprite crops
 │   ├── bdo_api_preview.py  # Preview assembly and entry loading (PreviewMixin)
 │   ├── bdo_api_caches.py   # Parsed table cache modes, Delete all caches (CacheMixin)

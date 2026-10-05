@@ -17,6 +17,7 @@ import { tabSearchMethods } from "./js/features/tab-search.js";
 import { globalSearchMethods } from "./js/features/global-search.js";
 import { settingsMethods } from "./js/features/settings.js";
 import { iconPreviewMethods } from "./js/features/icon-preview.js";
+import { locWarningMethods } from "./js/features/loc-warning.js";
 import { installProfiler } from "./js/core/profiler.js";
 
 Object.assign(
@@ -37,6 +38,7 @@ Object.assign(
   globalSearchMethods,
   settingsMethods,
   iconPreviewMethods,
+  locWarningMethods,
 );
 
 installProfiler(app);

@@ -162,5 +162,9 @@
     "parsedNotCached": "No hay datos analizados en caché, vuelve a cargar el archivo",
     "invalidSearchPattern": "Patrón de búsqueda no válido",
     "noFilesMatchExtensions": "Ningún archivo coincide con las extensiones elegidas"
+  },
+  "locWarning": {
+    "missing": "No tienes {file} para {language}, así que solo la interfaz de la aplicación está en {language}. Los textos del juego en las tablas siguen en coreano.",
+    "dismiss": "Ocultar"
   }
 }

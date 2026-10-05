@@ -66,3 +66,17 @@ Never write user-visible text straight into HTML, JS or Python UI code:
 - Python: `ui_text("section.key", name=value)` from `ui_text.py`.
 
 Add the key to `en.json` and translate it in every other file in the same change.
+
+## Adding a UI language (developers)
+
+`api/bdo_languages.py` lists all 13 languages the game ships text in, with the game's own
+code (`PA_LT_<pa_type>`) and the LOC file name. The settings list the ones with
+`has_ui=True`. To add one:
+
+1. Add `<code>.json` here, with the code from `GAME_LANGUAGES`.
+2. Set `has_ui=True` on its entry, and fill in `loc_file` once a client of that region or
+   its CDN index (`/UploadData/ads_files`) confirms the file name (only Korean needs none:
+   its text is in the tables).
+
+`tests/test_languages.py` fails while the shipped JSON files and the `has_ui` languages
+differ, or while a UI language other than Korean has no LOC file name.
