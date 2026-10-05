@@ -18,6 +18,7 @@ docs/file-formats/quest_dbss.md.
 
 from __future__ import annotations
 
+import re
 import struct
 from dataclasses import dataclass
 
@@ -48,6 +49,8 @@ _POST_ICON_SIZES = (16, 8)
 _MAX_ICON_LENGTH = 260
 
 _U32 = struct.Struct("<I")
+_STRING_PREFIX = struct.Struct("<II")
+_NON_ZERO_BYTE = re.compile(rb"[^\x00]")
 _I32 = struct.Struct("<i")
 _F32 = struct.Struct("<f")
 
@@ -102,10 +105,27 @@ def _scripts_end(data: bytes, start: int) -> int | None:
 
 
 def _objective_start(data: bytes, gap_start: int, quest_offset: int) -> int | None:
-    """Prefix of the objective string that ends right before the category."""
+    """Prefix of the objective string that ends right before the category.
+
+    Returns the lowest prefix position whose UTF-16 text ends exactly there.
+    Two shortcuts keep the scan to a few tries: the text is whole UTF-16
+    units, so the prefix sits an even distance before the end; and only an
+    empty objective has a zero length, so the zero run that opens most gaps
+    is skipped up to its first non-zero byte.
+    """
     end = quest_offset - _CATEGORY_SIZE
-    for pos in range(gap_start, end - _STRING_PREFIX_SIZE + 1):
-        if _utf16_end(data, pos) == end:
+    last = end - _STRING_PREFIX_SIZE
+    if last < gap_start:
+        return None
+
+    # A length at `pos` covers `pos..pos+3`; below the first non-zero byte it
+    # can only be zero, which fits the empty objective at `last` alone.
+    first_set = _NON_ZERO_BYTE.search(data, gap_start, last + 4)
+    pos = last if first_set is None else max(gap_start, first_set.start() - 3)
+    pos += (end - pos) & 1
+    for pos in range(pos, last + 1, 2):
+        length, high_word = _STRING_PREFIX.unpack_from(data, pos)
+        if high_word == 0 and pos + _STRING_PREFIX_SIZE + 2 * length == end:
             return pos
     return None
 
