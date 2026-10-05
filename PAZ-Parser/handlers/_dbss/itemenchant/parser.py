@@ -30,6 +30,10 @@ _CHARACTER_ID = 0xAA
 _SKILL_KEYS = 0xCC
 _SKILL_KEYS_STRUCT = struct.Struct("<II")
 
+# The fixed numeric fields end here, so the string scan starts here. The
+# lowest string prefix in any block sits at +0xF2 (client 3458).
+_FIXED_FIELDS_END = 0xD4
+
 
 def parse_itemenchantoffset_records(data: bytes) -> list[dict]:
     """Parse the key/offset index into plain dicts."""
@@ -61,6 +65,11 @@ def _base_rows(offset_rows: list[dict]) -> Iterator[dict]:
     return (row for row in offset_rows if not row["enchant_level"])
 
 
+def _block_strings(data: bytes, start: int, end: int) -> list[str]:
+    """The length-prefixed ASCII strings of the block `[start, end)`."""
+    return find_prefixed_ascii(data, start + _FIXED_FIELDS_END, end)
+
+
 def _skill_keys(data: bytes, start: int) -> tuple[int, ...]:
     """The non-zero skill keys of the block at `start`, in slot order."""
     return tuple(key for key in _SKILL_KEYS_STRUCT.unpack_from(data, start + _SKILL_KEYS) if key)
@@ -88,7 +97,7 @@ def parse_itemenchant_records(data: bytes, offset_data: bytes) -> list[dict]:
                 f"{end:,} but the file is {len(data):,} bytes."
             )
 
-        strings = find_prefixed_ascii(data, start, end)
+        strings = _block_strings(data, start, end)
         icon = strings[0] if strings else ""
         records.append({
             "item_id": row["item_id"],
@@ -119,7 +128,7 @@ def build_item_icon_index(data: bytes, offset_data: bytes) -> dict[int, str]:
         if end > len(data):
             continue
 
-        strings = find_prefixed_ascii(data, start, end)
+        strings = _block_strings(data, start, end)
         if strings:
             index[row["item_id"]] = f"{ICON_ROOT}{strings[0].lower()}"
 

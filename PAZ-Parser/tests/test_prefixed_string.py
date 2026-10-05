@@ -57,3 +57,25 @@ def test_scan_finds_only_confirmed_ascii_strings() -> None:
     data = _ascii("Icon/a.dds") + b"\x00Loose text\x00" + _ascii("9999")
 
     assert find_prefixed_ascii(data, 0, len(data)) == ["Icon/a.dds", "9999"]
+
+
+@pytest.mark.parametrize(
+    ("data", "start", "end"),
+    [
+        (_ascii("Icon/a.dds"), 1, len(_ascii("Icon/a.dds"))),
+        (_ascii("Icon/a.dds"), 0, len(_ascii("Icon/a.dds")) - 1),
+        (struct.pack("<II", 12, 0) + b"Icon/a.dds\x00\x00", 0, 20),
+        (struct.pack("<II", 2, 0) + b"ab\x00", 0, 11),
+        (struct.pack("<II", 201, 0) + b"x" * 201, 0, 209),
+        (struct.pack("<II", 4, 0) + b"ab\xffd", 0, 12),
+    ],
+    ids=["prefix-before-start", "text-past-end", "length-past-text", "too-short", "too-long", "not-printable"],
+)
+def test_scan_skips_a_string_that_does_not_fit(data: bytes, start: int, end: int) -> None:
+    assert find_prefixed_ascii(data, start, end) == []
+
+
+def test_scan_finds_strings_back_to_back_inside_the_range() -> None:
+    data = b"\xff" * 3 + _ascii("New_Icon/a.dds") + _ascii("ITEM_BIC_HIT_1") + b"\xff"
+
+    assert find_prefixed_ascii(data, 3, len(data) - 1) == ["New_Icon/a.dds", "ITEM_BIC_HIT_1"]

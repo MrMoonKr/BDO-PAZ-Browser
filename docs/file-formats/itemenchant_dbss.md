@@ -209,7 +209,7 @@ Values 11 to 20 also occur (1,092 items) and are unnamed. Every one of the
 
 ### Placed or summoned character
 
-`character_id` sits in the fixed numeric part: in every base-item (level 0) block the first string starts at `+0xB4` (180) or later, and every block is at least 693 bytes long.
+`character_id` sits in the fixed numeric part: in every block, at every level, the first string's prefix starts at `+0xF2` (242) or later (client 3458), and every block is at least 693 bytes long.
 
 | Measure (level-0 blocks)                         | Value |
 | ------------------------------------------------ | ----: |
@@ -236,7 +236,8 @@ Character `1` is named by 120 unrelated items, so there the value is not a link.
 
 The string does **not** sit at a fixed block offset, 47 distinct offsets were
 observed across a 400-block sample, so a parser must scan for the
-`(length, 0, ascii × length)` shape rather than seek a constant.
+`(length, 0, ascii × length)` shape rather than seek a constant. The browser
+starts the scan at `+0xD4`, where the fixed fields end.
 
 A block holds at most two strings:
 
