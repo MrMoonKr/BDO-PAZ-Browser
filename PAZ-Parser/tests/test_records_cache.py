@@ -1,7 +1,9 @@
-"""The parsed records disk cache: storage, dependency keys, the all_records hook."""
+"""The parsed records disk cache: storage, dependency keys, sort orders, the hooks."""
 
 from __future__ import annotations
 
+import sqlite3
+from array import array
 from collections.abc import Callable, Iterator
 from pathlib import Path
 
@@ -14,13 +16,16 @@ from api.bdo_records_prefill import RecordsPrefill
 from api.bdo_records_store import ABSENT, DataDigests, RecordStore, paz_entry_identity
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler, set_records_source
-from paz.bdo_records_cache import CACHE_FILE, CurrentDigest, RecordsCache
+from paz.bdo_records_cache import CACHE_FILE, CachedRecords, CurrentDigest, RecordsCache, RecordsStamp
+from table_sort import SORT_ASC, SORT_DESC, TableSort
 
 _ARCHIVE = "pad00001.paz"
 _TABLE = PazEntry(_ARCHIVE, "gamecommondata/binary/table.dbss", 64, 10, 10, 0, 0)
 _COMPANION = PazEntry(_ARCHIVE, "gamecommondata/binary/tableoffset.dbss", 128, 4, 4, 0, 0)
 _DISK = PazEntry("<disk>", "languagedata_en.loc", 0, 4, 4, 0, 0)
 _RECORDS = [{"id": 1, "name": "Alpha"}, {"id": 2, "name": "Beta"}]
+_BY_ID_DESC = TableSort("id", SORT_DESC)
+_BY_ID_ASC = TableSort("id", SORT_ASC)
 
 
 class _Handler(PreviewHandler):
@@ -29,6 +34,7 @@ class _Handler(PreviewHandler):
     def __init__(self, reads: Callable[[], object] = lambda: None) -> None:
         self._reads = reads
         self.builds = 0
+        self.sorts = 0
 
     def companions(self, entry: PazEntry) -> list[str]:
         return [_COMPANION.internal_path]
@@ -40,6 +46,23 @@ class _Handler(PreviewHandler):
 
     def render_records_page(self, records: list[dict], page: int, page_size: int) -> str:
         return ""
+
+    def sortable_fields(self) -> tuple[str, ...]:
+        return ("id",)
+
+    def records_sort_order(self, records: list[dict], sort: TableSort) -> list[int]:
+        self.sorts += 1
+        return super().records_sort_order(records, sort)
+
+
+class _IndexSortHandler(_Handler):
+    """Sorts from its own index, so its orders are never cached."""
+
+    def _build_sort_order(
+        self, data: bytes, entry: PazEntry, companions: dict[str, bytes], sort: TableSort
+    ) -> list[int]:
+        self.sorts += 1
+        return [1, 0]
 
 
 class _Archives:
@@ -86,6 +109,10 @@ def _records_through(store: RecordStore, handler: _Handler, entry: PazEntry = _T
 # ── RecordsCache ─────────────────────────────────────────────────────────────
 
 
+def _records_of(cached: CachedRecords | None) -> list[dict] | None:
+    return None if cached is None else cached.records
+
+
 def _today(digests: dict[str, str]) -> CurrentDigest:
     """Today's digests for a test, with everything else absent."""
     return lambda name: digests.get(name, ABSENT)
@@ -93,15 +120,15 @@ def _today(digests: dict[str, str]) -> CurrentDigest:
 
 def test_cache_round_trips_records(tmp_path: Path) -> None:
     cache = RecordsCache(tmp_path)
-    cache.put("a.dbss", "key", {LOC: "loc1"}, _RECORDS)
+    cache.put("a.dbss", RecordsStamp.of("key", {LOC: "loc1"}), _RECORDS)
 
-    assert cache.get("a.dbss", "key", _today({LOC: "loc1"})) == _RECORDS
+    assert _records_of(cache.get("a.dbss", "key", _today({LOC: "loc1"}))) == _RECORDS
     cache.close()
 
 
 def test_cache_misses_on_another_input_key(tmp_path: Path) -> None:
     cache = RecordsCache(tmp_path)
-    cache.put("a.dbss", "key", {}, _RECORDS)
+    cache.put("a.dbss", RecordsStamp.of("key", {}), _RECORDS)
 
     assert cache.get("a.dbss", "other", _today({})) is None
     cache.close()
@@ -109,7 +136,7 @@ def test_cache_misses_on_another_input_key(tmp_path: Path) -> None:
 
 def test_cache_misses_when_a_read_dependency_changed(tmp_path: Path) -> None:
     cache = RecordsCache(tmp_path)
-    cache.put("a.dbss", "key", {LOC: "loc1"}, _RECORDS)
+    cache.put("a.dbss", RecordsStamp.of("key", {LOC: "loc1"}), _RECORDS)
 
     assert cache.get("a.dbss", "key", _today({LOC: "loc2"})) is None
     assert not cache.is_current("a.dbss", "key", _today({LOC: "loc2"}))
@@ -118,16 +145,16 @@ def test_cache_misses_when_a_read_dependency_changed(tmp_path: Path) -> None:
 
 def test_cache_ignores_dependencies_the_build_did_not_read(tmp_path: Path) -> None:
     cache = RecordsCache(tmp_path)
-    cache.put("a.dbss", "key", {LOC: "loc1"}, _RECORDS)
+    cache.put("a.dbss", RecordsStamp.of("key", {LOC: "loc1"}), _RECORDS)
     today = {LOC: "loc1", index_dep("item_icon"): "changed"}
 
-    assert cache.get("a.dbss", "key", _today(today)) == _RECORDS
+    assert _records_of(cache.get("a.dbss", "key", _today(today))) == _RECORDS
     cache.close()
 
 
 def test_cache_drops_an_unreadable_row(tmp_path: Path) -> None:
     cache = RecordsCache(tmp_path)
-    cache.put("a.dbss", "key", {}, _RECORDS)
+    cache.put("a.dbss", RecordsStamp.of("key", {}), _RECORDS)
     assert cache._conn is not None
     cache._conn.execute("UPDATE records SET records = ?", (b"not a pickle",))
 
@@ -136,14 +163,66 @@ def test_cache_drops_an_unreadable_row(tmp_path: Path) -> None:
     cache.close()
 
 
+def test_an_outdated_store_is_emptied_and_shrunk(tmp_path: Path) -> None:
+    conn = sqlite3.connect(tmp_path / CACHE_FILE)
+    conn.execute("CREATE TABLE records (path TEXT, blob BLOB)")
+    conn.execute("INSERT INTO records VALUES (?, ?)", ("a.dbss", b"x" * 1_000_000))
+    conn.execute("PRAGMA user_version = 0")
+    conn.commit()
+    conn.close()
+    before = (tmp_path / CACHE_FILE).stat().st_size
+
+    RecordsCache(tmp_path).close()
+
+    assert (tmp_path / CACHE_FILE).stat().st_size < before
+
+
 def test_a_store_that_cannot_open_is_disabled(tmp_path: Path) -> None:
     (tmp_path / CACHE_FILE).mkdir()
 
     cache = RecordsCache(tmp_path)
-    cache.put("a.dbss", "key", {}, _RECORDS)
+    cache.put("a.dbss", RecordsStamp.of("key", {}), _RECORDS)
 
     assert cache.error
     assert cache.get("a.dbss", "key", _today({})) is None
+
+
+def test_an_order_is_served_only_for_its_records_stamp(tmp_path: Path) -> None:
+    cache = RecordsCache(tmp_path)
+    stamp = RecordsStamp.of("key", {LOC: "loc1"})
+    cache.put("a.dbss", stamp, _RECORDS)
+    cache.put_order("a.dbss", "id:desc", stamp, array("I", [1, 0]))
+
+    assert list(cache.get_order("a.dbss", "id:desc", stamp) or []) == [1, 0]
+    assert cache.get_order("a.dbss", "id:desc", RecordsStamp.of("key", {LOC: "loc2"})) is None
+    assert cache.get_order("a.dbss", "id:asc", stamp) is None
+    cache.close()
+
+
+def test_new_records_drop_the_orders_of_the_old_ones(tmp_path: Path) -> None:
+    cache = RecordsCache(tmp_path)
+    old = RecordsStamp.of("key", {LOC: "loc1"})
+    cache.put("a.dbss", old, _RECORDS)
+    cache.put_order("a.dbss", "id:desc", old, array("I", [1, 0]))
+
+    cache.put("a.dbss", RecordsStamp.of("key", {LOC: "loc2"}), _RECORDS)
+
+    assert cache.get_order("a.dbss", "id:desc", old) is None
+    cache.close()
+
+
+def test_is_current_with_a_sort_needs_its_order(tmp_path: Path) -> None:
+    cache = RecordsCache(tmp_path)
+    stamp = RecordsStamp.of("key", {})
+    cache.put("a.dbss", stamp, _RECORDS)
+
+    assert cache.is_current("a.dbss", "key", _today({}))
+    assert not cache.is_current("a.dbss", "key", _today({}), "id:desc")
+
+    cache.put_order("a.dbss", "id:desc", stamp, array("I", [1, 0]))
+
+    assert cache.is_current("a.dbss", "key", _today({}), "id:desc")
+    cache.close()
 
 
 # ── data_deps ────────────────────────────────────────────────────────────────
@@ -290,6 +369,45 @@ def test_all_records_goes_through_the_installed_source(store: RecordStore) -> No
     assert handler.builds == 1
 
 
+def _sorted_through(store: RecordStore, handler: _Handler, payload: bytes) -> list[int]:
+    """Open the table and sort it as the app does, with the store installed."""
+    set_records_source(store)
+    try:
+        handler.all_records(payload, _TABLE, {})
+        order = list(handler.sorted_order(payload, _TABLE, {}, _BY_ID_DESC))
+    finally:
+        set_records_source(None)
+    store._writer.submit(lambda: None).result()
+    return order
+
+
+def test_a_sort_order_is_cached_with_the_records(store: RecordStore) -> None:
+    handler = _Handler()
+    first = _sorted_through(store, handler, b"first open")
+
+    # A new payload object, as after a restart: nothing left in memory.
+    second = _sorted_through(store, handler, b"second open")
+
+    assert second == first == [1, 0]
+    assert (handler.builds, handler.sorts) == (1, 1)
+
+
+def test_an_index_sort_is_never_cached(store: RecordStore) -> None:
+    handler = _IndexSortHandler()
+    _sorted_through(store, handler, b"first open")
+    _sorted_through(store, handler, b"second open")
+
+    assert handler.sorts == 2
+
+
+def test_an_order_needs_records_from_the_same_store(store: RecordStore) -> None:
+    handler = _Handler()
+    order = store.sort_order(handler, _TABLE, _BY_ID_DESC, lambda: array("I", [1, 0]))
+
+    assert list(order) == [1, 0]
+    assert not store.is_current(handler, _TABLE, _BY_ID_DESC)
+
+
 def test_release_data_keeps_slots_of_other_payloads() -> None:
     handler = _Handler()
     kept, released = b"kept payload", b"released payload"
@@ -313,6 +431,7 @@ def test_prefill_builds_only_tables_without_a_current_row(store: RecordStore) ->
         store,
         targets=lambda: [(cached, _TABLE), (missing, _COMPANION)],
         load=lambda handler, entry: (b"payload", {}),
+        opening_sort=lambda handler, entry: _BY_ID_DESC,
         is_idle=lambda: True,
         report=lambda done, total: None,
         finished=finished.append,
@@ -321,8 +440,28 @@ def test_prefill_builds_only_tables_without_a_current_row(store: RecordStore) ->
     prefill._run(prefill._stop)
 
     assert (cached.builds, missing.builds) == (1, 1)
-    assert store.is_current(missing, _COMPANION)
-    assert finished == [1]
+    assert store.is_current(missing, _COMPANION, _BY_ID_DESC)
+    # The cached table only lacked its opening order, so it is counted too.
+    assert store.is_current(cached, _TABLE, _BY_ID_DESC)
+    assert finished == [2]
+
+
+def test_prefill_skips_the_order_of_an_index_sort(store: RecordStore) -> None:
+    handler = _IndexSortHandler()
+    prefill = RecordsPrefill(
+        store,
+        targets=lambda: [(handler, _TABLE)],
+        load=lambda handler, entry: (b"payload", {}),
+        opening_sort=lambda handler, entry: _BY_ID_ASC,
+        is_idle=lambda: True,
+        report=lambda done, total: None,
+        finished=lambda built: None,
+    )
+
+    prefill._run(prefill._stop)
+
+    assert handler.sorts == 0
+    assert store.is_current(handler, _TABLE, _BY_ID_ASC)
 
 
 def test_prefill_stops_while_waiting_for_idle(store: RecordStore) -> None:
@@ -331,6 +470,7 @@ def test_prefill_stops_while_waiting_for_idle(store: RecordStore) -> None:
         store,
         targets=lambda: [(handler, _TABLE)],
         load=lambda handler, entry: (b"payload", {}),
+        opening_sort=lambda handler, entry: None,
         is_idle=lambda: False,
         report=lambda done, total: None,
         finished=lambda built: None,

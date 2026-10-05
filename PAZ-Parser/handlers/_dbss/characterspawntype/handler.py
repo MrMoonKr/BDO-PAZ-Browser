@@ -63,18 +63,11 @@ class CharacterSpawnTypeHandler(PreviewHandler):
         # Every role and the name, so a saved sort survives either being hidden.
         return sort_keys(self._columns(range(ROLE_COUNT), has_loc=True))
 
-    def _build_sort_order(
-        self,
-        data: bytes,
-        entry: PazEntry,
-        companions: dict[str, bytes],
-        sort: TableSort,
-    ) -> list[int]:
+    def records_sort_order(self, records: list[dict], sort: TableSort) -> list[int]:
         if not sort.field.startswith(_ROLE_FIELD_PREFIX):
-            return super()._build_sort_order(data, entry, companions, sort)
+            return super().records_sort_order(records, sort)
 
         role = int(sort.field.removeprefix(_ROLE_FIELD_PREFIX))
-        records = self.all_records(data, entry, companions)
         return sort_order_by_values([r["roles"][role] for r in records], sort.descending)
 
     def get_records(

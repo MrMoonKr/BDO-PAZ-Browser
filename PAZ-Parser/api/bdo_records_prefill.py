@@ -16,6 +16,7 @@ from collections.abc import Callable, Sequence
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 from gc_pause import gc_paused
+from table_sort import TableSort
 
 from .bdo_records_store import RecordStore
 
@@ -26,6 +27,8 @@ _REPORT_INTERVAL_S = 0.5
 
 Target = tuple[PreviewHandler, PazEntry]
 LoadTable = Callable[[PreviewHandler, PazEntry], tuple[bytes, dict[str, bytes]]]
+# The sort a table opens with, whose order the fill caches with the records.
+OpeningSort = Callable[[PreviewHandler, PazEntry], "TableSort | None"]
 
 
 class RecordsPrefill:
@@ -36,6 +39,7 @@ class RecordsPrefill:
         store: RecordStore,
         targets: Callable[[], Sequence[Target]],
         load: LoadTable,
+        opening_sort: OpeningSort,
         is_idle: Callable[[], bool],
         report: Callable[[int, int], None],
         finished: Callable[[int], None],
@@ -43,6 +47,7 @@ class RecordsPrefill:
         self._store = store
         self._targets = targets
         self._load = load
+        self._opening_sort = opening_sort
         self._is_idle = is_idle
         self._report = report
         self._finished = finished
@@ -74,9 +79,10 @@ class RecordsPrefill:
         for done, (handler, entry) in enumerate(targets, start=1):
             if not self._wait_until_idle(stop):
                 return built
-            if self._store.is_current(handler, entry):
+            sort = self._opening_sort(handler, entry)
+            if self._store.is_current(handler, entry, sort):
                 continue
-            self._build(handler, entry)
+            self._build(handler, entry, sort)
             built += 1
             now = time.monotonic()
             if now - last_report >= _REPORT_INTERVAL_S:
@@ -84,8 +90,8 @@ class RecordsPrefill:
                 last_report = now
         return built
 
-    def _build(self, handler: PreviewHandler, entry: PazEntry) -> None:
-        """Parse one table into the cache. A table that fails is logged and skipped."""
+    def _build(self, handler: PreviewHandler, entry: PazEntry, sort: TableSort | None) -> None:
+        """Parse one table into the cache, with its opening sort. A table that fails is logged and skipped."""
         try:
             data, companions = self._load(handler, entry)
         except Exception:
@@ -93,7 +99,7 @@ class RecordsPrefill:
             return
         try:
             with gc_paused():
-                self._store.build_and_save(handler, entry, lambda: handler.get_records(data, entry, companions))
+                self._store.fill(handler, entry, lambda: handler.get_records(data, entry, companions), sort)
         except Exception:
             logging.warning("Background fill could not parse %s", entry.internal_path, exc_info=True)
         finally:

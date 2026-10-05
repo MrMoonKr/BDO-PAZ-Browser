@@ -291,8 +291,11 @@ Picking the field behind a column:
   with a parameter (`_columns(has_loc)`) and declare the full set:
   `sort_keys(self._columns(has_loc=True))`.
 - **Fields that are not on the record** (one entry of a list, say) can still
-  sort: override `_build_sort_order`, pull the values yourself and pass them to
-  `table_sort.sort_order_by_values`. `characterspawntype.dbss` sorts its
+  sort: override `records_sort_order(records, sort)`, pull the values yourself
+  and pass them to `table_sort.sort_order_by_values`. Override this, not
+  `_build_sort_order`, so the order stays a function of the records and the
+  disk cache can keep it (see [Parsed Table Cache](#parsed-table-cache)).
+  `characterspawntype.dbss` sorts its
   `flag_NN` columns this way from each record's `flags` list, so it does not
   add 44 keys to every one of its 24,017 records.
 - **Leave list columns unsortable** (quest titles, page titles, value lists).
@@ -673,6 +676,16 @@ So `get_records()` has to follow a few rules:
 - **Return picklable plain values** (dicts, lists, tuples, str, int, float, bool,
   None), and do not change the records after returning them: a background thread
   pickles them.
+
+Sort orders are cached too, next to the records they index: opening
+`itemenchant.dbss` from the cache takes 0.5 s instead of 1.3 s with the default
+sort rebuilt. An order row carries the stamp (input key and read dependencies) of
+the records it was built from, and is served only for records with that stamp.
+Only handlers whose order comes from `records_sort_order()` alone qualify
+(`sorts_records_only()`); a handler that overrides `_build_sort_order()` to sort
+its own index, such as `quest.dbss` or the LOC handler, always builds. The "cache
+all tables" pass also stores each table's opening sort: the saved one, else
+`default_sort()`.
 
 ### When to Override `render_data_page`
 

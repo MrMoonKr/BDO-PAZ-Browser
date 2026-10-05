@@ -21,8 +21,10 @@ keeps its row.
 from __future__ import annotations
 
 import hashlib
+import json
 import logging
 import threading
+from array import array
 from collections.abc import Callable, Iterable, Mapping
 from concurrent.futures import ThreadPoolExecutor
 from weakref import WeakKeyDictionary
@@ -30,9 +32,10 @@ from weakref import WeakKeyDictionary
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 # After bdo_preview, which puts the handlers folder (and so _common) on the path.
-from _common.data_deps import INDEX_PREFIX, LOC, index_dep, recording
-from paz.bdo_records_cache import RecordsCache
+from _common.data_deps import INDEX_PREFIX, LOC, index_dep, note_read, recording
+from paz.bdo_records_cache import RecordsCache, RecordsStamp
 from paz.source_fingerprint import project_module_of, source_fingerprints
+from table_sort import TableSort
 
 # Part of every input key; bump when what goes into a key changes.
 _KEY_FORMAT = "records-key-1"
@@ -43,6 +46,11 @@ ABSENT = "absent"
 EntryIdentity = Callable[[PazEntry], "str | None"]
 ResolveEntry = Callable[[str], "PazEntry | None"]
 Records = list[dict]
+
+
+def sort_name(sort: TableSort) -> str:
+    """How a sort is named in the cache, such as `id:desc`."""
+    return f"{sort.field}:{sort.direction}"
 
 
 def paz_entry_identity(entry: PazEntry, archive_crc: int, archive_size: int) -> str:
@@ -112,6 +120,9 @@ class RecordStore:
         self._identity = identity
         self._resolve = resolve
         self._fingerprints: WeakKeyDictionary[PreviewHandler, str] = WeakKeyDictionary()
+        # Stamp of the records `records()` last returned per table path: the
+        # ones in the handler's memory, which a cached sort order must match.
+        self._served: dict[str, RecordsStamp] = {}
         # One writer, so a pickle never runs on the thread that opened the table.
         self._writer = ThreadPoolExecutor(max_workers=1, thread_name_prefix="records-cache")
 
@@ -131,35 +142,77 @@ class RecordStore:
 
     def records(self, handler: PreviewHandler, entry: PazEntry, build: Callable[[], Records]) -> Records:
         """`RecordsSource`: the cached records, else `build()` saved in the background."""
+        path = entry.internal_path
         try:
             key = self._input_key(handler, entry)
-            cached = None if key is None else self._cache.get(entry.internal_path, key, self._digests.get)
+            cached = None if key is None else self._cache.get(path, key, self._digests.get)
         except Exception:
-            logging.warning("Records cache lookup failed for %s", entry.internal_path, exc_info=True)
+            logging.warning("Records cache lookup failed for %s", path, exc_info=True)
             return build()
         if cached is not None:
-            return cached
+            self._served[path] = cached.stamp
+            # A build that reads these records read what they were built from.
+            for name in json.loads(cached.stamp.deps):
+                note_read(name)
+            return cached.records
 
+        self._served.pop(path, None)
         records, deps = self._build(build)
         if key is not None and deps is not None:
-            try:
-                self._writer.submit(self._save, entry.internal_path, key, deps, records)
-            except RuntimeError:
-                # Closed while this table parsed: the folder changed or the
-                # caches were deleted, so there is nothing to save into.
-                pass
+            stamp = RecordsStamp.of(key, deps)
+            self._served[path] = stamp
+            self._submit(self._cache.put, path, stamp, records)
         return records
 
-    def is_current(self, handler: PreviewHandler, entry: PazEntry) -> bool:
-        key = self._input_key(handler, entry)
-        return key is not None and self._cache.is_current(entry.internal_path, key, self._digests.get)
+    def sort_order(self, handler: PreviewHandler, entry: PazEntry, sort: TableSort, build: Callable[[], array]) -> array:
+        """`RecordsSource`: the cached order of the records `records()` last returned, else `build()`."""
+        path = entry.internal_path
+        stamp = self._served.get(path)
+        if stamp is None:
+            return build()
+        try:
+            cached = self._cache.get_order(path, sort_name(sort), stamp)
+        except Exception:
+            logging.warning("Sort order cache lookup failed for %s", path, exc_info=True)
+            cached = None
+        if cached is not None:
+            return cached
+        order = build()
+        self._submit(self._cache.put_order, path, sort_name(sort), stamp, order)
+        return order
 
-    def build_and_save(self, handler: PreviewHandler, entry: PazEntry, build: Callable[[], Records]) -> None:
-        """Build and save on the calling thread, for the background fill."""
+    def is_current(self, handler: PreviewHandler, entry: PazEntry, sort: TableSort | None = None) -> bool:
+        """True when the records of `entry`, and the order of `sort` if it is cacheable, are cached."""
         key = self._input_key(handler, entry)
-        records, deps = self._build(build)
-        if key is not None and deps is not None:
-            self._save(entry.internal_path, key, deps, records)
+        if key is None:
+            return False
+        name = sort_name(sort) if sort is not None and handler.sorts_records_only() else None
+        return self._cache.is_current(entry.internal_path, key, self._digests.get, name)
+
+    def fill(self, handler: PreviewHandler, entry: PazEntry, build: Callable[[], Records], sort: TableSort | None) -> None:
+        """Cache the records of `entry`, and the order of `sort`, on this thread.
+
+        For the background fill. It leaves the stamps of the records the UI
+        holds alone, so a fill can never pair an open table with another order.
+        """
+        path = entry.internal_path
+        key = self._input_key(handler, entry)
+        if key is None:
+            return
+        cached = self._cache.get(path, key, self._digests.get)
+        if cached is None:
+            records, deps = self._build(build)
+            if deps is None:
+                return
+            stamp = RecordsStamp.of(key, deps)
+            self._cache.put(path, stamp, records)
+        else:
+            records, stamp = cached.records, cached.stamp
+        if sort is None or not handler.sorts_records_only():
+            return
+        if self._cache.get_order(path, sort_name(sort), stamp) is None:
+            order = array("I", handler.records_sort_order(records, sort))
+            self._cache.put_order(path, sort_name(sort), stamp, order)
 
     def close(self) -> None:
         """Finish pending writes and close the store."""
@@ -175,11 +228,21 @@ class RecordStore:
             return records, None
         return records, {name: self._digests.get(name) for name in names}
 
-    def _save(self, path: str, key: str, deps: Mapping[str, str], records: Records) -> None:
+    def _submit(self, write: Callable[..., None], path: str, *args: object) -> None:
+        """Run a cache write on the writer thread; a failure is logged, never raised."""
+
+        def run() -> None:
+            try:
+                write(path, *args)
+            except Exception:
+                logging.warning("Could not write the records cache for %s", path, exc_info=True)
+
         try:
-            self._cache.put(path, key, deps, records)
-        except Exception:
-            logging.warning("Could not cache the records of %s", path, exc_info=True)
+            self._writer.submit(run)
+        except RuntimeError:
+            # Closed while this table parsed: the folder changed or the caches
+            # were deleted, so there is nothing to save into.
+            pass
 
     def _input_key(self, handler: PreviewHandler, entry: PazEntry) -> str | None:
         """Hash of the table's own inputs, or None when it is not read from a PAZ archive."""

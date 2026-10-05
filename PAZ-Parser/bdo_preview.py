@@ -170,10 +170,29 @@ class PreviewHandler(ABC):
         orders: dict[TableSort, array] = self._data_cache(data, "_sort_orders", dict)
         order = orders.get(sort)
         if order is None:
-            # array("I") holds 4 bytes per row instead of a list of int objects.
-            order = array("I", self._build_sort_order(data, entry, companions, sort))
+            order = self._load_sort_order(data, entry, companions, sort)
             orders[sort] = order
         return order
+
+    def _load_sort_order(
+        self,
+        data: bytes,
+        entry: PazEntry,
+        companions: dict[str, bytes],
+        sort: TableSort,
+    ) -> array:
+        """Build the order of `sort`, or take it from the records source.
+
+        Only an order computed from the records alone can be cached with
+        them; a handler that sorts its own index always builds.
+        """
+        source = _records_source
+        if source is None or not self.sorts_records_only():
+            # array("I") holds 4 bytes per row instead of a list of int objects.
+            return array("I", self._build_sort_order(data, entry, companions, sort))
+
+        records = self.all_records(data, entry, companions)
+        return source.sort_order(self, entry, sort, lambda: array("I", self.records_sort_order(records, sort)))
 
     def _build_sort_order(
         self,
@@ -183,7 +202,19 @@ class PreviewHandler(ABC):
         sort: TableSort,
     ) -> list[int]:
         """Compute the sort order from get_records(). Override to sort an index instead."""
-        return sort_order(self.all_records(data, entry, companions), sort.field, sort.descending)
+        return self.records_sort_order(self.all_records(data, entry, companions), sort)
+
+    def records_sort_order(self, records: list[dict], sort: TableSort) -> list[int]:
+        """The order `sort` gives `records`. Override for a field that is not a plain value."""
+        return sort_order(records, sort.field, sort.descending)
+
+    def sorts_records_only(self) -> bool:
+        """True when the sort order comes from `records_sort_order()` alone.
+
+        Then the disk cache can keep the order with the records. False for a
+        handler that overrides `_build_sort_order()` to sort its own index.
+        """
+        return type(self)._build_sort_order is PreviewHandler._build_sort_order
 
     def search_records(
         self,
@@ -222,7 +253,7 @@ class PreviewHandler(ABC):
 
 
 class RecordsSource(Protocol):
-    """Where `all_records()` gets a parse: the disk cache, or `build()` itself."""
+    """Where `all_records()` and `sorted_order()` get a parse: the disk cache, or `build()` itself."""
 
     def records(
         self,
@@ -230,6 +261,16 @@ class RecordsSource(Protocol):
         entry: PazEntry,
         build: Callable[[], list[dict]],
     ) -> list[dict]: ...
+
+    def sort_order(
+        self,
+        handler: PreviewHandler,
+        entry: PazEntry,
+        sort: TableSort,
+        build: Callable[[], array],
+    ) -> array:
+        """The order `sort` gives the records `records()` last returned for `entry`."""
+        ...
 
 
 # None parses every time; the app installs its disk cache (api/bdo_records_store.py).

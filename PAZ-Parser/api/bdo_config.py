@@ -70,15 +70,20 @@ def load_table_sort(file_key: str, sortable_fields: Collection[str]) -> TableSor
     A malformed entry, or one whose field the handler no longer declares, is
     dropped from the config so the file opens in its default sort from then on.
     """
-    saved = _saved_table_sorts().get(file_key)
-    if saved is None:
+    if file_key not in _saved_table_sorts():
         return None
 
-    sort = TableSort.parse(saved.get("field"), saved.get("dir")) if isinstance(saved, dict) else None
-    if sort is None or sort.field not in sortable_fields:
+    sort = peek_table_sort(file_key, sortable_fields)
+    if sort is None:
         forget_table_sort(file_key)
-        return None
     return sort
+
+
+def peek_table_sort(file_key: str, sortable_fields: Collection[str]) -> TableSort | None:
+    """`load_table_sort()` without dropping a stale entry, so it never writes the config."""
+    saved = _saved_table_sorts().get(file_key)
+    sort = TableSort.parse(saved.get("field"), saved.get("dir")) if isinstance(saved, dict) else None
+    return sort if sort is not None and sort.field in sortable_fields else None
 
 
 def save_table_sort(file_key: str, sort: TableSort) -> None:

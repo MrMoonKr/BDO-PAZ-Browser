@@ -22,9 +22,10 @@ from paz import bdo_index_cache, bdo_records_cache, bdo_thumbnail_cache
 from paz.bdo_payload_reader import read_entry_payload
 from paz.bdo_records_cache import RecordsCache
 from paz.bdo_thumbnail_cache import ThumbnailCache
+from table_sort import TableSort
 
 from .bdo_api_state import ApiState
-from .bdo_config import load_config, records_cache_setting
+from .bdo_config import load_config, peek_table_sort, records_cache_setting, table_sort_file_key
 from .bdo_records_prefill import RecordsPrefill, Target
 from .bdo_records_store import RecordStore, paz_entry_identity
 from .bdo_tree import handled_entries
@@ -91,6 +92,7 @@ class CacheMixin(ApiState):
                 store,
                 self._prefill_targets,
                 self._read_table,
+                self._opening_sort,
                 self._is_idle,
                 self._report_prefill,
                 self._report_prefill_done,
@@ -147,6 +149,12 @@ class CacheMixin(ApiState):
                 # As in the app: a companion that cannot be read is left out.
                 logging.warning("Background fill could not read companion %s", path, exc_info=True)
         return data, companions
+
+    @staticmethod
+    def _opening_sort(handler: PreviewHandler, entry: PazEntry) -> TableSort | None:
+        """The sort the table opens with, as `load_entry()` picks it."""
+        saved = peek_table_sort(table_sort_file_key(entry.internal_path), handler.sortable_fields())
+        return saved or handler.default_sort()
 
     def _report_prefill(self, done: int, total: int) -> None:
         self._push_status({"key": "status.cachingTables", "args": {"done": done, "total": total}}, (done, total))
