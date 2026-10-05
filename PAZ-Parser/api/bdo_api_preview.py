@@ -231,6 +231,7 @@ class PreviewMixin(ApiState):
             tab_labels = [ui_text(handler.primary_label_key), ui_text(handler.alt_label_key)]
         elif has_parsed:
             self._cached_handler = handler
+            self._recent_tables.viewed(handler)
             try:
                 start = self._ts()
                 record_count = handler.get_record_count(data, entry, companions)

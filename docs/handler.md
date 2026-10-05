@@ -651,6 +651,16 @@ drops every slot; the benchmark's `parse` stage calls it before each run so ever
 parses cold. `release_data(data)` drops only the slots built from one payload; the
 background cache fill calls it after each table it parses.
 
+Slots live on the handler instance, so without a limit every handler would keep the last
+table it parsed for the whole session (the 20 biggest tables take about 1 GB together).
+The app keeps the slots of the last three parsed tables viewed (`KEPT_TABLES` in
+`api/bdo_recent_tables.py`); an older handler drops its slots, and reopening its table
+reads the [Parsed Table Cache](#parsed-table-cache) again, or parses when the cache is
+off. Every handler drops its slots (`clear_handler_caches()`) when a folder loads, when
+the LOC text changes and before plugins reload, since the slots were built from the old
+payloads, LOC and lookup indexes. A handler must not keep parsed data anywhere else that
+outlives these rules.
+
 ### Parsed Table Cache
 
 The app saves what `get_records()` returns in `paz_browser_records.sqlite` next to the

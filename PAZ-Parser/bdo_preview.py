@@ -554,6 +554,12 @@ def parsed_handlers() -> list[PreviewHandler]:
     return [handler for handler in unique.values() if has_parsed_view(handler)]
 
 
+def clear_handler_caches() -> None:
+    """Drop the `_data_cache` slots of every parsed handler, with their payloads."""
+    for handler in parsed_handlers():
+        handler.clear_data_cache()
+
+
 def get_binary_handlers() -> list[str]:
     """Return sorted list of registered binary (non-builtin) handler keys."""
     return sorted(k for k in _REGISTRY if k not in _BUILTIN_KEYS)

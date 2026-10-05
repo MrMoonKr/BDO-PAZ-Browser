@@ -211,6 +211,8 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
         self._close_records_cache()
         self._paz_root = paz_root
         clear_payload_cache()
+        # The slots hold the old folder's payloads, parsed with its LOC and indexes.
+        self._recent_tables.clear()
         meta_path = find_single_meta_file(paz_root)
         current_version = read_meta_version(meta_path)
         self._meta_version = current_version
@@ -562,6 +564,8 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
 
     def reload_plugins(self) -> None:
         import bdo_preview
+        # The old handler instances leave the registry; let go of what they parsed.
+        self._recent_tables.clear()
         bdo_preview.reload_plugins(Path(__file__).parent.parent / "handlers")
         self._handled_view = None
         self._reload_loc(load_config().get("language", "en"))

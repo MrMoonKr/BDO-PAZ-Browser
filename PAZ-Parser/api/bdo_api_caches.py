@@ -66,9 +66,16 @@ class CacheMixin(ApiState):
         return None if archive is None else paz_entry_identity(entry, *archive)
 
     def _install_loc(self, raw: bytes | None) -> None:
-        """Install LOC text, or none, and record its digest for the records cache."""
+        """Install LOC text, or none, and record its digest for the records cache.
+
+        When the text changed, the tables in memory were built with the old
+        one, so every handler drops them.
+        """
+        generation = self._data_digests.generation
         init_loc(raw)
         self._data_digests.set_loc(raw)
+        if self._data_digests.generation != generation:
+            self._recent_tables.clear()
 
     # ── Records cache lifecycle ──────────────────────────────────────────────
 

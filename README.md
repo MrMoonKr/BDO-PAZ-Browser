@@ -315,6 +315,7 @@ PAZ-Parser/
 │   ├── bdo_api_caches.py   # Parsed table cache modes, Delete all caches (CacheMixin)
 │   ├── bdo_records_store.py# Parsed table cache keys and dependency digests
 │   ├── bdo_records_prefill.py# Background pass that caches every table
+│   ├── bdo_recent_tables.py# Which handlers keep their parsed tables in memory
 │   └── bdo_api_search.py   # File content search, single-file and cross-file (SearchMixin)
 │
 ├── paz/                    # PAZ archive reading and caching

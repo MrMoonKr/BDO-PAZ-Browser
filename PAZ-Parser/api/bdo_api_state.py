@@ -15,6 +15,7 @@ from bdo_preview import PreviewHandler
 from paz.bdo_thumbnail_cache import ThumbnailCache
 from table_sort import TableSort
 
+from .bdo_recent_tables import RecentTables
 from .bdo_records_prefill import RecordsPrefill
 from .bdo_records_store import DataDigests, RecordStore
 
@@ -56,6 +57,8 @@ class ApiState:
         self._cached_entry: PazEntry | None = None
         self._cached_companions: dict[str, bytes] = {}
         self._cached_sort: TableSort | None = None
+        # Handlers whose parsed tables stay in memory (`api/bdo_recent_tables.py`).
+        self._recent_tables = RecentTables()
         self._global_search_cancel: threading.Event = threading.Event()
         self._meta_version: int | None = None
         # The status `load_folder()` returned, shown again after the cache pass.
