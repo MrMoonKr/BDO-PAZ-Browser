@@ -14,6 +14,8 @@ _CIPHER: IceCipher = IceCipher(BDO_ICE_KEY)
 # (LSB must be 0 to reach the literal path).
 _BDO_TABLE: list[int] = [4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0]
 
+_U32_LE = struct.Struct("<I")
+
 
 # ── ICE decrypt ───────────────────────────────────────────────────────────────
 
@@ -41,37 +43,6 @@ def _bd_parse_header(data: bytes | bytearray) -> tuple[int, int]:
         uiCompressedLength = data[1]
         pInputIndex = 3
     return pInputIndex, uiCompressedLength - 1
-
-
-def _bd_decode_backref(
-    data: bytes | bytearray,
-    pInputIndex: int,
-    uiBlockHeader: int,
-) -> tuple[int, int, int]:
-    """Decode a back-reference block and return (uiRepeatIndex, uiBlockLength, new_pInputIndex)."""
-    header_low2 = uiBlockHeader & 0x03
-    if header_low2 == 0x03:
-        if (uiBlockHeader & 0x7F) == 3:
-            uiRepeatIndex = uiBlockHeader >> 15
-            uiBlockLength = ((uiBlockHeader >> 7) & 0xFF) + 3
-            pInputIndex += 4
-        else:
-            uiRepeatIndex = (uiBlockHeader >> 7) & 0x1FFFF
-            uiBlockLength = ((uiBlockHeader >> 2) & 0x1F) + 2
-            pInputIndex += 3
-    elif header_low2 == 0x02:
-        uiRepeatIndex = (uiBlockHeader & 0xFFFF) >> 6   # uint16_t cast
-        uiBlockLength = ((uiBlockHeader >> 2) & 0xF) + 3
-        pInputIndex += 2
-    elif header_low2 == 0x01:
-        uiRepeatIndex = (uiBlockHeader & 0xFFFF) >> 2   # uint16_t cast
-        uiBlockLength = 3
-        pInputIndex += 2
-    else:
-        uiRepeatIndex = (uiBlockHeader & 0xFF) >> 2     # uint8_t cast
-        uiBlockLength = 3
-        pInputIndex += 1
-    return uiRepeatIndex, uiBlockLength, pInputIndex
 
 
 def _bd_copy_tail(
@@ -118,6 +89,8 @@ def _blackdesert_unpack_core(
     pOutputIndex = 0
     uiBlockGroupHeader = 1
     pLastOutputIndex = decompressed_length - 1
+    pLiteralEnd = max(0, pLastOutputIndex - 10)
+    unpack_u32 = _U32_LE.unpack_from
 
     pInputIndex, pLastInputIndex = _bd_parse_header(data)
 
@@ -127,23 +100,50 @@ def _blackdesert_unpack_core(
             if uiBlockGroupHeader == 1:
                 if pInputIndex + 3 > pLastInputIndex:
                     return -1
-                uiBlockGroupHeader = struct.unpack_from("<I", data, pInputIndex)[0]
+                uiBlockGroupHeader = unpack_u32(data, pInputIndex)[0]
                 pInputIndex += 4
 
             if pInputIndex + 3 > pLastInputIndex:
                 return -2
 
-            uiBlockHeader: int = struct.unpack_from("<I", data, pInputIndex)[0]
+            uiBlockHeader: int = unpack_u32(data, pInputIndex)[0]
 
             if not (uiBlockGroupHeader & 1):
                 break  # literal run
 
             # ── Back-reference block ──────────────────────────────────────
-            uiRepeatIndex, uiBlockLength, pInputIndex = _bd_decode_backref(
-                data, pInputIndex, uiBlockHeader
-            )
+            # The low 2 bits pick the encoding: how far back the copy starts
+            # (uiRepeatIndex), how many bytes it copies (uiBlockLength) and
+            # how many input bytes the block header takes. Decoded inline,
+            # not in a helper: this runs once per back-reference, over a
+            # million times on a large texture, and the call cost 12%.
+            header_low2 = uiBlockHeader & 0x03
+            if header_low2 == 0x03:
+                if (uiBlockHeader & 0x7F) == 3:
+                    uiRepeatIndex = uiBlockHeader >> 15
+                    uiBlockLength = ((uiBlockHeader >> 7) & 0xFF) + 3
+                    pInputIndex += 4
+                else:
+                    uiRepeatIndex = (uiBlockHeader >> 7) & 0x1FFFF
+                    uiBlockLength = ((uiBlockHeader >> 2) & 0x1F) + 2
+                    pInputIndex += 3
+            elif header_low2 == 0x02:
+                uiRepeatIndex = (uiBlockHeader & 0xFFFF) >> 6   # uint16_t cast
+                uiBlockLength = ((uiBlockHeader >> 2) & 0xF) + 3
+                pInputIndex += 2
+            elif header_low2 == 0x01:
+                uiRepeatIndex = (uiBlockHeader & 0xFFFF) >> 2   # uint16_t cast
+                uiBlockLength = 3
+                pInputIndex += 2
+            else:
+                uiRepeatIndex = (uiBlockHeader & 0xFF) >> 2     # uint8_t cast
+                uiBlockLength = 3
+                pInputIndex += 1
 
-            # Mimic C++ unsigned arithmetic for the length bound check.
+            # Mimic C++ unsigned arithmetic for the length bound check. It
+            # never wraps here: a back-reference needs pOutputIndex >= 3, and
+            # every earlier block ended at pLastOutputIndex - 3 or before, so
+            # the slice copy below always stays inside the output.
             remaining_unsigned = (pLastOutputIndex - pOutputIndex - 3) & 0xFFFFFFFF
             if (
                 pOutputIndex - uiRepeatIndex < 0
@@ -151,17 +151,23 @@ def _blackdesert_unpack_core(
                 or uiBlockLength > remaining_unsigned
             ):
                 return -3
+            pBlockEnd = pOutputIndex + uiBlockLength
 
-            # LZSS back-reference copy (byte-by-byte equivalent of the C++
-            # 4-byte-write / advance-by-3 loop).
-            for k in range(uiBlockLength):
-                output[pOutputIndex + k] = output[pOutputIndex + k - uiRepeatIndex]
+            # LZSS back-reference copy, equal to a forward byte-by-byte copy
+            # (the C++ 4-byte-write / advance-by-3 loop). A source that
+            # overlaps the destination repeats its first uiRepeatIndex bytes.
+            pSource = pOutputIndex - uiRepeatIndex
+            if uiRepeatIndex >= uiBlockLength:
+                output[pOutputIndex:pBlockEnd] = output[pSource : pSource + uiBlockLength]
+            else:
+                pattern = output[pSource:pOutputIndex]
+                output[pOutputIndex:pBlockEnd] = (pattern * (uiBlockLength // uiRepeatIndex + 1))[:uiBlockLength]
 
             uiBlockGroupHeader >>= 1
-            pOutputIndex += uiBlockLength
+            pOutputIndex = pBlockEnd
 
         # ── Literal run ───────────────────────────────────────────────────
-        if pOutputIndex >= max(0, pLastOutputIndex - 10):
+        if pOutputIndex >= pLiteralEnd:
             break
 
         valid_len = _BDO_TABLE[uiBlockGroupHeader & 0xF]

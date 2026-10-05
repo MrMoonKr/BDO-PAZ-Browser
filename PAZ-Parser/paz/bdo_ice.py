@@ -6,6 +6,9 @@ completeness.
 """
 from __future__ import annotations
 
+import sys
+from array import array
+
 # ── Constants ─────────────────────────────────────────────────────────────────
 
 _ICE_SMOD: list[list[int]] = [
@@ -88,27 +91,52 @@ def _build_sbox() -> list[list[int]]:
 
 
 _SBOX: list[list[int]] = _build_sbox()
+_S0, _S1, _S2, _S3 = (tuple(column) for column in _SBOX)
 
 
-# ── ICE round function ────────────────────────────────────────────────────────
+# ── Block loop ────────────────────────────────────────────────────────────────
 
-def _ice_f(p: int, sk: list[int]) -> int:
-    # Left half expansion
-    tl = ((p >> 16) & 0x3FF) | (((p >> 14) | ((p << 18) & 0xFFFFFFFF)) & 0xFFC00)
-    # Right half expansion
-    tr = (p & 0x3FF) | (((p << 2) & 0xFFFFFFFF) & 0xFFC00)
-    # Salt permutation
-    al = sk[2] & (tl ^ tr)
-    ar = al ^ tr
-    al ^= tl
-    al ^= sk[0]
-    ar ^= sk[1]
-    return (
-        _SBOX[0][al >> 10]
-        | _SBOX[1][al & 0x3FF]
-        | _SBOX[2][ar >> 10]
-        | _SBOX[3][ar & 0x3FF]
-    )
+# Blocks are read and written as 32-bit big-endian halves through one array.
+_WORD_TYPECODE = "I"
+if array(_WORD_TYPECODE).itemsize != 4:
+    raise ImportError("ICE needs a 4-byte unsigned int array type on this platform.")
+_SWAP_WORDS: bool = sys.byteorder == "little"
+
+Subkey = tuple[int, int, int]
+
+
+def _crypt_blocks(data: bytes, subkeys: tuple[Subkey, ...]) -> bytes:
+    """Run the ICE Feistel rounds over every 8-byte block of `data`.
+
+    Encrypt and decrypt differ only in the order of `subkeys`. Each round sets
+    (l, r) to (r, l ^ F(r)); the round count is even, so the halves end where
+    they started. F is inlined: it runs once per round per block, and a call
+    costs about as much as its body.
+    """
+    words = array(_WORD_TYPECODE, data)
+    if _SWAP_WORDS:
+        words.byteswap()
+    out = array(_WORD_TYPECODE)
+    append = out.append
+    s0, s1, s2, s3 = _S0, _S1, _S2, _S3
+
+    halves = iter(words)
+    for l, r in zip(halves, halves):
+        for k0, k1, k2 in subkeys:
+            # F(r): expand r to two 20-bit halves, salt-permute them with k2,
+            # key them with k0 and k1, then look up the four S-boxes
+            tl = ((r >> 16) & 0x3FF) | (((r >> 14) | (r << 18)) & 0xFFC00)
+            tr = (r & 0x3FF) | ((r << 2) & 0xFFC00)
+            al = k2 & (tl ^ tr)
+            ar = al ^ tr ^ k1
+            al ^= tl ^ k0
+            l, r = r, l ^ (s0[al >> 10] | s1[al & 0x3FF] | s2[ar >> 10] | s3[ar & 0x3FF])
+        append(r)
+        append(l)
+
+    if _SWAP_WORDS:
+        out.byteswap()
+    return out.tobytes()
 
 
 # ── Key schedule ──────────────────────────────────────────────────────────────
@@ -165,45 +193,19 @@ class IceCipher:
             key_rounds = keylen
         else:
             raise ValueError(f"Invalid ICE key length: {keylen}. Must be 8 or a multiple of 16.")
-        self._key_rounds: int = key_rounds
-        self._keysched: list[list[int]] = _build_keysched(key, key_rounds, key_size)
+        keysched = _build_keysched(key, key_rounds, key_size)
+        self._encrypt_subkeys: tuple[Subkey, ...] = tuple((sk[0], sk[1], sk[2]) for sk in keysched)
+        self._decrypt_subkeys: tuple[Subkey, ...] = self._encrypt_subkeys[::-1]
 
     def decrypt(self, data: bytes) -> bytes:
-        if len(data) % 8 != 0:
-            raise ValueError(f"ICE input must be a multiple of 8 bytes, got {len(data)}.")
-        out = bytearray(len(data))
-        for idx in range(len(data) // 8):
-            b = data[idx * 8 : idx * 8 + 8]
-            l = (b[0] << 24) | (b[1] << 16) | (b[2] << 8) | b[3]
-            r = (b[4] << 24) | (b[5] << 16) | (b[6] << 8) | b[7]
-            i = self._key_rounds - 1
-            while i > 0:
-                l ^= _ice_f(r, self._keysched[i])
-                r ^= _ice_f(l, self._keysched[i - 1])
-                i -= 2
-            base = idx * 8
-            for j in range(4):
-                out[base + 3 - j] = r & 0xFF
-                out[base + 7 - j] = l & 0xFF
-                r >>= 8
-                l >>= 8
-        return bytes(out)
+        _check_block_size(data)
+        return _crypt_blocks(data, self._decrypt_subkeys)
 
     def encrypt(self, data: bytes) -> bytes:
-        if len(data) % 8 != 0:
-            raise ValueError(f"ICE input must be a multiple of 8 bytes, got {len(data)}.")
-        out = bytearray(len(data))
-        for idx in range(len(data) // 8):
-            b = data[idx * 8 : idx * 8 + 8]
-            l = (b[0] << 24) | (b[1] << 16) | (b[2] << 8) | b[3]
-            r = (b[4] << 24) | (b[5] << 16) | (b[6] << 8) | b[7]
-            for i in range(0, self._key_rounds, 2):
-                l ^= _ice_f(r, self._keysched[i])
-                r ^= _ice_f(l, self._keysched[i + 1])
-            base = idx * 8
-            for j in range(4):
-                out[base + 3 - j] = r & 0xFF
-                out[base + 7 - j] = l & 0xFF
-                r >>= 8
-                l >>= 8
-        return bytes(out)
+        _check_block_size(data)
+        return _crypt_blocks(data, self._encrypt_subkeys)
+
+
+def _check_block_size(data: bytes) -> None:
+    if len(data) % 8 != 0:
+        raise ValueError(f"ICE input must be a multiple of 8 bytes, got {len(data)}.")
