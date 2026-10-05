@@ -21,7 +21,10 @@
     "pattern": "Pattern…",
     "search": "Search",
     "cancel": "✕ Cancel",
-    "in": "In:"
+    "in": "In:",
+    "noMatches": "No matches found.",
+    "matchOne": "1 match",
+    "matchMany": "{count} matches"
   },
   "details": {
     "title": "Entry Details",
@@ -38,12 +41,24 @@
     "tabHex": "Hex",
     "tabParsed": "Parsed",
     "selectFile": "Select a file to preview.",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "tabText": "Text",
+    "tabRendered": "Rendered",
+    "renderError": "Render error: {message}",
+    "parseError": "Parse error: {message}",
+    "truncated": "… truncated, showing first {shown} KB of {total} KB",
+    "pillowMissing": "Pillow not installed, pip install pillow"
   },
   "tabSearch": {
     "modeString": "String",
     "modeHex": "Hex",
-    "placeholder": "Search…"
+    "placeholder": "Search…",
+    "previous": "Previous (Shift+Enter)",
+    "next": "Next (Enter)",
+    "noMatches": "No matches",
+    "matchOne": "1 match",
+    "matchMany": "{count} matches",
+    "position": "{index} of {count}"
   },
   "pageBar": {
     "prev": "◀ Prev",
@@ -53,7 +68,13 @@
     "output": "Output",
     "extractDestination": "Extract destination…",
     "extractSelected": "⬇ Extract Selected",
-    "extractFolder": "📁 Extract Folder"
+    "extractFolder": "📁 Extract Folder",
+    "browse": "Browse",
+    "fileOne": "{count} file",
+    "fileMany": "{count} files",
+    "selectFirst": "Ctrl+click files or folders in the tree to select them first.",
+    "setOutputFirst": "Set an output folder first.",
+    "expandFolderFirst": "Expand a folder in the tree first."
   },
   "settings": {
     "title": "Settings",
@@ -75,7 +96,10 @@
     "cachesDeleted": "Freed {size}",
     "cachesDeleteFailed": "Not every cache could be deleted: {message}",
     "cancel": "Cancel",
-    "save": "Save"
+    "save": "Save",
+    "browse": "Browse",
+    "pixels": "px",
+    "close": "Close"
   },
   "tree": {
     "loading": "Loading..."
@@ -96,7 +120,9 @@
     "searchError": "Search error: {message}",
     "pageError": "Could not load page: {message}",
     "cachingTables": "Caching parsed tables… {done}/{total}",
-    "cachedTables": "Cached {count} parsed tables"
+    "cachedTables": "Cached {count} parsed tables",
+    "openFolder": "Open a PAZ folder to begin.",
+    "exportFailed": "Export failed: {message}"
   },
   "iconPreview": {
     "title": "Icon",
@@ -106,5 +132,32 @@
     "size": "{width} × {height} px",
     "region": "Region ({x1}, {y1}) to ({x2}, {y2})",
     "close": "Close"
+  },
+  "units": {
+    "bytes": "{value} B",
+    "kilobytes": "{value} KB",
+    "megabytes": "{value} MB",
+    "gigabytes": "{value} GB"
+  },
+  "dialogs": {
+    "csvFiles": "CSV files (*.csv)",
+    "allFiles": "All files (*.*)"
+  },
+  "errors": {
+    "windowNotInitialized": "Window not initialized",
+    "folderNotFound": "Folder not found",
+    "invalidLanguage": "Invalid language: {language}",
+    "noFolderLoaded": "No PAZ folder loaded",
+    "noEntriesToExtract": "No entries to extract",
+    "iconPathEmpty": "Icon path is empty",
+    "iconNotFound": "Icon entry not found: {path}",
+    "diskFileNotLoaded": "Disk file not loaded: {name}",
+    "entryNotFound": "Entry not found",
+    "pageNotCached": "Page data not cached, reload the file first",
+    "cannotSort": "Cannot sort by {field} {direction}",
+    "fileNotCached": "File data not cached, reload the file",
+    "parsedNotCached": "No parsed data cached, reload the file",
+    "invalidSearchPattern": "Invalid search pattern",
+    "noFilesMatchExtensions": "No files match the selected extensions"
   }
 }

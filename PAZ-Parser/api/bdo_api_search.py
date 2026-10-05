@@ -9,6 +9,7 @@ from .bdo_api_helpers import _DISK_VIRTUAL_PREFIX, _file_icon, _norm
 from .bdo_api_state import ApiState
 from paz.bdo_payload_reader import read_entry_payload
 from table_sort import positions_in_order
+from ui_text import ui_text
 
 
 def _build_needles(query: str, mode: str) -> list[bytes] | None:
@@ -59,9 +60,9 @@ class SearchMixin(ApiState):
 
         if tab == "parsed":
             if self._cached_path != norm:
-                return {"error": "No parsed data cached, reload the file"}
+                return {"error": ui_text("errors.parsedNotCached")}
             if self._cached_data is None or self._cached_entry is None or self._cached_handler is None:
-                return {"error": "No parsed data cached, reload the file"}
+                return {"error": ui_text("errors.parsedNotCached")}
             args = (self._cached_data, self._cached_entry, self._cached_companions)
             indices = self._cached_handler.search_records(*args, query)
             if self._cached_sort is not None:
@@ -77,9 +78,9 @@ class SearchMixin(ApiState):
             name = path[len(_DISK_VIRTUAL_PREFIX) + 1:]
             data = self._disk_companions.get(name)
             if data is None:
-                return {"error": f"Disk file not loaded: {name}"}
+                return {"error": ui_text("errors.diskFileNotLoaded", name=name)}
         else:
-            return {"error": "File data not cached, reload the file"}
+            return {"error": ui_text("errors.fileNotCached")}
 
         needles = _build_needles(query, mode)
         if needles is None:
@@ -108,16 +109,16 @@ class SearchMixin(ApiState):
         Fires app.onGlobalSearchDone(results) when complete.
         """
         if not self._entries or not self._paz_root:
-            return {"error": "No PAZ folder loaded"}
+            return {"error": ui_text("errors.noFolderLoaded")}
 
         needles = _build_needles(query, mode)
         if needles is None:
-            return {"error": "Invalid search pattern"}
+            return {"error": ui_text("errors.invalidSearchPattern")}
 
         exts = {e.lower() for e in (extensions or [".bss", ".dbss"])}
         candidates = [e for e in self._visible_entries() if Path(e.internal_path).suffix.lower() in exts]
         if not candidates:
-            return {"error": "No files match the selected extensions"}
+            return {"error": ui_text("errors.noFilesMatchExtensions")}
 
         self._global_search_cancel.set()
         cancel = threading.Event()

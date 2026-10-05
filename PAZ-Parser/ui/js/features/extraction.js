@@ -29,24 +29,25 @@ export const extractionMethods = {
     const info = await window.pywebview.api.get_selection_size([...this._extractPaths]);
     if (this._extractPaths.size === 0) return;
     badge.hidden = false;
-    badge.textContent = `${info.count.toLocaleString()} file${info.count !== 1 ? "s" : ""}  ·  ${this._fmtBytes(info.bytes)}`;
+    const files = t(info.count === 1 ? "bottomBar.fileOne" : "bottomBar.fileMany", { count: info.count.toLocaleString() });
+    badge.textContent = `${files}  ·  ${this._fmtBytes(info.bytes)}`;
   },
 
   _fmtBytes(n) {
-    if (n < 1024) return `${n} B`;
-    if (n < 1024 ** 2) return `${(n / 1024).toFixed(1)} KB`;
-    if (n < 1024 ** 3) return `${(n / 1024 ** 2).toFixed(1)} MB`;
-    return `${(n / 1024 ** 3).toFixed(1)} GB`;
+    if (n < 1024) return t("units.bytes", { value: n });
+    if (n < 1024 ** 2) return t("units.kilobytes", { value: (n / 1024).toFixed(1) });
+    if (n < 1024 ** 3) return t("units.megabytes", { value: (n / 1024 ** 2).toFixed(1) });
+    return t("units.gigabytes", { value: (n / 1024 ** 3).toFixed(1) });
   },
 
   async extractSelected() {
     if (this._extractPaths.size === 0) {
-      alert("Ctrl+click files or folders in the tree to select them first.");
+      alert(t("bottomBar.selectFirst"));
       return;
     }
     const output = document.getElementById("output-path").value.trim();
     if (!output) {
-      alert("Set an output folder first.");
+      alert(t("bottomBar.setOutputFirst"));
       return;
     }
     await window.pywebview.api.extract_entries([...this._extractPaths], output);
@@ -54,12 +55,12 @@ export const extractionMethods = {
 
   async extractFolder() {
     if (!this._currentFolderPath) {
-      alert("Expand a folder in the tree first.");
+      alert(t("bottomBar.expandFolderFirst"));
       return;
     }
     const output = document.getElementById("output-path").value.trim();
     if (!output) {
-      alert("Set an output folder first.");
+      alert(t("bottomBar.setOutputFirst"));
       return;
     }
     await window.pywebview.api.extract_entries([this._currentFolderPath], output);

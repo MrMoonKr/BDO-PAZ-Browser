@@ -16,6 +16,7 @@ from bdo_models import PazEntry
 from gc_pause import gc_paused
 from record_fields import record_matches
 from table_sort import SORT_DESC, TableSort, sort_order
+from ui_text import set_ui_language, ui_text
 
 _TEXT_LIMIT = 512 * 1024   # bytes shown in text view
 
@@ -299,10 +300,8 @@ class TextHandler(PreviewHandler):
         content   = data[:_TEXT_LIMIT].decode("utf-8", errors="replace")
         note      = ""
         if truncated:
-            note = (
-                f'\n<span class="hex-note">… truncated, showing first '
-                f'{_TEXT_LIMIT // 1024} KB of {len(data) // 1024} KB</span>'
-            )
+            text = ui_text("preview.truncated", shown=_TEXT_LIMIT // 1024, total=len(data) // 1024)
+            note = f'\n<span class="hex-note">{_html.escape(text)}</span>'
         return f'<pre class="text-view">{_html.escape(content)}</pre>{note}'
 
 
@@ -334,7 +333,7 @@ class DdsHandler(PreviewHandler):
         try:
             from PIL import Image
         except ImportError:
-            return '<div class="error">Pillow not installed, pip install pillow</div>'
+            return f'<div class="error">{_html.escape(ui_text("preview.pillowMissing"))}</div>'
 
         try:
             img = Image.open(io.BytesIO(data)).convert("RGBA")
@@ -447,11 +446,11 @@ class AltViewHandler(PreviewHandler):
     """Two-tab handler with a primary view (e.g. text) and an alternate view (e.g. rendered).
 
     Override render() for the primary tab and render_alt() for the secondary tab.
-    Set primary_label / alt_label class attributes to name the tabs.
+    Set primary_label_key / alt_label_key to the `ui/lang` keys that name the tabs.
     """
 
-    primary_label: str = "Text"
-    alt_label: str = "Rendered"
+    primary_label_key: str = "preview.tabText"
+    alt_label_key: str = "preview.tabRendered"
 
     def get_records(self, data: bytes, entry: PazEntry, companions: dict[str, bytes]) -> list[dict]:  # noqa: ARG002
         raise NotImplementedError
@@ -469,8 +468,8 @@ class AltViewHandler(PreviewHandler):
 class SvgHandler(AltViewHandler):
     """SVG files: Text tab shows source, Rendered tab shows the image inline."""
 
-    primary_label = "Text"
-    alt_label = "Rendered"
+    primary_label_key = "preview.tabText"
+    alt_label_key = "preview.tabRendered"
 
     def render(self, data: bytes, entry: PazEntry, companions: dict[str, bytes]) -> str:
         content = data.decode("utf-8", errors="replace")
@@ -542,7 +541,8 @@ def register_handler(key: str, handler: PreviewHandler) -> None:
 
 
 def set_handler_lang(lang: str) -> None:
-    """Propagate the active UI language to all registered handlers."""
+    """Propagate the active UI language to all registered handlers and `ui_text()`."""
+    set_ui_language(lang)
     for handler in _REGISTRY.values():
         handler.lang = lang
     _hex_handler.lang = lang

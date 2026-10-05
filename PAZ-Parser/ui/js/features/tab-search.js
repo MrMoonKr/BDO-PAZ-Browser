@@ -1,5 +1,7 @@
 "use strict";
 
+import { t } from "../core/i18n.js";
+
 // Module-level state, kept off the shared app object intentionally.
 // Only tab-search.js writes these; other modules call the exported methods.
 let _matches = [];
@@ -220,11 +222,11 @@ export const tabSearchMethods = {
     if (!el) return;
     const query = document.getElementById("tab-search-input")?.value.trim();
     if (_matches.length === 0) {
-      el.textContent = query ? "No matches" : "";
+      el.textContent = query ? t("tabSearch.noMatches") : "";
     } else if (_matchIndex < 0) {
-      el.textContent = `${_matches.length} matches`;
+      el.textContent = t(_matches.length === 1 ? "tabSearch.matchOne" : "tabSearch.matchMany", { count: _matches.length });
     } else {
-      el.textContent = `${_matchIndex + 1} of ${_matches.length}`;
+      el.textContent = t("tabSearch.position", { index: _matchIndex + 1, count: _matches.length });
     }
   },
 

@@ -284,6 +284,7 @@ PAZ-Parser/
 ├── bdo_server.py           # Local HTTP server for stream preview
 ├── conftest.py             # pytest setup and handler test summary output
 ├── record_export.py        # Records as CSV (GUI export and --records --csv)
+├── ui_text.py              # UI text for Python-built messages, from ui/lang/*.json
 │
 ├── cli/                    # Command-line commands, one module each
 │   ├── session.py          # Loads the PAZ folder headless through Api

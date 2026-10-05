@@ -21,7 +21,10 @@
     "pattern": "Motif…",
     "search": "Rechercher",
     "cancel": "✕ Annuler",
-    "in": "Dans :"
+    "in": "Dans :",
+    "noMatches": "Aucun résultat trouvé.",
+    "matchOne": "1 résultat",
+    "matchMany": "{count} résultats"
   },
   "details": {
     "title": "Détails de l'entrée",
@@ -38,12 +41,24 @@
     "tabHex": "Hex",
     "tabParsed": "Analysé",
     "selectFile": "Sélectionnez un fichier à prévisualiser.",
-    "loading": "Chargement…"
+    "loading": "Chargement…",
+    "tabText": "Texte",
+    "tabRendered": "Rendu",
+    "renderError": "Erreur d'affichage : {message}",
+    "parseError": "Erreur d'analyse : {message}",
+    "truncated": "… tronqué, affichage des {shown} premiers Ko sur {total} Ko",
+    "pillowMissing": "Pillow n'est pas installé, pip install pillow"
   },
   "tabSearch": {
     "modeString": "Texte",
     "modeHex": "Hex",
-    "placeholder": "Rechercher…"
+    "placeholder": "Rechercher…",
+    "previous": "Précédent (Maj+Entrée)",
+    "next": "Suivant (Entrée)",
+    "noMatches": "Aucun résultat",
+    "matchOne": "1 résultat",
+    "matchMany": "{count} résultats",
+    "position": "{index} sur {count}"
   },
   "pageBar": {
     "prev": "◀ Préc.",
@@ -53,14 +68,38 @@
     "output": "Sortie",
     "extractDestination": "Destination d'extraction…",
     "extractSelected": "⬇ Extraire la sélection",
-    "extractFolder": "📁 Extraire le dossier"
+    "extractFolder": "📁 Extraire le dossier",
+    "browse": "Parcourir",
+    "fileOne": "{count} fichier",
+    "fileMany": "{count} fichiers",
+    "selectFirst": "Sélectionnez d'abord des fichiers ou dossiers dans l'arborescence avec Ctrl+clic.",
+    "setOutputFirst": "Choisissez d'abord un dossier de sortie.",
+    "expandFolderFirst": "Dépliez d'abord un dossier dans l'arborescence."
   },
   "settings": {
     "title": "Paramètres",
     "pazFolder": "Dossier PAZ",
     "language": "Langue",
+    "tableRowHeight": "Hauteur des lignes du tableau",
+    "showPaTags": "Afficher les balises du texte du jeu",
+    "showPaTagsHint": "Afficher les balises <PAColor> du texte du jeu à côté de ses couleurs",
+    "handledOnly": "Afficher uniquement les tables prises en charge",
+    "handledOnlyHint": "Limiter l'arborescence et les recherches aux fichiers avec une vue de table analysée",
+    "recordsCache": "Cache des tables",
+    "recordsCacheHint": "Garder les tables analysées sur le disque pour les rouvrir sans nouvelle analyse",
+    "recordsCacheOff": "Désactivé",
+    "recordsCacheOpen": "Mettre en cache les tables à l'ouverture",
+    "recordsCacheAll": "Mettre en cache toutes les tables en arrière-plan",
+    "deleteCaches": "Supprimer tous les caches",
+    "deleteCachesConfirm": "Supprimer les caches des tables, des icônes et des index de recherche à côté des fichiers PAZ ?\n\nLes tables seront analysées à nouveau, les icônes décodées à nouveau, et le prochain démarrage reconstruira les index de recherche. Le cache de l'index PAZ est conservé.",
+    "cacheSize": "{size} sur le disque",
+    "cachesDeleted": "{size} libérés",
+    "cachesDeleteFailed": "Certains caches n'ont pas pu être supprimés : {message}",
     "cancel": "Annuler",
-    "save": "Enregistrer"
+    "save": "Enregistrer",
+    "browse": "Parcourir",
+    "pixels": "px",
+    "close": "Fermer"
   },
   "tree": {
     "loading": "Chargement..."
@@ -79,6 +118,46 @@
     "found": "Trouvé {cap}fichiers correspondant à \"{query}\"",
     "copiedRow": "Ligne sélectionnée copiée.",
     "searchError": "Erreur de recherche : {message}",
-    "pageError": "Impossible de charger la page : {message}"
+    "pageError": "Impossible de charger la page : {message}",
+    "cachingTables": "Mise en cache des tables… {done}/{total}",
+    "cachedTables": "{count} tables mises en cache",
+    "openFolder": "Ouvrez un dossier PAZ pour commencer.",
+    "exportFailed": "Échec de l'export : {message}"
+  },
+  "iconPreview": {
+    "title": "Icône",
+    "loading": "Chargement…",
+    "sprite": "Sprite",
+    "sheet": "Planche de sprites",
+    "size": "{width} × {height} px",
+    "region": "Zone ({x1}, {y1}) à ({x2}, {y2})",
+    "close": "Fermer"
+  },
+  "units": {
+    "bytes": "{value} o",
+    "kilobytes": "{value} Ko",
+    "megabytes": "{value} Mo",
+    "gigabytes": "{value} Go"
+  },
+  "dialogs": {
+    "csvFiles": "Fichiers CSV (*.csv)",
+    "allFiles": "Tous les fichiers (*.*)"
+  },
+  "errors": {
+    "windowNotInitialized": "Fenêtre non initialisée",
+    "folderNotFound": "Dossier introuvable",
+    "invalidLanguage": "Langue non valide : {language}",
+    "noFolderLoaded": "Aucun dossier PAZ chargé",
+    "noEntriesToExtract": "Aucune entrée à extraire",
+    "iconPathEmpty": "Le chemin de l'icône est vide",
+    "iconNotFound": "Icône introuvable : {path}",
+    "diskFileNotLoaded": "Fichier non chargé : {name}",
+    "entryNotFound": "Entrée introuvable",
+    "pageNotCached": "Données de page absentes du cache, rechargez d'abord le fichier",
+    "cannotSort": "Impossible de trier par {field} {direction}",
+    "fileNotCached": "Données du fichier absentes du cache, rechargez le fichier",
+    "parsedNotCached": "Aucune donnée analysée en cache, rechargez le fichier",
+    "invalidSearchPattern": "Motif de recherche non valide",
+    "noFilesMatchExtensions": "Aucun fichier ne correspond aux extensions choisies"
   }
 }

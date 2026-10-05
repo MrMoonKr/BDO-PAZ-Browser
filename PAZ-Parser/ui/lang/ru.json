@@ -21,7 +21,10 @@
     "pattern": "Шаблон…",
     "search": "Поиск",
     "cancel": "✕ Отмена",
-    "in": "В:"
+    "in": "В:",
+    "noMatches": "Совпадений не найдено.",
+    "matchOne": "Совпадений: 1",
+    "matchMany": "Совпадений: {count}"
   },
   "details": {
     "title": "Сведения о записи",
@@ -38,12 +41,24 @@
     "tabHex": "Hex",
     "tabParsed": "Разобрано",
     "selectFile": "Выберите файл для предпросмотра.",
-    "loading": "Загрузка…"
+    "loading": "Загрузка…",
+    "tabText": "Текст",
+    "tabRendered": "Отображение",
+    "renderError": "Ошибка отображения: {message}",
+    "parseError": "Ошибка разбора: {message}",
+    "truncated": "… обрезано, показаны первые {shown} КБ из {total} КБ",
+    "pillowMissing": "Pillow не установлен, pip install pillow"
   },
   "tabSearch": {
     "modeString": "Текст",
     "modeHex": "Hex",
-    "placeholder": "Поиск…"
+    "placeholder": "Поиск…",
+    "previous": "Назад (Shift+Enter)",
+    "next": "Вперёд (Enter)",
+    "noMatches": "Нет совпадений",
+    "matchOne": "Совпадений: 1",
+    "matchMany": "Совпадений: {count}",
+    "position": "{index} из {count}"
   },
   "pageBar": {
     "prev": "◀ Назад",
@@ -53,14 +68,38 @@
     "output": "Вывод",
     "extractDestination": "Папка назначения…",
     "extractSelected": "⬇ Извлечь выбранное",
-    "extractFolder": "📁 Извлечь папку"
+    "extractFolder": "📁 Извлечь папку",
+    "browse": "Обзор",
+    "fileOne": "Файлов: {count}",
+    "fileMany": "Файлов: {count}",
+    "selectFirst": "Сначала выделите файлы или папки в дереве с помощью Ctrl+клик.",
+    "setOutputFirst": "Сначала укажите папку для извлечения.",
+    "expandFolderFirst": "Сначала раскройте папку в дереве."
   },
   "settings": {
     "title": "Настройки",
     "pazFolder": "Папка PAZ",
     "language": "Язык",
+    "tableRowHeight": "Высота строки таблицы",
+    "showPaTags": "Показывать теги игрового текста",
+    "showPaTagsHint": "Показывать теги <PAColor> игрового текста рядом с его цветами",
+    "handledOnly": "Показывать только поддерживаемые таблицы",
+    "handledOnlyHint": "Ограничить дерево файлов и поиск файлами с разобранным табличным видом",
+    "recordsCache": "Кэш таблиц",
+    "recordsCacheHint": "Хранить разобранные таблицы на диске, чтобы открывать их без повторного разбора",
+    "recordsCacheOff": "Выключен",
+    "recordsCacheOpen": "Кэшировать таблицы при открытии",
+    "recordsCacheAll": "Кэшировать все таблицы в фоне",
+    "deleteCaches": "Удалить все кэши",
+    "deleteCachesConfirm": "Удалить кэши таблиц, значков и поисковых индексов рядом с файлами PAZ?\n\nТаблицы будут разобраны заново, значки декодированы заново, а при следующем запуске поисковые индексы будут построены заново. Кэш индекса PAZ сохранится.",
+    "cacheSize": "{size} на диске",
+    "cachesDeleted": "Освобождено: {size}",
+    "cachesDeleteFailed": "Не все кэши удалось удалить: {message}",
     "cancel": "Отмена",
-    "save": "Сохранить"
+    "save": "Сохранить",
+    "browse": "Обзор",
+    "pixels": "пкс",
+    "close": "Закрыть"
   },
   "tree": {
     "loading": "Загрузка..."
@@ -79,6 +118,46 @@
     "found": "Найдено файлов по запросу \"{query}\": {cap}",
     "copiedRow": "Выбранная строка скопирована.",
     "searchError": "Ошибка поиска: {message}",
-    "pageError": "Не удалось загрузить страницу: {message}"
+    "pageError": "Не удалось загрузить страницу: {message}",
+    "cachingTables": "Кэширование таблиц… {done}/{total}",
+    "cachedTables": "Закэшировано таблиц: {count}",
+    "openFolder": "Откройте папку PAZ, чтобы начать.",
+    "exportFailed": "Не удалось экспортировать: {message}"
+  },
+  "iconPreview": {
+    "title": "Значок",
+    "loading": "Загрузка…",
+    "sprite": "Спрайт",
+    "sheet": "Лист спрайтов",
+    "size": "{width} × {height} пкс",
+    "region": "Область ({x1}, {y1}) – ({x2}, {y2})",
+    "close": "Закрыть"
+  },
+  "units": {
+    "bytes": "{value} Б",
+    "kilobytes": "{value} КБ",
+    "megabytes": "{value} МБ",
+    "gigabytes": "{value} ГБ"
+  },
+  "dialogs": {
+    "csvFiles": "Файлы CSV (*.csv)",
+    "allFiles": "Все файлы (*.*)"
+  },
+  "errors": {
+    "windowNotInitialized": "Окно не инициализировано",
+    "folderNotFound": "Папка не найдена",
+    "invalidLanguage": "Недопустимый язык: {language}",
+    "noFolderLoaded": "Папка PAZ не загружена",
+    "noEntriesToExtract": "Нет записей для извлечения",
+    "iconPathEmpty": "Путь к значку пуст",
+    "iconNotFound": "Значок не найден: {path}",
+    "diskFileNotLoaded": "Файл не загружен: {name}",
+    "entryNotFound": "Запись не найдена",
+    "pageNotCached": "Данные страницы не в кэше, сначала перезагрузите файл",
+    "cannotSort": "Нельзя отсортировать по {field} {direction}",
+    "fileNotCached": "Данные файла не в кэше, перезагрузите файл",
+    "parsedNotCached": "Разобранные данные не в кэше, перезагрузите файл",
+    "invalidSearchPattern": "Недопустимый шаблон поиска",
+    "noFilesMatchExtensions": "Нет файлов с выбранными расширениями"
   }
 }

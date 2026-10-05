@@ -108,7 +108,7 @@ export const globalSearchMethods = {
       const li = document.createElement("li");
       li.className = "tree-node";
       li.style.cssText = "padding:8px 12px;color:var(--fg-muted);font-size:12px";
-      li.textContent = "No matches found.";
+      li.textContent = t("contentSearch.noMatches");
       tree.appendChild(li);
     }
   },
@@ -138,7 +138,7 @@ export const globalSearchMethods = {
 
       const badge = document.createElement("span");
       badge.className = "csb-result-badge";
-      badge.textContent = item.count === 1 ? "1 match" : `${item.count} matches`;
+      badge.textContent = t(item.count === 1 ? "contentSearch.matchOne" : "contentSearch.matchMany", { count: item.count });
 
       li.append(icon, name, path, badge);
       li.addEventListener("click", () => this._selectFile(item.path, item.name, item.icon));

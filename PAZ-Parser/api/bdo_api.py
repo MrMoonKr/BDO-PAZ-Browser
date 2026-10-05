@@ -32,6 +32,7 @@ from paz.bdo_paz_extract import extract_entry, find_single_meta_file, parse_meta
 from paz.bdo_payload_cache import cached_read_entry_payload, clear_payload_cache
 from bdo_preview import StreamPreviewHandler, get_handler, set_handler_lang
 from _common.pa_text import set_show_pa_tags
+from ui_text import ui_text
 
 _COMPANION_POOL = ThreadPoolExecutor(max_workers=4, thread_name_prefix="companion")
 
@@ -82,7 +83,7 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
 
     def open_folder(self) -> dict:
         if self._window is None:
-            return {"ok": False, "error": "Window not initialized"}
+            return {"ok": False, "error": ui_text("errors.windowNotInitialized")}
         result = self._window.create_file_dialog(webview.FileDialog.FOLDER)
         if not result:
             return {"ok": False}
@@ -100,7 +101,7 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
     def open_folder_path(self, path: str) -> dict:
         p = Path(path)
         if not p.is_dir():
-            return {"ok": False, "error": "Folder not found"}
+            return {"ok": False, "error": ui_text("errors.folderNotFound")}
         self._paz_root = p
         threading.Thread(target=self._load_entries, daemon=True).start()
         return {"ok": True, "path": str(self._paz_root)}
@@ -108,7 +109,7 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
     def browse_folder(self) -> dict:
         """Open a folder picker without side effects, for use in the settings modal."""
         if self._window is None:
-            return {"ok": False, "error": "Window not initialized"}
+            return {"ok": False, "error": ui_text("errors.windowNotInitialized")}
         result = self._window.create_file_dialog(webview.FileDialog.FOLDER)
         if not result:
             return {"ok": False}
@@ -138,7 +139,7 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
         records_cache: str = "",
     ) -> dict:
         if language not in _VALID_LANGUAGES:
-            return {"ok": False, "error": f"Invalid language: {language}"}
+            return {"ok": False, "error": ui_text("errors.invalidLanguage", language=language)}
         if records_cache not in RECORDS_CACHE_MODES:
             records_cache = records_cache_setting(load_config())
         old_cfg = load_config()
@@ -493,11 +494,11 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
 
     def extract_entries(self, paths: list[str], output_dir: str) -> dict:
         if not self._paz_root:
-            return {"error": "No PAZ folder loaded"}
+            return {"error": ui_text("errors.noFolderLoaded")}
 
         entries = self._selected_entries(paths)
         if not entries:
-            return {"error": "No entries to extract"}
+            return {"error": ui_text("errors.noEntriesToExtract")}
 
         paz_root    = self._paz_root
         output_root = Path(output_dir)
@@ -569,4 +570,4 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
     # ── Status ────────────────────────────────────────────────────────────────
 
     def get_status(self) -> dict:
-        return {"message": self._status, "progress": None}
+        return {**self._status, "progress": None}

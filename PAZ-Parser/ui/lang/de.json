@@ -21,7 +21,10 @@
     "pattern": "Muster…",
     "search": "Suchen",
     "cancel": "✕ Abbrechen",
-    "in": "In:"
+    "in": "In:",
+    "noMatches": "Keine Treffer gefunden.",
+    "matchOne": "1 Treffer",
+    "matchMany": "{count} Treffer"
   },
   "details": {
     "title": "Eintragsdetails",
@@ -38,12 +41,24 @@
     "tabHex": "Hex",
     "tabParsed": "Geparst",
     "selectFile": "Datei für Vorschau auswählen.",
-    "loading": "Laden…"
+    "loading": "Laden…",
+    "tabText": "Text",
+    "tabRendered": "Gerendert",
+    "renderError": "Darstellungsfehler: {message}",
+    "parseError": "Auswertungsfehler: {message}",
+    "truncated": "… gekürzt, die ersten {shown} KB von {total} KB werden angezeigt",
+    "pillowMissing": "Pillow ist nicht installiert, pip install pillow"
   },
   "tabSearch": {
     "modeString": "Text",
     "modeHex": "Hex",
-    "placeholder": "Suchen…"
+    "placeholder": "Suchen…",
+    "previous": "Zurück (Umschalt+Eingabe)",
+    "next": "Weiter (Eingabe)",
+    "noMatches": "Keine Treffer",
+    "matchOne": "1 Treffer",
+    "matchMany": "{count} Treffer",
+    "position": "{index} von {count}"
   },
   "pageBar": {
     "prev": "◀ Zurück",
@@ -53,14 +68,38 @@
     "output": "Ausgabe",
     "extractDestination": "Extraktionsziel…",
     "extractSelected": "⬇ Auswahl extrahieren",
-    "extractFolder": "📁 Ordner extrahieren"
+    "extractFolder": "📁 Ordner extrahieren",
+    "browse": "Durchsuchen",
+    "fileOne": "{count} Datei",
+    "fileMany": "{count} Dateien",
+    "selectFirst": "Wähle zuerst Dateien oder Ordner im Baum mit Strg+Klick aus.",
+    "setOutputFirst": "Lege zuerst einen Ausgabeordner fest.",
+    "expandFolderFirst": "Klappe zuerst einen Ordner im Baum auf."
   },
   "settings": {
     "title": "Einstellungen",
     "pazFolder": "PAZ-Ordner",
     "language": "Sprache",
+    "tableRowHeight": "Tabellenzeilenhöhe",
+    "showPaTags": "Spieltext-Tags anzeigen",
+    "showPaTagsHint": "Die <PAColor>-Tags von Spieltext neben seinen Farben anzeigen",
+    "handledOnly": "Nur unterstützte Tabellen anzeigen",
+    "handledOnlyHint": "Dateibaum und Suchen auf Dateien mit ausgewerteter Tabellenansicht beschränken",
+    "recordsCache": "Tabellen-Cache",
+    "recordsCacheHint": "Ausgewertete Tabellen auf der Festplatte behalten, damit sie ohne erneutes Auswerten öffnen",
+    "recordsCacheOff": "Aus",
+    "recordsCacheOpen": "Tabellen beim Öffnen speichern",
+    "recordsCacheAll": "Alle Tabellen im Hintergrund speichern",
+    "deleteCaches": "Alle Caches löschen",
+    "deleteCachesConfirm": "Tabellen-, Symbol- und Nachschlage-Index-Caches neben den PAZ-Dateien löschen?\n\nTabellen werden neu ausgewertet, Symbole neu dekodiert, und der nächste Start erstellt die Nachschlage-Indizes neu. Der PAZ-Index-Cache bleibt erhalten.",
+    "cacheSize": "{size} auf der Festplatte",
+    "cachesDeleted": "{size} freigegeben",
+    "cachesDeleteFailed": "Nicht alle Caches konnten gelöscht werden: {message}",
     "cancel": "Abbrechen",
-    "save": "Speichern"
+    "save": "Speichern",
+    "browse": "Durchsuchen",
+    "pixels": "px",
+    "close": "Schließen"
   },
   "tree": {
     "loading": "Laden..."
@@ -79,6 +118,46 @@
     "found": "{cap}Dateien passend zu \"{query}\" gefunden",
     "copiedRow": "Ausgewählte Zeile kopiert.",
     "searchError": "Suchfehler: {message}",
-    "pageError": "Seite konnte nicht geladen werden: {message}"
+    "pageError": "Seite konnte nicht geladen werden: {message}",
+    "cachingTables": "Tabellen werden gespeichert… {done}/{total}",
+    "cachedTables": "{count} Tabellen gespeichert",
+    "openFolder": "Öffne einen PAZ-Ordner, um zu beginnen.",
+    "exportFailed": "Export fehlgeschlagen: {message}"
+  },
+  "iconPreview": {
+    "title": "Symbol",
+    "loading": "Wird geladen…",
+    "sprite": "Sprite",
+    "sheet": "Sprite-Sheet",
+    "size": "{width} × {height} px",
+    "region": "Bereich ({x1}, {y1}) bis ({x2}, {y2})",
+    "close": "Schließen"
+  },
+  "units": {
+    "bytes": "{value} B",
+    "kilobytes": "{value} KB",
+    "megabytes": "{value} MB",
+    "gigabytes": "{value} GB"
+  },
+  "dialogs": {
+    "csvFiles": "CSV-Dateien (*.csv)",
+    "allFiles": "Alle Dateien (*.*)"
+  },
+  "errors": {
+    "windowNotInitialized": "Fenster nicht initialisiert",
+    "folderNotFound": "Ordner nicht gefunden",
+    "invalidLanguage": "Ungültige Sprache: {language}",
+    "noFolderLoaded": "Kein PAZ-Ordner geladen",
+    "noEntriesToExtract": "Keine Einträge zum Extrahieren",
+    "iconPathEmpty": "Symbolpfad ist leer",
+    "iconNotFound": "Symboleintrag nicht gefunden: {path}",
+    "diskFileNotLoaded": "Datei nicht geladen: {name}",
+    "entryNotFound": "Eintrag nicht gefunden",
+    "pageNotCached": "Seitendaten nicht zwischengespeichert, lade die Datei zuerst neu",
+    "cannotSort": "Kann nicht nach {field} {direction} sortieren",
+    "fileNotCached": "Dateidaten nicht zwischengespeichert, lade die Datei neu",
+    "parsedNotCached": "Keine ausgewerteten Daten zwischengespeichert, lade die Datei neu",
+    "invalidSearchPattern": "Ungültiges Suchmuster",
+    "noFilesMatchExtensions": "Keine Dateien mit den gewählten Endungen"
   }
 }

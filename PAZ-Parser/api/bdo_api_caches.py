@@ -23,6 +23,7 @@ from paz.bdo_payload_reader import read_entry_payload
 from paz.bdo_records_cache import RecordsCache
 from paz.bdo_thumbnail_cache import ThumbnailCache
 from table_sort import TableSort
+from ui_text import ui_text
 
 from .bdo_api_state import ApiState
 from .bdo_config import load_config, peek_table_sort, records_cache_setting, table_sort_file_key
@@ -177,7 +178,7 @@ class CacheMixin(ApiState):
         empty; the lookup indexes are rebuilt on the next launch.
         """
         if self._paz_root is None:
-            return {"ok": False, "error": "No PAZ folder loaded"}
+            return {"ok": False, "error": ui_text("errors.noFolderLoaded")}
 
         self._close_records_cache()
         if self._thumbnail_cache is not None:

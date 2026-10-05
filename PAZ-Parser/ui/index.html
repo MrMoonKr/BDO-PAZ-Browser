@@ -79,8 +79,8 @@
                    oninput="app._onTabSearchInput(event)"
                    onkeydown="app._onTabSearchKeydown(event)"
                    data-i18n-placeholder="tabSearch.placeholder" />
-            <button class="tsb-nav-btn" onclick="app.tabSearchPrev()" title="Previous (Shift+Enter)">↑</button>
-            <button class="tsb-nav-btn" onclick="app.tabSearchNext()" title="Next (Enter)">↓</button>
+            <button class="tsb-nav-btn" onclick="app.tabSearchPrev()" data-i18n-title="tabSearch.previous" title="Previous (Shift+Enter)">↑</button>
+            <button class="tsb-nav-btn" onclick="app.tabSearchNext()" data-i18n-title="tabSearch.next" title="Next (Enter)">↓</button>
             <span id="tab-search-counter"></span>
           </div>
           <div id="preview-content">
@@ -94,7 +94,7 @@
     <div class="sep-h"></div>
     <div id="bottom-bar">
       <div id="status-row">
-        <span id="status-text">Open a PAZ folder to begin.</span>
+        <span id="status-text"></span>
         <div id="progress-wrap" hidden>
           <div id="progress-bar"><div id="progress-fill"></div></div>
         </div>
@@ -102,7 +102,7 @@
       <div id="extract-row">
         <label class="muted" data-i18n="bottomBar.output">Output</label>
         <input id="output-path" type="text" placeholder="Extract destination…" spellcheck="false" data-i18n-placeholder="bottomBar.extractDestination" />
-        <button onclick="app.pickOutputFolder()">…</button>
+        <button onclick="app.pickOutputFolder()" data-i18n-title="bottomBar.browse" title="Browse">…</button>
         <button onclick="app.extractSelected()" data-i18n="bottomBar.extractSelected">⬇ Extract Selected</button>
         <button onclick="app.extractFolder()" data-i18n="bottomBar.extractFolder">📁 Extract Folder</button>
         <span id="extract-badge" hidden></span>
@@ -110,16 +110,16 @@
     </div>
 
     <div id="settings-overlay" class="settings-overlay" hidden>
-      <div class="settings-modal" role="dialog" aria-label="Settings">
+      <div class="settings-modal" role="dialog" aria-labelledby="settings-title">
         <div class="settings-header">
-          <span data-i18n="settings.title">Settings</span>
-          <button class="settings-close" onclick="app.closeSettings()">✕</button>
+          <span id="settings-title" data-i18n="settings.title">Settings</span>
+          <button class="settings-close" onclick="app.closeSettings()" data-i18n-title="settings.close" title="Close">✕</button>
         </div>
         <div class="settings-body">
           <label class="settings-label" data-i18n="settings.pazFolder">PAZ Folder</label>
           <div class="settings-path-row">
             <input id="settings-paz-path" type="text" spellcheck="false" />
-            <button onclick="app.browseSettingsPazFolder()">…</button>
+            <button onclick="app.browseSettingsPazFolder()" data-i18n-title="settings.browse" title="Browse">…</button>
           </div>
           <label class="settings-label" data-i18n="settings.language">Language</label>
           <select id="settings-language">
@@ -133,7 +133,7 @@
           <label class="settings-label" data-i18n="settings.tableRowHeight">Table Row Height</label>
           <div class="settings-row-height">
             <input id="settings-table-row-height" type="number" min="20" max="64" step="1" />
-            <span class="settings-unit">px</span>
+            <span class="settings-unit" data-i18n="settings.pixels">px</span>
           </div>
           <label class="settings-check" data-i18n-title="settings.showPaTagsHint" title="Show the &lt;PAColor&gt; tags of game text next to its colours">
             <input id="settings-show-pa-tags" type="checkbox" />

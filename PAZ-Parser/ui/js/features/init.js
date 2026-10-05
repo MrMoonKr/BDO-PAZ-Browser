@@ -11,10 +11,10 @@ export const initMethods = {
       window.pywebview.api.get_status(),
       window.pywebview.api.get_settings(),
     ]);
-    this.setStatus(status);
-
     await loadLang(settings.language ?? "en");
     applyTranslations();
+    // After loadLang, so a keyed status reads in the saved language.
+    this.setStatus(status);
     this._applyTableRowHeight(settings.table_row_height);
 
     this._setupDividers();

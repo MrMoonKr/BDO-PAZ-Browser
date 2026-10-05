@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import html
 import time
 from typing import Any
 from pathlib import Path
@@ -30,6 +31,7 @@ from bdo_preview import (
     has_parsed_view,
 )
 from table_sort import TableSort
+from ui_text import ui_text
 
 _hex_handler = HexHandler()
 # Decoded images kept for the icon popup; a sprite sheet serves every sprite on it.
@@ -40,6 +42,11 @@ _HEX_BYTES_PER_PAGE = HEX_ROWS_PER_PAGE * 16
 # emit the canonical unprefixed path, so try these siblings before the much
 # slower suffix scan over every entry.
 _ICON_SIBLING_PREFIXES = ("web_",)
+
+
+def _error_box(key: str, ex: Exception) -> str:
+    """The preview's error box: the localized label around the raw exception text."""
+    return f'<div class="error">{html.escape(ui_text(key, message=str(ex)))}</div>'
 
 
 def _icon_sibling_paths(norm: str) -> list[str]:
@@ -91,7 +98,7 @@ class PreviewMixin(ApiState):
         self._mark_activity()
         norm = _norm(icon_path).strip()
         if not norm:
-            return {"error": "Icon path is empty"}
+            return {"error": ui_text("errors.iconPathEmpty")}
 
         url = self._cached_icon_url(norm)
         if url is not None:
@@ -109,7 +116,7 @@ class PreviewMixin(ApiState):
             if entry is None:
                 # The UI renders a dash for a miss, so report it rather than
                 # substituting art for an icon the client does not ship.
-                return {"error": f"Icon entry not found: {icon_path}"}
+                return {"error": ui_text("errors.iconNotFound", path=icon_path)}
 
             try:
                 data = self.read_entry(entry.internal_path)
@@ -132,14 +139,14 @@ class PreviewMixin(ApiState):
         self._mark_activity()
         norm = _norm(icon_path).strip()
         if not norm:
-            return {"error": "Icon path is empty"}
+            return {"error": ui_text("errors.iconPathEmpty")}
 
         # Its own lock, so a click is not queued behind a screen of thumbnails.
         with self._icon_preview_lock:
             try:
                 cached = self._preview_image(norm)
                 if cached is None:
-                    return {"error": f"Icon entry not found: {icon_path}"}
+                    return {"error": ui_text("errors.iconNotFound", path=icon_path)}
                 img, url = cached
                 answer: dict = {"path": norm, "url": url, "width": img.width, "height": img.height}
                 if region is not None:
@@ -187,7 +194,6 @@ class PreviewMixin(ApiState):
         companions: dict[str, bytes],
         meta: dict,
     ) -> dict:
-        import html as _html_mod
         profile: dict[str, float] = {}
         is_alt   = isinstance(handler, AltViewHandler)
         has_parsed = has_parsed_view(handler)
@@ -214,15 +220,15 @@ class PreviewMixin(ApiState):
                 hex_html = handler.render(data, entry, companions)
                 self._te(profile, "backend.alt_primary_render_ms", start)
             except Exception as ex:
-                hex_html = f'<div class="error">Render error: {_html_mod.escape(str(ex))}</div>'
+                hex_html = _error_box("preview.renderError", ex)
             try:
                 start = self._ts()
                 html = handler.render_alt(data, entry, companions)
                 self._te(profile, "backend.alt_secondary_render_ms", start)
             except Exception as ex:
-                html = f'<div class="error">Render error: {_html_mod.escape(str(ex))}</div>'
+                html = _error_box("preview.renderError", ex)
             hex_total_pages = 1
-            tab_labels = [handler.primary_label, handler.alt_label]
+            tab_labels = [ui_text(handler.primary_label_key), ui_text(handler.alt_label_key)]
         elif has_parsed:
             self._cached_handler = handler
             try:
@@ -238,14 +244,14 @@ class PreviewMixin(ApiState):
                 html = self._render_parsed_page(0)
                 self._te(profile, "backend.lazy_page_render_ms", start)
             except Exception as ex:
-                html = f'<div class="error">Parse error: {_html_mod.escape(str(ex))}</div>'
+                html = _error_box("preview.parseError", ex)
         elif not isinstance(handler, HexHandler):
             try:
                 start = self._ts()
                 html = handler.render(data, entry, companions)
                 self._te(profile, "backend.render_ms", start)
             except Exception as ex:
-                html = f'<div class="error">Render error: {_html_mod.escape(str(ex))}</div>'
+                html = _error_box("preview.renderError", ex)
 
         response = {
             "html": html,
@@ -269,7 +275,6 @@ class PreviewMixin(ApiState):
         handler: StreamPreviewHandler,
         meta: dict,
     ) -> dict:
-        import html as _html_mod
 
         self._cached_path = _norm(internal_path)
         self._cached_data = None
@@ -283,7 +288,7 @@ class PreviewMixin(ApiState):
             html = handler.render_stream(stream_url, entry)
         except Exception as ex:
             stream_url = ""
-            html = f'<div class="error">Render error: {_html_mod.escape(str(ex))}</div>'
+            html = _error_box("preview.renderError", ex)
 
         return {
             "html": html,
@@ -355,14 +360,14 @@ class PreviewMixin(ApiState):
         name = internal_path[len(_DISK_VIRTUAL_PREFIX) + 1:]
         disk = self.disk_entry(name)
         if disk is None:
-            return {"error": f"Disk file not loaded: {name}"}
+            return {"error": ui_text("errors.diskFileNotLoaded", name=name)}
 
         fake_entry, data = disk
         meta = {
             "archive":      "<disk>",
             "path":         name,
             "compressed":   "-",
-            "uncompressed": f"{len(data):,} B",
+            "uncompressed": ui_text("units.bytes", value=f"{len(data):,}"),
             "offset":       "-",
         }
         p = Path(name)
@@ -376,13 +381,13 @@ class PreviewMixin(ApiState):
 
         entry = self._entry_map.get(_norm(internal_path))
         if not entry or not self._paz_root:
-            return {"error": "Entry not found"}
+            return {"error": ui_text("errors.entryNotFound")}
 
         meta = {
             "archive":      entry.archive_name,
             "path":         entry.internal_path,
-            "compressed":   f"{entry.compressed_size:,} B",
-            "uncompressed": f"{entry.uncompressed_size:,} B",
+            "compressed":   ui_text("units.bytes", value=f"{entry.compressed_size:,}"),
+            "uncompressed": ui_text("units.bytes", value=f"{entry.uncompressed_size:,}"),
             "offset":       f"0x{entry.offset:08X}",
         }
 
@@ -467,11 +472,11 @@ class PreviewMixin(ApiState):
             name = path[len(_DISK_VIRTUAL_PREFIX) + 1:]
             data = self._disk_companions.get(name)
             if data is None:
-                return {"error": f"Disk file not loaded: {name}"}
+                return {"error": ui_text("errors.diskFileNotLoaded", name=name)}
         else:
             entry = self._entry_map.get(norm)
             if not entry or not self._paz_root:
-                return {"error": "Entry not found"}
+                return {"error": ui_text("errors.entryNotFound")}
             try:
                 data = cached_read_entry_payload(
                     archive_path=self._paz_root / entry.archive_name,
@@ -499,31 +504,30 @@ class PreviewMixin(ApiState):
         reopens with it.
         """
         self._mark_activity()
-        import html as _html_mod
         norm = _norm(path)
         if self._cached_path != norm or self._cached_handler is None:
-            return {"error": "Page data not cached, reload the file first"}
+            return {"error": ui_text("errors.pageNotCached")}
         if self._cached_data is None or self._cached_entry is None:
-            return {"error": "Page data not cached, reload the file first"}
+            return {"error": ui_text("errors.pageNotCached")}
 
         sort: TableSort | None = None
         if sort_field:
             sort = TableSort.parse(sort_field, sort_dir)
             if sort is None or sort.field not in self._cached_handler.sortable_fields():
-                return {"error": f"Cannot sort by {sort_field!r} {sort_dir!r}"}
+                return {"error": ui_text("errors.cannotSort", field=sort_field, direction=sort_dir)}
             save_table_sort(table_sort_file_key(norm), sort)
         self._cached_sort = sort
 
         try:
             html = self._render_parsed_page(page)
         except Exception as ex:
-            html = f'<div class="error">Render error: {_html_mod.escape(str(ex))}</div>'
+            html = _error_box("preview.renderError", ex)
         return {"html": html}
 
     def export_file(self, path: str, tab: str) -> dict:
         self._mark_activity()
         if self._window is None:
-            return {"error": "Window not initialized"}
+            return {"error": ui_text("errors.windowNotInitialized")}
 
         norm = _norm(path)
         filename = norm.rsplit("/", 1)[-1]
@@ -542,7 +546,7 @@ class PreviewMixin(ApiState):
             )
             data = records_to_csv(records).encode("utf-8-sig")
             save_filename = Path(filename).stem + ".csv"
-            file_types = ("CSV files (*.csv)", "All files (*.*)")
+            file_types = (ui_text("dialogs.csvFiles"), ui_text("dialogs.allFiles"))
         else:
             if self._cached_path == norm and self._cached_data is not None:
                 data = self._cached_data
@@ -552,9 +556,9 @@ class PreviewMixin(ApiState):
                 except Exception as ex:
                     return {"error": str(ex)}
             else:
-                return {"error": "File data not cached, reload the file"}
+                return {"error": ui_text("errors.fileNotCached")}
             save_filename = filename
-            file_types = ("All files (*.*)",)
+            file_types = (ui_text("dialogs.allFiles"),)
 
         result = self._window.create_file_dialog(
             webview.FileDialog.SAVE,

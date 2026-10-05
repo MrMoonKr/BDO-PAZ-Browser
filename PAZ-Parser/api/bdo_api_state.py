@@ -48,7 +48,8 @@ class ApiState:
         # (handled entries, their tree), built on first use per folder load.
         self._handled_view: tuple[list[PazEntry], dict] | None = None
         self._disk_companions: dict[str, bytes] = {}
-        self._status = "Open a PAZ folder to begin."
+        # The last status pushed, as setStatus() takes it, for a page that reloads.
+        self._status: dict = {"key": "status.openFolder"}
         self._cached_path: str | None = None
         self._cached_data: bytes | None = None
         self._cached_handler: PreviewHandler | None = None
@@ -98,8 +99,8 @@ class ApiState:
                 pass
 
     def _push_status(self, msg: str | dict, progress: tuple[int, int] | None = None) -> None:
-        self._status = msg if isinstance(msg, str) else msg.get("key", "")
         data: dict = msg if isinstance(msg, dict) else {"message": msg}
+        self._status = dict(data)
         data["progress"] = list(progress) if progress else None
         self._push_js(f"app.setStatus({json.dumps(data)})")
 

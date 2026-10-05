@@ -184,7 +184,7 @@ export const treeMethods = {
 
     const renderStart = performance.now();
     if (result.error && !result.hex_html) {
-      document.getElementById("preview-content").innerHTML = `<div class="error">Error: ${this._esc(result.error)}</div>`;
+      document.getElementById("preview-content").innerHTML = `<div class="error">${this._esc(t("status.error", { message: result.error }))}</div>`;
     } else {
       this._parsedHtml = result.has_parsed ? (result.html || "") : null;
       this._hexHtml = result.hex_html || "";
@@ -248,7 +248,7 @@ export const treeMethods = {
     if (!this._selectedPath) return;
     const result = await window.pywebview.api.export_file(this._selectedPath, this._activeTab);
     if (result?.error) {
-      document.getElementById("status-text").textContent = `Export failed: ${result.error}`;
+      this.setStatus({ key: "status.exportFailed", args: { message: result.error } });
     }
   },
 
