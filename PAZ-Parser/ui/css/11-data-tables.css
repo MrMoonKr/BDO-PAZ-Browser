@@ -210,3 +210,10 @@ th.sort-pending::after {
   border-radius: 999px;
   line-height: 1.5;
 }
+
+/* The "... (+N)" of a cut list; its title names the hidden entries. */
+.list-more {
+  cursor: help;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+}

@@ -1,14 +1,19 @@
 from __future__ import annotations
 
+import re
+
 from api.bdo_api import _table_row_height
 from _common.html import (
+    MORE_TOOLTIP_ITEMS,
     flag_cell,
     icon_cell,
     icon_html_label_cell,
     icon_html_list_cell,
     icon_label_cell,
     icon_list_cell,
+    more_marker,
     sprite_icon_cell,
+    text_list_cell,
 )
 
 
@@ -69,7 +74,7 @@ def test_icon_list_cell_joins_entries_and_counts_the_hidden_ones() -> None:
     entries = [("ui/a.dds", "A"), ("", "B")]
 
     assert icon_list_cell(entries) == f"{icon_label_cell('ui/a.dds', 'A')}, B"
-    assert icon_list_cell(entries, 3).endswith("B, ... (+3)")
+    assert icon_list_cell(entries, 3, hidden_names=["C"]).endswith(f"B, {more_marker(3, ['C'])}")
     assert icon_list_cell([]) == ""
 
 
@@ -85,4 +90,28 @@ def test_icon_html_list_cell_keeps_each_label_markup() -> None:
     entries = [("ui/a.dds", "<b>A</b>"), ("", "<b>B</b>")]
 
     assert icon_html_list_cell(entries) == f"{icon_html_label_cell('ui/a.dds', '<b>A</b>')}, <b>B</b>"
-    assert icon_html_list_cell(entries, 2).endswith("<b>B</b>, ... (+2)")
+    assert icon_html_list_cell(entries, 2).endswith(f"<b>B</b>, {more_marker(2, [])}")
+
+
+def test_text_list_cell_escapes_and_names_the_hidden_values_on_hover() -> None:
+    cell = text_list_cell(["A & B", "C", "D <E>"], 2)
+
+    assert cell.startswith("A &amp; B, C, ")
+    assert cell.endswith(more_marker(1, ["D <E>"]))
+    assert 'title="D &lt;E&gt;"' in cell
+    assert text_list_cell(["A"], 2) == "A"
+    assert text_list_cell([], 2) == ""
+
+
+def test_more_marker_names_the_first_hidden_entries_and_counts_the_rest() -> None:
+    names = [f"Item {index}" for index in range(MORE_TOOLTIP_ITEMS + 5)]
+
+    marker = more_marker(len(names), names)
+
+    title = re.search(r'title="([^"]*)"', marker)
+    assert title is not None
+    lines = title.group(1).splitlines()
+    assert marker.endswith(f"... (+{len(names)})</span>")
+    assert lines[:-1] == names[:MORE_TOOLTIP_ITEMS]
+    # The cut-off line counts the rest; its wording follows the language.
+    assert "5" in lines[-1]

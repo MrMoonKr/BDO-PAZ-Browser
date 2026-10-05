@@ -21,7 +21,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from _common.html import icon_html_list_cell
+from _common.html import hidden_slice, icon_html_list_cell
 from _common.icon_index import IconKind, icon_path
 from _common.item_grade import item_grade, item_grade_tagged
 from _common.loc import loc_lookup, loc_text, strip_pa_tags
@@ -85,7 +85,11 @@ def item_key_text_tagged(item_key: int) -> str:
 
 
 def item_key_list_cell(item_keys: Sequence[int], max_items: int) -> str:
-    """The first `max_items` items, each with its per-level icon and grade colour, and a count of the rest."""
+    """The first `max_items` items, each with its per-level icon and grade colour, and a count of the rest.
+
+    Hovering the count names the hidden items.
+    """
     shown = item_keys[:max_items]
     entries = [(item_key_icon_path(key), pa_html(item_key_text_tagged(key))) for key in shown]
-    return icon_html_list_cell(entries, len(item_keys) - len(shown))
+    hidden = [item_key_text(key) for key in hidden_slice(item_keys, max_items)]
+    return icon_html_list_cell(entries, len(item_keys) - len(shown), hidden_names=hidden)

@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from _common.html import e, join_limited
+from _common.html import e, hidden_slice, html_list_cell
 from _common.pa_text import argb_css
 from .parser import TagColors
 
@@ -31,5 +31,6 @@ def tag_chip(name: str, colors: TagColors | None) -> str:
 
 def tag_chips_cell(names: Sequence[str], colors: Sequence[TagColors | None], max_items: int) -> str:
     """The tags in their colours, space-separated as in game, or a dash."""
-    chips = [tag_chip(name, tag_colors) for name, tag_colors in zip(names, colors)]
-    return join_limited(chips, max_items, _CHIP_SEPARATOR) or _EMPTY
+    chips = [tag_chip(name, tag_colors) for name, tag_colors in zip(names, colors)][:max_items]
+    hidden = hidden_slice(names, max_items)
+    return html_list_cell(chips, len(names) - max_items, hidden, _CHIP_SEPARATOR) or _EMPTY

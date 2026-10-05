@@ -11,7 +11,7 @@ from __future__ import annotations
 import re
 from collections.abc import Sequence
 
-from _common.html import icon_html_list_cell
+from _common.html import hidden_slice, icon_html_list_cell
 from _common.icon_index import IconKind, icon_path
 from _common.loc import LOC_NULL, loc_lookup
 from _common.pa_text import pa_html, strip_pa_tags
@@ -68,4 +68,5 @@ def buff_list_cell(buff_ids: Sequence[int], max_items: int) -> str:
     """The first `max_items` buffs, each with its icon and coloured label, and a count of the rest."""
     shown = buff_ids[:max_items]
     entries = [(icon_path(IconKind.BUFF, buff_id), buff_label_html(buff_id)) for buff_id in shown]
-    return icon_html_list_cell(entries, len(buff_ids) - len(shown))
+    hidden = [buff_label(buff_id) for buff_id in hidden_slice(buff_ids, max_items)]
+    return icon_html_list_cell(entries, len(buff_ids) - len(shown), hidden_names=hidden)

@@ -984,9 +984,16 @@ check that keeps working when a class is added, and name the playable
 classes of a mask with `class_names()`.
 
 `html.py` has `truncate(text, max_len)` for long text cells,
-`join_limited(values, max_items)` for list cells, `icon_list_cell(entries,
+`text_list_cell(values, max_items)` for list cells, `icon_list_cell(entries,
 hidden_count)` for list cells with an icon per entry (see [Icons](#icons)) and
 `flag_cell(is_set)` for yes/no cells (a green check mark or a red cross).
+
+A cut list ends in `... (+N)` (`more_marker()`), and hovering it lists the
+hidden entries: the first `MORE_TOOLTIP_ITEMS` (40) by name, then a count.
+`text_list_cell()` and `pa_list_cell()` name them themselves. Cells that build
+each entry, such as `icon_list_cell()` and `html_list_cell()` for entries that
+are already safe HTML, take `hidden_names`: plain text for
+`hidden_slice(values, max_items)`, so only those few entries are named.
 
 Use format-specific helpers inside that format package.
 
@@ -1265,9 +1272,10 @@ view, so a handler only has to emit a correct path string.
 A list of entities with an icon each (the items of a subgroup) goes in one cell
 with `icon_list_cell(entries, hidden_count)`: each `(icon_path, label)` entry
 becomes an `icon_label_cell()`, the icon followed by its label instead of its
-path, comma-separated like `join_limited()`. The caller slices the entries to
+path, comma-separated like `text_list_cell()`. The caller slices the entries to
 the ones shown and passes the count of the rest, so icon paths are looked up
-for one page of entries only. An entry without a path is its label alone. When
+for one page of entries only. Pass `hidden_names` too, so hovering the count
+names the rest (`item_key_list_cell()` does). An entry without a path is its label alone. When
 the client does not ship an entry's icon, the GUI and `browser.py --render`
 drop the swatch and keep the label, where a plain icon cell becomes a dash.
 Both swap only the head of the entry (`PENDING_ICON_LABEL_RE` matches the

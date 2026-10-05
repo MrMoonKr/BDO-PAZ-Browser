@@ -22,6 +22,7 @@ from tests.runner import load_case
 from _bss.dropuihuntinggroundinfo import tribe_labels
 from _bss.dropuihuntinggroundinfo.parser import TagColors, parse_tag_colors, parse_territory_keys
 from _bss.dropuihuntinggroundinfo.tag_chips import tag_chip, tag_chips_cell
+from _common.html import more_marker
 from _bss.dropuihuntinggroundinfo.tribe_labels import TRIBE_LABELS, tribe_label, tribe_text
 from _bss.stringtable.parser import GAME_SHEET, parse_key_hashes
 from _common.html import e
@@ -183,7 +184,7 @@ def test_tag_chip_tints_the_background_and_colours_the_text() -> None:
     assert tag_chip("#Stun & Co", None) == "#Stun &amp; Co"
     assert tag_chips_cell([], [], 3) == "-"
     # Pills sit side by side as in game, and the rest is counted.
-    assert tag_chips_cell(["A", "B", "C"], [None, None, None], 2) == "A B ... (+1)"
+    assert tag_chips_cell(["A", "B", "C"], [None, None, None], 2) == f"A B {more_marker(1, ['C'])}"
 
 
 def test_tribe_label_hashes_match_stringtable() -> None:

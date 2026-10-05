@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import Column, e, join_limited, sort_keys, table
+from _common.html import Column, e, sort_keys, table, text_list_cell
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup
 from _common.pa_text import pa_cell, pa_fields, strip_pa_tags
@@ -137,7 +137,7 @@ class JournalQuestDbssHandler(PreviewHandler):
                 e(r["journal_title_text"]),
                 e(r["subtitle_text"]),
                 e(r["page_vol_title_text"]),
-                e(join_limited(r["page_titles"], _LIST_PREVIEW_ITEMS)),
+                text_list_cell(r["page_titles"], _LIST_PREVIEW_ITEMS),
                 pa_cell(r, "unlock_condition_text"),
                 e(r["page_count"]),
                 e(yes if r["is_record_book"] else no),

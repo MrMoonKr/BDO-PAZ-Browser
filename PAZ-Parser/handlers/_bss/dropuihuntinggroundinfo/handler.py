@@ -7,7 +7,7 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.character import character_name
-from _common.html import Column, e, join_limited, sort_keys, table
+from _common.html import Column, e, sort_keys, table, text_list_cell
 from _common.hunting_ground import hunting_ground_name
 from _common.item_key import item_key_list_cell, item_name
 from _common.lang import load_handler_strings
@@ -167,4 +167,4 @@ class DropUiHuntingGroundInfoBssHandler(PreviewHandler):
 
 
 def _list_cell(values: list[str]) -> str:
-    return e(join_limited(values, _LIST_PREVIEW_ITEMS) or _EMPTY)
+    return text_list_cell(values, _LIST_PREVIEW_ITEMS) or _EMPTY

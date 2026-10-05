@@ -6,7 +6,7 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.class_type import ALL_CLASSES_MASK, class_name, class_types_in_mask
-from _common.html import Column, e, flag_cell, icon_cell, join_limited, sort_keys, table
+from _common.html import Column, e, flag_cell, icon_cell, sort_keys, table, text_list_cell
 from _common.icon_index import IconKind, icon_path
 from _common.lang import load_handler_strings
 from _common.pa_text import pa_cell, pa_fields
@@ -144,9 +144,9 @@ class SkillSimplyHandler(PreviewHandler):
                 flag_cell(r["can_quick_slot"]),
                 e(r["need_level"] or _EMPTY),
                 e(r["need_skill_point"] or _EMPTY),
-                e(join_limited(r["need_skills"], _LIST_PREVIEW_ITEMS) or _EMPTY),
+                text_list_cell(r["need_skills"], _LIST_PREVIEW_ITEMS) or _EMPTY,
                 e(r["previous_rank"] or _EMPTY),
-                e(join_limited(r["exclusive_skills"], _LIST_PREVIEW_ITEMS) or _EMPTY),
+                text_list_cell(r["exclusive_skills"], _LIST_PREVIEW_ITEMS) or _EMPTY,
             ]
             for r in slice_
         ]

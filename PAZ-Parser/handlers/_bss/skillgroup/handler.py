@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import Column, e, icon_cell, join_limited, sort_keys, table
+from _common.html import Column, e, icon_cell, sort_keys, table, text_list_cell
 from _common.icon_index import IconKind, icon_path
 from _common.lang import load_handler_strings
 from _common.pa_text import pa_cell, pa_fields
@@ -70,7 +70,7 @@ class SkillGroupBssHandler(PreviewHandler):
                 icon_cell(r["icon_path"]),
                 pa_cell(r, "name"),
                 e(r["ranks"]),
-                e(join_limited(r["skills"], _LIST_PREVIEW_ITEMS) or _EMPTY),
+                text_list_cell(r["skills"], _LIST_PREVIEW_ITEMS) or _EMPTY,
             ]
             for r in slice_
         ]

@@ -22,7 +22,7 @@ from __future__ import annotations
 import re
 from collections.abc import Sequence
 
-from _common.html import e, join_limited
+from _common.html import e, hidden_slice, html_list_cell
 
 # Every `<PA...>` tag; both functions split text on this one pattern.
 _PA_TAG_RE = re.compile(r"<PA[^>]+>")
@@ -160,8 +160,10 @@ def pa_line_cell(record: dict, field: str, max_chars: int = LINE_PREVIEW_CHARS) 
 
 
 def pa_list_cell(raws: Sequence[str], max_items: int) -> str:
-    """Tagged texts in their game colours, joined like `join_limited`, or a dash."""
-    return join_limited([pa_html(raw) for raw in raws], max_items) or _EMPTY
+    """Tagged texts in their game colours, the hidden ones named on hover, or a dash."""
+    shown = [pa_html(raw) for raw in raws[:max_items]]
+    hidden = [strip_pa_tags(raw).strip() for raw in hidden_slice(raws, max_items)]
+    return html_list_cell(shown, len(raws) - max_items, hidden) or _EMPTY
 
 
 def _color_open(tag: str) -> str:

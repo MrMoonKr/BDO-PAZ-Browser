@@ -49,6 +49,9 @@
     "truncated": "… 잘림, 전체 {total} KB 중 처음 {shown} KB 표시",
     "pillowMissing": "Pillow가 설치되지 않았습니다, pip install pillow"
   },
+  "table": {
+    "moreHidden": "… 외 {count}개"
+  },
   "tabSearch": {
     "modeString": "문자열",
     "modeHex": "16진수",

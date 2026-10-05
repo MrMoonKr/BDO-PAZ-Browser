@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import Column, e, join_limited, sort_keys, table
+from _common.html import Column, e, sort_keys, table, text_list_cell
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 from _common.quest.quest import quest_title
@@ -79,7 +79,7 @@ class QuestGroupDbssHandler(PreviewHandler):
                 e(r["group_id"]),
                 e(r["name"]),
                 e(r["quest_count"]),
-                e(join_limited(r["quest_titles"], _LIST_PREVIEW_ITEMS)),
+                text_list_cell(r["quest_titles"], _LIST_PREVIEW_ITEMS),
             ]
             for r in slice_
         ]

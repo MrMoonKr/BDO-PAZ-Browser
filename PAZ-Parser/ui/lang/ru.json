@@ -49,6 +49,9 @@
     "truncated": "… обрезано, показаны первые {shown} КБ из {total} КБ",
     "pillowMissing": "Pillow не установлен, pip install pillow"
   },
+  "table": {
+    "moreHidden": "… и ещё {count}"
+  },
   "tabSearch": {
     "modeString": "Текст",
     "modeHex": "Hex",

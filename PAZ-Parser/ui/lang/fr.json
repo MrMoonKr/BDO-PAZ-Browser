@@ -49,6 +49,9 @@
     "truncated": "… tronqué, affichage des {shown} premiers Ko sur {total} Ko",
     "pillowMissing": "Pillow n'est pas installé, pip install pillow"
   },
+  "table": {
+    "moreHidden": "… et {count} de plus"
+  },
   "tabSearch": {
     "modeString": "Texte",
     "modeHex": "Hex",

@@ -13,7 +13,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from _common.buff import buff_first_line
-from _common.html import IconEntry, icon_html_list_cell
+from _common.html import IconEntry, hidden_slice, icon_html_list_cell
 from _common.icon_index import IconKind, icon_path
 from _common.item_key import item_key_icon_path, item_key_text_tagged
 from _common.lookup_index import IndexKind, lookup
@@ -77,4 +77,5 @@ def used_by_cell(
 ) -> str:
     """The first `max_items` entries with their icons, item grade colours and buff IDs on hover, and a count of the rest."""
     entries = [(path, pa_html(label)) for path, label in zip(icon_paths, tagged_labels)][:max_items]
-    return icon_html_list_cell(entries, len(tagged_labels) - len(entries), tooltips[:max_items])
+    hidden = [strip_pa_tags(label).strip() for label in hidden_slice(tagged_labels, max_items)]
+    return icon_html_list_cell(entries, len(tagged_labels) - len(entries), tooltips[:max_items], hidden)

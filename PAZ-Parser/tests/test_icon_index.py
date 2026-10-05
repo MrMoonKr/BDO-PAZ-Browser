@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from _common.html import e
+from _common.html import e, more_marker
 from _common.icon_index import (
     ITEM_ICON_DIR,
     IconKind,
@@ -222,7 +222,8 @@ def test_item_key_list_cell_shows_each_level_icon_and_counts_the_rest() -> None:
     # Names come from LOC when another test loaded it, else the item ID.
     assert f">{e(item_key_text(_SOVEREIGN_LEVEL_10))}<" in html
     assert f">{e(item_key_text(_SOVEREIGN_LEVEL_3))}<" in html
-    assert html.endswith(", ... (+1)")
+    # The hidden item is named when the count is hovered.
+    assert html.endswith(f", {more_marker(1, [item_key_text(_SOVEREIGN_LONGSWORD)])}")
 
 
 def test_item_key_list_cell_draws_each_name_in_its_grade_colour() -> None:

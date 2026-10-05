@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.html import Column, e, join_limited, sort_keys, table
+from _common.html import Column, e, sort_keys, table, text_list_cell
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded
 from _common.pa_text import pa_key, pa_list_cell
@@ -96,7 +96,7 @@ class DialogTextHandler(PreviewHandler):
                 e(r["name"]),
                 e(r["line_count"]),
                 pa_list_cell(r[pa_key("texts")], _LIST_PREVIEW_ITEMS),
-                e(join_limited(r["voices"], _LIST_PREVIEW_ITEMS) or _EMPTY),
+                text_list_cell(r["voices"], _LIST_PREVIEW_ITEMS) or _EMPTY,
             ]
             for r in slice_
         ]

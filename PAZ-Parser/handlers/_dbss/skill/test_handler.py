@@ -199,9 +199,11 @@ def test_buff_list_cell_draws_buff_icons() -> None:
         init_index(IndexKind.BUFF_ICON, None)
 
     assert f'data-icon-path="{icon}"' in cell
-    # Buffs without an icon keep their label; the hidden rest is counted.
-    assert "48724" in cell and "48726" not in cell
-    assert cell.endswith("(+1)")
+    # Buffs without an icon keep their label; the hidden rest is counted and
+    # named on hover.
+    shown, _, more = cell.partition('<span class="list-more"')
+    assert "48724" in shown and "48726" not in shown
+    assert 'title="48726' in more and more.endswith("(+1)</span>")
 
 
 def test_buff_list_cell_draws_labels_in_game_colours(monkeypatch: pytest.MonkeyPatch) -> None:

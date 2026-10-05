@@ -6,7 +6,7 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.character import character_name
-from _common.html import Column, e, join_limited, sort_keys, table
+from _common.html import Column, e, sort_keys, table, text_list_cell
 from _common.knowledge import knowledge_name
 from _common.lang import load_handler_strings
 from _common.node import node_name
@@ -117,9 +117,9 @@ class ExplorationBssHandler(PreviewHandler):
                 e(record["representative"] or _EMPTY),
                 e(f"{record['radius']:.2f}"),
                 e(record["knowledge_count"]),
-                e(join_limited(record["knowledge_names"], _LIST_PREVIEW_ITEMS) or _EMPTY),
+                text_list_cell(record["knowledge_names"], _LIST_PREVIEW_ITEMS) or _EMPTY,
                 e(record["connection_count"]),
-                e(join_limited(record["connection_names"], _LIST_PREVIEW_ITEMS) or _EMPTY),
+                text_list_cell(record["connection_names"], _LIST_PREVIEW_ITEMS) or _EMPTY,
             ]
             for record in slice_
         ]

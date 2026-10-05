@@ -49,6 +49,9 @@
     "truncated": "… gekürzt, die ersten {shown} KB von {total} KB werden angezeigt",
     "pillowMissing": "Pillow ist nicht installiert, pip install pillow"
   },
+  "table": {
+    "moreHidden": "… und {count} weitere"
+  },
   "tabSearch": {
     "modeString": "Text",
     "modeHex": "Hex",

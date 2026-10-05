@@ -6,7 +6,7 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.character import character_name
-from _common.html import Column, e, icon_cell, join_limited, sort_keys, table
+from _common.html import Column, e, icon_cell, sort_keys, table, text_list_cell
 from _common.knowledge import LOC_KNOWLEDGE, knowledge_name, theme_name
 from _common.lang import load_handler_strings
 from _common.loc import is_loc_loaded, loc_tagged
@@ -171,7 +171,7 @@ class MentalCardHandler(PreviewHandler):
                 e(r["interest"]),
                 e(r["combo_text"] or _EMPTY),
                 pa_cell(r, "obtain"),
-                e(join_limited(r["learned_from"], _LIST_PREVIEW_ITEMS) or _EMPTY),
+                text_list_cell(r["learned_from"], _LIST_PREVIEW_ITEMS) or _EMPTY,
                 e(r["position_text"] or _EMPTY),
             ]
             for r in slice_

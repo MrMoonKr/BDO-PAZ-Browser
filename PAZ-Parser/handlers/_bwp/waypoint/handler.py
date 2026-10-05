@@ -6,7 +6,7 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 from table_sort import TableSort
 
-from _common.html import Column, e, join_limited, sort_keys, table
+from _common.html import Column, e, sort_keys, table, text_list_cell
 from _common.lang import load_handler_strings
 from .parser import PROPERTY_NAMES, WaypointGraph, is_waypoint_graph, neighbours, parse_waypoint_graph
 
@@ -123,7 +123,7 @@ class WaypointBwpHandler(PreviewHandler):
                 e(f"{record['z']:,.1f}"),
                 e(record["property_name"]),
                 e(yes if record["is_sub_waypoint"] else no),
-                e(join_limited([str(key) for key in record["links"]], _LIST_PREVIEW_ITEMS) or _EMPTY),
+                text_list_cell(record["links"], _LIST_PREVIEW_ITEMS) or _EMPTY,
             ]
             for record in slice_
         ]

@@ -3,7 +3,14 @@ from __future__ import annotations
 import html as _html
 import re
 from collections.abc import Sequence
-from typing import NamedTuple
+from typing import NamedTuple, TypeVar
+
+from ui_text import ui_text
+
+T = TypeVar("T")
+
+# Hidden entries the `... (+N)` of a cut list names on hover; past this it counts.
+MORE_TOOLTIP_ITEMS = 40
 
 
 class Column(NamedTuple):
@@ -29,11 +36,49 @@ def truncate(text: str, max_len: int) -> str:
     return text if len(text) <= max_len else text[:max_len] + "…"
 
 
-def join_limited(values: Sequence[str], max_items: int, separator: str = ", ") -> str:
-    """Join the first `max_items` values (comma-separated by default) and count the rest, for list cells."""
-    if len(values) <= max_items:
-        return separator.join(values)
-    return separator.join(values[:max_items]) + f"{separator}... (+{len(values) - max_items})"
+def hidden_slice(values: Sequence[T], max_items: int) -> Sequence[T]:
+    """The hidden values a `more_marker` lists on hover, when a cell shows `max_items`.
+
+    For callers that turn each value into a name: only these few need one.
+    """
+    return values[max_items : max_items + MORE_TOOLTIP_ITEMS]
+
+
+def more_marker(hidden_count: int, hidden_names: Sequence[str]) -> str:
+    """The `... (+N)` that ends a cut list; hovering it lists the hidden entries.
+
+    `hidden_names` are plain text, the first hidden entries in order
+    (`hidden_slice`). Past `MORE_TOOLTIP_ITEMS` the hover only counts the rest.
+    """
+    names = list(hidden_names[:MORE_TOOLTIP_ITEMS])
+    rest = hidden_count - len(names)
+    if rest > 0:
+        names.append(ui_text("table.moreHidden", count=f"{rest:,}"))
+    return f'<span class="list-more" title="{e(chr(10).join(names))}">... (+{hidden_count})</span>'
+
+
+def html_list_cell(
+    shown_html: Sequence[str],
+    hidden_count: int = 0,
+    hidden_names: Sequence[str] = (),
+    separator: str = ", ",
+) -> str:
+    """Join entries that are already safe HTML, then a `more_marker` for the hidden ones."""
+    shown = separator.join(shown_html)
+    if hidden_count <= 0:
+        return shown
+    return f"{shown}{separator}{more_marker(hidden_count, hidden_names)}"
+
+
+def text_list_cell(values: Sequence[object], max_items: int, separator: str = ", ") -> str:
+    """The first `max_items` values as escaped text and a hoverable count of the rest, or ''."""
+    texts = [str(value) for value in values]
+    return html_list_cell(
+        [e(text) for text in texts[:max_items]],
+        len(texts) - max_items,
+        hidden_slice(texts, max_items),
+        separator,
+    )
 
 
 def flag_cell(is_set: bool) -> str:
@@ -167,31 +212,32 @@ def icon_list_cell(
     entries: Sequence[IconEntry],
     hidden_count: int = 0,
     tooltips: Sequence[str] | None = None,
+    hidden_names: Sequence[str] = (),
 ) -> str:
     """Comma-join `icon_label_cell` entries and count the `hidden_count` not shown.
 
-    The list form of `join_limited()`: the caller slices the entries, so icon paths
-    are only looked up for the ones shown. `tooltips`, one per entry, replace
-    the icon path as hover text.
+    The icon form of `text_list_cell()`: the caller slices the entries, so icon
+    paths are only looked up for the ones shown. `tooltips`, one per entry,
+    replace the icon path as hover text; `hidden_names` (`hidden_slice`) are
+    what hovering the count lists.
     """
     escaped = [(path, e(label)) for path, label in entries]
-    return icon_html_list_cell(escaped, hidden_count, tooltips)
+    return icon_html_list_cell(escaped, hidden_count, tooltips, hidden_names)
 
 
 def icon_html_list_cell(
     entries: Sequence[IconEntry],
     hidden_count: int = 0,
     tooltips: Sequence[str] | None = None,
+    hidden_names: Sequence[str] = (),
 ) -> str:
     """`icon_list_cell` with labels that are already safe HTML, such as `pa_html()` text."""
     hover: Sequence[str | None] = tooltips if tooltips is not None else [None] * len(entries)
-    shown = ", ".join(
+    shown = [
         icon_html_label_cell(path, label_html, tooltip=tip)
         for (path, label_html), tip in zip(entries, hover)
-    )
-    if hidden_count <= 0:
-        return shown
-    return f"{shown}, ... (+{hidden_count})"
+    ]
+    return html_list_cell(shown, hidden_count, hidden_names)
 
 
 def missing_icon_cell(path: object) -> str:
