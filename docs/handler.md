@@ -1034,10 +1034,11 @@ cached by `paz/bdo_index_cache.py` in `paz_browser_indexes.cache` next to the
 PAZ files, keyed by `IndexKind.value` (renaming a value orphans its cached data
 until the rebuild) and invalidated on the PAZ meta version or when the code that
 builds them changes. The cache stores `builder_fingerprint()`, a hash of
-`api/bdo_lookup_indexes.py` plus every project module it imports, so editing a
-builder or a helper such as `_common/prefixed_string.py` rebuilds the indexes on
-the next launch. Keep the builder imports at the top of that module: a lazy
-import would hide the builder from the fingerprint.
+`api/bdo_lookup_indexes.py` plus every project module it imports and the JSON
+files beside them (`paz/source_fingerprint.py`), so editing a builder, a helper
+such as `_common/prefixed_string.py` or `_common/icon_overrides.json` rebuilds
+the indexes on the next launch. Keep the builder imports at the top of that
+module: a lazy import would hide the builder from the fingerprint.
 
 Values are pickled, so an index may hold icon paths, linked IDs or tuples of
 IDs (`LookupValue`).

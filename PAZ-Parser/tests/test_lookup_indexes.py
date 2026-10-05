@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sys
 
-import paz.bdo_index_cache as index_cache
+from paz.source_fingerprint import project_modules
 from _common.lookup_index import IndexKind
 from api.bdo_lookup_indexes import INDEX_SPECS, IndexSpec, build_indexes
 
@@ -65,7 +65,7 @@ def test_characters_borrow_the_icon_of_their_item() -> None:
 
 def test_fingerprint_reaches_every_builder() -> None:
     """Editing any builder must rebuild the cache, so none may hide behind a lazy import."""
-    modules = index_cache._project_modules([sys.modules[build_indexes.__module__]])
+    modules = project_modules([sys.modules[build_indexes.__module__]])
 
     for spec in INDEX_SPECS:
         assert spec.build.__module__ in modules

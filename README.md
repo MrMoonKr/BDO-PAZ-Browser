@@ -318,6 +318,7 @@ PAZ-Parser/
 │   ├── bdo_meta_reader.py  # Meta file reader
 │   ├── bdo_payload_cache.py# LRU payload cache
 │   ├── bdo_payload_reader.py# Payload decompression + ICE decryption
+│   ├── source_fingerprint.py# Code hash that invalidates the disk caches
 │   ├── bdo_thumbnail_cache.py# Icon thumbnail cache (SQLite, next to the PAZ files)
 │   ├── bdo_paz_extract.py  # File extraction logic
 │   └── bdo_paz_reader.py   # PAZ archive parser
