@@ -76,6 +76,7 @@ CASE = HandlerCase(
         SchemaTest(
             required_keys=[
                 "item_id",
+                "name_kr",
                 "max_enchant_level",
                 "icon_path",
                 "second_string",
@@ -146,7 +147,7 @@ CASE = HandlerCase(
         TargetTest(
             col="item_id",
             value=_KZARKA_GAUNTLET,
-            expected={"max_enchant_level": _PEN, "item_name": "Kzarka Gauntlet"},
+            expected={"max_enchant_level": _PEN, "item_name": "Kzarka Gauntlet", "name_kr": "크자카 권갑"},
         ),
     ],
 )
@@ -167,6 +168,14 @@ def test_itemenchant_dbss(
     itemenchant_result: HandlerResult,
 ) -> None:
     itemenchant_result.check(spec)
+
+
+def test_every_item_has_a_name(itemenchant_result: HandlerResult) -> None:
+    """Items without a LOC row fall back to the Korean name stored in the block."""
+    records = itemenchant_result.records
+
+    assert all(record["name_kr"] for record in records)
+    assert all(record["item_name"] for record in records)
 
 
 def test_item_grade_index_matches_the_grade_column(itemenchant_result: HandlerResult) -> None:

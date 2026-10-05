@@ -6,7 +6,7 @@ from collections.abc import Iterator
 from _common.binary import u8, u16
 from _common.item_key import split_item_key
 from _common.pabr_offset import PabrOffsetRow, parse_pabr_u32_offset_rows
-from _common.prefixed_string import find_prefixed_ascii
+from _common.prefixed_string import STRING_PREFIX_SIZE, locate_prefixed_ascii, prefixes_ending_at
 from _dbss.skill.parser import build_skill_buff_index
 
 
@@ -33,6 +33,7 @@ _SKILL_KEYS_STRUCT = struct.Struct("<II")
 # The fixed numeric fields end here, so the string scan starts here. The
 # lowest string prefix in any block sits at +0xF2 (client 3458).
 _FIXED_FIELDS_END = 0xD4
+
 
 
 def parse_itemenchantoffset_records(data: bytes) -> list[dict]:
@@ -65,9 +66,21 @@ def _base_rows(offset_rows: list[dict]) -> Iterator[dict]:
     return (row for row in offset_rows if not row["enchant_level"])
 
 
-def _block_strings(data: bytes, start: int, end: int) -> list[str]:
-    """The length-prefixed ASCII strings of the block `[start, end)`."""
-    return find_prefixed_ascii(data, start + _FIXED_FIELDS_END, end)
+def _block_strings(data: bytes, start: int, end: int) -> list[tuple[int, str]]:
+    """The length-prefixed ASCII strings of the block `[start, end)`, each with its prefix position."""
+    return locate_prefixed_ascii(data, start + _FIXED_FIELDS_END, end)
+
+
+def _name_kr(data: bytes, start: int, icon_prefix: int) -> str:
+    """The Korean item name, the UTF-16 string whose text ends at the icon's prefix.
+
+    The nearest prefix that fits is the name; one further back would hold
+    the name's own bytes as text.
+    """
+    pos = next(prefixes_ending_at(data, start + _FIXED_FIELDS_END, icon_prefix, wide=True), None)
+    if pos is None:
+        return ""
+    return data[pos + STRING_PREFIX_SIZE:icon_prefix].decode("utf-16-le", errors="replace")
 
 
 def _skill_keys(data: bytes, start: int) -> tuple[int, ...]:
@@ -98,15 +111,16 @@ def parse_itemenchant_records(data: bytes, offset_data: bytes) -> list[dict]:
             )
 
         strings = _block_strings(data, start, end)
-        icon = strings[0] if strings else ""
+        icon_prefix, icon = strings[0] if strings else (None, "")
         records.append({
             "item_id": row["item_id"],
+            "name_kr": "" if icon_prefix is None else _name_kr(data, start, icon_prefix),
             "max_enchant_level": max_levels[row["item_id"]],
             "icon_path": f"{ICON_ROOT}{icon.lower()}" if icon else "",
             "grade": u8(data, start + _GRADE),
             "character_id": u16(data, start + _CHARACTER_ID),
             "skill_keys": list(_skill_keys(data, start)),
-            "second_string": strings[1] if len(strings) > 1 else "",
+            "second_string": strings[1][1] if len(strings) > 1 else "",
             "block_size": row["data_size"],
         })
 
@@ -130,7 +144,7 @@ def build_item_icon_index(data: bytes, offset_data: bytes) -> dict[int, str]:
 
         strings = _block_strings(data, start, end)
         if strings:
-            index[row["item_id"]] = f"{ICON_ROOT}{strings[0].lower()}"
+            index[row["item_id"]] = f"{ICON_ROOT}{strings[0][1].lower()}"
 
     return index
 

@@ -10,10 +10,14 @@ whose position is only a guess, so they also require a plausible prefix (3 to
 200 units, zero high word) and return nothing instead of raising:
 `read_prefixed_utf16` checks one candidate position, and `find_prefixed_ascii`
 locates ASCII text by finding a zero high word followed by printable bytes and
-confirming the length that precedes each candidate.
+confirming the length that precedes each candidate (`locate_prefixed_ascii`
+also returns where each prefix sits). `prefixes_ending_at` works back from
+where a string's text ends.
 """
 
 from __future__ import annotations
+
+from collections.abc import Iterator
 
 from _common.binary import u32
 
@@ -31,6 +35,7 @@ _BYTE_CLASSES = bytes(
     for byte in range(256)
 )
 _HIGH_WORD_SIZE = 4
+_ZERO_WORD = bytes(_HIGH_WORD_SIZE)
 # A zero high word followed by the shortest text.
 _TEXT_START = bytes([_ZERO] * _HIGH_WORD_SIZE + [_PRINTABLE] * _MIN_LENGTH)
 
@@ -71,8 +76,16 @@ def find_prefixed_ascii(data: bytes, start: int, end: int) -> list[str]:
     against the u32 length stored 8 bytes before the text. All of the text, and
     its prefix, must lie inside the range.
     """
+    return [text for _, text in locate_prefixed_ascii(data, start, end)]
+
+
+def locate_prefixed_ascii(data: bytes, start: int, end: int) -> list[tuple[int, str]]:
+    """`find_prefixed_ascii`, with the position of each string's prefix.
+
+    For tables that read a field placed relative to one of the strings.
+    """
     classes = data[start:end].translate(_BYTE_CLASSES)
-    found: list[str] = []
+    found: list[tuple[int, str]] = []
 
     # Positions are relative to `start`; the first text can start at 8.
     at = classes.find(_TEXT_START, STRING_PREFIX_SIZE - _HIGH_WORD_SIZE)
@@ -85,11 +98,30 @@ def find_prefixed_ascii(data: bytes, start: int, end: int) -> list[str]:
             and text_end <= len(classes)
             and classes.count(_PRINTABLE, text_start, text_end) == length
         ):
-            found.append(data[start + text_start:start + text_end].decode("ascii"))
+            text = data[start + text_start:start + text_end].decode("ascii")
+            found.append((start + text_start - STRING_PREFIX_SIZE, text))
         # The next prefix can only follow this printable run.
         at = classes.find(_TEXT_START, text_start + _MIN_LENGTH)
 
     return found
+
+
+def prefixes_ending_at(data: bytes, lowest: int, end: int, *, wide: bool) -> Iterator[int]:
+    """Every prefix in `[lowest, end - 8]` whose text ends exactly at `end`, highest first.
+
+    For a string known only by where it ends, such as one right before
+    another field. Only a zero high word can start a prefix, so `rfind` jumps
+    from one to the next instead of trying every byte. The caller checks the
+    text, and stops at the first that fits.
+    """
+    unit = 2 if wide else 1
+    high_word = data.rfind(_ZERO_WORD, lowest + _HIGH_WORD_SIZE, end)
+    while high_word != -1:
+        prefix_at = high_word - _HIGH_WORD_SIZE
+        if prefix_at + STRING_PREFIX_SIZE + unit * u32(data, prefix_at) == end:
+            yield prefix_at
+        # The next candidate may overlap this one by up to 3 bytes.
+        high_word = data.rfind(_ZERO_WORD, lowest + _HIGH_WORD_SIZE, high_word + _HIGH_WORD_SIZE - 1)
 
 
 def read_prefixed_at(

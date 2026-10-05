@@ -38,13 +38,17 @@ def _item_description_tagged(item_id: int) -> str:
     return "" if text == LOC_NULL else text
 
 
+def _item_name(record: dict) -> str:
+    return loc_text(_LOC_TYPE_ITEM, record["item_id"]) or record["name_kr"]
+
+
 def _with_links(record: dict) -> dict:
     """The parsed record plus its item name, placed character and buffs."""
     buff_ids = skill_buff_ids(record["skill_keys"])
     return {
         **record,
-        # In its grade colour, as the game draws item names.
-        **pa_fields("item_name", item_grade_tagged(loc_text(_LOC_TYPE_ITEM, record["item_id"]), record["grade"])),
+        # In its grade colour, as the game draws item names; Korean when LOC has no row.
+        **pa_fields("item_name", item_grade_tagged(_item_name(record), record["grade"])),
         **pa_fields("description", _item_description_tagged(record["item_id"])),
         # 0 means "places no character"; None sorts last and exports empty.
         "character_id": record["character_id"] or None,

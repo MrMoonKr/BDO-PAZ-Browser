@@ -143,7 +143,8 @@ fields that are not yet decoded.
 | `+0xAE` | ...  | unknown      | Numeric fields                                               |
 | `+0xCC` | u32  | skill_key_1  | Skill a consumable casts, a [`skill.dbss`](skill_dbss.md) key; its `buff_ids` are the item's buffs; `0` when none |
 | `+0xD0` | u32  | skill_key_2  | Second skill, used by composite meals; `0` when none          |
-| `+0xD4` | ...  | unknown      | Numeric fields up to the first string                        |
+| `+0xD4` | ...  | unknown      | Numeric fields up to the name: 16 or 21 bytes in most base blocks, 176 in 597 gear blocks, then a u32 that bdo-data-extractor calls the enchant key (0 in 40,025 base items, never the item ID) |
+| varies  | ...  | name_kr      | Korean item name: u64 character count, then UTF-16LE text that ends where the icon's prefix starts. Present in all 70,284 base blocks (client 3458) |
 
 Checked on Balacs Lunchbox (`9359`): `item_type` 2, `grade` 3, `weight`
 1,000 (0.1 LT), `buy_price` 38,775, `sell_price` 1,551, and a non-zero
@@ -287,7 +288,7 @@ One row per item, read from its level-0 block. Higher levels only feed Max Level
 | ------------- | ---- | ------------------------------------------------- |
 | Item ID       | num  | `item_id` from the key                            |
 | Icon          | text | First block string, prefixed `ui_texture/icon/`   |
-| Item          | text | LOC `str_type=0`, `str_id1=item_id`, in its `grade` colour |
+| Item          | text | LOC `str_type=0`, `str_id1=item_id`, else `name_kr` (483 items on client 3458, mostly dev and Hardcore server items), in its `grade` colour |
 | Description   | text | LOC `str_type=0`, `str_id4=1`, in its game colours, on one line and cut; the file stores no description. 61,837 of 70,284 items have one on client 3458 |
 | Max Level     | num  | Highest `enchant_level` among the item's keys; `0` when it cannot be enhanced |
 | Object ID     | num  | `character_id` of the placed object or summoned pet; dash when `0` |
