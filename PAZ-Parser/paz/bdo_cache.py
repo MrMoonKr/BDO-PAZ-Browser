@@ -6,7 +6,7 @@ from pathlib import Path
 
 from bdo_models import PazEntry
 
-_CACHE_FILE = "paz_browser.cache"
+CACHE_FILE = "paz_browser.cache"
 
 
 def read_meta_version(meta_path: Path) -> int:
@@ -18,7 +18,7 @@ def read_meta_version(meta_path: Path) -> int:
 
 
 def load_cache(paz_root: Path) -> tuple[int, list[PazEntry]] | None:
-    cache_path = paz_root / _CACHE_FILE
+    cache_path = paz_root / CACHE_FILE
     if not cache_path.exists():
         return None
     try:
@@ -30,7 +30,7 @@ def load_cache(paz_root: Path) -> tuple[int, list[PazEntry]] | None:
 
 
 def save_cache(paz_root: Path, version: int, entries: list[PazEntry]) -> None:
-    cache_path = paz_root / _CACHE_FILE
+    cache_path = paz_root / CACHE_FILE
     with cache_path.open("wb") as f:
         pickle.dump(
             {"version": version, "entries": entries},

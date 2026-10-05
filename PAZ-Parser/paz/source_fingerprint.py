@@ -11,9 +11,10 @@ from __future__ import annotations
 import hashlib
 import inspect
 import sys
-from collections.abc import Iterable
+from collections.abc import Callable, Hashable, Iterable, Mapping
 from pathlib import Path
 from types import ModuleType
+from typing import TypeVar
 
 # Top-level packages whose source can change what a cached value contains.
 # Standard library and third-party imports are left out: they change with the
@@ -23,6 +24,8 @@ _PROJECT_PACKAGES = frozenset({"_common", "_dbss", "_bss", "_bwp", "paz"})
 # Data files a package reads next to its modules: column labels and values in
 # `lang/*.json`, overrides such as `_common/icon_overrides.json`.
 _DATA_PATTERNS = ("*.json", "lang/*.json")
+
+K = TypeVar("K", bound=Hashable)
 
 
 def source_fingerprint(roots: Iterable[object]) -> str:
@@ -34,14 +37,32 @@ def source_fingerprint(roots: Iterable[object]) -> str:
     too. Only file contents are hashed, with line endings normalised, never
     paths or times, so the value is stable across checkouts and machines.
     """
+    return source_fingerprints({None: roots})[None]
+
+
+def source_fingerprints(root_sets: Mapping[K, Iterable[object]]) -> dict[K, str]:
+    """`source_fingerprint()` of each root set, reading every file once."""
+    file_digests: dict[Path, bytes] = {}
+
+    def file_digest(path: Path) -> bytes:
+        digest = file_digests.get(path)
+        if digest is None:
+            digest = hashlib.sha256(_normalised(path)).digest()
+            file_digests[path] = digest
+        return digest
+
+    return {key: _fingerprint(roots, file_digest) for key, roots in root_sets.items()}
+
+
+def _fingerprint(roots: Iterable[object], file_digest: Callable[[Path], bytes]) -> str:
     modules = project_modules([_module_of(root) for root in roots])
     digest = hashlib.sha256()
     for name in sorted(modules):
         digest.update(name.encode("utf-8"))
-        digest.update(_normalised(Path(inspect.getfile(modules[name]))))
+        digest.update(file_digest(Path(inspect.getfile(modules[name]))))
     for path in _data_files(modules.values()):
         digest.update(path.name.encode("utf-8"))
-        digest.update(_normalised(path))
+        digest.update(file_digest(path))
     return digest.hexdigest()
 
 
@@ -55,7 +76,7 @@ def project_modules(roots: list[ModuleType]) -> dict[str, ModuleType]:
             continue
         found[module.__name__] = module
         pending.extend(
-            dep for dep in map(_defining_module, vars(module).values())
+            dep for dep in map(project_module_of, vars(module).values())
             if dep is not None and dep.__name__ not in found
         )
     return found
@@ -65,8 +86,8 @@ def _module_of(root: object) -> ModuleType:
     return root if isinstance(root, ModuleType) else sys.modules[getattr(root, "__module__")]
 
 
-def _defining_module(value: object) -> ModuleType | None:
-    """The project module a global came from, or None."""
+def project_module_of(value: object) -> ModuleType | None:
+    """The project module that defines `value` (a module, function, class or instance), or None."""
     name = value.__name__ if inspect.ismodule(value) else getattr(value, "__module__", None)
     if not isinstance(name, str) or name.split(".")[0] not in _PROJECT_PACKAGES:
         return None

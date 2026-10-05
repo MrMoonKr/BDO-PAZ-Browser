@@ -88,6 +88,7 @@ class PreviewMixin(ApiState):
         return entry
 
     def get_icon_data_url(self, icon_path: str) -> dict:
+        self._mark_activity()
         norm = _norm(icon_path).strip()
         if not norm:
             return {"error": "Icon path is empty"}
@@ -128,6 +129,7 @@ class PreviewMixin(ApiState):
         answer then also carries the cropped sprite, and the page outlines the
         region on the sheet.
         """
+        self._mark_activity()
         norm = _norm(icon_path).strip()
         if not norm:
             return {"error": "Icon path is empty"}
@@ -368,6 +370,7 @@ class PreviewMixin(ApiState):
         return self._build_entry_response(data, internal_path, fake_entry, handler, {}, meta)
 
     def load_entry(self, internal_path: str) -> dict:
+        self._mark_activity()
         if internal_path.startswith(_DISK_VIRTUAL_PREFIX + "/"):
             return self._load_disk_entry(internal_path)
 
@@ -436,6 +439,7 @@ class PreviewMixin(ApiState):
         return response
 
     def get_hex_page(self, path: str, page: int) -> dict:
+        self._mark_activity()
         norm = _norm(path)
         if self._cached_path == norm and self._cached_data is not None:
             data = self._cached_data
@@ -494,6 +498,7 @@ class PreviewMixin(ApiState):
         A sort is remembered per file name in the user config, so the file
         reopens with it.
         """
+        self._mark_activity()
         import html as _html_mod
         norm = _norm(path)
         if self._cached_path != norm or self._cached_handler is None:
@@ -516,6 +521,7 @@ class PreviewMixin(ApiState):
         return {"html": html}
 
     def export_file(self, path: str, tab: str) -> dict:
+        self._mark_activity()
         if self._window is None:
             return {"error": "Window not initialized"}
 

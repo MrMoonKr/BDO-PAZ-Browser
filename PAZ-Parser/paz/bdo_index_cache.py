@@ -16,28 +16,38 @@ a JSON file beside one forces a rebuild on the next launch.
 
 from __future__ import annotations
 
+import hashlib
 import pickle
 import sys
 from collections.abc import Callable, Iterable, Mapping
+from dataclasses import dataclass
 from pathlib import Path
 
 from .source_fingerprint import source_fingerprint
 
-_CACHE_FILE = "paz_browser_indexes.cache"
+CACHE_FILE = "paz_browser_indexes.cache"
 # Written before the icon indexes became general lookup indexes; removed on the
 # first save so it does not linger next to the PAZ files.
-_LEGACY_CACHE_FILE = "paz_browser_icons.cache"
+LEGACY_CACHE_FILE = "paz_browser_icons.cache"
 
 # Values match `LookupValue` in handlers/_common/lookup_index.py.
 CachedIndexes = dict[str, Mapping[int, int | str | tuple[int, ...]]]
 
 
-def load_index_cache(
-    paz_root: Path,
-    fingerprint: str,
-) -> tuple[int, CachedIndexes] | None:
-    """Return (meta version, indexes), or None when absent, unreadable or stale."""
-    cache_path = paz_root / _CACHE_FILE
+@dataclass(frozen=True)
+class IndexCacheData:
+    """What the cache holds besides the fingerprint."""
+
+    version: int
+    indexes: CachedIndexes
+    # Content digest of each index by kind value (`index_digests`), so the
+    # records cache can tell which indexes a patch changed.
+    digests: Mapping[str, str]
+
+
+def load_index_cache(paz_root: Path, fingerprint: str) -> IndexCacheData | None:
+    """The cached indexes, or None when absent, unreadable or stale."""
+    cache_path = paz_root / CACHE_FILE
     if not cache_path.exists():
         return None
     try:
@@ -45,25 +55,37 @@ def load_index_cache(
             data = pickle.load(f)
         if data.get("fingerprint") != fingerprint:
             return None
-        return data["version"], data["indexes"]
+        return IndexCacheData(data["version"], data["indexes"], data["digests"])
     except Exception:
         return None
 
 
-def save_index_cache(
-    paz_root: Path,
-    version: int,
-    fingerprint: str,
-    indexes: CachedIndexes,
-) -> None:
-    cache_path = paz_root / _CACHE_FILE
+def save_index_cache(paz_root: Path, fingerprint: str, data: IndexCacheData) -> None:
+    cache_path = paz_root / CACHE_FILE
     with cache_path.open("wb") as f:
         pickle.dump(
-            {"fingerprint": fingerprint, "version": version, "indexes": indexes},
+            {
+                "fingerprint": fingerprint,
+                "version": data.version,
+                "indexes": data.indexes,
+                "digests": dict(data.digests),
+            },
             f,
             protocol=pickle.HIGHEST_PROTOCOL,
         )
-    (paz_root / _LEGACY_CACHE_FILE).unlink(missing_ok=True)
+    (paz_root / LEGACY_CACHE_FILE).unlink(missing_ok=True)
+
+
+def index_digests(indexes: CachedIndexes) -> dict[str, str]:
+    """A digest of each index's content, by kind value.
+
+    Pickles each mapping, so equal content built the same way hashes the same.
+    Runs only when the indexes are built, never on a cache hit.
+    """
+    return {
+        name: hashlib.sha256(pickle.dumps(mapping, protocol=pickle.HIGHEST_PROTOCOL)).hexdigest()
+        for name, mapping in indexes.items()
+    }
 
 
 def builder_fingerprint(functions: Iterable[Callable]) -> str:

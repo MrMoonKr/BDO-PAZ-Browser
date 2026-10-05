@@ -20,7 +20,7 @@ import sqlite3
 import threading
 from pathlib import Path
 
-_CACHE_FILE = "paz_browser_thumbnails.sqlite"
+CACHE_FILE = "paz_browser_thumbnails.sqlite"
 _VERSION_KEY = "meta_version"
 
 _SCHEMA = (
@@ -37,7 +37,7 @@ class ThumbnailCache:
         self._conn: sqlite3.Connection | None = None
         self.error = ""
         try:
-            self._conn = self._open(paz_root / _CACHE_FILE, str(meta_version))
+            self._conn = self._open(paz_root / CACHE_FILE, str(meta_version))
         except sqlite3.Error as ex:
             self._disable(ex)
 
@@ -60,7 +60,7 @@ class ThumbnailCache:
         return conn
 
     def _disable(self, ex: sqlite3.Error) -> None:
-        self.error = f"{_CACHE_FILE}: {ex}"
+        self.error = f"{CACHE_FILE}: {ex}"
         logging.warning("Thumbnail cache disabled: %s", self.error)
         if self._conn is not None:
             self._conn.close()

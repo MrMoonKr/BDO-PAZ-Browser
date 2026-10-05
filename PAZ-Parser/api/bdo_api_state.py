@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 import threading
 import time
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -12,6 +14,9 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 from paz.bdo_thumbnail_cache import ThumbnailCache
 from table_sort import TableSort
+
+from .bdo_records_prefill import RecordsPrefill
+from .bdo_records_store import DataDigests, RecordStore
 
 
 class ApiState:
@@ -51,6 +56,32 @@ class ApiState:
         self._cached_companions: dict[str, bytes] = {}
         self._cached_sort: TableSort | None = None
         self._global_search_cancel: threading.Event = threading.Event()
+        self._meta_version: int | None = None
+        # Archive file name -> (CRC, size) from the meta file, for cache keys.
+        self._archive_ids: dict[str, tuple[int, int]] = {}
+        self._data_digests = DataDigests()
+        self._records_store: RecordStore | None = None
+        self._records_prefill: RecordsPrefill | None = None
+        # When the UI last asked for something, and how many long tasks
+        # (extraction, global search) run; the background fill waits for both.
+        self._last_activity = 0.0
+        self._busy_tasks = 0
+        self._busy_lock = threading.Lock()
+
+    def _mark_activity(self) -> None:
+        self._last_activity = time.monotonic()
+
+    @contextmanager
+    def _busy(self) -> Iterator[None]:
+        """Mark a long task, so background work waits until it ends."""
+        with self._busy_lock:
+            self._busy_tasks += 1
+        try:
+            yield
+        finally:
+            with self._busy_lock:
+                self._busy_tasks -= 1
+            self._mark_activity()
 
     def _ts(self) -> float:
         return time.perf_counter() if self._profile else 0.0
@@ -75,6 +106,8 @@ class ApiState:
     if TYPE_CHECKING:
         # Implemented on Api; declared here so the mixins can call them.
         def read_entry(self, internal_path: str) -> bytes: ...
+
+        def get_entry(self, internal_path: str) -> PazEntry | None: ...
 
         def stream_url(self, internal_path: str) -> str: ...
 

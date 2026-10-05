@@ -14,6 +14,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 from enum import Enum
 
+from _common.data_deps import index_dep, note_read
+
 # An icon path, one linked ID, or several linked IDs.
 LookupValue = int | str | tuple[int, ...]
 
@@ -67,6 +69,9 @@ class IndexKind(Enum):
     TELEPORT_NEAREST_NODE = "teleport_nearest_node"
 
 
+# Dependency name each read reports to `data_deps`, built once per kind.
+_DEPS: dict[IndexKind, str] = {kind: index_dep(kind.value) for kind in IndexKind}
+
 # kind -> {entity_id: value}
 _INDEXES: dict[IndexKind, Mapping[int, LookupValue]] = {}
 
@@ -86,18 +91,22 @@ def clear_indexes() -> None:
 
 
 def is_index_loaded(kind: IndexKind) -> bool:
+    note_read(_DEPS[kind])
     return kind in _INDEXES
 
 
 def index_size(kind: IndexKind) -> int:
+    note_read(_DEPS[kind])
     return len(_INDEXES.get(kind, ()))
 
 
 def index_entries(kind: IndexKind) -> Mapping[int, LookupValue]:
     """Every entry of one kind, empty when the index is not loaded. Read only."""
+    note_read(_DEPS[kind])
     return _INDEXES.get(kind, {})
 
 
 def lookup(kind: IndexKind, entity_id: int) -> LookupValue | None:
     """The stored value, or None when the index is not loaded or lacks the ID."""
+    note_read(_DEPS[kind])
     return _INDEXES.get(kind, {}).get(entity_id)

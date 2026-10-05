@@ -161,7 +161,7 @@ every file of that extension as handled, so register known formats by name.
 
 All parsed-view handlers must implement `get_records()` and `render_records_page()`.
 
-- `get_records()` parses the binary and returns all records as plain dicts (no HTML). The base class caches the result per data object in `all_records()` (through `_data_cache`), so paging, sorting, tab search, CSV export and the CLI all reuse the same parse without re-reading the file. Call `all_records()`, not `get_records()`, from outside the handler.
+- `get_records()` parses the binary and returns all records as plain dicts (no HTML). The base class caches the result per data object in `all_records()` (through `_data_cache`), so paging, sorting, tab search, CSV export and the CLI all reuse the same parse without re-reading the file. Call `all_records()`, not `get_records()`, from outside the handler. In the app, `all_records()` may return records from the disk cache instead, see [Parsed Table Cache](#parsed-table-cache).
 - `render_records_page()` converts one page of records into an HTML fragment.
 - `sortable_fields()` opts the table into sorting, and `default_sort()` picks the order it opens in, see [Sortable Columns](#sortable-columns).
 
@@ -645,7 +645,34 @@ structure. `build_fn` runs with the garbage collector paused (`gc_pause.py`): a 
 value is a big structure that stays alive, and collections during its build only walk the
 loaded LOC and lookup indexes (`detail_dialog.dbss` parses 1.5x faster). `clear_data_cache()`
 drops every slot; the benchmark's `parse` stage calls it before each run so every run
-parses cold.
+parses cold. `release_data(data)` drops only the slots built from one payload; the
+background cache fill calls it after each table it parses.
+
+### Parsed Table Cache
+
+The app saves what `get_records()` returns in `paz_browser_records.sqlite` next to the
+PAZ files (`paz/bdo_records_cache.py`, keys in `api/bdo_records_store.py`), and
+`all_records()` serves it on the next open. The CLI and the benchmark never use it. A
+row is reused only while all of these match:
+
+- the handler's code: its class, the project modules it reaches through imports and
+  constructor arguments, and the JSON files beside them (`paz/source_fingerprint.py`)
+- the handler's language
+- the table and every path `companions()` returns: archive, archive CRC and size,
+  offset and sizes
+- the LOC text and each lookup index the build read, by content digest
+
+So `get_records()` has to follow a few rules:
+
+- **Read shared data only through `_common/loc.py` and `_common/lookup_index.py`.**
+  Their functions report each read to `_common/data_deps.py`; a build that never read
+  LOC keeps its row when a patch changes LOC. A module-level memo of LOC text or an
+  index value would hide the read and serve another language's text.
+- **Depend only on the payload, the declared companions, LOC, the lookup indexes and
+  `self.lang`.** Anything else, such as a setting or the time, is not in the key.
+- **Return picklable plain values** (dicts, lists, tuples, str, int, float, bool,
+  None), and do not change the records after returning them: a background thread
+  pickles them.
 
 ### When to Override `render_data_page`
 

@@ -10,14 +10,23 @@ from pathlib import Path
 
 import webview
 
-from .bdo_config import handled_only_setting, load_config, save_config, show_pa_tags_setting
+from .bdo_api_caches import CacheMixin
+from .bdo_config import (
+    RECORDS_CACHE_MODES,
+    handled_only_setting,
+    load_config,
+    records_cache_setting,
+    save_config,
+    show_pa_tags_setting,
+)
 from .bdo_api_helpers import _DISK_VIRTUAL_PREFIX, _file_icon, _norm, path_matcher
 from .bdo_api_preview import PreviewMixin
 from .bdo_api_search import SearchMixin
 from .bdo_tree import build_tree, collect_entries, count_entries, find_node, handled_entries
 from paz.bdo_cache import load_cache, read_meta_version, save_cache
 from paz.bdo_thumbnail_cache import ThumbnailCache
-from paz.bdo_index_cache import load_index_cache, save_index_cache
+from paz.bdo_index_cache import IndexCacheData, index_digests, load_index_cache, save_index_cache
+from paz.bdo_meta_reader import read_bdo_meta
 from bdo_models import PazEntry
 from paz.bdo_paz_extract import extract_entry, find_single_meta_file, parse_meta_file
 from paz.bdo_payload_cache import cached_read_entry_payload, clear_payload_cache
@@ -50,7 +59,7 @@ def _table_row_height(value: object) -> int:
     return max(_MIN_TABLE_ROW_HEIGHT, min(_MAX_TABLE_ROW_HEIGHT, height))
 
 
-class Api(PreviewMixin, SearchMixin):
+class Api(PreviewMixin, SearchMixin, CacheMixin):
     """Backend the UI calls through pywebview; the CLI loads folders through it too."""
 
     @property
@@ -115,6 +124,8 @@ class Api(PreviewMixin, SearchMixin):
             "table_row_height": _table_row_height(cfg.get("table_row_height")),
             "show_pa_tags": show_pa_tags_setting(cfg),
             "handled_only": handled_only_setting(cfg),
+            "records_cache": records_cache_setting(cfg),
+            "cache_bytes": self._cache_size(),
         }
 
     def save_settings(
@@ -124,9 +135,12 @@ class Api(PreviewMixin, SearchMixin):
         table_row_height: int | None = None,
         show_pa_tags: bool = False,
         handled_only: bool = False,
+        records_cache: str = "",
     ) -> dict:
         if language not in _VALID_LANGUAGES:
             return {"ok": False, "error": f"Invalid language: {language}"}
+        if records_cache not in RECORDS_CACHE_MODES:
+            records_cache = records_cache_setting(load_config())
         old_cfg = load_config()
         row_height = _table_row_height(table_row_height)
         save_config({
@@ -135,6 +149,7 @@ class Api(PreviewMixin, SearchMixin):
             "table_row_height": row_height,
             "show_pa_tags": show_pa_tags is True,
             "handled_only": handled_only is True,
+            "records_cache": records_cache,
         })
         set_show_pa_tags(show_pa_tags is True)
         self._handled_only = handled_only is True
@@ -142,28 +157,31 @@ class Api(PreviewMixin, SearchMixin):
         if paz_path != old_cfg.get("last_folder", "") and Path(paz_path).is_dir():
             self._paz_root = Path(paz_path)
             threading.Thread(target=self._load_entries, daemon=True).start()
+        elif records_cache != records_cache_setting(old_cfg):
+            self._open_records_cache()
+        elif language != old_cfg.get("language", "en"):
+            self._refresh_records_cache()
         return {"ok": True, "table_row_height": row_height}
 
     def _reload_loc(self, language: str) -> None:
-        from _common.loc import init_loc  # noqa: PLC0415
         set_handler_lang(language)
         rel = _LOC_LANG_MAP.get(language)
         if rel is None or not self._paz_root:
-            init_loc(None)
+            self._install_loc(None)
             return
         path = self._paz_root.parent.joinpath(*rel)
         if path.exists():
             try:
-                init_loc(path.read_bytes())
+                self._install_loc(path.read_bytes())
             except Exception:
                 pass
         else:
-            init_loc(None)
+            self._install_loc(None)
 
     def _load_entries(self) -> None:
         assert self._paz_root is not None
         try:
-            msg = self.load_folder(self._paz_root, parse=self._parse_with_ticker)
+            msg = self.load_folder(self._paz_root, parse=self._parse_with_ticker, cache_records=True)
             self._push_status(msg)
             self._push_js("app.onFolderLoaded()")
 
@@ -178,18 +196,24 @@ class Api(PreviewMixin, SearchMixin):
         parse: Callable[[Path], list[PazEntry]] = parse_meta_file,
         load_loc: bool = True,
         load_indexes: bool = True,
+        cache_records: bool = False,
     ) -> dict:
         """Load the entry list, LOC and lookup indexes of `paz_root`, blocking.
 
         The GUI runs this on a worker thread; the CLI calls it directly, so a
         command sees the same data the app shows. `parse` reads the meta file
-        when the entry cache is stale. Raises when the folder cannot be read,
+        when the entry cache is stale. `cache_records` installs the parsed
+        records disk cache as the settings ask; the CLI and the benchmark
+        leave it off and always parse. Raises when the folder cannot be read,
         and returns the status message to show.
         """
+        self._close_records_cache()
         self._paz_root = paz_root
         clear_payload_cache()
         meta_path = find_single_meta_file(paz_root)
         current_version = read_meta_version(meta_path)
+        self._meta_version = current_version
+        self._set_archive_ids(read_bdo_meta(meta_path))
         cached = load_cache(paz_root)
 
         if cached and cached[0] == current_version:
@@ -214,6 +238,8 @@ class Api(PreviewMixin, SearchMixin):
             self._load_disk_companions()
         if load_indexes:
             self._load_lookup_indexes(current_version)
+        if cache_records:
+            self._open_records_cache()
         return msg
 
     def _open_thumbnail_cache(self, paz_root: Path, meta_version: int) -> None:
@@ -256,12 +282,13 @@ class Api(PreviewMixin, SearchMixin):
             return
 
         clear_indexes()
+        self._data_digests.set_indexes({})
         by_value = {kind.value: kind for kind in IndexKind}
         fingerprint = index_fingerprint()
 
         cached = load_index_cache(self._paz_root, fingerprint)
-        if cached and cached[0] == version:
-            indexes = cached[1]
+        if cached and cached.version == version:
+            loaded = cached
         else:
             try:
                 indexes = build_indexes(
@@ -274,9 +301,10 @@ class Api(PreviewMixin, SearchMixin):
                 )
                 return
 
+            loaded = IndexCacheData(version, indexes, index_digests(indexes))
             if indexes:
                 try:
-                    save_index_cache(self._paz_root, version, fingerprint, indexes)
+                    save_index_cache(self._paz_root, fingerprint, loaded)
                 except Exception:
                     # Not fatal: the indexes are installed below, only the next
                     # launch has to build them again.
@@ -286,10 +314,11 @@ class Api(PreviewMixin, SearchMixin):
                         exc_info=True,
                     )
 
-        for name, mapping in indexes.items():
+        for name, mapping in loaded.indexes.items():
             kind = by_value.get(name)
             if kind is not None:
                 init_index(kind, mapping)
+        self._data_digests.set_indexes(loaded.digests)
 
     def _load_disk_companions(self) -> None:
         if not self._paz_root:
@@ -302,8 +331,7 @@ class Api(PreviewMixin, SearchMixin):
                 try:
                     raw = path.read_bytes()
                     self._disk_companions[rel[-1]] = raw
-                    from _common.loc import init_loc  # noqa: PLC0415
-                    init_loc(raw)
+                    self._install_loc(raw)
                 except Exception:
                     # Not fatal: tables fall back to their inline text.
                     logging.warning("Could not load LOC file %s", path, exc_info=True)
@@ -393,6 +421,7 @@ class Api(PreviewMixin, SearchMixin):
         The disk LOC file sits at the root whatever the handled-only setting:
         it has its own viewer.
         """
+        self._mark_activity()
         node = find_node(self._visible_tree(), node_path)
         if not isinstance(node, dict):
             return []
@@ -437,6 +466,7 @@ class Api(PreviewMixin, SearchMixin):
         Glob patterns (containing *, ?, or [) are matched against the full
         path and against the filename alone.  Plain strings do substring match.
         """
+        self._mark_activity()
         is_hit = path_matcher(query)
         results: list[dict] = []
         for entry in self._visible_entries():
@@ -474,6 +504,10 @@ class Api(PreviewMixin, SearchMixin):
         total       = len(entries)
 
         def run() -> None:
+            with self._busy():
+                extract()
+
+        def extract() -> None:
             extracted = skipped = failed = 0
             for i, entry in enumerate(entries, 1):
                 try:
@@ -529,6 +563,7 @@ class Api(PreviewMixin, SearchMixin):
         bdo_preview.reload_plugins(Path(__file__).parent.parent / "handlers")
         self._handled_view = None
         self._reload_loc(load_config().get("language", "en"))
+        self._refresh_records_cache()
         self._push_js("app.onPluginsReloaded()")
 
     # ── Status ────────────────────────────────────────────────────────────────

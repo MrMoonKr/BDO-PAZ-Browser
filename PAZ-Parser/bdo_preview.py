@@ -7,9 +7,10 @@ import importlib.util
 import io
 import re as _re
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from pathlib import Path
 import sys
+from typing import Protocol
 
 from bdo_models import PazEntry
 from gc_pause import gc_paused
@@ -63,6 +64,16 @@ class PreviewHandler(ABC):
         """Drop every `_data_cache` slot, with the payloads and values it kept."""
         self._handler_caches = {}
 
+    def release_data(self, data: bytes) -> None:
+        """Drop the `_data_cache` slots built from `data`, keeping the others.
+
+        For a caller that parses a payload the user is not viewing, so the
+        payload and its index do not stay alive in the slot.
+        """
+        cache: dict | None = getattr(self, "_handler_caches", None)
+        if cache:
+            self._handler_caches = {name: slot for name, slot in cache.items() if slot[0] is not data}
+
     def supports_lazy_records(self) -> bool:
         """Return True when the handler supports lazy paging (default: True for all handlers).
 
@@ -77,11 +88,20 @@ class PreviewHandler(ABC):
         """Return get_records() for this data, parsed once and cached.
 
         Call this rather than get_records(): it shares the parse with paging,
-        sorting and search, and builds it with the collector paused.
+        sorting and search, and builds it with the collector paused. With a
+        records source installed (`set_records_source`), the parse may come
+        from the disk cache instead.
         """
         return self._data_cache(
-            data, "_records", lambda: self.get_records(data, entry, companions)
+            data, "_records", lambda: self._load_records(data, entry, companions)
         )
+
+    def _load_records(self, data: bytes, entry: PazEntry, companions: dict[str, bytes]) -> list[dict]:
+        def build() -> list[dict]:
+            return self.get_records(data, entry, companions)
+
+        source = _records_source
+        return build() if source is None else source.records(self, entry, build)
 
     def get_record_count(self, data: bytes, entry: PazEntry, companions: dict[str, bytes]) -> int:
         """Return record count. Uses _data_cache to avoid re-parsing on every call."""
@@ -199,6 +219,27 @@ class PreviewHandler(ABC):
         ``records[page * page_size : (page + 1) * page_size]`` inside this method.
         """
         raise NotImplementedError
+
+
+class RecordsSource(Protocol):
+    """Where `all_records()` gets a parse: the disk cache, or `build()` itself."""
+
+    def records(
+        self,
+        handler: PreviewHandler,
+        entry: PazEntry,
+        build: Callable[[], list[dict]],
+    ) -> list[dict]: ...
+
+
+# None parses every time; the app installs its disk cache (api/bdo_records_store.py).
+_records_source: RecordsSource | None = None
+
+
+def set_records_source(source: RecordsSource | None) -> None:
+    """Install where `all_records()` gets a parse from, or None to always parse."""
+    global _records_source
+    _records_source = source
 
 
 # ── Text ──────────────────────────────────────────────────────────────────────
@@ -464,6 +505,12 @@ def set_handler_lang(lang: str) -> None:
     for handler in _REGISTRY.values():
         handler.lang = lang
     _hex_handler.lang = lang
+
+
+def parsed_handlers() -> list[PreviewHandler]:
+    """Every registered handler instance with a parsed view, once each."""
+    unique = {id(handler): handler for handler in _REGISTRY.values()}
+    return [handler for handler in unique.values() if has_parsed_view(handler)]
 
 
 def get_binary_handlers() -> list[str]:

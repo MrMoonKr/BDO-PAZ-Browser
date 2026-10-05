@@ -54,6 +54,7 @@ class SearchMixin(ApiState):
         Returns {"offsets": [...]} (byte offsets) for hex tab,
                 {"record_indices": [...]} for parsed tab.
         """
+        self._mark_activity()
         norm = _norm(path)
 
         if tab == "parsed":
@@ -122,11 +123,12 @@ class SearchMixin(ApiState):
         cancel = threading.Event()
         self._global_search_cancel = cancel
 
-        threading.Thread(
-            target=self._run_global_search,
-            args=(needles, candidates, self._paz_root, cancel),
-            daemon=True,
-        ).start()
+        def run() -> None:
+            with self._busy():
+                self._run_global_search(needles, candidates, paz_root, cancel)
+
+        paz_root = self._paz_root
+        threading.Thread(target=run, daemon=True).start()
         return {"total": len(candidates)}
 
     def cancel_global_search(self) -> None:

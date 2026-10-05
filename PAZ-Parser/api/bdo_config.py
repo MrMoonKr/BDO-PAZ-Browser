@@ -31,6 +31,17 @@ def handled_only_setting(cfg: dict) -> bool:
     return cfg.get("handled_only") is True
 
 
+# "Parsed table cache": never, when a table is opened, or every table in the background.
+RECORDS_CACHE_MODES = ("off", "open", "all")
+_DEFAULT_RECORDS_CACHE_MODE = "open"
+
+
+def records_cache_setting(cfg: dict) -> str:
+    """The "Parsed table cache" mode; "open" unless a valid mode is saved."""
+    mode = cfg.get("records_cache")
+    return mode if mode in RECORDS_CACHE_MODES else _DEFAULT_RECORDS_CACHE_MODE
+
+
 def save_config(updates: dict) -> None:
     cfg = {**load_config(), **updates}
     try:

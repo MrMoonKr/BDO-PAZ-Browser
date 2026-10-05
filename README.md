@@ -21,6 +21,7 @@ A Python tool for browsing, extracting, and previewing files from **Black Desert
 - **Handled tables only**, the **Show only handled tables** setting (off by default) limits the file tree, file search, content search and folder extraction to files with a parsed table view, plus the LOC file
 - **Plugin system**, add handlers for new binary formats by dropping a file into `handlers/`
 - **Caching**, PAZ index is parsed once and cached; subsequent launches load instantly
+- **Parsed table cache**, parsed tables are kept on disk next to the PAZ files, so a big table reopens in a fraction of its parse time (`detail_dialog.dbss` 1.3 s to 0.25 s). The **Parsed Table Cache** setting picks Off, Cache tables when opened (default) or Cache all tables in the background, which parses every table A to Z while the app is idle. A table stays cached across a patch that leaves it, its companions and the LOC text or lookup indexes it reads unchanged. **Delete all caches** in the settings removes the parsed table, icon thumbnail and lookup index caches; the PAZ index cache stays, since rebuilding it takes over a minute
 
 ---
 
@@ -310,6 +311,9 @@ PAZ-Parser/
 │   ├── bdo_api_helpers.py  # Shared constants and utilities (_norm, _file_icon)
 │   ├── bdo_icon_images.py  # Icon thumbnails, the icon popup image and sprite crops
 │   ├── bdo_api_preview.py  # Preview assembly and entry loading (PreviewMixin)
+│   ├── bdo_api_caches.py   # Parsed table cache modes, Delete all caches (CacheMixin)
+│   ├── bdo_records_store.py# Parsed table cache keys and dependency digests
+│   ├── bdo_records_prefill.py# Background pass that caches every table
 │   └── bdo_api_search.py   # File content search, single-file and cross-file (SearchMixin)
 │
 ├── paz/                    # PAZ archive reading and caching
@@ -320,6 +324,7 @@ PAZ-Parser/
 │   ├── bdo_payload_reader.py# Payload decompression + ICE decryption
 │   ├── source_fingerprint.py# Code hash that invalidates the disk caches
 │   ├── bdo_thumbnail_cache.py# Icon thumbnail cache (SQLite, next to the PAZ files)
+│   ├── bdo_records_cache.py# Parsed table cache (SQLite, next to the PAZ files)
 │   ├── bdo_paz_extract.py  # File extraction logic
 │   └── bdo_paz_reader.py   # PAZ archive parser
 │

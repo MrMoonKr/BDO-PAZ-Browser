@@ -143,6 +143,16 @@
             <input id="settings-handled-only" type="checkbox" />
             <span data-i18n="settings.handledOnly">Show only handled tables</span>
           </label>
+          <label class="settings-label" for="settings-records-cache" data-i18n="settings.recordsCache">Parsed Table Cache</label>
+          <select id="settings-records-cache" data-i18n-title="settings.recordsCacheHint" title="Keep parsed tables on disk so they reopen without parsing again">
+            <option value="off" data-i18n="settings.recordsCacheOff">Off</option>
+            <option value="open" data-i18n="settings.recordsCacheOpen">Cache tables when opened</option>
+            <option value="all" data-i18n="settings.recordsCacheAll">Cache all tables in the background</option>
+          </select>
+          <div class="settings-cache-row">
+            <button id="settings-delete-caches" onclick="app.deleteCaches()" data-i18n="settings.deleteCaches">Delete all caches</button>
+            <span id="settings-cache-size" class="settings-unit"></span>
+          </div>
         </div>
         <div class="settings-footer">
           <button onclick="app.closeSettings()" data-i18n="settings.cancel">Cancel</button>

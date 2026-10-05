@@ -1,0 +1,342 @@
+"""The parsed records disk cache: storage, dependency keys, the all_records hook."""
+
+from __future__ import annotations
+
+from collections.abc import Callable, Iterator
+from pathlib import Path
+
+import pytest
+
+from _common.data_deps import LOC, index_dep, recording
+from _common.loc import loc_text
+from _common.lookup_index import IndexKind, lookup
+from api.bdo_records_prefill import RecordsPrefill
+from api.bdo_records_store import ABSENT, DataDigests, RecordStore, paz_entry_identity
+from bdo_models import PazEntry
+from bdo_preview import PreviewHandler, set_records_source
+from paz.bdo_records_cache import CACHE_FILE, CurrentDigest, RecordsCache
+
+_ARCHIVE = "pad00001.paz"
+_TABLE = PazEntry(_ARCHIVE, "gamecommondata/binary/table.dbss", 64, 10, 10, 0, 0)
+_COMPANION = PazEntry(_ARCHIVE, "gamecommondata/binary/tableoffset.dbss", 128, 4, 4, 0, 0)
+_DISK = PazEntry("<disk>", "languagedata_en.loc", 0, 4, 4, 0, 0)
+_RECORDS = [{"id": 1, "name": "Alpha"}, {"id": 2, "name": "Beta"}]
+
+
+class _Handler(PreviewHandler):
+    """Builds `_RECORDS`, reading whatever shared data `reads` asks for."""
+
+    def __init__(self, reads: Callable[[], object] = lambda: None) -> None:
+        self._reads = reads
+        self.builds = 0
+
+    def companions(self, entry: PazEntry) -> list[str]:
+        return [_COMPANION.internal_path]
+
+    def get_records(self, data: bytes, entry: PazEntry, companions: dict[str, bytes]) -> list[dict]:
+        self.builds += 1
+        self._reads()
+        return [dict(record) for record in _RECORDS]
+
+    def render_records_page(self, records: list[dict], page: int, page_size: int) -> str:
+        return ""
+
+
+class _Archives:
+    """The PAZ side of the keys: one archive whose CRC a test can change."""
+
+    def __init__(self) -> None:
+        self.crc = 0x1234
+
+    def identity(self, entry: PazEntry) -> str | None:
+        return paz_entry_identity(entry, self.crc, 4096) if entry.archive_name == _ARCHIVE else None
+
+    def resolve(self, path: str) -> PazEntry | None:
+        return {e.internal_path: e for e in (_TABLE, _COMPANION)}.get(path)
+
+
+@pytest.fixture
+def archives() -> _Archives:
+    return _Archives()
+
+
+@pytest.fixture
+def digests() -> DataDigests:
+    return DataDigests()
+
+
+@pytest.fixture
+def store(tmp_path: Path, archives: _Archives, digests: DataDigests) -> Iterator[RecordStore]:
+    store = _open_store(tmp_path, archives, digests)
+    yield store
+    store.close()
+
+
+def _open_store(root: Path, archives: _Archives, digests: DataDigests) -> RecordStore:
+    return RecordStore(RecordsCache(root), digests, archives.identity, archives.resolve)
+
+
+def _records_through(store: RecordStore, handler: _Handler, entry: PazEntry = _TABLE) -> list[dict]:
+    """One parse through the store, with its background write finished."""
+    records = store.records(handler, entry, lambda: handler.get_records(b"", entry, {}))
+    store._writer.submit(lambda: None).result()
+    return records
+
+
+# ── RecordsCache ─────────────────────────────────────────────────────────────
+
+
+def _today(digests: dict[str, str]) -> CurrentDigest:
+    """Today's digests for a test, with everything else absent."""
+    return lambda name: digests.get(name, ABSENT)
+
+
+def test_cache_round_trips_records(tmp_path: Path) -> None:
+    cache = RecordsCache(tmp_path)
+    cache.put("a.dbss", "key", {LOC: "loc1"}, _RECORDS)
+
+    assert cache.get("a.dbss", "key", _today({LOC: "loc1"})) == _RECORDS
+    cache.close()
+
+
+def test_cache_misses_on_another_input_key(tmp_path: Path) -> None:
+    cache = RecordsCache(tmp_path)
+    cache.put("a.dbss", "key", {}, _RECORDS)
+
+    assert cache.get("a.dbss", "other", _today({})) is None
+    cache.close()
+
+
+def test_cache_misses_when_a_read_dependency_changed(tmp_path: Path) -> None:
+    cache = RecordsCache(tmp_path)
+    cache.put("a.dbss", "key", {LOC: "loc1"}, _RECORDS)
+
+    assert cache.get("a.dbss", "key", _today({LOC: "loc2"})) is None
+    assert not cache.is_current("a.dbss", "key", _today({LOC: "loc2"}))
+    cache.close()
+
+
+def test_cache_ignores_dependencies_the_build_did_not_read(tmp_path: Path) -> None:
+    cache = RecordsCache(tmp_path)
+    cache.put("a.dbss", "key", {LOC: "loc1"}, _RECORDS)
+    today = {LOC: "loc1", index_dep("item_icon"): "changed"}
+
+    assert cache.get("a.dbss", "key", _today(today)) == _RECORDS
+    cache.close()
+
+
+def test_cache_drops_an_unreadable_row(tmp_path: Path) -> None:
+    cache = RecordsCache(tmp_path)
+    cache.put("a.dbss", "key", {}, _RECORDS)
+    assert cache._conn is not None
+    cache._conn.execute("UPDATE records SET records = ?", (b"not a pickle",))
+
+    assert cache.get("a.dbss", "key", _today({})) is None
+    assert not cache.is_current("a.dbss", "key", _today({}))
+    cache.close()
+
+
+def test_a_store_that_cannot_open_is_disabled(tmp_path: Path) -> None:
+    (tmp_path / CACHE_FILE).mkdir()
+
+    cache = RecordsCache(tmp_path)
+    cache.put("a.dbss", "key", {}, _RECORDS)
+
+    assert cache.error
+    assert cache.get("a.dbss", "key", _today({})) is None
+
+
+# ── data_deps ────────────────────────────────────────────────────────────────
+
+
+def test_recording_collects_loc_and_index_reads() -> None:
+    with recording() as deps:
+        loc_text(0, 1)
+        lookup(IndexKind.ITEM_ICON, 1)
+
+    assert deps == {LOC, index_dep(IndexKind.ITEM_ICON.value)}
+
+
+def test_reads_outside_a_recording_are_not_collected() -> None:
+    loc_text(0, 1)
+
+    with recording() as deps:
+        pass
+
+    assert deps == set()
+
+
+# ── DataDigests ──────────────────────────────────────────────────────────────
+
+
+def test_digests_report_absent_until_set(digests: DataDigests) -> None:
+    assert digests.get(LOC) == ABSENT
+
+    digests.set_loc(b"loc bytes")
+
+    assert digests.get(LOC) != ABSENT
+
+
+def test_setting_the_same_data_keeps_the_generation(digests: DataDigests) -> None:
+    digests.set_indexes({"item_icon": "d1"})
+    generation = digests.generation
+
+    digests.set_indexes({"item_icon": "d1"})
+
+    assert digests.generation == generation
+
+
+def test_setting_indexes_replaces_every_index_digest(digests: DataDigests) -> None:
+    digests.set_loc(b"loc bytes")
+    digests.set_indexes({"item_icon": "d1"})
+
+    digests.set_indexes({"quest_icon": "d2"})
+
+    assert digests.get(index_dep("item_icon")) == ABSENT
+    assert digests.get(index_dep("quest_icon")) == "d2"
+    assert digests.get(LOC) != ABSENT
+
+
+# ── RecordStore ──────────────────────────────────────────────────────────────
+
+
+def test_a_saved_parse_is_served_without_building(store: RecordStore) -> None:
+    handler = _Handler()
+    _records_through(store, handler)
+
+    assert _records_through(store, handler) == _RECORDS
+    assert handler.builds == 1
+
+
+def test_a_changed_archive_rebuilds(store: RecordStore, archives: _Archives) -> None:
+    handler = _Handler()
+    _records_through(store, handler)
+
+    archives.crc = 0x5678
+    _records_through(store, handler)
+
+    assert handler.builds == 2
+
+
+def test_another_language_rebuilds(store: RecordStore) -> None:
+    handler = _Handler()
+    _records_through(store, handler)
+
+    handler.lang = "de"
+    _records_through(store, handler)
+
+    assert handler.builds == 2
+
+
+def test_new_loc_rebuilds_only_tables_that_read_it(store: RecordStore, digests: DataDigests) -> None:
+    digests.set_loc(b"patch 1")
+    reads_loc = _Handler(lambda: loc_text(0, 1))
+    reads_nothing = _Handler()
+    _records_through(store, reads_loc)
+    _records_through(store, reads_nothing, _COMPANION)
+
+    digests.set_loc(b"patch 2")
+    _records_through(store, reads_loc)
+    _records_through(store, reads_nothing, _COMPANION)
+
+    assert reads_loc.builds == 2
+    assert reads_nothing.builds == 1
+
+
+def test_a_build_that_overlapped_a_data_change_is_not_saved(store: RecordStore, digests: DataDigests) -> None:
+    handler = _Handler(lambda: digests.set_loc(b"switched language"))
+    _records_through(store, handler)
+
+    handler._reads = lambda: None
+    _records_through(store, handler)
+
+    assert handler.builds == 2
+
+
+def test_tables_outside_a_paz_archive_are_never_cached(store: RecordStore) -> None:
+    handler = _Handler()
+    _records_through(store, handler, _DISK)
+    _records_through(store, handler, _DISK)
+
+    assert handler.builds == 2
+
+
+def test_the_cache_survives_reopening(tmp_path: Path, archives: _Archives, digests: DataDigests) -> None:
+    handler = _Handler()
+    first = _open_store(tmp_path, archives, digests)
+    _records_through(first, handler)
+    first.close()
+
+    second = _open_store(tmp_path, archives, digests)
+    assert second.is_current(handler, _TABLE)
+    assert _records_through(second, handler) == _RECORDS
+    second.close()
+    assert handler.builds == 1
+
+
+# ── PreviewHandler hook ──────────────────────────────────────────────────────
+
+
+def test_all_records_goes_through_the_installed_source(store: RecordStore) -> None:
+    handler = _Handler()
+    _records_through(store, handler)
+    set_records_source(store)
+    try:
+        records = handler.all_records(b"payload", _TABLE, {})
+    finally:
+        set_records_source(None)
+
+    assert records == _RECORDS
+    assert handler.builds == 1
+
+
+def test_release_data_keeps_slots_of_other_payloads() -> None:
+    handler = _Handler()
+    kept, released = b"kept payload", b"released payload"
+    handler._data_cache(kept, "a", lambda: "kept")
+    handler._data_cache(released, "b", lambda: "released")
+
+    handler.release_data(released)
+
+    assert handler._data_cache(kept, "a", lambda: "rebuilt") == "kept"
+    assert handler._data_cache(released, "b", lambda: "rebuilt") == "rebuilt"
+
+
+# ── RecordsPrefill ───────────────────────────────────────────────────────────
+
+
+def test_prefill_builds_only_tables_without_a_current_row(store: RecordStore) -> None:
+    cached, missing = _Handler(), _Handler()
+    _records_through(store, cached)
+    finished: list[int] = []
+    prefill = RecordsPrefill(
+        store,
+        targets=lambda: [(cached, _TABLE), (missing, _COMPANION)],
+        load=lambda handler, entry: (b"payload", {}),
+        is_idle=lambda: True,
+        report=lambda done, total: None,
+        finished=finished.append,
+    )
+
+    prefill._run(prefill._stop)
+
+    assert (cached.builds, missing.builds) == (1, 1)
+    assert store.is_current(missing, _COMPANION)
+    assert finished == [1]
+
+
+def test_prefill_stops_while_waiting_for_idle(store: RecordStore) -> None:
+    handler = _Handler()
+    prefill = RecordsPrefill(
+        store,
+        targets=lambda: [(handler, _TABLE)],
+        load=lambda handler, entry: (b"payload", {}),
+        is_idle=lambda: False,
+        report=lambda done, total: None,
+        finished=lambda built: None,
+    )
+    prefill.stop()
+
+    prefill._run(prefill._stop)
+
+    assert handler.builds == 0

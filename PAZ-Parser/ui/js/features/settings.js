@@ -1,6 +1,6 @@
 "use strict";
 
-import { loadLang, applyTranslations } from "../core/i18n.js";
+import { loadLang, applyTranslations, t } from "../core/i18n.js";
 
 export const settingsMethods = {
   _settingsEscHandler: null,
@@ -14,6 +14,8 @@ export const settingsMethods = {
     document.getElementById("settings-table-row-height").value = s.table_row_height ?? 27;
     document.getElementById("settings-show-pa-tags").checked = s.show_pa_tags === true;
     document.getElementById("settings-handled-only").checked = s.handled_only === true;
+    document.getElementById("settings-records-cache").value = s.records_cache ?? "open";
+    this._showCacheSize(s.cache_bytes ?? 0);
     this._savedHandledOnly = s.handled_only === true;
     document.getElementById("settings-overlay").hidden = false;
 
@@ -44,7 +46,10 @@ export const settingsMethods = {
     const tableRowHeight = Number(document.getElementById("settings-table-row-height").value);
     const showPaTags = document.getElementById("settings-show-pa-tags").checked;
     const handledOnly = document.getElementById("settings-handled-only").checked;
-    const result = await window.pywebview.api.save_settings(pazPath, language, tableRowHeight, showPaTags, handledOnly);
+    const recordsCache = document.getElementById("settings-records-cache").value;
+    const result = await window.pywebview.api.save_settings(
+      pazPath, language, tableRowHeight, showPaTags, handledOnly, recordsCache,
+    );
     if (!result?.ok) return;
     this._applyTableRowHeight(result.table_row_height ?? tableRowHeight);
     this.closeSettings();
@@ -60,6 +65,25 @@ export const settingsMethods = {
     if (handledOnly !== this._savedHandledOnly && this._isFolderLoaded) {
       this._reloadTreeForFilter();
     }
+  },
+
+  async deleteCaches() {
+    if (!window.confirm(t("settings.deleteCachesConfirm"))) return;
+    const button = document.getElementById("settings-delete-caches");
+    button.disabled = true;
+    try {
+      const result = await window.pywebview.api.delete_caches();
+      const size = document.getElementById("settings-cache-size");
+      size.textContent = result?.ok
+        ? t("settings.cachesDeleted", { size: this._fmtBytes(result.freed ?? 0) })
+        : t("settings.cachesDeleteFailed", { message: result?.error ?? "" });
+    } finally {
+      button.disabled = false;
+    }
+  },
+
+  _showCacheSize(bytes) {
+    document.getElementById("settings-cache-size").textContent = t("settings.cacheSize", { size: this._fmtBytes(bytes) });
   },
 
   // The filter changes what the tree, file search and global search show, so

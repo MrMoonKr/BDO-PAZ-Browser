@@ -80,6 +80,7 @@
 }
 
 #settings-language,
+#settings-records-cache,
 #settings-table-row-height {
   background: var(--surface2);
   border: 1px solid var(--border2);
@@ -93,6 +94,7 @@
   width: 100%;
 }
 #settings-language:focus,
+#settings-records-cache:focus,
 #settings-table-row-height:focus {
   border-color: var(--accent);
 }
@@ -107,6 +109,12 @@
   color: var(--fg-muted);
   font-size: 12px;
   min-width: 20px;
+}
+
+.settings-cache-row {
+  align-items: center;
+  display: flex;
+  gap: 8px;
 }
 
 .settings-check {

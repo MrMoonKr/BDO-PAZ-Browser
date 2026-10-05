@@ -6,6 +6,7 @@ from collections.abc import Mapping
 from types import MappingProxyType
 
 from _common.binary import u32
+from _common.data_deps import LOC, note_read
 # Re-exported: handlers import strip_pa_tags from here.
 from _common.pa_text import strip_pa_tags as strip_pa_tags
 
@@ -77,6 +78,7 @@ def init_loc(raw: bytes | None) -> None:
 # ── Public API ────────────────────────────────────────────────────────────────
 
 def is_loc_loaded() -> bool:
+    note_read(LOC)
     return _LOC_INDEX is not None
 
 
@@ -88,6 +90,7 @@ def loc_lookup(
     str_id4: int = 0,
 ) -> str:
     """Return matching string or '' on miss / not loaded."""
+    note_read(LOC)
     if _LOC_INDEX is None:
         return ""
     return _LOC_INDEX.get((str_type, str_id1, str_id2, str_id3, str_id4), "")
@@ -105,6 +108,7 @@ def loc_text(str_type: int, str_id1: int, str_id4: int = 0) -> str:
 
 def loc_lookup_prefix(str_type: int, str_id1: int) -> list[str]:
     """Return all strings matching a type/id1 pair in LOC index order."""
+    note_read(LOC)
     if _LOC_PREFIX is None:
         return []
 
@@ -120,6 +124,7 @@ def loc_type_entries(str_type: int) -> Mapping[tuple[int, int, int, int, int], s
     """
     global _LOC_BY_TYPE_SOURCE
 
+    note_read(LOC)
     if _LOC_INDEX is None:
         return MappingProxyType({})
     if _LOC_BY_TYPE_SOURCE is not _LOC_INDEX:

@@ -64,6 +64,16 @@
     "showPaTagsHint": "Show the <PAColor> tags of game text next to its colours",
     "handledOnly": "Show only handled tables",
     "handledOnlyHint": "Limit the file tree and searches to files with a parsed table view",
+    "recordsCache": "Parsed Table Cache",
+    "recordsCacheHint": "Keep parsed tables on disk so they reopen without parsing again",
+    "recordsCacheOff": "Off",
+    "recordsCacheOpen": "Cache tables when opened",
+    "recordsCacheAll": "Cache all tables in the background",
+    "deleteCaches": "Delete all caches",
+    "deleteCachesConfirm": "Delete the parsed table, icon and lookup index caches next to the PAZ files?\n\nTables parse again, icons decode again, and the next start builds the lookup indexes again. The PAZ index cache is kept.",
+    "cacheSize": "{size} on disk",
+    "cachesDeleted": "Freed {size}",
+    "cachesDeleteFailed": "Not every cache could be deleted: {message}",
     "cancel": "Cancel",
     "save": "Save"
   },
@@ -84,7 +94,9 @@
     "found": "Found {cap}files matching \"{query}\"",
     "copiedRow": "Copied selected row.",
     "searchError": "Search error: {message}",
-    "pageError": "Could not load page: {message}"
+    "pageError": "Could not load page: {message}",
+    "cachingTables": "Caching parsed tables… {done}/{total}",
+    "cachedTables": "Cached {count} parsed tables"
   },
   "iconPreview": {
     "title": "Icon",
