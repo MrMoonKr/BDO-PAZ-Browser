@@ -47,6 +47,7 @@ _SHIFTED_BLOCK_KIND = 0
 # Bytes between the icon path and the echo.
 _POST_ICON_SIZES = (16, 8)
 _MAX_ICON_LENGTH = 260
+_ZERO_WORD = bytes(4)
 
 _U32 = struct.Struct("<I")
 _STRING_PREFIX = struct.Struct("<II")
@@ -205,16 +206,25 @@ def _read_utf16(data: bytes, pos: int) -> tuple[str, int]:
 
 
 def _icon_path(data: bytes, quest_offset: int, echo: int) -> str:
-    """ASCII icon path whose u64 prefix ends 16 or 8 bytes before the echo."""
+    """ASCII icon path whose u64 prefix ends 16 or 8 bytes before the echo.
+
+    Returns the highest prefix whose length ends exactly there. Only a zero
+    high word can start one, so `rfind` jumps from one to the next; path text
+    holds no zero bytes, which makes a real icon's high word the first found.
+    """
     for post_icon in _POST_ICON_SIZES:
         end = echo - post_icon
         lowest = max(quest_offset, end - _STRING_PREFIX_SIZE - _MAX_ICON_LENGTH)
-        for pos in range(end - _STRING_PREFIX_SIZE - 1, lowest - 1, -1):
-            if u32(data, pos + 4) != 0 or pos + _STRING_PREFIX_SIZE + u32(data, pos) != end:
-                continue
-            raw = data[pos + _STRING_PREFIX_SIZE:end]
-            if raw.isascii() and raw.lower().endswith(b".dds"):
-                return raw.decode("ascii")
+        # Prefixes start in `[lowest, end - 9]`, their high word 4 bytes on.
+        high_word = data.rfind(_ZERO_WORD, lowest + 4, end - 1)
+        while high_word != -1:
+            pos = high_word - 4
+            if pos + _STRING_PREFIX_SIZE + u32(data, pos) == end:
+                raw = data[pos + _STRING_PREFIX_SIZE:end]
+                if raw.isascii() and raw.lower().endswith(b".dds"):
+                    return raw.decode("ascii")
+            # The next candidate may overlap this one by up to 3 bytes.
+            high_word = data.rfind(_ZERO_WORD, lowest + 4, high_word + 3)
     return ""
 
 
