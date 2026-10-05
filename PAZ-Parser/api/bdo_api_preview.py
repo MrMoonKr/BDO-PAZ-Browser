@@ -527,9 +527,9 @@ class PreviewMixin(ApiState):
             and self._cached_entry is not None
             and self._cached_handler is not None
         ):
-            # File order on purpose: it is the cheapest to produce and ignores
-            # the active table sort, which would only add a reorder pass.
-            records = self._cached_handler.get_records(
+            # File order on purpose: the parse the open table already holds,
+            # without the active table sort, which would only add a reorder.
+            records = self._cached_handler.all_records(
                 self._cached_data,
                 self._cached_entry,
                 self._cached_companions,

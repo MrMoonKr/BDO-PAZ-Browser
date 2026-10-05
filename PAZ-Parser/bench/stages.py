@@ -6,9 +6,9 @@ On an entry, `decrypt` and `decompress` work on bytes already in memory, so
 disk speed and the OS file cache stay out of their numbers. `read` is the
 whole path the app takes to open a file, disk read included. `extract` is what
 `extract_all` does per file: `read`, then the size check and the write to disk.
-`parse` is the handler's `get_records()` on the decoded file, with LOC and the
-lookup indexes loaded as in the app; it only exists for a file with a parsed
-view.
+`parse` is the handler's `all_records()`, the parse the app's table runs, on
+the decoded file, with LOC and the lookup indexes loaded as in the app; it only
+exists for a file with a parsed view.
 
 On an archive, `extract` runs `extract_all`'s loop over every entry in it. It
 leaves out `extract_all`'s meta file parse, which reads every entry of the
@@ -195,10 +195,10 @@ def _entry_stages(
         )
     )
     if parsed is not None:
-        # Every run parses cold: a handler keeps its index per payload, so the
-        # second call on the same bytes would skip building it. The collector
-        # stays on because the app parses with it on, and in a big table its
-        # passes over the loaded LOC and indexes are a real share of the time.
+        # Every run parses cold: a handler keeps its records and index per
+        # payload, so the second call on the same bytes would skip building
+        # them. The collector stays on as in the app, so the run pays for
+        # whatever the handler cache does not pause it around.
         stages.append(Stage("parse", parsed.records, prepare=parsed.handler.clear_data_cache, with_gc=True))
     return stages
 

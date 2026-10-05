@@ -26,7 +26,7 @@ class ParsedFile:
     companions: dict[str, bytes]
 
     def records(self) -> list[dict]:
-        return self.handler.get_records(self.data, self.entry, self.companions)
+        return self.handler.all_records(self.data, self.entry, self.companions)
 
 
 def find_entry(entries: Sequence[PazEntry], name: str) -> PazEntry:

@@ -12,6 +12,7 @@ from pathlib import Path
 import sys
 
 from bdo_models import PazEntry
+from gc_pause import gc_paused
 from record_fields import record_matches
 from table_sort import SORT_DESC, TableSort, sort_order
 
@@ -38,6 +39,10 @@ class PreviewHandler(ABC):
         be handed to the next bytes object, and an id-only check would then
         return the old payload's value for different data.
 
+        `build_fn` runs with the garbage collector paused (`gc_pause`): a
+        cached value is a big structure that stays alive, and collections
+        during its build only walk the loaded LOC and indexes.
+
         Usage:
             def _my_index(self, data):
                 return self._data_cache(data, "index", lambda: build_index(data))
@@ -48,7 +53,8 @@ class PreviewHandler(ABC):
             cache = self._handler_caches
         slot = cache.get(name)
         if slot is None or slot[0] is not data:
-            value = build_fn()
+            with gc_paused():
+                value = build_fn()
             cache[name] = (data, value)
             return value
         return slot[1]
@@ -67,15 +73,19 @@ class PreviewHandler(ABC):
         """
         return True
 
-    def _all_records(self, data: bytes, entry: PazEntry, companions: dict[str, bytes]) -> list[dict]:
-        """Return get_records() for this data, parsed once and cached."""
+    def all_records(self, data: bytes, entry: PazEntry, companions: dict[str, bytes]) -> list[dict]:
+        """Return get_records() for this data, parsed once and cached.
+
+        Call this rather than get_records(): it shares the parse with paging,
+        sorting and search, and builds it with the collector paused.
+        """
         return self._data_cache(
             data, "_records", lambda: self.get_records(data, entry, companions)
         )
 
     def get_record_count(self, data: bytes, entry: PazEntry, companions: dict[str, bytes]) -> int:
         """Return record count. Uses _data_cache to avoid re-parsing on every call."""
-        return len(self._all_records(data, entry, companions))
+        return len(self.all_records(data, entry, companions))
 
     def render_data_page(
         self,
@@ -86,7 +96,7 @@ class PreviewHandler(ABC):
         page_size: int,
     ) -> str:
         """Render a parsed page from cached records. Override for true streaming/lazy parsing."""
-        return self.render_records_page(self._all_records(data, entry, companions), page, page_size)
+        return self.render_records_page(self.all_records(data, entry, companions), page, page_size)
 
     def sortable_fields(self) -> tuple[str, ...]:
         """Record fields the parsed table can be sorted by, in column order.
@@ -124,7 +134,7 @@ class PreviewHandler(ABC):
         views: dict[TableSort, list[dict]] = self._data_cache(data, "_sorted_records", dict)
         records = views.get(sort)
         if records is None:
-            all_records = self._all_records(data, entry, companions)
+            all_records = self.all_records(data, entry, companions)
             records = [all_records[index] for index in self.sorted_order(data, entry, companions, sort)]
             views[sort] = records
         return self.render_records_page(records, page, page_size)
@@ -153,7 +163,7 @@ class PreviewHandler(ABC):
         sort: TableSort,
     ) -> list[int]:
         """Compute the sort order from get_records(). Override to sort an index instead."""
-        return sort_order(self._all_records(data, entry, companions), sort.field, sort.descending)
+        return sort_order(self.all_records(data, entry, companions), sort.field, sort.descending)
 
     def search_records(
         self,
@@ -167,7 +177,7 @@ class PreviewHandler(ABC):
         Display-only fields (`_` keys, see record_fields.py) are skipped.
         """
         q = query.lower()
-        records = self._all_records(data, entry, companions)
+        records = self.all_records(data, entry, companions)
         return [i for i, rec in enumerate(records) if record_matches(rec, q)]
 
     @abstractmethod

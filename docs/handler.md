@@ -161,7 +161,7 @@ every file of that extension as handled, so register known formats by name.
 
 All parsed-view handlers must implement `get_records()` and `render_records_page()`.
 
-- `get_records()` parses the binary and returns all records as plain dicts (no HTML). The base class caches the result per data object using `_data_cache`, so paging, tab search, and CSV export all reuse the same parse without re-reading the file.
+- `get_records()` parses the binary and returns all records as plain dicts (no HTML). The base class caches the result per data object in `all_records()` (through `_data_cache`), so paging, sorting, tab search, CSV export and the CLI all reuse the same parse without re-reading the file. Call `all_records()`, not `get_records()`, from outside the handler.
 - `render_records_page()` converts one page of records into an HTML fragment.
 - `sortable_fields()` opts the table into sorting, and `default_sort()` picks the order it opens in, see [Sortable Columns](#sortable-columns).
 
@@ -641,8 +641,11 @@ and rebuilds automatically when a different file is selected. Each slot holds th
 it was built from until the next payload replaces it, so a freed payload's `id()` can
 never be mistaken for a new one. Use a descriptive name
 (`"index"`, `"offset_table"`) so slots do not collide if the handler caches more than one
-structure. `clear_data_cache()` drops every slot; the benchmark's `parse` stage calls it
-before each run so every run parses cold.
+structure. `build_fn` runs with the garbage collector paused (`gc_pause.py`): a cached
+value is a big structure that stays alive, and collections during its build only walk the
+loaded LOC and lookup indexes (`detail_dialog.dbss` parses 1.5x faster). `clear_data_cache()`
+drops every slot; the benchmark's `parse` stage calls it before each run so every run
+parses cold.
 
 ### When to Override `render_data_page`
 

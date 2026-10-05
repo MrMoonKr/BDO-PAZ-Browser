@@ -175,7 +175,7 @@ The workload is one entry (`--entry`, default
 | `decompress` | BDO decompression of the decrypted entry, from memory |
 | `read` | The app's path to open a file: disk read, decrypt, decompress |
 | `extract` | `extract_all` per file: `read`, then the size check and the write to disk. On an archive, every file in it. The meta file parse is left out: it reads the whole client on every call (over a minute) and would hide the decode time |
-| `parse` | The handler's `get_records()` on the decoded entry, with its companions, LOC in the language picked in the app and the lookup indexes loaded. Only for a file with a parsed view; LOC and the indexes add about 5 s to start-up, so they only load when this stage runs. Every run parses cold (the handler's cached index is dropped first) and runs with the garbage collector on, as in the app. The input hash covers the entry only, not its companions or LOC |
+| `parse` | The handler's `all_records()` (the cached `get_records()` the app's table uses) on the decoded entry, with its companions, LOC in the language picked in the app and the lookup indexes loaded. Only for a file with a parsed view; LOC and the indexes add about 5 s to start-up, so they only load when this stage runs. Every run parses cold (the handler's cached records and index are dropped first) and runs with the garbage collector on, as in the app, which pauses it while the records are built. The input hash covers the entry only, not its companions or LOC |
 
 To keep numbers comparable, each run:
 

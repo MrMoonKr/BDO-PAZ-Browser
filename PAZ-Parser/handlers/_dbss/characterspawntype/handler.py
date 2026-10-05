@@ -74,7 +74,7 @@ class CharacterSpawnTypeHandler(PreviewHandler):
             return super()._build_sort_order(data, entry, companions, sort)
 
         role = int(sort.field.removeprefix(_ROLE_FIELD_PREFIX))
-        records = self._all_records(data, entry, companions)
+        records = self.all_records(data, entry, companions)
         return sort_order_by_values([r["roles"][role] for r in records], sort.descending)
 
     def get_records(
