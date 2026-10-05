@@ -72,8 +72,12 @@ class CacheMixin(ApiState):
 
     # ── Records cache lifecycle ──────────────────────────────────────────────
 
-    def _open_records_cache(self) -> None:
-        """Install the records cache for the loaded folder, as the setting asks."""
+    def _open_records_cache(self, *, fill: bool = True) -> None:
+        """Install the records cache for the loaded folder, as the setting asks.
+
+        `fill=False` skips the background pass of the "all" mode for this
+        session; tables opened from then on are still cached.
+        """
         self._close_records_cache()
         mode = records_cache_setting(load_config())
         if mode == "off" or self._paz_root is None:
@@ -88,7 +92,7 @@ class CacheMixin(ApiState):
         store.prepare(parsed_handlers())
         self._records_store = store
         set_records_source(store)
-        if mode == "all":
+        if mode == "all" and fill:
             self._records_prefill = RecordsPrefill(
                 store,
                 self._prefill_targets,
@@ -96,7 +100,7 @@ class CacheMixin(ApiState):
                 self._opening_sort,
                 self._is_idle,
                 self._report_prefill,
-                self._report_prefill_done,
+                self._show_folder_status,
             )
             self._records_prefill.start()
 
@@ -166,7 +170,7 @@ class CacheMixin(ApiState):
             message = {"key": "status.cachingTables", "args": {**counts, "name": name}}
         self._push_status(message, (progress.done, progress.total))
 
-    def _report_prefill_done(self) -> None:
+    def _show_folder_status(self) -> None:
         """Put the folder's load message back once the pass no longer needs the line."""
         if self._folder_status is not None:
             self._push_status(dict(self._folder_status))
@@ -183,11 +187,14 @@ class CacheMixin(ApiState):
         """Delete the `cache_files()` of the loaded folder.
 
         What is loaded stays loaded. The thumbnail and records caches reopen
-        empty; the lookup indexes are rebuilt on the next launch.
+        empty; the lookup indexes are rebuilt on the next launch. The "all"
+        mode's background pass does not start again until the next launch,
+        so deleting is not undone straight away.
         """
         if self._paz_root is None:
             return {"ok": False, "error": ui_text("errors.noFolderLoaded")}
 
+        was_filling = self._records_prefill is not None
         self._close_records_cache()
         if self._thumbnail_cache is not None:
             self._thumbnail_cache.close()
@@ -207,7 +214,10 @@ class CacheMixin(ApiState):
 
         if self._meta_version is not None:
             self._thumbnail_cache = ThumbnailCache(self._paz_root, self._meta_version)
-        self._open_records_cache()
+        self._open_records_cache(fill=False)
+        if was_filling:
+            # The stopped pass leaves its last progress on the status line.
+            self._show_folder_status()
         if errors:
             return {"ok": False, "freed": freed, "error": "; ".join(errors)}
         return {"ok": True, "freed": freed}

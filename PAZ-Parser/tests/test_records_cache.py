@@ -535,6 +535,36 @@ def test_the_folder_status_returns_after_a_pass() -> None:
     api._folder_status = loaded
     api._push_status = lambda msg, progress=None: pushed.append(msg)  # type: ignore[method-assign]
 
-    api._report_prefill_done()
+    api._show_folder_status()
 
     assert pushed == [loaded]
+
+
+def test_deleting_the_caches_does_not_restart_the_background_pass(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import api.bdo_api_caches as caches
+    from api.bdo_api import Api
+
+    class _RunningPass:
+        def stop(self) -> None:
+            pass
+
+    monkeypatch.setattr(caches, "records_cache_setting", lambda cfg: "all")
+    api = Api()
+    api._paz_root = tmp_path
+    api._folder_status = {"key": "status.loadedFromCache", "args": {}}
+    api._records_prefill = _RunningPass()  # type: ignore[assignment]
+    pushed: list[dict] = []
+    api._push_status = lambda msg, progress=None: pushed.append(msg)  # type: ignore[method-assign]
+
+    try:
+        result = api.delete_caches()
+
+        assert result["ok"]
+        assert api._records_prefill is None
+        # Tables opened from now on are still cached.
+        assert api._records_store is not None
+        assert pushed == [api._folder_status]
+    finally:
+        api._close_records_cache()
