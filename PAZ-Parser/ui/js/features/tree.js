@@ -62,6 +62,8 @@ export const treeMethods = {
     const li = document.createElement("li");
     li.className = `tree-node tree-${item.type}`;
     li.dataset.id = item.id;
+    // A rebuilt tree (settings saved, folder expanded again) keeps the selection marked.
+    if (item.id === this._selectedPath) li.classList.add("selected");
 
     const label = document.createElement("span");
     label.className = "tree-label";

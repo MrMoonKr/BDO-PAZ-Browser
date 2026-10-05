@@ -2,10 +2,14 @@
 
 import { loadLang, applyTranslations, t } from "../core/i18n.js";
 
+// Tree id prefix of the files read from disk (`_DISK_VIRTUAL_PREFIX` in api/bdo_api_helpers.py).
+const DISK_PREFIX = "__disk__";
+
 export const settingsMethods = {
   _settingsEscHandler: null,
-  // The handled-only setting as the modal opened, to spot a change on save.
+  // The handled-only and language settings as the modal opened, to spot a change on save.
   _savedHandledOnly: false,
+  _savedLanguage: "en",
   // UI language code -> the LOC file this client lacks for it.
   _missingLoc: {},
 
@@ -21,6 +25,7 @@ export const settingsMethods = {
     document.getElementById("settings-records-cache").value = s.records_cache ?? "open";
     this._showCacheSize(s.cache_bytes ?? 0);
     this._savedHandledOnly = s.handled_only === true;
+    this._savedLanguage = s.language ?? "en";
     document.getElementById("settings-overlay").hidden = false;
 
     this._settingsEscHandler = (e) => {
@@ -77,16 +82,29 @@ export const settingsMethods = {
     await loadLang(language);
     applyTranslations();
     this.checkLocWarning();
+    const languageChanged = language !== this._savedLanguage;
     if (this._selectedPath) {
-      const node = document.querySelector(".tree-node.selected");
-      const name = node?.querySelector(".tree-name")?.textContent ?? "";
-      const icon = node?.querySelector(".tree-icon")?.textContent ?? "";
-      await this._selectFile(this._selectedPath, name, icon);
+      await this._reselectAfterSettings(languageChanged ? result.loc_file : undefined);
     }
     // After the reselect, which reads the selected node from the old tree.
-    if (handledOnly !== this._savedHandledOnly && this._isFolderLoaded) {
-      this._reloadTreeForFilter();
+    if ((handledOnly !== this._savedHandledOnly || languageChanged) && this._isFolderLoaded) {
+      this._reloadTree();
     }
+  },
+
+  // Open the selected file again, now in the new settings. After a language
+  // change, `locFile` names the new language's LOC file and a selected LOC
+  // file becomes that one; with none loaded, the preview says so.
+  async _reselectAfterSettings(locFile) {
+    const node = document.querySelector(".tree-node.selected");
+    let path = this._selectedPath;
+    let name = node?.querySelector(".tree-name")?.textContent ?? "";
+    const icon = node?.querySelector(".tree-icon")?.textContent ?? "";
+    if (locFile && path.startsWith(`${DISK_PREFIX}/`)) {
+      path = `${DISK_PREFIX}/${locFile}`;
+      name = locFile;
+    }
+    await this._selectFile(path, name, icon);
   },
 
   async deleteCaches() {
@@ -108,9 +126,10 @@ export const settingsMethods = {
     document.getElementById("settings-cache-size").textContent = t("settings.cacheSize", { size: this._fmtBytes(bytes) });
   },
 
-  // The filter changes what the tree, file search and global search show, so
-  // drop their results. A new PAZ folder reloads the tree itself once loaded.
-  _reloadTreeForFilter() {
+  // The filter changes what the tree, file search and global search show, and
+  // the language which LOC file sits at the root, so drop their results. A new
+  // PAZ folder reloads the tree itself once loaded.
+  _reloadTree() {
     if (this._inGlobalSearch) {
       this.cancelGlobalSearch();
       this._closeGlobalSearch();

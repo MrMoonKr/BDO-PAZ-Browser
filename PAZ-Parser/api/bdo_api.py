@@ -184,19 +184,32 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
             self._open_records_cache()
         elif language != old_cfg.get("language", "en"):
             self._refresh_records_cache()
-        return {"ok": True, "table_row_height": row_height}
+        return {"ok": True, "table_row_height": row_height, "loc_file": self._loc_file_name()}
+
+    def _loc_file_name(self) -> str | None:
+        """The LOC file the tree root shows, or None when none is loaded."""
+        return next(iter(self._disk_companions), None)
 
     def _reload_loc(self, language: str) -> None:
         set_handler_lang(language)
+        self._load_loc(language)
+
+    def _load_loc(self, language: str) -> None:
+        """Install the LOC text of `language` and show its file at the tree root.
+
+        Without the file, or for Korean, no LOC is installed and the tables
+        show their own text; the tree root then shows no LOC file either.
+        """
         path = loc_path(self._paz_root, language) if self._paz_root else None
-        if path is None or not path.exists():
-            self._install_loc(None)
-            return
-        try:
-            self._install_loc(path.read_bytes())
-        except Exception:
-            # Not fatal: the LOC text installed before stays.
-            logging.warning("Could not load LOC file %s", path, exc_info=True)
+        raw: bytes | None = None
+        if path is not None and path.exists():
+            try:
+                raw = path.read_bytes()
+            except OSError:
+                # Not fatal: tables fall back to their own text.
+                logging.warning("Could not load LOC file %s", path, exc_info=True)
+        self._disk_companions = {} if path is None or raw is None else {path.name: raw}
+        self._install_loc(raw)
 
     def _load_entries(self) -> None:
         assert self._paz_root is not None
@@ -257,7 +270,7 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
         self._handled_view = None
         self._disk_companions = {}
         if load_loc:
-            self._load_disk_companions()
+            self._load_loc(load_config().get("language", "en"))
         if load_indexes:
             self._load_lookup_indexes(current_version)
         self._folder_status = msg
@@ -342,23 +355,6 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
             if kind is not None:
                 init_index(kind, mapping)
         self._data_digests.set_indexes(loaded.digests)
-
-    def _load_disk_companions(self) -> None:
-        if not self._paz_root:
-            return
-        language = load_config().get("language", "en")
-        path = loc_path(self._paz_root, language)
-        if path is None or not path.exists():
-            # No LOC text from the folder loaded before: tables show their own.
-            self._install_loc(None)
-            return
-        try:
-            raw = path.read_bytes()
-            self._disk_companions[path.name] = raw
-            self._install_loc(raw)
-        except Exception:
-            # Not fatal: tables fall back to their inline text.
-            logging.warning("Could not load LOC file %s", path, exc_info=True)
 
     def _load_companion_sync(self, internal_path: str) -> bytes | None:
         entry = self._entry_map.get(_norm(internal_path))

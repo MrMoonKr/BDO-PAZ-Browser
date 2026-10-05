@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+import api.bdo_api_caches as caches
 import api.bdo_config as bdo_config
 import ui_text
 from api.bdo_api import Api
@@ -29,6 +30,14 @@ def paz_root(tmp_path: Path) -> Path:
     (tmp_path / LOC_FOLDER).mkdir()
     (tmp_path / LOC_FOLDER / "languagedata_en.loc").write_bytes(b"")
     return root
+
+
+@pytest.fixture
+def installed_loc(monkeypatch: pytest.MonkeyPatch) -> list[bytes | None]:
+    """The LOC text each `_install_loc` call installs, without parsing it."""
+    installed: list[bytes | None] = []
+    monkeypatch.setattr(caches, "init_loc", installed.append)
+    return installed
 
 
 def _api(paz_root: Path, config_file: Path, language: str) -> Api:
@@ -110,3 +119,26 @@ def test_the_settings_list_only_ui_languages(paz_root: Path, config_file: Path) 
     listed = {language["code"] for language in _api(paz_root, config_file, "en").get_settings()["languages"]}
 
     assert listed == {language.code for language in UI_LANGUAGES}
+
+
+def test_a_language_switch_shows_the_new_loc_file(paz_root: Path, installed_loc: list[bytes | None]) -> None:
+    (paz_root.parent / LOC_FOLDER / "languagedata_ru.loc").write_bytes(b"russian")
+    api = Api()
+    api._paz_root = paz_root
+    api._load_loc("en")
+
+    api._load_loc("ru")
+
+    assert list(api._disk_companions) == ["languagedata_ru.loc"]
+    assert installed_loc[-1] == b"russian"
+
+
+def test_a_language_without_a_loc_file_shows_none(paz_root: Path, installed_loc: list[bytes | None]) -> None:
+    api = Api()
+    api._paz_root = paz_root
+    api._load_loc("en")
+
+    api._load_loc("kr")
+
+    assert api._loc_file_name() is None
+    assert installed_loc[-1] is None
