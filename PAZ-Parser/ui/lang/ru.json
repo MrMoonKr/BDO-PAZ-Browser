@@ -119,8 +119,8 @@
     "copiedRow": "Выбранная строка скопирована.",
     "searchError": "Ошибка поиска: {message}",
     "pageError": "Не удалось загрузить страницу: {message}",
-    "cachingTables": "Кэширование таблиц… {done}/{total}",
-    "cachedTables": "Закэшировано таблиц: {count}",
+    "cachingTables": "Кэширование таблиц {done}/{total}: {name}",
+    "cachingTablesPaused": "Кэширование таблиц приостановлено, пока приложение занято ({done}/{total})",
     "openFolder": "Откройте папку PAZ, чтобы начать.",
     "exportFailed": "Не удалось экспортировать: {message}"
   },

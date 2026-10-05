@@ -239,6 +239,7 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
             self._load_disk_companions()
         if load_indexes:
             self._load_lookup_indexes(current_version)
+        self._folder_status = msg
         if cache_records:
             self._open_records_cache()
         return msg

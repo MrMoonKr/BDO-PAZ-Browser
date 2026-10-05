@@ -119,8 +119,8 @@
     "copiedRow": "Fila seleccionada copiada.",
     "searchError": "Error de búsqueda: {message}",
     "pageError": "No se pudo cargar la página: {message}",
-    "cachingTables": "Guardando tablas en caché… {done}/{total}",
-    "cachedTables": "{count} tablas guardadas en caché",
+    "cachingTables": "Guardando tablas en caché {done}/{total}: {name}",
+    "cachingTablesPaused": "Caché de tablas en pausa mientras la aplicación está ocupada ({done}/{total})",
     "openFolder": "Abre una carpeta PAZ para empezar.",
     "exportFailed": "Error al exportar: {message}"
   },

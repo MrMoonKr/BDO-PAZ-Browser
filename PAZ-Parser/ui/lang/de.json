@@ -119,8 +119,8 @@
     "copiedRow": "Ausgewählte Zeile kopiert.",
     "searchError": "Suchfehler: {message}",
     "pageError": "Seite konnte nicht geladen werden: {message}",
-    "cachingTables": "Tabellen werden gespeichert… {done}/{total}",
-    "cachedTables": "{count} Tabellen gespeichert",
+    "cachingTables": "Tabellen werden gespeichert {done}/{total}: {name}",
+    "cachingTablesPaused": "Speichern der Tabellen pausiert, solange die App beschäftigt ist ({done}/{total})",
     "openFolder": "Öffne einen PAZ-Ordner, um zu beginnen.",
     "exportFailed": "Export fehlgeschlagen: {message}"
   },

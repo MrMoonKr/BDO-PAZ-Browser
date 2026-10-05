@@ -27,7 +27,7 @@ from ui_text import ui_text
 
 from .bdo_api_state import ApiState
 from .bdo_config import load_config, peek_table_sort, records_cache_setting, table_sort_file_key
-from .bdo_records_prefill import RecordsPrefill, Target
+from .bdo_records_prefill import PrefillProgress, RecordsPrefill, Target
 from .bdo_records_store import RecordStore, paz_entry_identity
 from .bdo_tree import handled_entries
 
@@ -157,11 +157,19 @@ class CacheMixin(ApiState):
         saved = peek_table_sort(table_sort_file_key(entry.internal_path), handler.sortable_fields())
         return saved or handler.default_sort()
 
-    def _report_prefill(self, done: int, total: int) -> None:
-        self._push_status({"key": "status.cachingTables", "args": {"done": done, "total": total}}, (done, total))
+    def _report_prefill(self, progress: PrefillProgress) -> None:
+        counts = {"done": f"{progress.done:,}", "total": f"{progress.total:,}"}
+        if progress.paused:
+            message = {"key": "status.cachingTablesPaused", "args": counts}
+        else:
+            name = progress.path.replace("\\", "/").rsplit("/", 1)[-1]
+            message = {"key": "status.cachingTables", "args": {**counts, "name": name}}
+        self._push_status(message, (progress.done, progress.total))
 
-    def _report_prefill_done(self, built: int) -> None:
-        self._push_status({"key": "status.cachedTables", "args": {"count": f"{built:,}"}})
+    def _report_prefill_done(self) -> None:
+        """Put the folder's load message back once the pass no longer needs the line."""
+        if self._folder_status is not None:
+            self._push_status(dict(self._folder_status))
 
     # ── Settings ─────────────────────────────────────────────────────────────
 

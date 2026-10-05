@@ -119,8 +119,8 @@
     "copiedRow": "Ligne sélectionnée copiée.",
     "searchError": "Erreur de recherche : {message}",
     "pageError": "Impossible de charger la page : {message}",
-    "cachingTables": "Mise en cache des tables… {done}/{total}",
-    "cachedTables": "{count} tables mises en cache",
+    "cachingTables": "Mise en cache des tables {done}/{total} : {name}",
+    "cachingTablesPaused": "Mise en cache des tables en pause pendant que l'application est occupée ({done}/{total})",
     "openFolder": "Ouvrez un dossier PAZ pour commencer.",
     "exportFailed": "Échec de l'export : {message}"
   },

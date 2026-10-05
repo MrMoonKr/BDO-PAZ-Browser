@@ -58,6 +58,8 @@ class ApiState:
         self._cached_sort: TableSort | None = None
         self._global_search_cancel: threading.Event = threading.Event()
         self._meta_version: int | None = None
+        # The status `load_folder()` returned, shown again after the cache pass.
+        self._folder_status: dict | None = None
         # Archive file name -> (CRC, size) from the meta file, for cache keys.
         self._archive_ids: dict[str, tuple[int, int]] = {}
         self._data_digests = DataDigests()

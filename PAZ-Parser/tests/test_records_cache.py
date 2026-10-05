@@ -12,7 +12,7 @@ import pytest
 from _common.data_deps import LOC, index_dep, recording
 from _common.loc import loc_text
 from _common.lookup_index import IndexKind, lookup
-from api.bdo_records_prefill import RecordsPrefill
+from api.bdo_records_prefill import PrefillProgress, RecordsPrefill
 from api.bdo_records_store import ABSENT, DataDigests, RecordStore, paz_entry_identity
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler, set_records_source
@@ -426,15 +426,14 @@ def test_release_data_keeps_slots_of_other_payloads() -> None:
 def test_prefill_builds_only_tables_without_a_current_row(store: RecordStore) -> None:
     cached, missing = _Handler(), _Handler()
     _records_through(store, cached)
-    finished: list[int] = []
     prefill = RecordsPrefill(
         store,
         targets=lambda: [(cached, _TABLE), (missing, _COMPANION)],
         load=lambda handler, entry: (b"payload", {}),
         opening_sort=lambda handler, entry: _BY_ID_DESC,
         is_idle=lambda: True,
-        report=lambda done, total: None,
-        finished=finished.append,
+        report=lambda progress: None,
+        finished=lambda: None,
     )
 
     prefill._run(prefill._stop)
@@ -443,7 +442,6 @@ def test_prefill_builds_only_tables_without_a_current_row(store: RecordStore) ->
     assert store.is_current(missing, _COMPANION, _BY_ID_DESC)
     # The cached table only lacked its opening order, so it is counted too.
     assert store.is_current(cached, _TABLE, _BY_ID_DESC)
-    assert finished == [2]
 
 
 def test_prefill_skips_the_order_of_an_index_sort(store: RecordStore) -> None:
@@ -454,8 +452,8 @@ def test_prefill_skips_the_order_of_an_index_sort(store: RecordStore) -> None:
         load=lambda handler, entry: (b"payload", {}),
         opening_sort=lambda handler, entry: _BY_ID_ASC,
         is_idle=lambda: True,
-        report=lambda done, total: None,
-        finished=lambda built: None,
+        report=lambda progress: None,
+        finished=lambda: None,
     )
 
     prefill._run(prefill._stop)
@@ -472,11 +470,71 @@ def test_prefill_stops_while_waiting_for_idle(store: RecordStore) -> None:
         load=lambda handler, entry: (b"payload", {}),
         opening_sort=lambda handler, entry: None,
         is_idle=lambda: False,
-        report=lambda done, total: None,
-        finished=lambda built: None,
+        report=lambda progress: None,
+        finished=lambda: None,
     )
     prefill.stop()
 
     prefill._run(prefill._stop)
 
     assert handler.builds == 0
+
+
+def test_prefill_reports_the_end_of_a_pass_with_nothing_to_build(store: RecordStore) -> None:
+    handler = _Handler()
+    finished: list[bool] = []
+    prefill = RecordsPrefill(
+        store,
+        targets=lambda: [],
+        load=lambda handler, entry: (b"payload", {}),
+        opening_sort=lambda handler, entry: None,
+        is_idle=lambda: True,
+        report=lambda progress: None,
+        finished=lambda: finished.append(True),
+    )
+
+    prefill._run(prefill._stop)
+
+    assert finished == [True]
+    assert handler.builds == 0
+
+
+def test_prefill_shows_the_table_it_works_on_and_when_it_waits(store: RecordStore) -> None:
+    seen: list[PrefillProgress | None] = []
+    busy = iter([False, True])
+    prefill = RecordsPrefill(
+        store,
+        targets=lambda: [(_Handler(), _TABLE)],
+        load=lambda handler, entry: (b"payload", {}),
+        opening_sort=lambda handler, entry: None,
+        is_idle=lambda: next(busy, True),
+        report=lambda progress: None,
+        finished=lambda: None,
+    )
+    original_build = prefill._build
+
+    def build(handler: PreviewHandler, entry: PazEntry, sort: TableSort | None) -> None:
+        seen.append(prefill._progress)
+        original_build(handler, entry, sort)
+
+    prefill._build = build  # type: ignore[method-assign]
+    prefill._wait_until_idle(prefill._stop, 0, 1)
+    paused = prefill._progress
+    prefill._fill([(_Handler(), _TABLE)], prefill._stop)
+
+    assert paused == PrefillProgress(0, 1, "", paused=True)
+    assert seen == [PrefillProgress(0, 1, _TABLE.internal_path)]
+
+
+def test_the_folder_status_returns_after_a_pass() -> None:
+    from api.bdo_api import Api
+
+    api = Api()
+    loaded = {"key": "status.loadedFromCache", "args": {"count": "3", "version": 1}}
+    pushed: list[dict] = []
+    api._folder_status = loaded
+    api._push_status = lambda msg, progress=None: pushed.append(msg)  # type: ignore[method-assign]
+
+    api._report_prefill_done()
+
+    assert pushed == [loaded]

@@ -10,8 +10,8 @@ from __future__ import annotations
 
 import logging
 import threading
-import time
 from collections.abc import Callable, Sequence
+from dataclasses import dataclass
 
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
@@ -22,8 +22,21 @@ from .bdo_records_store import RecordStore
 
 # How often a paused fill checks whether the app is idle again.
 _IDLE_POLL_S = 0.5
-# Least time between two progress reports.
-_REPORT_INTERVAL_S = 0.5
+# How often the status line shows the latest progress.
+_REPORT_INTERVAL_S = 0.25
+
+
+
+@dataclass(frozen=True)
+class PrefillProgress:
+    """Where a pass is: `done` of `total` tables checked or parsed."""
+
+    done: int
+    total: int
+    # The table being checked or parsed; empty while paused.
+    path: str
+    paused: bool = False
+
 
 Target = tuple[PreviewHandler, PazEntry]
 LoadTable = Callable[[PreviewHandler, PazEntry], tuple[bytes, dict[str, bytes]]]
@@ -41,8 +54,8 @@ class RecordsPrefill:
         load: LoadTable,
         opening_sort: OpeningSort,
         is_idle: Callable[[], bool],
-        report: Callable[[int, int], None],
-        finished: Callable[[int], None],
+        report: Callable[[PrefillProgress], None],
+        finished: Callable[[], None],
     ) -> None:
         self._store = store
         self._targets = targets
@@ -52,6 +65,8 @@ class RecordsPrefill:
         self._report = report
         self._finished = finished
         self._stop = threading.Event()
+        # Set by the fill, read by the status ticker; replaced, never mutated.
+        self._progress: PrefillProgress | None = None
 
     def start(self) -> None:
         """Stop a running pass and begin a new one from the first table."""
@@ -64,31 +79,40 @@ class RecordsPrefill:
         self._stop.set()
 
     def _run(self, stop: threading.Event) -> None:
+        self._progress = None
+        done = threading.Event()
+        ticker = threading.Thread(target=self._tick, args=(done,), name="records-prefill-status", daemon=True)
+        ticker.start()
         try:
             targets = sorted(self._targets(), key=lambda target: target[1].internal_path.lower())
-            built = self._fill(targets, stop)
+            self._fill(targets, stop)
         except Exception:
             logging.warning("The background records cache fill stopped", exc_info=True)
-            return
-        if built and not stop.is_set():
-            self._finished(built)
+        finally:
+            done.set()
+            ticker.join()
+        # A stopped pass was replaced: a new pass or folder owns the status line.
+        if not stop.is_set():
+            self._finished()
 
-    def _fill(self, targets: Sequence[Target], stop: threading.Event) -> int:
-        built = 0
-        last_report = 0.0
-        for done, (handler, entry) in enumerate(targets, start=1):
-            if not self._wait_until_idle(stop):
-                return built
+    def _tick(self, done: threading.Event) -> None:
+        """Report the latest progress while it changes, until the pass ends."""
+        reported: PrefillProgress | None = None
+        while not done.wait(_REPORT_INTERVAL_S):
+            progress = self._progress
+            if progress is not None and progress != reported:
+                self._report(progress)
+                reported = progress
+
+    def _fill(self, targets: Sequence[Target], stop: threading.Event) -> None:
+        total = len(targets)
+        for index, (handler, entry) in enumerate(targets):
+            if not self._wait_until_idle(stop, index, total):
+                return
+            self._progress = PrefillProgress(index, total, entry.internal_path)
             sort = self._opening_sort(handler, entry)
-            if self._store.is_current(handler, entry, sort):
-                continue
-            self._build(handler, entry, sort)
-            built += 1
-            now = time.monotonic()
-            if now - last_report >= _REPORT_INTERVAL_S:
-                self._report(done, len(targets))
-                last_report = now
-        return built
+            if not self._store.is_current(handler, entry, sort):
+                self._build(handler, entry, sort)
 
     def _build(self, handler: PreviewHandler, entry: PazEntry, sort: TableSort | None) -> None:
         """Parse one table into the cache, with its opening sort. A table that fails is logged and skipped."""
@@ -106,8 +130,9 @@ class RecordsPrefill:
             # A handler that builds an index in get_records keeps it per payload.
             handler.release_data(data)
 
-    def _wait_until_idle(self, stop: threading.Event) -> bool:
+    def _wait_until_idle(self, stop: threading.Event, done: int, total: int) -> bool:
         """Block while the app is busy; False once the pass should stop."""
         while not stop.is_set() and not self._is_idle():
+            self._progress = PrefillProgress(done, total, "", paused=True)
             stop.wait(_IDLE_POLL_S)
         return not stop.is_set()
