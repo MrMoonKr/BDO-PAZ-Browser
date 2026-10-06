@@ -158,6 +158,7 @@
     "cachesDeleteFailed": "Nicht alle Caches konnten gelöscht werden: {message}",
     "cancel": "Abbrechen",
     "save": "Speichern",
+    "saving": "Wird gespeichert…",
     "browse": "Durchsuchen",
     "pixels": "px",
     "close": "Schließen"

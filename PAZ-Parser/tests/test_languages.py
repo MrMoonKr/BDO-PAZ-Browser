@@ -142,3 +142,26 @@ def test_a_language_without_a_loc_file_shows_none(paz_root: Path, installed_loc:
 
     assert api._loc_file_name() is None
     assert installed_loc[-1] is None
+
+
+# ── Saving the settings ──────────────────────────────────────────────────────
+
+def test_saving_the_same_language_keeps_the_loc_text(
+    paz_root: Path, config_file: Path, installed_loc: list[bytes | None]
+) -> None:
+    api = _api(paz_root, config_file, "en")
+
+    assert api.save_settings("", "en")["ok"] is True
+
+    assert installed_loc == []
+
+
+def test_saving_a_new_language_installs_its_loc_text(
+    paz_root: Path, config_file: Path, installed_loc: list[bytes | None]
+) -> None:
+    api = _api(paz_root, config_file, "en")
+
+    assert api.save_settings("", "de")["ok"] is True
+
+    assert len(installed_loc) == 1
+    assert json.loads(config_file.read_text())["language"] == "de"

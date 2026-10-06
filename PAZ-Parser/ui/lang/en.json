@@ -158,6 +158,7 @@
     "cachesDeleteFailed": "Not every cache could be deleted: {message}",
     "cancel": "Cancel",
     "save": "Save",
+    "saving": "Saving…",
     "browse": "Browse",
     "pixels": "px",
     "close": "Close"

@@ -158,6 +158,7 @@
     "cachesDeleteFailed": "Certains caches n'ont pas pu être supprimés : {message}",
     "cancel": "Annuler",
     "save": "Enregistrer",
+    "saving": "Enregistrement…",
     "browse": "Parcourir",
     "pixels": "px",
     "close": "Fermer"

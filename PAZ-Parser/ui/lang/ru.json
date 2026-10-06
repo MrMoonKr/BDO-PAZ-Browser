@@ -158,6 +158,7 @@
     "cachesDeleteFailed": "Не все кэши удалось удалить: {message}",
     "cancel": "Отмена",
     "save": "Сохранить",
+    "saving": "Сохранение…",
     "browse": "Обзор",
     "pixels": "пкс",
     "close": "Закрыть"

@@ -146,6 +146,20 @@
   color: #000;
 }
 
+/* Save in flight: a spinner before the label, dark on the accent colour. */
+.btn-busy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-busy:disabled {
+  cursor: progress;
+}
+.btn-primary .loading-spinner {
+  border-color: rgba(0, 0, 0, 0.25);
+  border-top-color: #000;
+}
+
 #btn-settings {
   margin-left: auto;
   font-size: 14px;

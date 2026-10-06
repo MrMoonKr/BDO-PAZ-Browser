@@ -177,13 +177,20 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
         })
         set_show_pa_tags(show_pa_tags is True)
         self._handled_only = handled_only is True
-        self._reload_loc(language)
-        if paz_path != old_cfg.get("last_folder", "") and Path(paz_path).is_dir():
+        is_new_folder = paz_path != old_cfg.get("last_folder", "") and Path(paz_path).is_dir()
+        is_new_language = language != old_cfg.get("language", "en")
+        # Building the LOC index takes seconds, so only a new language on the
+        # same folder rebuilds it here; a new folder loads its own LOC.
+        if is_new_language and not is_new_folder:
+            self._reload_loc(language)
+        else:
+            set_handler_lang(language)
+        if is_new_folder:
             self._paz_root = Path(paz_path)
             threading.Thread(target=self._load_entries, daemon=True).start()
         elif records_cache != records_cache_setting(old_cfg):
             self._open_records_cache()
-        elif language != old_cfg.get("language", "en"):
+        elif is_new_language:
             self._refresh_records_cache()
         return {"ok": True, "table_row_height": row_height, "loc_file": self._loc_file_name()}
 

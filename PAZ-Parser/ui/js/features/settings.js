@@ -12,6 +12,8 @@ export const settingsMethods = {
   _savedLanguage: "en",
   // UI language code -> the LOC file this client lacks for it.
   _missingLoc: {},
+  // True while save_settings() runs; the modal stays open and cannot close.
+  _isSavingSettings: false,
 
   async openSettings() {
     const s = await window.pywebview.api.get_settings();
@@ -52,6 +54,7 @@ export const settingsMethods = {
   },
 
   closeSettings() {
+    if (this._isSavingSettings) return;
     document.getElementById("settings-overlay").hidden = true;
     if (this._settingsEscHandler) {
       document.removeEventListener("keydown", this._settingsEscHandler);
@@ -73,9 +76,17 @@ export const settingsMethods = {
     const showPaTags = document.getElementById("settings-show-pa-tags").checked;
     const handledOnly = document.getElementById("settings-handled-only").checked;
     const recordsCache = document.getElementById("settings-records-cache").value;
-    const result = await window.pywebview.api.save_settings(
-      pazPath, language, tableRowHeight, showPaTags, handledOnly, recordsCache,
-    );
+    if (this._isSavingSettings) return;
+    // A new language rebuilds the game text index, which takes a few seconds.
+    this._showSettingsSaving(true);
+    let result;
+    try {
+      result = await window.pywebview.api.save_settings(
+        pazPath, language, tableRowHeight, showPaTags, handledOnly, recordsCache,
+      );
+    } finally {
+      this._showSettingsSaving(false);
+    }
     if (!result?.ok) return;
     this._applyTableRowHeight(result.table_row_height ?? tableRowHeight);
     this.closeSettings();
@@ -89,6 +100,22 @@ export const settingsMethods = {
     // After the reselect, which reads the selected node from the old tree.
     if ((handledOnly !== this._savedHandledOnly || languageChanged) && this._isFolderLoaded) {
       this._reloadTree();
+    }
+  },
+
+  // Save shows a spinner, and the buttons that would close the modal wait for it.
+  _showSettingsSaving(isSaving) {
+    this._isSavingSettings = isSaving;
+    const save = document.getElementById("settings-save");
+    save.classList.toggle("btn-busy", isSaving);
+    save.setAttribute("aria-busy", String(isSaving));
+    if (isSaving) {
+      save.innerHTML = `<span class="loading-spinner" aria-hidden="true"></span><span>${t("settings.saving")}</span>`;
+    } else {
+      save.textContent = t("settings.save");
+    }
+    for (const button of document.querySelectorAll("#settings-overlay .settings-footer button, #settings-overlay .settings-close")) {
+      button.disabled = isSaving;
     }
   },
 

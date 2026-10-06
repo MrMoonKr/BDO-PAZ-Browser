@@ -158,6 +158,7 @@
     "cachesDeleteFailed": "No se pudieron borrar todas las cachés: {message}",
     "cancel": "Cancelar",
     "save": "Guardar",
+    "saving": "Guardando…",
     "browse": "Examinar",
     "pixels": "px",
     "close": "Cerrar"
