@@ -1,7 +1,15 @@
 from dataclasses import dataclass
+from typing import NamedTuple
 
-@dataclass(frozen=True)
-class PazEntry:
+
+class PazEntry(NamedTuple):
+    """One file stored in a PAZ archive.
+
+    A NamedTuple, not a dataclass: a client holds about 870,000 of them, and
+    a tuple has no per-instance `__dict__` (about 85 MB less) and can be
+    built in C when the index cache loads (`paz/bdo_cache.py`).
+    """
+
     archive_name: str
     internal_path: str
     offset: int
