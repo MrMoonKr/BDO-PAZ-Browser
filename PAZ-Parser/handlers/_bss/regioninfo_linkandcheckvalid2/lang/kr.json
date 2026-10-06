@@ -1,0 +1,11 @@
+{
+  "columns": {
+    "regionKey": "지역 키",
+    "regionName": "지역",
+    "linkCount": "연결",
+    "linkedRegions": "연결 지역"
+  },
+  "meta": {
+    "count": "지역 {count}개"
+  }
+}

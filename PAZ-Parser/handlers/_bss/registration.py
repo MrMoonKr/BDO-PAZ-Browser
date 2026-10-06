@@ -29,6 +29,7 @@ from .questjournalvideoinfo.handler import QuestJournalVideoInfoBssHandler
 from .questlist.handler import EVENT_PERIOD_LISTS, QUEST_LIST_LOC_TYPES, QuestListBssHandler
 from .regiongroupinfo.handler import RegionGroupInfoBssHandler
 from .regioninfo.handler import RegionInfoBssHandler
+from .regioninfo_linkandcheckvalid2.handler import RegionLinkBssHandler
 from .skillgroup.handler import SkillGroupBssHandler
 from .specialenchantitem.handler import SpecialEnchantItemBssHandler
 from .stringtable.handler import StringTableBssHandler
@@ -79,6 +80,7 @@ def register_bss_handlers() -> None:
         register_handler(name, QuestListBssHandler(loc_type, has_event_period=name in EVENT_PERIOD_LISTS))
     register_handler("regiongroupinfo.bss", RegionGroupInfoBssHandler())
     register_handler("regioninfo.bss", RegionInfoBssHandler())
+    register_handler("regioninfo_linkandcheckvalid2.bss", RegionLinkBssHandler())
     register_handler("skillgroup.bss", SkillGroupBssHandler())
     register_handler("specialenchantitem.bss", SpecialEnchantItemBssHandler())
     register_handler("stringtable.bss", StringTableBssHandler())

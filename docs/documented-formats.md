@@ -9,6 +9,7 @@ All formats are little-endian. Unknown fields are named `unknown_*`.
 | `allquestlist.bss`                 | PABR list of canonical/display packed quest IDs linked to quest LOC keys                                       | [allquestlist](file-formats/allquestlist_bss.md)                    | 0              |
 | `base_dialog.dbss` | Base record of every NPC dialog: Korean display name and the speech bubble lines shown over the NPC, keyed like `detail_dialog.dbss` | [base_dialog](file-formats/base_dialog_dbss.md) | 0 |
 | `base_dialogoffset.dbss` | PABR index into `base_dialog.dbss`, same layout and keys as `detail_dialogoffset.dbss` | [base_dialog](file-formats/base_dialog_dbss.md) | 0 |
+| `blizzardregioninfo.bss` | PABR snow regions of the Mountain of Eternal Winter and Ulukita: a key, the `regioninfo.bss` region and three unconfirmed values | [blizzardregioninfo](file-formats/blizzardregioninfo_bss.md) | 3 |
 | `buff.dbss` | Master buff table, internal Korean names, level, effect type, ten parameters, duration, icon and description | [buff](file-formats/buff_dbss.md) | 4 |
 | `buffoffset.dbss` | PABR index into `buff.dbss`, maps buff_id → offset/size | [buff](file-formats/buff_dbss.md) | 4 |
 | `buffsimply.bss` | PABR compact buff table, 30-byte rows with buff ID, icon path and `unknown_str` string indices, `is_shown` and flags | [buffsimply](file-formats/buffsimply_bss.md) | 1 |
@@ -31,6 +32,7 @@ All formats are little-endian. Unknown fields are named `unknown_*`.
 | `dropuimaincategoryinfo.bss` | Drop item window region tabs: tab key → territory (LOC type 12) and tab icon | [dropuihuntinggroundinfo](file-formats/dropuihuntinggroundinfo_bss.md) | 0 |
 | `dropuisubcategoryinfo.bss` | Drop item window filter categories (party, Elvia, Marni's Realm, Dehkia, ...): Korean name and button icon | [dropuihuntinggroundinfo](file-formats/dropuihuntinggroundinfo_bss.md) | 0 |
 | `dropuitaginfo.bss` | Drop item window tags: Korean name and tooltip, Dehkia's Lantern guide image, tag background and text colours | [dropuihuntinggroundinfo](file-formats/dropuihuntinggroundinfo_bss.md) | 0 |
+| `edaniaregioninfo.bss` | PABR Edania regions: the `__eEdaniaRegion` value (castle domain) and a 3-byte value equal to the `unknown_02` of the castle's `regioninfo.bss` region | [edaniaregioninfo](file-formats/edaniaregioninfo_bss.md) | 1 |
 | `employeeexp.bss` | Sailor levelling table: EXP to the next level and per-ability level-up growth dice for each sailor and level | [employeeexp](file-formats/employeeexp_bss.md) | 1 |
 | `employeename.dbss`                | Employee name table with inline Korean source names and LOC-backed English display names                       | [employeename](file-formats/employeename_dbss.md)                   | 1              |
 | `employeenameoffset.dbss`          | Offset index into `employeename.dbss`, maps employee name ID → offset/size                                    | [employeename](file-formats/employeename_dbss.md)                   | 1              |
@@ -105,7 +107,8 @@ All formats are little-endian. Unknown fields are named `unknown_*`.
 | `questjournalvideoinfo.bss` | PABR list of the Morning Light journal video pages: quest ID, Bink video name and full-size artwork path | [questjournalvideoinfo](file-formats/questjournalvideoinfo_bss.md) | 1 |
 | `recommendationquest.bss` | PABR recommended-quest groups with quest references, condition scripts and a Korean string table; English text in LOC type 28; `newquest.bss` layout | [recommendationquest](file-formats/recommendationquest_bss.md) | 2 |
 | `regiongroupinfo.bss` | PABR region groups that `regioninfo.bss` regions join: group key, the worldmap node of its main town and a world position | [regiongroupinfo](file-formats/regiongroupinfo_bss.md) | 5 |
-| `regioninfo.bss` | PABR world region table (LOC type 17 names): region type, node war day, territory and capital, region group, node and Guild Wharf Manager | [regioninfo](file-formats/regioninfo_bss.md) | 4 |
+| `regioninfo.bss` | PABR world region table (LOC type 17 names): region type, node war day, territory and capital, region group, node and Guild Wharf Manager | [regioninfo](file-formats/regioninfo_bss.md) | 10 |
+| `regioninfo_linkandcheckvalid2.bss` | PABR region link lists: per region the town regions it links to, a copy of `regioninfo.bss` `unknown_d2_keys` | [regioninfo_linkandcheckvalid2](file-formats/regioninfo_linkandcheckvalid2_bss.md) | 2 |
 | `repetitionquest.bss` | PABR repeatable (daily, weekly, contribution) quest groups with quest references, condition scripts and a Korean string table; English text in LOC type 42; `newquest.bss` layout | [repetitionquest](file-formats/repetitionquest_bss.md) | 1 |
 | `skill.dbss` | Rule record of every skill rank: cooldown, applied buff IDs, effect script, next ranks and Core base skill | [skill](file-formats/skill_dbss.md) | 2 |
 | `skillgroup.bss` | Skill window groups, each listing the skill keys of its ranks in order | [skillgroup](file-formats/skillgroup_bss.md) | 0 |

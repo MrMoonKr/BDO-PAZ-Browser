@@ -1,0 +1,11 @@
+{
+  "columns": {
+    "regionKey": "Clé de région",
+    "regionName": "Région",
+    "linkCount": "Liaisons",
+    "linkedRegions": "Régions liées"
+  },
+  "meta": {
+    "count": "{count} régions"
+  }
+}

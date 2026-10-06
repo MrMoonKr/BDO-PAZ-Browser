@@ -1,0 +1,11 @@
+{
+  "columns": {
+    "regionKey": "Ключ региона",
+    "regionName": "Регион",
+    "linkCount": "Связи",
+    "linkedRegions": "Связанные регионы"
+  },
+  "meta": {
+    "count": "Регионов: {count}"
+  }
+}
