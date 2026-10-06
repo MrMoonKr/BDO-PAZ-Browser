@@ -1,0 +1,17 @@
+{
+  "offsetColumns": {
+    "characterId": "Charakter-ID",
+    "byteOffset": "Byte-Offset",
+    "size": "Größe"
+  },
+  "columns": {
+    "characterId": "Charakter-ID",
+    "name": "Name",
+    "functions": "Funktionen",
+    "managedNodes": "Verwaltete Posten",
+    "town": "Stadt"
+  },
+  "meta": {
+    "count": "{count} Einträge"
+  }
+}

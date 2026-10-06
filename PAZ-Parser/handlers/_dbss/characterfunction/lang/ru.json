@@ -1,0 +1,17 @@
+{
+  "offsetColumns": {
+    "characterId": "ID персонажа",
+    "byteOffset": "Смещение (байт)",
+    "size": "Размер"
+  },
+  "columns": {
+    "characterId": "ID персонажа",
+    "name": "Название",
+    "functions": "Функции",
+    "managedNodes": "Управляемые узлы",
+    "town": "Поселение"
+  },
+  "meta": {
+    "count": "Записей: {count}"
+  }
+}

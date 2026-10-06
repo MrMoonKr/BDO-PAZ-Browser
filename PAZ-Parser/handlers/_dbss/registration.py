@@ -53,6 +53,10 @@ from .characterobject.handler import (
     character_object_offset_handler,
     CharacterObjectHandler,
 )
+from .characterfunction.handler import (
+    character_function_offset_handler,
+    CharacterFunctionHandler,
+)
 from .characterstatic.handler import (
     character_static_offset_handler,
     CharacterStaticHandler,
@@ -142,6 +146,8 @@ def register_dbss_handlers() -> None:
     register_handler("characterspawntype.dbss", CharacterSpawnTypeHandler())
     register_handler("characterobjectoffset.dbss", character_object_offset_handler())
     register_handler("characterobject.dbss", CharacterObjectHandler())
+    register_handler("characterfunctionoffset.dbss", character_function_offset_handler())
+    register_handler("characterfunction.dbss", CharacterFunctionHandler())
     register_handler("characterstaticoffset.dbss", character_static_offset_handler())
     register_handler("characterstatic.dbss", CharacterStaticHandler())
     register_handler("petoffset.dbss", pet_offset_handler())

@@ -1,0 +1,17 @@
+{
+  "offsetColumns": {
+    "characterId": "ID du personnage",
+    "byteOffset": "Décalage (octets)",
+    "size": "Taille"
+  },
+  "columns": {
+    "characterId": "ID du personnage",
+    "name": "Nom",
+    "functions": "Fonctions",
+    "managedNodes": "Géopoints gérés",
+    "town": "Ville"
+  },
+  "meta": {
+    "count": "{count} entrées"
+  }
+}

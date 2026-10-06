@@ -1,0 +1,17 @@
+{
+  "offsetColumns": {
+    "characterId": "ID del personaje",
+    "byteOffset": "Desplazamiento (bytes)",
+    "size": "Tamaño"
+  },
+  "columns": {
+    "characterId": "ID del personaje",
+    "name": "Nombre",
+    "functions": "Funciones",
+    "managedNodes": "Nodos gestionados",
+    "town": "Pueblo"
+  },
+  "meta": {
+    "count": "{count} entradas"
+  }
+}

@@ -14,6 +14,8 @@ All formats are little-endian. Unknown fields are named `unknown_*`.
 | `buffsimply.bss` | PABR compact buff table, 30-byte rows with buff ID, icon path and `unknown_str` string indices, `is_shown` and flags | [buffsimply](file-formats/buffsimply_bss.md) | 1 |
 | `cashproduct.dbss` | Pearl Shop product catalog, Korean names, inline icon path, and the granted item ID; English names and descriptions in LOC type 50 | [cashproduct](file-formats/cashproduct_dbss.md) | 4 |
 | `cashproductoffset.dbss` | Index into `cashproduct.dbss`, maps product ID → offset/size; no PABR magic and no trailer | [cashproduct](file-formats/cashproduct_dbss.md) | 4 |
+| `characterfunction.dbss` | NPC dialog functions: per character, 37 fixed slots of Korean button text and condition script (Shop, Repair, Stable, Conversation, Node Management ...), with managed and represented node keys; English button text in LOC type 32 | [characterfunction](file-formats/characterfunction_dbss.md) | 5 |
+| `characterfunctionoffset.dbss` | PABR index into `characterfunction.dbss`, maps character_id to offset/size (10-byte rows) | [characterfunction](file-formats/characterfunction_dbss.md) | 5 |
 | `characterobject.dbss` | Placeable world-object records (mostly house furniture) with model path and inline icon path | [characterobject](file-formats/characterobject_dbss.md) | 3 |
 | `characterobjectoffset.dbss` | PABR index into `characterobject.dbss`, maps character_id → offset/size (10-byte rows) | [characterobject](file-formats/characterobject_dbss.md) | 3 |
 | `characterspawntype.dbss`          | NPC role flags, one byte per client `SpawnType` (46: stable, warehouse, node manager, shops, ...) per character | [characterspawntype](file-formats/characterspawntype_dbss.md)       | 1              |
