@@ -516,6 +516,7 @@ _PLUGIN_MODULE_NAMES: list[str] = []
 _PLUGIN_SYS_MODULES: set[str] = set()
 
 _hex_handler = HexHandler()
+_handler_lang = PreviewHandler.lang
 
 
 def get_handler(name: str, ext: str) -> PreviewHandler:
@@ -541,11 +542,19 @@ def register_handler(key: str, handler: PreviewHandler) -> None:
 
 
 def set_handler_lang(lang: str) -> None:
-    """Propagate the active UI language to all registered handlers and `ui_text()`."""
+    """Propagate the active UI language to all registered handlers and `ui_text()`.
+
+    Tables parsed in the old language hold its labels, so a change drops them.
+    """
+    global _handler_lang
+    is_change = lang != _handler_lang
+    _handler_lang = lang
     set_ui_language(lang)
     for handler in _REGISTRY.values():
         handler.lang = lang
     _hex_handler.lang = lang
+    if is_change:
+        clear_handler_caches()
 
 
 def parsed_handlers() -> list[PreviewHandler]:

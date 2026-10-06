@@ -1466,7 +1466,9 @@ through `icon_path()` would be circular.
 
 The app's active language code (`"en"`, `"de"`, `"fr"`, `"sp"`, `"ru"`, `"kr"`) is
 available to every handler via `self.lang`. It is set automatically before any handler
-method is called and updated whenever the user changes language in Settings.
+method is called and updated whenever the user changes language in Settings. A change
+drops every handler's `_data_cache` slots, since what they hold was built with the old
+language's labels; the records cache keys on `self.lang` too.
 
 Use it in `get_records()` to return language-appropriate display strings:
 
@@ -1500,8 +1502,10 @@ class MyHandler(PreviewHandler):
         ...
 ```
 
-`load_handler_strings(lang, strings_dir)` tries `{strings_dir}/{lang}.json` then falls
-back to `{strings_dir}/en.json`. Returns `{}` if neither file exists.
+`load_handler_strings(lang, strings_dir)` reads `{strings_dir}/{lang}.json` and fills
+every key it lacks, at any depth, from `{strings_dir}/en.json`. Returns `{}` if neither
+file exists; a file that is not valid JSON is logged and treated as missing. Each table
+is read once per language and shared between calls, so never change the dict it returns.
 
 **Example `lang/en.json`** for a handler that displays category names and column headers:
 
@@ -1522,41 +1526,16 @@ back to `{strings_dir}/en.json`. Returns `{}` if neither file exists.
 }
 ```
 
-A partial translation file (`lang/de.json`) only needs to cover the keys it changes:
+A translation (`lang/de.json`) has the same keys with translated values. Name it after a
+UI language code (the `ui/lang/*.json` names) and cover every key of `en.json` with the
+same `{placeholders}`: `tests/test_handler_lang.py` fails on a missing or extra key, so a
+handler is either English only or fully translated in a language. For text with values in
+it, fill the placeholders with `fill_placeholders(text, name=value)` from `ui_text.py`,
+the same rule `ui_text()` uses.
 
-```json
-{
-  "category": {
-    "0": "Welt",
-    "1": "Kampf",
-    "2": "Lebensfertigkeiten",
-    "3": "Angeln"
-  }
-}
-```
-
-Missing keys are not resolved automatically by `load_handler_strings`. If you ship
-partial files, do the merge yourself:
-
-```python
-import json
-from pathlib import Path
-from _common.lang import load_handler_strings
-
-_LANG_DIR = Path(__file__).parent / "lang"
-
-def _strings(lang: str) -> dict:
-    if lang == "en":
-        return load_handler_strings("en", _LANG_DIR)
-    base = load_handler_strings("en", _LANG_DIR)
-    override = load_handler_strings(lang, _LANG_DIR)
-    # shallow-merge each top-level section
-    return {k: {**base.get(k, {}), **override.get(k, {})} for k in base}
-```
-
-For most handlers a flat single-language file is simpler, so only bother with partial
-merging when the string table is large enough that translators would realistically
-only cover part of it.
+Text that belongs to a built-in viewer rather than one format (the hex, text and LOC
+views) goes through `ui_text()` and the `ui/lang/*.json` files instead; the LOC viewer's
+column labels, type names and count line are its `loc` section.
 
 Rules:
 - Always provide English (`"en"`) as the fallback, since `self.lang` may be a code your

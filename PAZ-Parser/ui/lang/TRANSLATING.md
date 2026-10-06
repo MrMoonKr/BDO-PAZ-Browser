@@ -21,7 +21,9 @@ Each language has one JSON file in this folder:
 
 Any key you leave out falls back to the English string in the app, so a partial file still works while you translate. The test suite (`tests/test_ui_text.py`) does require every shipped language file to cover every key of `en.json`, with the same `{placeholders}`.
 
-The same files hold the text the Python side builds: error messages (`errors`), the Save dialog filters (`dialogs`), byte units (`units`) and the preview's error boxes and tab labels (`preview`). `ui_text.py` reads them like `t()` does in the page.
+The same files hold the text the Python side builds: error messages (`errors`), the Save dialog filters (`dialogs`), byte units (`units`), the preview's error boxes and tab labels (`preview`) and the LOC viewer's column labels, type names and count line (`loc`). `ui_text.py` reads them like `t()` does in the page.
+
+The parsed tables of each file format keep their column labels in the handler's own folder, `handlers/<group>/<format>/lang/en.json`. A translation there is `<code>.json` next to it, with every key of that `en.json` (`tests/test_handler_lang.py` checks this per file).
 
 ## Example
 

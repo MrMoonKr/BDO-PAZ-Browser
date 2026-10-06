@@ -35,6 +35,11 @@ def ui_text(key: str, **args: object) -> str:
         text = _resolve(_strings(_FALLBACK), path)
     if text is None:
         return key
+    return fill_placeholders(text, **args)
+
+
+def fill_placeholders(text: str, **args: object) -> str:
+    """`text` with each `{name}` replaced by its argument; unknown names stay as they are."""
     return _PLACEHOLDER.sub(lambda match: str(args.get(match.group(1), match.group(0))), text)
 
 

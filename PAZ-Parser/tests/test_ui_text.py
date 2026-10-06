@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import json
-import re
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -12,8 +10,9 @@ import pytest
 import ui_text as ui_text_module
 from ui_text import set_ui_language, ui_text
 
+from tests.lang_files import flat_strings, placeholders
+
 _LANG_DIR = Path(ui_text_module.__file__).parent / "ui" / "lang"
-_PLACEHOLDER = re.compile(r"\{(\w+)\}")
 _LANGUAGES = sorted(path.stem for path in _LANG_DIR.glob("*.json") if path.stem != "en")
 
 
@@ -24,16 +23,7 @@ def _english_after_each_test() -> Iterator[None]:
 
 
 def _strings(language: str) -> dict[str, str]:
-    """Every text of a language file by dotted key, `_meta` left out."""
-    def walk(node: dict, prefix: str) -> Iterator[tuple[str, str]]:
-        for key, value in node.items():
-            if isinstance(value, dict):
-                yield from walk(value, f"{prefix}{key}.")
-            elif isinstance(value, str):
-                yield prefix + key, value
-
-    data = json.loads((_LANG_DIR / f"{language}.json").read_text(encoding="utf-8"))
-    return dict(walk({k: v for k, v in data.items() if k != "_meta"}, ""))
+    return flat_strings(_LANG_DIR / f"{language}.json")
 
 
 def test_text_fills_placeholders() -> None:
@@ -75,7 +65,7 @@ def test_translations_keep_the_english_placeholders(language: str) -> None:
     wrong = {
         key: text
         for key, text in _strings(language).items()
-        if key in english and set(_PLACEHOLDER.findall(text)) != set(_PLACEHOLDER.findall(english[key]))
+        if key in english and placeholders(text) != placeholders(english[key])
     }
 
     assert not wrong, f"{language}.json placeholders differ from en.json: {wrong}"
