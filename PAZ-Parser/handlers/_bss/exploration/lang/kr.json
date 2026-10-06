@@ -1,0 +1,23 @@
+{
+  "columns": {
+    "nodeKey": "거점 키",
+    "nodeName": "거점명",
+    "kind": "종류",
+    "mainSub": "메인/서브",
+    "contribution": "공헌도",
+    "manager": "거점 관리인",
+    "representative": "대표",
+    "radius": "반경",
+    "knowledge": "지식",
+    "knowledgeEntries": "지식 항목",
+    "connections": "연결",
+    "connectedNodes": "연결 거점"
+  },
+  "values": {
+    "main": "메인",
+    "sub": "서브"
+  },
+  "meta": {
+    "count": "월드맵 거점 {count}개"
+  }
+}

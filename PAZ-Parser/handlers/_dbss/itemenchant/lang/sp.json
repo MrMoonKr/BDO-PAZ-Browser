@@ -25,7 +25,7 @@
   },
   "values": {
     "allClasses": "Todas",
-    "allExcept": "Todas excepto",
+    "allExcept": "Todas excepto {classes}",
     "bindOnObtain": "Al conseguir",
     "bindOnEquip": "Al equipar",
     "family": "Familia",
@@ -34,7 +34,7 @@
     "tradeKarma": "Intendente (pérdida de alineamiento)",
     "tradeImperialCrafting": "Artesanía imperial",
     "tradeGuild": "Comercio de la hermandad",
-    "tradeType": "Tipo"
+    "tradeType": "Tipo {type}"
   },
   "meta": {
     "count": "{count} objetos · {enhanceable} reforzables",

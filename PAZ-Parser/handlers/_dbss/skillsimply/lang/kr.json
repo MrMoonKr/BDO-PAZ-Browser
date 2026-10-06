@@ -1,0 +1,36 @@
+{
+  "columns": {
+    "skillNo": "기술 번호",
+    "level": "레벨",
+    "icon": "아이콘",
+    "name": "이름",
+    "classes": "적용 직업",
+    "kind": "종류",
+    "branch": "계열",
+    "weapon": "무기",
+    "quickSlot": "퀵슬롯",
+    "needLevel": "요구 레벨",
+    "needSkillPoint": "기술 포인트",
+    "needSkills": "선행 기술",
+    "previousRank": "이전 단계",
+    "exclusiveSkills": "배타 기술"
+  },
+  "kind": {
+    "0": "기타",
+    "1": "액티브",
+    "2": "패시브"
+  },
+  "branch": {
+    "1": "각성",
+    "2": "전승"
+  },
+  "weapon": {
+    "main": "주무기",
+    "sub": "보조 무기",
+    "awakening": "각성 무기"
+  },
+  "allClasses": "전체",
+  "meta": {
+    "count": "기술 단계 {count}개 · 직업 기술 {class_skills}개"
+  }
+}

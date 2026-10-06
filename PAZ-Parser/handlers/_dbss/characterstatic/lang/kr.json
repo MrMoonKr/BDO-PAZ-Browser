@@ -1,0 +1,22 @@
+{
+  "offsetColumns": {
+    "characterId": "캐릭터 ID",
+    "byteOffset": "바이트 오프셋",
+    "size": "크기"
+  },
+  "columns": {
+    "characterId": "캐릭터 ID",
+    "name": "이름",
+    "icon": "아이콘",
+    "actionScript": "행동 스크립트",
+    "conditionScript": "조건",
+    "knowledgeId": "지식 ID",
+    "npcKind": "NPC 종류",
+    "classType": "직업 유형",
+    "model": "모델",
+    "payloadSize": "본문 크기"
+  },
+  "meta": {
+    "count": "레코드 {count}개"
+  }
+}

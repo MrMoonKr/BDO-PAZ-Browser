@@ -1,0 +1,21 @@
+{
+  "offsetColumns": {
+    "personalityId": "성격 ID",
+    "dataOffset": "데이터 오프셋"
+  },
+  "columns": {
+    "row": "행",
+    "id": "ID",
+    "groupA": "그룹 A",
+    "groupB": "그룹 B",
+    "groupC": "그룹 C",
+    "intMin": "관심도 최소",
+    "intMax": "관심도 최대",
+    "favMin": "친밀도 최소",
+    "favMax": "친밀도 최대",
+    "horoscope": "별자리"
+  },
+  "meta": {
+    "count": "성격 {count}개"
+  }
+}

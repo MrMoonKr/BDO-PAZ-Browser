@@ -1,0 +1,12 @@
+{
+  "columns": {
+    "entryId": "항목 ID",
+    "category": "카테고리",
+    "position": "위치",
+    "icon": "아이콘",
+    "title": "제목"
+  },
+  "meta": {
+    "count": "메뉴 항목 {count}개"
+  }
+}

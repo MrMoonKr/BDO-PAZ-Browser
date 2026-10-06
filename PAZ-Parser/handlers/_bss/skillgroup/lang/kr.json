@@ -1,0 +1,12 @@
+{
+  "columns": {
+    "group": "그룹",
+    "icon": "아이콘",
+    "name": "이름",
+    "ranks": "단계",
+    "skills": "기술"
+  },
+  "meta": {
+    "count": "기술 그룹 {count}개"
+  }
+}

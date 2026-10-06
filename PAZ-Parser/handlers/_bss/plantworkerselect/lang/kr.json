@@ -1,0 +1,13 @@
+{
+  "columns": {
+    "workerId": "일꾼 ID",
+    "workerName": "일꾼 이름",
+    "cityId": "도시 ID",
+    "cityName": "도시 이름",
+    "hireCost": "고용 비용"
+  },
+  "meta": {
+    "count": "일꾼 선택 항목 {count}개",
+    "named": " · LOC 이름 있음 {named}개"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "columns": {
+    "menuId": "메뉴 ID",
+    "icon": "아이콘",
+    "title": "제목",
+    "hotkey": "단축키",
+    "entries": "항목"
+  },
+  "meta": {
+    "count": "메뉴 카테고리 {count}개"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "columns": {
+    "key": "키",
+    "name": "이름",
+    "x": "X",
+    "y": "Y",
+    "z": "Z",
+    "property": "속성",
+    "subWaypoint": "서브 웨이포인트",
+    "links": "연결"
+  },
+  "messages": {
+    "oldLayout": "PABR 시그니처가 없는 구형 인스턴스 던전 템플릿이라 읽지 않음"
+  },
+  "values": {
+    "yes": "예",
+    "no": "아니오"
+  },
+  "meta": {
+    "count": "웨이포인트 {count}개 · 연결 {links}개"
+  }
+}

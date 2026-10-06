@@ -1,0 +1,20 @@
+{
+  "columns": {
+    "class": "직업",
+    "tab": "탭",
+    "cardColumn": "카드 열",
+    "row": "행",
+    "column": "열",
+    "group": "그룹",
+    "icon": "아이콘",
+    "skill": "기술"
+  },
+  "cardColumn": {
+    "0": "좌",
+    "1": "중",
+    "2": "우"
+  },
+  "meta": {
+    "count": "기술 칸 {count}개 · 직업 {classes}개"
+  }
+}

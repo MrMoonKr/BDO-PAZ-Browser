@@ -1,0 +1,14 @@
+{
+  "offsetColumns": {
+    "employeeNameId": "고용인 이름 ID",
+    "dataOffset": "데이터 오프셋",
+    "dataSize": "데이터 크기"
+  },
+  "columns": {
+    "employeeNameId": "고용인 이름 ID",
+    "name": "이름"
+  },
+  "meta": {
+    "count": "고용인 이름 {count}개"
+  }
+}

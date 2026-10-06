@@ -1,0 +1,16 @@
+{
+  "offsetColumns": {
+    "recordId": "레코드 ID",
+    "dataOffset": "데이터 오프셋",
+    "dataSize": "데이터 크기"
+  },
+  "columns": {
+    "zoneId": "지역 ID",
+    "nodeName": "거점명",
+    "productionKey": "생산 키",
+    "producedItems": "생산 아이템"
+  },
+  "meta": {
+    "count": "생산 거점 {count}개 · 아이템 있음 {resolved}개"
+  }
+}

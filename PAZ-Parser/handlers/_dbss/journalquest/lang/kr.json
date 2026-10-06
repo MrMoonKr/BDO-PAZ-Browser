@@ -1,0 +1,30 @@
+{
+  "offsetColumns": {
+    "group": "그룹",
+    "entry": "항목",
+    "offset": "오프셋",
+    "size": "크기"
+  },
+  "columns": {
+    "group": "그룹",
+    "entry": "항목",
+    "journalCategoryId": "일지 분류 ID",
+    "title": "제목",
+    "subtitle": "부제",
+    "volume": "권",
+    "pageTitles": "페이지 제목",
+    "unlockCondition": "해금 조건",
+    "pages": "페이지",
+    "recordBook": "일지",
+    "combineModel": "조합 모델",
+    "staticModel": "고정 모델"
+  },
+  "values": {
+    "yes": "예",
+    "no": "아니오"
+  },
+  "meta": {
+    "count": "일지 항목 {count}개 · 그룹 {groups}개 · 페이지 {pages}개",
+    "offsetCount": "항목 {count}개 · 그룹 {groups}개"
+  }
+}

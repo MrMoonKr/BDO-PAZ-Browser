@@ -25,7 +25,7 @@
   },
   "values": {
     "allClasses": "Alle",
-    "allExcept": "Alle außer",
+    "allExcept": "Alle außer {classes}",
     "bindOnObtain": "Beim Erhalt",
     "bindOnEquip": "Beim Ausrüsten",
     "family": "Familie",
@@ -34,7 +34,7 @@
     "tradeKarma": "Handelsaufsicht (Karmaverlust)",
     "tradeImperialCrafting": "Kaiserliche Herstellungslieferung",
     "tradeGuild": "Gildenhandel",
-    "tradeType": "Typ"
+    "tradeType": "Typ {type}"
   },
   "meta": {
     "count": "{count} Gegenstände · {enhanceable} verstärkbar",

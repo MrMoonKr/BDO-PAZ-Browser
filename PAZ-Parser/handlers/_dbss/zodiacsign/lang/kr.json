@@ -1,0 +1,29 @@
+{
+  "columns": {
+    "id": "ID",
+    "name": "이름",
+    "stars": "별",
+    "pairs": "쌍",
+    "traits": "특성"
+  },
+  "offsetColumns": {
+    "zodiacId": "별자리 ID",
+    "dataOffset": "데이터 오프셋"
+  },
+  "orderColumns": {
+    "row": "행",
+    "personality": "성격",
+    "zodiac": "별자리",
+    "variant": "변형",
+    "triggers": "발동 조건",
+    "sequence": "순서"
+  },
+  "orderOffsetColumns": {
+    "personalityType": "성격 유형",
+    "dataOffset": "데이터 오프셋"
+  },
+  "meta": {
+    "count": "별자리 {count}개",
+    "orderCount": "순서 레코드 {count}개"
+  }
+}

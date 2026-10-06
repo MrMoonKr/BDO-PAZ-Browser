@@ -25,7 +25,7 @@
   },
   "values": {
     "allClasses": "Toutes",
-    "allExcept": "Toutes sauf",
+    "allExcept": "Toutes sauf {classes}",
     "bindOnObtain": "À l'obtention",
     "bindOnEquip": "À l'équipement",
     "family": "Famille",
@@ -34,7 +34,7 @@
     "tradeKarma": "Chef de commerce (perte de karma)",
     "tradeImperialCrafting": "Livraison impériale d'artisanat",
     "tradeGuild": "Commerce de guilde",
-    "tradeType": "Type"
+    "tradeType": "Type {type}"
   },
   "meta": {
     "count": "{count} objets · {enhanceable} optimisables",

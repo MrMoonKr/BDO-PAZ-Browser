@@ -1,0 +1,22 @@
+{
+  "offsetColumns": {
+    "table": "테이블",
+    "sourceId": "출처 ID",
+    "dbssOffset": "DBSS 오프셋",
+    "size": "크기"
+  },
+  "columns": {
+    "sourceType": "출처 유형",
+    "sourceId": "출처 ID",
+    "sourceName": "출처 이름",
+    "knowledgeId": "지식 ID",
+    "knowledgeName": "지식 이름"
+  },
+  "values": {
+    "character": "캐릭터",
+    "item": "아이템"
+  },
+  "meta": {
+    "count": "레코드 {count}개 · 지식 이름 {with_names}개"
+  }
+}

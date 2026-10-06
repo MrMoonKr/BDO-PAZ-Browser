@@ -1,0 +1,25 @@
+{
+  "offsetColumns": {
+    "buffId": "버프 ID",
+    "dataOffset": "데이터 오프셋",
+    "size": "크기"
+  },
+  "columns": {
+    "buffId": "버프 ID",
+    "icon": "아이콘",
+    "title": "제목",
+    "name": "내부 이름",
+    "description": "설명",
+    "effect": "효과",
+    "appliedBy": "적용 출처",
+    "level": "레벨",
+    "effectType": "효과 유형",
+    "duration": "지속 시간",
+    "param1": "변수 1",
+    "param2": "변수 2",
+    "param3": "변수 3"
+  },
+  "meta": {
+    "count": "버프 {count}개"
+  }
+}

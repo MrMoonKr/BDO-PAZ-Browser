@@ -1,0 +1,17 @@
+{
+  "columns": {
+    "skillId": "기술 ID",
+    "icon": "아이콘",
+    "name": "이름",
+    "description": "설명",
+    "weight": "가중치",
+    "effectType": "효과 유형",
+    "target": "대상",
+    "effectA": "효과 A",
+    "effectB": "효과 B"
+  },
+  "meta": {
+    "count": "일꾼 패시브 기술 {count}개",
+    "localized": " · LOC 텍스트 있음 {localized}개"
+  }
+}

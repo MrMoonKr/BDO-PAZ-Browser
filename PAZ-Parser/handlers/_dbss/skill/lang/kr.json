@@ -1,0 +1,25 @@
+{
+  "columns": {
+    "skillNo": "기술 번호",
+    "level": "레벨",
+    "icon": "아이콘",
+    "name": "이름",
+    "description": "설명",
+    "cooldown": "재사용 대기 시간",
+    "resourceCost": "자원",
+    "staminaCost": "행동력",
+    "buffs": "버프",
+    "nextSkills": "다음 기술",
+    "baseSkill": "기본 기술",
+    "script": "스크립트"
+  },
+  "offsetColumns": {
+    "skillNo": "기술 번호",
+    "level": "레벨",
+    "dbssOffset": "DBSS 오프셋",
+    "size": "크기"
+  },
+  "meta": {
+    "count": "기술 단계 {count}개 · 버프 있음 {with_buffs}개"
+  }
+}

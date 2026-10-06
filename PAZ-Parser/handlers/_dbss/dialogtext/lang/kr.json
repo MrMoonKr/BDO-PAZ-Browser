@@ -1,0 +1,16 @@
+{
+  "offsetColumns": {
+    "key": "키",
+    "dbssOffset": "DBSS 오프셋",
+    "size": "크기"
+  },
+  "columns": {
+    "name": "이름",
+    "lines": "대사",
+    "text": "텍스트",
+    "voice": "음성"
+  },
+  "meta": {
+    "count": "텍스트 묶음 {count}개 · 대사 {lines}개"
+  }
+}

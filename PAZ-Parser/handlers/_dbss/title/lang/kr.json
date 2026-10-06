@@ -1,0 +1,13 @@
+{
+  "columns": {
+    "titleId": "칭호 ID",
+    "category": "카테고리",
+    "title": "칭호",
+    "titleRequirements": "칭호 조건",
+    "special": "스페셜",
+    "effect": "효과"
+  },
+  "meta": {
+    "count": "읽은 칭호 {count}개"
+  }
+}

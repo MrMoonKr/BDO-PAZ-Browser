@@ -1,0 +1,11 @@
+{
+  "columns": {
+    "sheet": "시트",
+    "hash": "해시",
+    "key": "키",
+    "text": "텍스트"
+  },
+  "meta": {
+    "count": "문자열 {count}개"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "columns": {
+    "manorId": "장원 ID",
+    "manor": "장원",
+    "part": "부위",
+    "icon": "아이콘"
+  },
+  "meta": {
+    "count": "장원 부위 {count}개"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "columns": {
+    "petSkillId": "반려동물 기술 ID",
+    "level": "레벨",
+    "valueA": "값 A",
+    "valueB": "값 B"
+  },
+  "offsetColumns": {
+    "petSkillId": "반려동물 기술 ID",
+    "dataOffset": "데이터 오프셋",
+    "dataSize": "데이터 크기"
+  },
+  "meta": {
+    "count": "반려동물 기술 {skill_count}개 · 레벨 행 {count}개"
+  }
+}

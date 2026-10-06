@@ -1,0 +1,18 @@
+{
+  "columns": {
+    "displayId": "표시 ID",
+    "chainId": "연계 ID",
+    "questId": "의뢰 ID",
+    "category": "카테고리",
+    "icon": "아이콘",
+    "titleName": "제목 / 이름",
+    "condition": "조건",
+    "action": "행동",
+    "objective": "목표",
+    "familyStat": "가문 능력치"
+  },
+  "meta": {
+    "count": "의뢰 {count}개",
+    "withLoc": " · LOC 유형 18 텍스트 있음 {with_loc}개"
+  }
+}

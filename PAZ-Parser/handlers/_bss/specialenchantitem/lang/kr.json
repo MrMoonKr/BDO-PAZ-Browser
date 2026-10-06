@@ -1,0 +1,12 @@
+{
+  "columns": {
+    "itemId": "아이템 ID",
+    "maxLevel": "최대 레벨",
+    "shownAs": "표시 형식",
+    "icon": "아이콘",
+    "name": "이름"
+  },
+  "meta": {
+    "count": "아이템 단계 {count}개"
+  }
+}

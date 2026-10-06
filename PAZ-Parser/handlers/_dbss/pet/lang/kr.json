@@ -1,0 +1,46 @@
+{
+  "columns": {
+    "petId": "반려동물 ID",
+    "name": "이름",
+    "species": "종 ID",
+    "tier": "세대",
+    "skillSlots": "기술 슬롯",
+    "maxLevel": "최대 레벨",
+    "acquireType": "획득 유형",
+    "equipSkillId": "장비 기술 ID",
+    "grade": "등급",
+    "icon": "아이콘"
+  },
+  "grades": {
+    "5": "스페셜",
+    "4": "레어",
+    "3": "프리미엄",
+    "2": "레어",
+    "1": "클래식"
+  },
+  "offsetColumns": {
+    "petId": "반려동물 ID",
+    "dataOffset": "데이터 오프셋",
+    "dataSize": "데이터 크기"
+  },
+  "gradeColumns": {
+    "key": "키",
+    "species": "종",
+    "variant": "변형",
+    "grade": "등급",
+    "dataOffset": "데이터 오프셋",
+    "dataSize": "데이터 크기"
+  },
+  "gradeOffsetColumns": {
+    "key": "키",
+    "species": "종",
+    "variant": "변형",
+    "dataOffset": "데이터 오프셋",
+    "dataSize": "데이터 크기"
+  },
+  "meta": {
+    "gradeCount": "반려동물 등급 {count}개",
+    "count": "반려동물 {count}마리 · 종 {species_count}개",
+    "withGrade": " · 등급 정보 있음 {with_grade}개"
+  }
+}

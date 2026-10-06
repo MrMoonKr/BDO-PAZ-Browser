@@ -1,0 +1,25 @@
+{
+  "offsetColumns": {
+    "cardId": "지식 ID",
+    "dbssOffset": "DBSS 오프셋",
+    "size": "크기"
+  },
+  "columns": {
+    "knowledgeId": "지식 ID",
+    "icon": "아이콘",
+    "knowledgeName": "지식 이름",
+    "categoryId": "카테고리 ID",
+    "categoryName": "카테고리 이름",
+    "description": "설명",
+    "minFavor": "최소 친밀도",
+    "maxFavor": "최대 친밀도",
+    "interest": "관심도",
+    "combo": "연계",
+    "obtain": "획득",
+    "learnedFrom": "획득처",
+    "position": "위치"
+  },
+  "meta": {
+    "count": "지식 카드 {count}개 · 카테고리 이름 {with_node_name}개"
+  }
+}

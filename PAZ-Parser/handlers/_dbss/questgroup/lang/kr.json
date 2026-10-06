@@ -1,0 +1,11 @@
+{
+  "columns": {
+    "groupId": "그룹 ID",
+    "name": "이름",
+    "quests": "의뢰",
+    "questTitles": "의뢰 제목"
+  },
+  "meta": {
+    "count": "의뢰 그룹 {count}개 · 의뢰 연결 {total_links}개"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "columns": {
+    "equipSkillId": "장비 기술 ID",
+    "icon": "아이콘",
+    "skillName": "기술 이름",
+    "description": "설명",
+    "skillType": "기술 유형",
+    "locId": "LOC ID"
+  },
+  "meta": {
+    "count": "요정 기술 {count}개",
+    "localized": " · LOC 이름 {localized}개"
+  }
+}

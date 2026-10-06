@@ -1,0 +1,16 @@
+{
+  "columns": {
+    "actionId": "행동 ID",
+    "actionName": "행동 이름",
+    "icon": "아이콘"
+  },
+  "offsetColumns": {
+    "actionId": "행동 ID",
+    "recordOffset": "레코드 오프셋",
+    "recordSize": "레코드 크기"
+  },
+  "meta": {
+    "count": "반려동물 행동 {count}개",
+    "withLoc": " · LOC 유형 19 이름 있음 {with_loc}개"
+  }
+}

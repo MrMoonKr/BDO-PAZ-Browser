@@ -1,0 +1,20 @@
+{
+  "columns": {
+    "groupKey": "그룹 키",
+    "groupName": "그룹 이름",
+    "eventStart": "이벤트 시작",
+    "eventEnd": "이벤트 종료",
+    "condition": "조건",
+    "mainId": "메인 ID",
+    "subId": "서브 ID",
+    "icon": "아이콘",
+    "title": "제목",
+    "offeredWhen": "수락 조건*",
+    "ruledOutWhen": "제외 조건*",
+    "scriptGuess": "* 스크립트에 대한 추정이며 게임에서 확인되지 않음"
+  },
+  "meta": {
+    "count": "의뢰 참조 {count}개 · 그룹 {group_count}개",
+    "withTitles": " · LOC 제목 있음 {with_titles}개"
+  }
+}

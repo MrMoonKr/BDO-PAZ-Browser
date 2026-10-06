@@ -25,7 +25,7 @@
   },
   "values": {
     "allClasses": "All",
-    "allExcept": "All except",
+    "allExcept": "All except {classes}",
     "bindOnObtain": "On obtain",
     "bindOnEquip": "On equip",
     "family": "Family",
@@ -34,7 +34,7 @@
     "tradeKarma": "Trade Manager (Karma loss)",
     "tradeImperialCrafting": "Imperial Crafting Delivery",
     "tradeGuild": "Guild trade",
-    "tradeType": "Type"
+    "tradeType": "Type {type}"
   },
   "meta": {
     "count": "{count} items · {enhanceable} enhanceable",

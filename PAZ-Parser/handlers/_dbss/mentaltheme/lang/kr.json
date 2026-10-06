@@ -1,0 +1,20 @@
+{
+  "offsetColumns": {
+    "themeId": "테마 ID",
+    "payloadOffset": "본문 오프셋",
+    "payloadSize": "본문 크기"
+  },
+  "columns": {
+    "themeId": "테마 ID",
+    "name": "이름",
+    "parentId": "상위 ID",
+    "parentName": "상위 이름",
+    "energyReward1": "기운 보상 1",
+    "energyReward2": "기운 보상 2",
+    "entries": "항목",
+    "childrenGroups": "하위 그룹"
+  },
+  "meta": {
+    "count": "지식 테마 {count}개 · 테마 이름 {with_theme_name}개 · 상위 이름 {with_parent_name}개"
+  }
+}

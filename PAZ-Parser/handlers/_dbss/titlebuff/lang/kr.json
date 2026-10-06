@@ -1,0 +1,14 @@
+{
+  "offsetColumns": {
+    "buffId": "버프 ID",
+    "offset": "오프셋"
+  },
+  "columns": {
+    "level": "레벨",
+    "requiredTitles": "필요 칭호",
+    "text": "텍스트"
+  },
+  "meta": {
+    "count": "칭호 효과 단계 {count}개"
+  }
+}

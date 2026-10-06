@@ -1,0 +1,18 @@
+{
+  "offsetColumns": {
+    "acquireTypeId": "획득 유형 ID",
+    "dataOffset": "데이터 오프셋",
+    "dataSize": "데이터 크기",
+    "recordStart": "레코드 시작"
+  },
+  "columns": {
+    "acquireTypeId": "획득 유형 ID",
+    "equipSkillId": "기술 ID",
+    "skillName": "기술 이름",
+    "chance": "확률",
+    "weight": "가중치"
+  },
+  "meta": {
+    "count": "추첨 항목 {count}개 · 획득 유형 {types}개"
+  }
+}

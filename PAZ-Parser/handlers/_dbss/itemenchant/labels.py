@@ -7,6 +7,7 @@ follow the app language. Meanings and evidence are in itemenchant_dbss.md.
 from __future__ import annotations
 
 from _common.class_type import PLAYABLE_CLASSES_MASK, class_names, is_all_classes
+from ui_text import fill_placeholders
 
 # "All except Agent" reads better than 34 class names; above this many
 # missing classes the names are listed instead.
@@ -24,14 +25,6 @@ _TRADE_KEYS = {
     4: "tradeManager",
     5: "tradeGuild",
 }
-_TRADE_DEFAULTS = {
-    "tradeManager": "Trade Manager",
-    "tradeKarma": "Trade Manager (Karma loss)",
-    "tradeImperialCrafting": "Imperial Crafting Delivery",
-    "tradeGuild": "Guild trade",
-}
-
-
 def classes_label(class_mask: int, values: dict[str, str]) -> str:
     """'All', 'All except ...' or the class names; '' when no class may use it."""
     if is_all_classes(class_mask):
@@ -40,7 +33,7 @@ def classes_label(class_mask: int, values: dict[str, str]) -> str:
         return ""
     missing_mask = PLAYABLE_CLASSES_MASK & ~class_mask
     if missing_mask.bit_count() <= _MAX_EXCEPTED_CLASSES:
-        return f"{values.get('allExcept', 'All except')} {', '.join(class_names(missing_mask))}"
+        return fill_placeholders(values["allExcept"], classes=", ".join(class_names(missing_mask)))
     return ", ".join(class_names(class_mask))
 
 
@@ -62,5 +55,5 @@ def trade_label(trade_type: int | None, values: dict[str, str]) -> str:
         return ""
     key = _TRADE_KEYS.get(trade_type)
     if key is None:
-        return f"{values.get('tradeType', 'Type')} {trade_type}"
-    return values.get(key, _TRADE_DEFAULTS[key])
+        return fill_placeholders(values["tradeType"], type=trade_type)
+    return values[key]

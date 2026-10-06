@@ -1,0 +1,10 @@
+{
+  "columns": {
+    "titleId": "칭호 ID",
+    "categoryId": "분류 ID",
+    "category": "카테고리"
+  },
+  "meta": {
+    "count": "레코드 {count}개"
+  }
+}

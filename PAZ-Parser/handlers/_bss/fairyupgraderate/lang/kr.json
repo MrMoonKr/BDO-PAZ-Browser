@@ -1,0 +1,16 @@
+{
+  "columns": {
+    "step": "단계",
+    "upgrade": "업그레이드",
+    "icon": "아이콘",
+    "item": "아이템",
+    "itemId": "아이템 ID",
+    "chancePerItem": "확률 / 아이템",
+    "ratePpm": "확률 (ppm)",
+    "itemsForMax": "최대까지 아이템"
+  },
+  "meta": {
+    "count": "날개돋이 확률 {count}개 · 단계 {steps}개",
+    "localized": " · LOC 이름 {localized}개"
+  }
+}

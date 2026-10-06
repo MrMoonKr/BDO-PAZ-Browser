@@ -1,0 +1,14 @@
+{
+  "columns": {
+    "characterId": "캐릭터 ID",
+    "name": "이름",
+    "kind": "종류",
+    "role": "역할",
+    "knowledgeId": "지식 ID",
+    "leases": "대여",
+    "script": "스크립트"
+  },
+  "meta": {
+    "count": "NPC {count}명"
+  }
+}

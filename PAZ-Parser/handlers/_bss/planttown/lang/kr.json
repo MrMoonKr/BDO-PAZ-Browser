@@ -1,0 +1,10 @@
+{
+  "columns": {
+    "nodeId": "거점 ID",
+    "nodeName": "거점명"
+  },
+  "meta": {
+    "count": "마을 {count}개",
+    "named": " · LOC 이름 {named}개"
+  }
+}

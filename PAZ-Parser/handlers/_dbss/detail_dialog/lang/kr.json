@@ -1,0 +1,20 @@
+{
+  "offsetColumns": {
+    "characterId": "캐릭터 ID",
+    "dialog": "대화",
+    "dbssOffset": "DBSS 오프셋",
+    "size": "크기"
+  },
+  "columns": {
+    "characterId": "캐릭터 ID",
+    "dialog": "대화",
+    "character": "캐릭터",
+    "greeting": "인사",
+    "options": "선택지",
+    "optionTitles": "선택지 제목",
+    "leases": "대여"
+  },
+  "meta": {
+    "count": "대화 {count}개 · 캐릭터 {characters}명 · 선택지 {options}개"
+  }
+}

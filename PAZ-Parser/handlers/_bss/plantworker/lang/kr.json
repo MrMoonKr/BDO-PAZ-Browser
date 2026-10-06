@@ -1,0 +1,16 @@
+{
+  "columns": {
+    "workerId": "일꾼 ID",
+    "name": "이름",
+    "nextWorkerId": "다음 등급",
+    "moveSpeed": "이동 속도",
+    "stamina": "행동력",
+    "luck": "행운",
+    "baseWorkSpeed": "작업 속도",
+    "icon": "아이콘"
+  },
+  "meta": {
+    "count": "일꾼 {count}명",
+    "named": " · LOC 이름 있음 {named}개"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "columns": {
+    "characterId": "캐릭터 ID",
+    "dialog": "대화",
+    "character": "캐릭터",
+    "lines": "말풍선 대사"
+  },
+  "meta": {
+    "count": "대화 {count}개 · 대사 있음 {with_lines}개"
+  }
+}

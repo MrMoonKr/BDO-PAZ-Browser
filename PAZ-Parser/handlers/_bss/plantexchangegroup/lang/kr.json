@@ -1,0 +1,11 @@
+{
+  "columns": {
+    "productionKey": "생산 키",
+    "name": "이름",
+    "itemSubgroup": "아이템 하위 그룹",
+    "items": "아이템"
+  },
+  "meta": {
+    "count": "생산 그룹 {count}개 · 아이템 있음 {resolved}개"
+  }
+}

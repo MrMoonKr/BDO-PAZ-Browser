@@ -1,0 +1,13 @@
+{
+  "columns": {
+    "equipSkillId": "장비 기술 ID",
+    "skillName": "기술 이름",
+    "icon": "아이콘",
+    "skillType": "기술 유형",
+    "section": "구역"
+  },
+  "meta": {
+    "count": "반려동물 장비 기술 {count}개",
+    "localized": " · LOC 이름 {localized}개"
+  }
+}

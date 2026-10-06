@@ -25,7 +25,7 @@
   },
   "values": {
     "allClasses": "Все",
-    "allExcept": "Все, кроме",
+    "allExcept": "Все, кроме {classes}",
     "bindOnObtain": "При получении",
     "bindOnEquip": "При экипировке",
     "family": "Семья",
@@ -34,7 +34,7 @@
     "tradeKarma": "Управляющий торговлей (потеря кармы)",
     "tradeImperialCrafting": "Имперский караван",
     "tradeGuild": "Торговля гильдии",
-    "tradeType": "Тип"
+    "tradeType": "Тип {type}"
   },
   "meta": {
     "count": "Предметов: {count} · можно усилить: {enhanceable}",

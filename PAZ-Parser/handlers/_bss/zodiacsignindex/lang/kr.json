@@ -1,0 +1,9 @@
+{
+  "columns": {
+    "zodiacId": "별자리 ID",
+    "name": "이름"
+  },
+  "meta": {
+    "count": "별자리 색인 항목 {count}개"
+  }
+}

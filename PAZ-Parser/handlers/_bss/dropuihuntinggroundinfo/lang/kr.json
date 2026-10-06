@@ -1,0 +1,23 @@
+{
+  "columns": {
+    "key": "키",
+    "name": "이름",
+    "region": "지역",
+    "categories": "카테고리",
+    "species": "종",
+    "ap": "공격력",
+    "dp": "방어력",
+    "totalAp": "총 공격력",
+    "totalDp": "총 방어력",
+    "maxAp": "최대 공격력",
+    "node": "거점",
+    "monsters": "몬스터",
+    "items": "아이템",
+    "quests": "의뢰",
+    "tags": "태그",
+    "titles": "칭호"
+  },
+  "meta": {
+    "count": "사냥터 {count}개"
+  }
+}

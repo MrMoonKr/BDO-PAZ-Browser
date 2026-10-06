@@ -1,0 +1,8 @@
+{
+  "columns": {
+    "record": "레코드"
+  },
+  "meta": {
+    "count": "항목 {count}개 · 레코드 {record_count}개"
+  }
+}
