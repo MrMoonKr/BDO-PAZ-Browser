@@ -1,0 +1,29 @@
+{
+  "columns": {
+    "enchantKey": "Enchant Key",
+    "level": "Level",
+    "material": "Material",
+    "materialCount": "Count",
+    "chance": "Chance",
+    "failDurability": "Fail Durability Loss",
+    "perfectCount": "Perfect Count",
+    "perfectDurability": "Perfect Durability Loss",
+    "durability": "Durability",
+    "ap": "AP",
+    "accuracy": "Accuracy",
+    "evasion": "Evasion",
+    "hiddenEvasion": "Hidden Evasion",
+    "aidItems": "Aid Items",
+    "effects": "Effects",
+    "description": "Description"
+  },
+  "offsetColumns": {
+    "enchantKey": "Enchant Key",
+    "level": "Level",
+    "dataOffset": "Data Offset",
+    "dataSize": "Data Size"
+  },
+  "meta": {
+    "count": "{count} levels · {keys} enchant keys"
+  }
+}

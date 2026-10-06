@@ -1,0 +1,29 @@
+{
+  "columns": {
+    "enchantKey": "Clé d'optimisation",
+    "level": "Niveau",
+    "material": "Matériau",
+    "materialCount": "Quantité",
+    "chance": "Chances d'optimisation",
+    "failDurability": "Perte de durabilité",
+    "perfectCount": "Quantité (parfaite)",
+    "perfectDurability": "Perte de durabilité (parfaite)",
+    "durability": "Durabilité",
+    "ap": "PA",
+    "accuracy": "Précision",
+    "evasion": "Esquive",
+    "hiddenEvasion": "Esquive cachée",
+    "aidItems": "Objets d'aide",
+    "effects": "Effets",
+    "description": "Description"
+  },
+  "offsetColumns": {
+    "enchantKey": "Clé d'optimisation",
+    "level": "Niveau",
+    "dataOffset": "Décalage des données",
+    "dataSize": "Taille des données"
+  },
+  "meta": {
+    "count": "{count} niveaux · {keys} clés d'optimisation"
+  }
+}

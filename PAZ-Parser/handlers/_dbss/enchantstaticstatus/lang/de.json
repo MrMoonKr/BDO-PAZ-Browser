@@ -1,0 +1,29 @@
+{
+  "columns": {
+    "enchantKey": "Verstärkungsschlüssel",
+    "level": "Stufe",
+    "material": "Material",
+    "materialCount": "Anzahl",
+    "chance": "Verstärkungschance",
+    "failDurability": "Haltbarkeitsverlust",
+    "perfectCount": "Anzahl (perfekt)",
+    "perfectDurability": "Haltbarkeitsverlust (perfekt)",
+    "durability": "Haltbarkeit",
+    "ap": "AK",
+    "accuracy": "Präzision",
+    "evasion": "Ausweichen",
+    "hiddenEvasion": "Verstecktes Ausweichen",
+    "aidItems": "Hilfsgegenstände",
+    "effects": "Effekte",
+    "description": "Beschreibung"
+  },
+  "offsetColumns": {
+    "enchantKey": "Verstärkungsschlüssel",
+    "level": "Stufe",
+    "dataOffset": "Daten-Offset",
+    "dataSize": "Datengröße"
+  },
+  "meta": {
+    "count": "{count} Stufen · {keys} Verstärkungsschlüssel"
+  }
+}

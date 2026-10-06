@@ -1,0 +1,29 @@
+{
+  "columns": {
+    "enchantKey": "Ключ усиления",
+    "level": "Уровень",
+    "material": "Материал",
+    "materialCount": "Кол-во",
+    "chance": "Шанс усиления",
+    "failDurability": "Потеря прочности",
+    "perfectCount": "Кол-во (идеальное)",
+    "perfectDurability": "Потеря прочности (идеальное)",
+    "durability": "Прочность",
+    "ap": "Атака",
+    "accuracy": "Меткость",
+    "evasion": "Уклонение",
+    "hiddenEvasion": "Скрытое уклонение",
+    "aidItems": "Вспомогательные предметы",
+    "effects": "Эффекты",
+    "description": "Описание"
+  },
+  "offsetColumns": {
+    "enchantKey": "Ключ усиления",
+    "level": "Уровень",
+    "dataOffset": "Смещение данных",
+    "dataSize": "Размер данных"
+  },
+  "meta": {
+    "count": "{count} уровней · {keys} ключей усиления"
+  }
+}

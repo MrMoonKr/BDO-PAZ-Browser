@@ -1,0 +1,29 @@
+{
+  "columns": {
+    "enchantKey": "Clave de refuerzo",
+    "level": "Nivel",
+    "material": "Material",
+    "materialCount": "Cantidad",
+    "chance": "Probabilidad de refuerzo",
+    "failDurability": "Pérdida de durabilidad",
+    "perfectCount": "Cantidad (perfecto)",
+    "perfectDurability": "Pérdida de durabilidad (perfecto)",
+    "durability": "Durabilidad",
+    "ap": "Ataque",
+    "accuracy": "Precisión",
+    "evasion": "Evasión",
+    "hiddenEvasion": "Evasión oculta",
+    "aidItems": "Objetos de ayuda",
+    "effects": "Efectos",
+    "description": "Descripción"
+  },
+  "offsetColumns": {
+    "enchantKey": "Clave de refuerzo",
+    "level": "Nivel",
+    "dataOffset": "Desplazamiento de datos",
+    "dataSize": "Tamaño de datos"
+  },
+  "meta": {
+    "count": "{count} niveles · {keys} claves de refuerzo"
+  }
+}

@@ -163,7 +163,7 @@ fields that are not yet decoded.
 | `+0xCA` | u16  | unknown_ca   |                                                              |
 | `+0xCC` | u32  | skill_key_1  | Skill a consumable casts, a [`skill.dbss`](skill_dbss.md) key; its `buff_ids` are the item's buffs; `0` when none |
 | `+0xD0` | u32  | skill_key_2  | Second skill, used by composite meals; `0` when none          |
-| `+0xD4` | ...  | unknown      | Numeric fields up to the name: 16 or 21 bytes in most base blocks, 176 in 597 gear blocks, then a u32 that bdo-data-extractor calls the enchant key (0 in 40,025 base items, never the item ID) |
+| `+0xD4` | ...  | unknown      | Numeric fields up to the name: 16 or 21 bytes in most base blocks, 176 in 597 gear blocks, then a u32 that bdo-data-extractor calls the enchant key (0 in 40,025 base items, never the item ID); with the block's level it is the key of [enchantstaticstatus.dbss](enchantstaticstatus_dbss.md) |
 | varies  | ...  | name_kr      | Korean item name: u64 character count, then UTF-16LE text that ends where the icon's prefix starts. Present in all 70,284 base blocks (client 3458) |
 
 Checked on Balacs Lunchbox (`9359`): `item_type` 2, `grade` 3, `weight`
