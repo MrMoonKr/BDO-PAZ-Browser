@@ -1,0 +1,31 @@
+{
+  "columns": {
+    "employeeKey": "ID del marinero",
+    "level": "Nivel",
+    "icon": "Icono",
+    "name": "Nombre",
+    "title": "Título",
+    "role": "Función",
+    "characterId": "ID del personaje",
+    "endurance": "Perseverancia",
+    "wits": "Percepción",
+    "awareness": "Instinto",
+    "strength": "Fuerza",
+    "patience": "Paciencia",
+    "focus": "Concentración",
+    "force": "Potencia",
+    "vision": "Visión",
+    "maxCondition": "Salud",
+    "appetite": "Preferencias",
+    "cabinCost": "Complexión",
+    "weight": "Capacidad de carga",
+    "firstMateSkill": "Habilidad (oficial de cubierta)"
+  },
+  "jobs": {
+    "sailor": "Marinero",
+    "firstMate": "Oficial de cubierta"
+  },
+  "meta": {
+    "count": "{count} filas · {employees} marineros"
+  }
+}

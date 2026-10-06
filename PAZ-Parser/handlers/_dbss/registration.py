@@ -84,6 +84,10 @@ from .fairyskillchange.handler import (
     fairy_skill_change_offset_handler,
 )
 from .employeename.handler import EmployeeNameHandler, employee_name_offset_handler
+from .employeespawnposition.handler import (
+    EmployeeSpawnPositionHandler,
+    employee_spawn_position_offset_handler,
+)
 from .buff.handler import BuffHandler, buff_offset_handler
 from .skill.handler import SkillHandler, skill_offset_handler
 from .skilltype.handler import SkillTypeHandler
@@ -179,6 +183,11 @@ def register_dbss_handlers() -> None:
     register_handler("fairyskillchange.dbss", FairySkillChangeHandler())
     register_handler("employeenameoffset.dbss", employee_name_offset_handler())
     register_handler("employeename.dbss", EmployeeNameHandler())
+    register_handler(
+        "employeespawnpositionoffset.dbss",
+        employee_spawn_position_offset_handler(),
+    )
+    register_handler("employeespawnposition.dbss", EmployeeSpawnPositionHandler())
     register_handler("buffoffset.dbss", buff_offset_handler())
     register_handler("buff.dbss", BuffHandler())
     register_handler("worldmapmonsteroffset.dbss", world_map_monster_offset_handler())

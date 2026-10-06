@@ -1,0 +1,11 @@
+{
+  "columns": {
+    "employeeKey": "선원 키",
+    "level": "레벨",
+    "expToNextLevel": "다음 레벨까지 경험치",
+    "growth": "레벨업 성장"
+  },
+  "meta": {
+    "count": "레벨 {count}개 · 선원 {sailors}명"
+  }
+}

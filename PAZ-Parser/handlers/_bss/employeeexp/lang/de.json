@@ -1,0 +1,11 @@
+{
+  "columns": {
+    "employeeKey": "Seefahrer-Schlüssel",
+    "level": "Stufe",
+    "expToNextLevel": "EP bis zur nächsten Stufe",
+    "growth": "Wachstum bei Stufenaufstieg"
+  },
+  "meta": {
+    "count": "{count} Stufen · {sailors} Seefahrer"
+  }
+}

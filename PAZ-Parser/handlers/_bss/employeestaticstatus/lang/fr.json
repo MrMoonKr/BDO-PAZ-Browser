@@ -1,0 +1,31 @@
+{
+  "columns": {
+    "employeeKey": "ID du marin",
+    "level": "Niveau",
+    "icon": "Icône",
+    "name": "Nom",
+    "title": "Titre",
+    "role": "Rôle",
+    "characterId": "ID du personnage",
+    "endurance": "Persévérance",
+    "wits": "Perception",
+    "awareness": "Instinct",
+    "strength": "Vigueur",
+    "patience": "Patience",
+    "focus": "Concentration",
+    "force": "Force",
+    "vision": "Vision",
+    "maxCondition": "Santé",
+    "appetite": "Préférence",
+    "cabinCost": "Coût de la cabine",
+    "weight": "Poids",
+    "firstMateSkill": "Compétence (Second)"
+  },
+  "jobs": {
+    "sailor": "Marin",
+    "firstMate": "Second"
+  },
+  "meta": {
+    "count": "{count} lignes · {employees} marins"
+  }
+}

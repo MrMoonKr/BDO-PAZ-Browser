@@ -1,0 +1,18 @@
+{
+  "offsetColumns": {
+    "spawnPositionKey": "Point d'apparition",
+    "dataOffset": "Décalage des données",
+    "dataSize": "Taille des données"
+  },
+  "columns": {
+    "spawnPositionKey": "Point d'apparition",
+    "region": "Région",
+    "x": "X",
+    "y": "Y",
+    "z": "Z",
+    "direction": "Direction"
+  },
+  "meta": {
+    "count": "{count} points d'apparition de marins"
+  }
+}

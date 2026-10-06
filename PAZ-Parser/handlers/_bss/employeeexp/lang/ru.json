@@ -1,0 +1,11 @@
+{
+  "columns": {
+    "employeeKey": "Ключ матроса",
+    "level": "Уровень",
+    "expToNextLevel": "Опыт до след. уровня",
+    "growth": "Рост за уровень"
+  },
+  "meta": {
+    "count": "Уровней: {count} · матросов: {sailors}"
+  }
+}

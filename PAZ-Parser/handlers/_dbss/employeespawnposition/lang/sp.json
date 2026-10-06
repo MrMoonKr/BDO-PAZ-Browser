@@ -1,0 +1,18 @@
+{
+  "offsetColumns": {
+    "spawnPositionKey": "Punto de aparición",
+    "dataOffset": "Desplazamiento de datos",
+    "dataSize": "Tamaño de datos"
+  },
+  "columns": {
+    "spawnPositionKey": "Punto de aparición",
+    "region": "Región",
+    "x": "X",
+    "y": "Y",
+    "z": "Z",
+    "direction": "Dirección"
+  },
+  "meta": {
+    "count": "{count} puntos de aparición de marineros"
+  }
+}

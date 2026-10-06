@@ -1,0 +1,18 @@
+{
+  "offsetColumns": {
+    "spawnPositionKey": "Spawn Position",
+    "dataOffset": "Data Offset",
+    "dataSize": "Data Size"
+  },
+  "columns": {
+    "spawnPositionKey": "Spawn Position",
+    "region": "Region",
+    "x": "X",
+    "y": "Y",
+    "z": "Z",
+    "direction": "Direction"
+  },
+  "meta": {
+    "count": "{count} sailor spawn positions"
+  }
+}

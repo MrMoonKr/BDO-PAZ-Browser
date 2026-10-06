@@ -21,7 +21,7 @@ LOC type=71 id1=47 id3=12 -> Guile
 | `employeenameoffset.dbss` | Required | Maps employee name ID -> byte offset and record size |
 | `languagedata_en.loc`     | Optional | English display name lookup                          |
 
-Other extracted `employee*` files may reference the same employee ID/name namespace. `employeespawnposition.dbss` has a simple 34-byte fixed record shape and directly includes IDs found in this table; larger employee files need separate reverse-engineering before their foreign-key fields can be confirmed.
+Other extracted `employee*` files may reference the same employee ID/name namespace. `employeespawnposition.dbss` keys (1 to 5, 41 to 50) fall in this table's ID range but are spawn position keys, not name IDs (see [employeespawnposition](employeespawnposition_dbss.md)); larger employee files need separate reverse-engineering before their foreign-key fields can be confirmed.
 
 All multi-byte values are little-endian.
 
@@ -96,7 +96,7 @@ To read a name record: seek to `offset` in `employeename.dbss`, read `size` byte
 - Every offset-row ID matches the `employee_name_id` stored at the beginning of its target record.
 - Every observed `unknown_08` and trailing `terminator` is zero. Earlier versions of this doc called `unknown_08` `unknown_0`.
 - English LOC matches were confirmed for sampled IDs: `47` -> Guile, `34` -> Pilgrave, `15` -> Neil Moss, `1` -> Philav, `60` -> Tails.
-- `employeespawnposition.dbss` directly uses IDs from this table for observed rows `1`-`5` and `41`-`50`.
+- Earlier versions of this doc read the `employeespawnposition.dbss` keys `1`-`5` and `41`-`50` as IDs from this table. They are spawn position keys that `employeespawninfo.dbss` lists per sailor character; the overlap is by value only.
 
 ---
 
@@ -104,4 +104,4 @@ To read a name record: seek to `offset` in `employeename.dbss`, read `size` byte
 
 ### Employee Foreign Keys
 
-Several related files contain values that overlap this table's IDs (`employeestaticstatus.bss`, `employeeexp.bss`, and other employee DBSS files), but those formats are not decoded enough to name exact fields here.
+None of the decoded sailor files hold an ID from this table. `employeestaticstatus.bss` and `employeeexp.bss` key their rows by sailor key (`1` to `29` and `1` to `23`), see [employeestaticstatus](employeestaticstatus_bss.md) and [employeeexp](employeeexp_bss.md); `employeespawnposition.dbss` keys are spawn position keys. Other employee DBSS files contain values that overlap this table's IDs, but those formats are not decoded enough to name exact fields here.

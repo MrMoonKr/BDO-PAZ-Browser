@@ -1,0 +1,31 @@
+{
+  "columns": {
+    "employeeKey": "Sailor ID",
+    "level": "Level",
+    "icon": "Icon",
+    "name": "Name",
+    "title": "Title",
+    "role": "Role",
+    "characterId": "Character ID",
+    "endurance": "Endurance",
+    "wits": "Wits",
+    "awareness": "Awareness",
+    "strength": "Strength",
+    "patience": "Patience",
+    "focus": "Focus",
+    "force": "Force",
+    "vision": "Vision",
+    "maxCondition": "Condition",
+    "appetite": "Appetite",
+    "cabinCost": "Cabin Cost",
+    "weight": "Weight",
+    "firstMateSkill": "First Mate Skill"
+  },
+  "jobs": {
+    "sailor": "Sailor",
+    "firstMate": "First Mate"
+  },
+  "meta": {
+    "count": "{count} rows · {employees} sailors"
+  }
+}

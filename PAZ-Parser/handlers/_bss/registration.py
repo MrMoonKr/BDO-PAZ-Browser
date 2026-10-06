@@ -5,6 +5,8 @@ from bdo_preview import register_handler
 from .allquestlist.handler import AllQuestListBssHandler
 from .buffsimply.handler import BuffSimplyBssHandler
 from .dropuihuntinggroundinfo.handler import DropUiHuntingGroundInfoBssHandler
+from .employeeexp.handler import EmployeeExpBssHandler
+from .employeestaticstatus.handler import EmployeeStaticStatusBssHandler
 from .exploration.handler import ExplorationBssHandler
 from .fairyequipskill.handler import FairyEquipSkillBssHandler
 from .fairyfeedenchantfailcount.handler import (
@@ -41,6 +43,8 @@ def register_bss_handlers() -> None:
         "dropuihuntinggroundinfo.bss",
         DropUiHuntingGroundInfoBssHandler(),
     )
+    register_handler("employeeexp.bss", EmployeeExpBssHandler())
+    register_handler("employeestaticstatus.bss", EmployeeStaticStatusBssHandler())
     register_handler("exploration.bss", ExplorationBssHandler())
     register_handler("fairyequipskill.bss", FairyEquipSkillBssHandler())
     register_handler(

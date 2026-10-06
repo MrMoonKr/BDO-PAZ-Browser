@@ -1,0 +1,11 @@
+{
+  "columns": {
+    "employeeKey": "Clave de marinero",
+    "level": "Nivel",
+    "expToNextLevel": "Exp. para el siguiente nivel",
+    "growth": "Crecimiento por nivel"
+  },
+  "meta": {
+    "count": "{count} niveles · {sailors} marineros"
+  }
+}

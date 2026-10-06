@@ -1,0 +1,31 @@
+{
+  "columns": {
+    "employeeKey": "선원 ID",
+    "level": "레벨",
+    "icon": "아이콘",
+    "name": "이름",
+    "title": "칭호",
+    "role": "역할",
+    "characterId": "캐릭터 ID",
+    "endurance": "끈기",
+    "wits": "눈치",
+    "awareness": "감각",
+    "strength": "완력",
+    "patience": "인내",
+    "focus": "집중",
+    "force": "박력",
+    "vision": "시야",
+    "maxCondition": "건강",
+    "appetite": "식성",
+    "cabinCost": "요구 선실",
+    "weight": "생활 물자",
+    "firstMateSkill": "부선장 기술"
+  },
+  "jobs": {
+    "sailor": "선원",
+    "firstMate": "부선장"
+  },
+  "meta": {
+    "count": "{count}개 행 · 선원 {employees}명"
+  }
+}

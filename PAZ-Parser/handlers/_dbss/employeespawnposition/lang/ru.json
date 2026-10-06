@@ -1,0 +1,18 @@
+{
+  "offsetColumns": {
+    "spawnPositionKey": "Точка появления",
+    "dataOffset": "Смещение данных",
+    "dataSize": "Размер данных"
+  },
+  "columns": {
+    "spawnPositionKey": "Точка появления",
+    "region": "Регион",
+    "x": "X",
+    "y": "Y",
+    "z": "Z",
+    "direction": "Направление"
+  },
+  "meta": {
+    "count": "Точек появления матросов: {count}"
+  }
+}

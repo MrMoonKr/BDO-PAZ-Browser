@@ -1,0 +1,31 @@
+{
+  "columns": {
+    "employeeKey": "Seefahrer-ID",
+    "level": "Stufe",
+    "icon": "Symbol",
+    "name": "Name",
+    "title": "Titel",
+    "role": "Rolle",
+    "characterId": "Charakter-ID",
+    "endurance": "Beharrlichkeit",
+    "wits": "Wahrnehmung",
+    "awareness": "Instinkt",
+    "strength": "Stärke",
+    "patience": "Geduldigkeit",
+    "focus": "Fokus",
+    "force": "Kraft",
+    "vision": "Sehkraft",
+    "maxCondition": "Kondition",
+    "appetite": "Vorliebe",
+    "cabinCost": "Benötigte Kajüte",
+    "weight": "Gewicht",
+    "firstMateSkill": "Talent (Erster Offizier)"
+  },
+  "jobs": {
+    "sailor": "Seefahrer",
+    "firstMate": "Erster Offizier"
+  },
+  "meta": {
+    "count": "{count} Zeilen · {employees} Seefahrer"
+  }
+}

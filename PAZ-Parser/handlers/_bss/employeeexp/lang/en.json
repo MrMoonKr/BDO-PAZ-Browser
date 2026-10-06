@@ -1,0 +1,11 @@
+{
+  "columns": {
+    "employeeKey": "Sailor Key",
+    "level": "Level",
+    "expToNextLevel": "EXP to Next Level",
+    "growth": "Level-Up Growth"
+  },
+  "meta": {
+    "count": "{count} levels · {sailors} sailors"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "offsetColumns": {
+    "spawnPositionKey": "Erscheinungsort",
+    "dataOffset": "Daten-Offset",
+    "dataSize": "Datengröße"
+  },
+  "columns": {
+    "spawnPositionKey": "Erscheinungsort",
+    "region": "Region",
+    "x": "X",
+    "y": "Y",
+    "z": "Z",
+    "direction": "Richtung"
+  },
+  "meta": {
+    "count": "{count} Erscheinungsorte von Seefahrern"
+  }
+}

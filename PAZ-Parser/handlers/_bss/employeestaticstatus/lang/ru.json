@@ -1,0 +1,31 @@
+{
+  "columns": {
+    "employeeKey": "ID матроса",
+    "level": "Уровень",
+    "icon": "Значок",
+    "name": "Имя",
+    "title": "Титул",
+    "role": "Роль",
+    "characterId": "ID персонажа",
+    "endurance": "Выносливость",
+    "wits": "Проницательность",
+    "awareness": "Чутье",
+    "strength": "Устойчивость",
+    "patience": "Терпение",
+    "focus": "Сосредоточенность",
+    "force": "Сила",
+    "vision": "Обзор",
+    "maxCondition": "Здоровье",
+    "appetite": "Аппетит",
+    "cabinCost": "Требуется кают",
+    "weight": "Вес",
+    "firstMateSkill": "Навык штабс-капитана"
+  },
+  "jobs": {
+    "sailor": "Матрос",
+    "firstMate": "Штабс-капитан"
+  },
+  "meta": {
+    "count": "{count} строк · матросов: {employees}"
+  }
+}
