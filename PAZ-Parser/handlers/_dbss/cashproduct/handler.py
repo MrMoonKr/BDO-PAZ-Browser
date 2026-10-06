@@ -28,9 +28,9 @@ def cash_product_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("product_id", "productId", "Product ID"),
-            offset_column("data_offset", "dataOffset", "Data Offset"),
-            size_column("data_size", "dataSize", "Data Size"),
+            OffsetColumn("product_id", "productId"),
+            offset_column("data_offset", "dataOffset"),
+            size_column("data_size", "dataSize"),
         ],
         parse_cashproductoffset_records,
     )
@@ -38,14 +38,14 @@ def cash_product_offset_handler() -> OffsetTableHandler:
 
 class CashProductHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("productId", "Product ID"), "num", sort_key="product_id"),
-            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
-            Column(cols.get("product", "Product"), sort_key="product"),
-            Column(cols.get("itemId", "Item ID"), "num", sort_key="item_id"),
-            Column(cols.get("item", "Item"), sort_key="item_name"),
-            Column(cols.get("description", "Description"), sort_key="description"),
+            Column(cols["productId"], "num", sort_key="product_id"),
+            Column(cols["icon"], sort_key="icon_path"),
+            Column(cols["product"], sort_key="product"),
+            Column(cols["itemId"], "num", sort_key="item_id"),
+            Column(cols["item"], sort_key="item_name"),
+            Column(cols["description"], sort_key="description"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

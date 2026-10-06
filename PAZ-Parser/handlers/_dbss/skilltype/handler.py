@@ -33,12 +33,12 @@ def _record_dict(record: SkillTypeRecord, kind_labels: dict[str, str]) -> dict:
 
 class SkillTypeHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("skillNo", "Skill No"), "num", sort_key="skill_no"),
-            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
-            Column(cols.get("name", "Name"), sort_key="name"),
-            Column(cols.get("kind", "Kind"), sort_key="kind"),
+            Column(cols["skillNo"], "num", sort_key="skill_no"),
+            Column(cols["icon"], sort_key="icon_path"),
+            Column(cols["name"], sort_key="name"),
+            Column(cols["kind"], sort_key="kind"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:
@@ -58,7 +58,7 @@ class SkillTypeHandler(PreviewHandler):
         if offset_raw is None:
             raise ValueError(f"{_OFFSET_FILE} companion not found.")
 
-        kind_labels = load_handler_strings(self.lang, _LANG_DIR).get("kind", {})
+        kind_labels = load_handler_strings(self.lang, _LANG_DIR)["kind"]
         # The index order is arbitrary. Skill key order gives CSV export class
         # skills first; the table opens on its default skill number sort.
         records = sorted(parse_skilltype_records(data, offset_raw), key=lambda record: record.skill_key)

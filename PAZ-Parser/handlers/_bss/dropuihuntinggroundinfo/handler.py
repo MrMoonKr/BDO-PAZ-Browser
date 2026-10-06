@@ -67,26 +67,26 @@ def _number(value: float) -> str:
 
 class DropUiHuntingGroundInfoBssHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("key", "Key"), "num", sort_key="key"),
-            Column(cols.get("name", "Name"), sort_key="name"),
+            Column(cols["key"], "num", sort_key="key"),
+            Column(cols["name"], sort_key="name"),
             # Sorts in the game's tab order rather than by name.
-            Column(cols.get("region", "Region"), sort_key="main_category_key"),
-            Column(cols.get("categories", "Categories")),
-            Column(cols.get("species", "Species"), sort_key="tribe_type"),
-            Column(cols.get("ap", "AP"), "num", sort_key="recommended_ap"),
-            Column(cols.get("dp", "DP"), "num", sort_key="recommended_dp"),
-            Column(cols.get("totalAp", "Total AP"), "num", sort_key="total_ap"),
-            Column(cols.get("totalDp", "Total DP"), "num", sort_key="total_dp"),
-            Column(cols.get("maxAp", "Max AP"), "num", sort_key="limited_ap"),
-            Column(cols.get("node", "Node"), sort_key="node_name"),
+            Column(cols["region"], sort_key="main_category_key"),
+            Column(cols["categories"]),
+            Column(cols["species"], sort_key="tribe_type"),
+            Column(cols["ap"], "num", sort_key="recommended_ap"),
+            Column(cols["dp"], "num", sort_key="recommended_dp"),
+            Column(cols["totalAp"], "num", sort_key="total_ap"),
+            Column(cols["totalDp"], "num", sort_key="total_dp"),
+            Column(cols["maxAp"], "num", sort_key="limited_ap"),
+            Column(cols["node"], sort_key="node_name"),
             # List columns: they would only sort by their string form.
-            Column(cols.get("monsters", "Monsters")),
-            Column(cols.get("items", "Items")),
-            Column(cols.get("quests", "Quests")),
-            Column(cols.get("tags", "Tags")),
-            Column(cols.get("titles", "Titles")),
+            Column(cols["monsters"]),
+            Column(cols["items"]),
+            Column(cols["quests"]),
+            Column(cols["tags"]),
+            Column(cols["titles"]),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

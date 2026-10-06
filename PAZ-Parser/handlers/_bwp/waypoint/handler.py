@@ -14,9 +14,6 @@ from .parser import PROPERTY_NAMES, WaypointGraph, is_waypoint_graph, neighbours
 _LANG_DIR = Path(__file__).parent / "lang"
 _EMPTY = "-"
 _LIST_PREVIEW_ITEMS = 8
-_OLD_LAYOUT_META = "Old instance dungeon template without PABR magic; not read"
-
-
 def _records(graph: WaypointGraph) -> list[dict]:
     linked = neighbours(graph)
     records: list[dict] = []
@@ -44,16 +41,16 @@ class WaypointBwpHandler(PreviewHandler):
         return load_handler_strings(self.lang, _LANG_DIR)
 
     def _columns(self) -> list[Column]:
-        cols = self._strings().get("columns", {})
+        cols = self._strings()["columns"]
         return [
-            Column(cols.get("key", "Key"), "num", sort_key="key"),
-            Column(cols.get("name", "Name"), sort_key="name"),
-            Column(cols.get("x", "X"), "num", sort_key="x"),
-            Column(cols.get("y", "Y"), "num", sort_key="y"),
-            Column(cols.get("z", "Z"), "num", sort_key="z"),
-            Column(cols.get("property", "Property"), sort_key="property_name"),
-            Column(cols.get("subWaypoint", "Sub Waypoint"), sort_key="is_sub_waypoint"),
-            Column(cols.get("links", "Links"), sort_key="link_count"),
+            Column(cols["key"], "num", sort_key="key"),
+            Column(cols["name"], sort_key="name"),
+            Column(cols["x"], "num", sort_key="x"),
+            Column(cols["y"], "num", sort_key="y"),
+            Column(cols["z"], "num", sort_key="z"),
+            Column(cols["property"], sort_key="property_name"),
+            Column(cols["subWaypoint"], sort_key="is_sub_waypoint"),
+            Column(cols["links"], sort_key="link_count"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:
@@ -98,7 +95,7 @@ class WaypointBwpHandler(PreviewHandler):
         return super().render_sorted_page(data, entry, companions, page, page_size, sort)
 
     def _old_layout_page(self) -> str:
-        meta = self._strings().get("messages", {}).get("oldLayout", _OLD_LAYOUT_META)
+        meta = self._strings()["messages"]["oldLayout"]
         return table(meta, self._columns(), [])
 
     def render_records_page(
@@ -109,8 +106,8 @@ class WaypointBwpHandler(PreviewHandler):
     ) -> str:
         start = page * page_size
         slice_ = records[start : start + page_size]
-        values = self._strings().get("values", {})
-        yes, no = values.get("yes", "Yes"), values.get("no", "No")
+        values = self._strings()["values"]
+        yes, no = values["yes"], values["no"]
         # Every linked pair is listed on both of its waypoints.
         links = sum(record["link_count"] or 0 for record in records)
         meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records), links=links // 2)

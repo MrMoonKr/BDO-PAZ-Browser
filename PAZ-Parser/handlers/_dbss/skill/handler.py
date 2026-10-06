@@ -84,10 +84,10 @@ def skill_offset_handler(
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("skill_no", "skillNo", "Skill No"),
-            OffsetColumn("level", "level", "Level"),
-            offset_column("dbss_offset", "dbssOffset", "DBSS Offset"),
-            size_column("size", "size", "Size"),
+            OffsetColumn("skill_no", "skillNo"),
+            OffsetColumn("level", "level"),
+            offset_column("dbss_offset", "dbssOffset"),
+            size_column("size", "size"),
         ],
         read,
     )
@@ -95,20 +95,20 @@ def skill_offset_handler(
 
 class SkillHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("skillNo", "Skill No"), "num", sort_key="skill_no"),
-            Column(cols.get("level", "Level"), "num", sort_key="level"),
-            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
-            Column(cols.get("name", "Name"), sort_key="name"),
-            Column(cols.get("description", "Description"), sort_key="description"),
-            Column(cols.get("cooldown", "Cooldown"), "num", sort_key="cooldown_ms"),
-            Column(cols.get("resourceCost", "Resource"), "num", sort_key="resource_cost"),
-            Column(cols.get("staminaCost", "Stamina"), "num", sort_key="stamina_cost"),
-            Column(cols.get("buffs", "Buffs"), sort_key="buff_count"),
-            Column(cols.get("nextSkills", "Next Skills")),
-            Column(cols.get("baseSkill", "Base Skill"), sort_key="base_skill"),
-            Column(cols.get("script", "Script"), sort_key="script"),
+            Column(cols["skillNo"], "num", sort_key="skill_no"),
+            Column(cols["level"], "num", sort_key="level"),
+            Column(cols["icon"], sort_key="icon_path"),
+            Column(cols["name"], sort_key="name"),
+            Column(cols["description"], sort_key="description"),
+            Column(cols["cooldown"], "num", sort_key="cooldown_ms"),
+            Column(cols["resourceCost"], "num", sort_key="resource_cost"),
+            Column(cols["staminaCost"], "num", sort_key="stamina_cost"),
+            Column(cols["buffs"], sort_key="buff_count"),
+            Column(cols["nextSkills"]),
+            Column(cols["baseSkill"], sort_key="base_skill"),
+            Column(cols["script"], sort_key="script"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

@@ -21,14 +21,14 @@ _LOC_ID4_DESCRIPTION = 1
 
 class FairyEquipSkillBssHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("equipSkillId", "Equip Skill ID"), "num", sort_key="equip_skill_id"),
-            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
-            Column(cols.get("skillName", "Skill Name"), sort_key="skill_name"),
-            Column(cols.get("description", "Description"), sort_key="skill_description"),
-            Column(cols.get("skillType", "Skill Type"), "num", sort_key="skill_type"),
-            Column(cols.get("locId", "Loc ID"), "num", sort_key="loc_id"),
+            Column(cols["equipSkillId"], "num", sort_key="equip_skill_id"),
+            Column(cols["icon"], sort_key="icon_path"),
+            Column(cols["skillName"], sort_key="skill_name"),
+            Column(cols["description"], sort_key="skill_description"),
+            Column(cols["skillType"], "num", sort_key="skill_type"),
+            Column(cols["locId"], "num", sort_key="loc_id"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

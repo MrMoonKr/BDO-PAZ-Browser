@@ -19,9 +19,9 @@ def employee_name_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("employee_name_id", "employeeNameId", "Employee Name ID"),
-            offset_column("data_offset", "dataOffset", "Data Offset"),
-            size_column("data_size", "dataSize", "Data Size"),
+            OffsetColumn("employee_name_id", "employeeNameId"),
+            offset_column("data_offset", "dataOffset"),
+            size_column("data_size", "dataSize"),
         ],
         parse_employeenameoffset_records,
     )
@@ -29,10 +29,10 @@ def employee_name_offset_handler() -> OffsetTableHandler:
 
 class EmployeeNameHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("employeeNameId", "Employee Name ID"), "num", sort_key="employee_name_id"),
-            Column(cols.get("name", "Name"), sort_key="name"),
+            Column(cols["employeeNameId"], "num", sort_key="employee_name_id"),
+            Column(cols["name"], sort_key="name"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

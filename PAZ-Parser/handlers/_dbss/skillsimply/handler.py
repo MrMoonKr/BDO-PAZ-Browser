@@ -35,17 +35,17 @@ def _classes(class_mask: int, all_label: str) -> str:
 def _weapon(record: SkillSimplyRecord, labels: dict[str, str]) -> str:
     """Main, Sub or Awakening; empty for skills without a weapon."""
     if record.uses_main_weapon:
-        return labels.get("main", "Main")
+        return labels["main"]
     if record.uses_sub_weapon:
-        return labels.get("sub", "Sub")
+        return labels["sub"]
     if record.weapon_type == _AWAKENING_WEAPON_TYPE:
-        return labels.get("awakening", "Awakening")
+        return labels["awakening"]
     return ""
 
 
 def _record_dict(record: SkillSimplyRecord, strings: dict) -> dict:
-    kind_labels = strings.get("kind", {})
-    branch_labels = strings.get("branch", {})
+    kind_labels = strings["kind"]
+    branch_labels = strings["branch"]
     return {
         "skill_key": record.skill_key,
         "skill_no": record.skill_no,
@@ -53,14 +53,14 @@ def _record_dict(record: SkillSimplyRecord, strings: dict) -> dict:
         "icon_path": icon_path(IconKind.SKILL, record.skill_no),
         **pa_fields("name", skill_name_tagged(record.skill_no)),
         "class_mask": record.class_mask,
-        "classes": _classes(record.class_mask, strings.get("allClasses", "All")),
+        "classes": _classes(record.class_mask, strings["allClasses"]),
         "kind": record.kind,
         "kind_label": kind_labels.get(str(record.kind), str(record.kind)),
         # Zero means neither branch; None sorts last.
         "branch": record.branch or None,
         "branch_label": branch_labels.get(str(record.branch), str(record.branch)) if record.branch else "",
         "weapon_type": record.weapon_type,
-        "weapon": _weapon(record, strings.get("weapon", {})),
+        "weapon": _weapon(record, strings["weapon"]),
         "is_fusion": record.is_fusion,
         "can_quick_slot": record.can_quick_slot,
         # Zero means no requirement; None sorts last.
@@ -80,22 +80,22 @@ def _record_dict(record: SkillSimplyRecord, strings: dict) -> dict:
 
 class SkillSimplyHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("skillNo", "Skill No"), "num", sort_key="skill_no"),
-            Column(cols.get("level", "Level"), "num", sort_key="level"),
-            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
-            Column(cols.get("name", "Name"), sort_key="name"),
-            Column(cols.get("classes", "Classes"), sort_key="classes"),
-            Column(cols.get("kind", "Kind"), sort_key="kind"),
-            Column(cols.get("branch", "Branch"), sort_key="branch"),
-            Column(cols.get("weapon", "Weapon"), sort_key="weapon"),
-            Column(cols.get("quickSlot", "Quick Slot"), sort_key="can_quick_slot"),
-            Column(cols.get("needLevel", "Required Level"), "num", sort_key="need_level"),
-            Column(cols.get("needSkillPoint", "Skill Points"), "num", sort_key="need_skill_point"),
-            Column(cols.get("needSkills", "Required Skills")),
-            Column(cols.get("previousRank", "Previous Rank"), sort_key="previous_rank"),
-            Column(cols.get("exclusiveSkills", "Exclusive Skills")),
+            Column(cols["skillNo"], "num", sort_key="skill_no"),
+            Column(cols["level"], "num", sort_key="level"),
+            Column(cols["icon"], sort_key="icon_path"),
+            Column(cols["name"], sort_key="name"),
+            Column(cols["classes"], sort_key="classes"),
+            Column(cols["kind"], sort_key="kind"),
+            Column(cols["branch"], sort_key="branch"),
+            Column(cols["weapon"], sort_key="weapon"),
+            Column(cols["quickSlot"], sort_key="can_quick_slot"),
+            Column(cols["needLevel"], "num", sort_key="need_level"),
+            Column(cols["needSkillPoint"], "num", sort_key="need_skill_point"),
+            Column(cols["needSkills"]),
+            Column(cols["previousRank"], sort_key="previous_rank"),
+            Column(cols["exclusiveSkills"]),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

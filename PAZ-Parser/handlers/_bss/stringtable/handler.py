@@ -29,12 +29,12 @@ def _record(row: StringRow) -> dict:
 
 class StringTableBssHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("hash", "Hash"), "num", sort_key="key_hash"),
-            Column(cols.get("sheet", "Sheet"), sort_key="sheet"),
-            Column(cols.get("key", "Key"), sort_key="key"),
-            Column(cols.get("text", "Text"), sort_key="text"),
+            Column(cols["hash"], "num", sort_key="key_hash"),
+            Column(cols["sheet"], sort_key="sheet"),
+            Column(cols["key"], sort_key="key"),
+            Column(cols["text"], sort_key="text"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

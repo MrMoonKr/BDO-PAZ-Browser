@@ -57,9 +57,9 @@ def world_map_monster_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("key", "key", "Key"),
-            offset_column("offset", "byteOffset", "Byte Offset"),
-            size_column("size", "size", "Size"),
+            OffsetColumn("key", "key"),
+            offset_column("offset", "byteOffset"),
+            size_column("size", "size"),
         ],
         offset_records(parse_worldmapmonster_offset_rows, "key"),
     )
@@ -67,15 +67,15 @@ def world_map_monster_offset_handler() -> OffsetTableHandler:
 
 class WorldMapMonsterHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("key", "Key"), "num", sort_key="key"),
-            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
-            Column(cols.get("name", "Name"), sort_key="name"),
-            Column(cols.get("label", "Label"), sort_key="label"),
-            Column(cols.get("detail", "Detail"), sort_key="detail"),
-            Column(cols.get("huntingGround", "Hunting Ground"), sort_key="hunting_ground"),
-            Column(cols.get("condition", "Condition"), sort_key="condition"),
+            Column(cols["key"], "num", sort_key="key"),
+            Column(cols["icon"], sort_key="icon_path"),
+            Column(cols["name"], sort_key="name"),
+            Column(cols["label"], sort_key="label"),
+            Column(cols["detail"], sort_key="detail"),
+            Column(cols["huntingGround"], sort_key="hunting_ground"),
+            Column(cols["condition"], sort_key="condition"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

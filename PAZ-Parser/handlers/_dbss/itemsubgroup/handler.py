@@ -28,9 +28,9 @@ def item_subgroup_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("subgroup_key", "subgroupKey", "Subgroup Key"),
-            offset_column("offset", "dataOffset", "Data Offset"),
-            size_column("size", "size", "Size"),
+            OffsetColumn("subgroup_key", "subgroupKey"),
+            offset_column("offset", "dataOffset"),
+            size_column("size", "size"),
         ],
         offset_records(parse_pabr_offset_rows, "subgroup_key"),
     )
@@ -38,12 +38,12 @@ def item_subgroup_offset_handler() -> OffsetTableHandler:
 
 class ItemSubgroupHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("subgroupKey", "Subgroup Key"), "num", sort_key="subgroup_key"),
-            Column(cols.get("entryCount", "Items"), "num", sort_key="entry_count"),
+            Column(cols["subgroupKey"], "num", sort_key="subgroup_key"),
+            Column(cols["entryCount"], "num", sort_key="entry_count"),
             # A list column: it would only sort by its string form.
-            Column(cols.get("items", "Item Names")),
+            Column(cols["items"]),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

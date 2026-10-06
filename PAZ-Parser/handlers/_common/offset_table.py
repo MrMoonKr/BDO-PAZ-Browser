@@ -4,8 +4,7 @@ Every `*offset.dbss` table lists where the records of its main file sit. A
 format builds an `OffsetTableHandler` from its columns and a reader that turns
 the file into records; the records keep the format's own field names, which
 its parser, its tests and the CSV export share. Column labels come from the
-format's `lang/<lang>.json` block (`offsetColumns` unless named otherwise);
-without a lang folder the English labels show.
+format's `lang/<lang>.json` block (`offsetColumns` unless named otherwise).
 """
 
 from __future__ import annotations
@@ -42,20 +41,19 @@ def size_text(value: int) -> str:
 
 @dataclass(frozen=True)
 class OffsetColumn:
-    """One column: the record field it shows and sorts by, its label and cell text."""
+    """One column: the record field it shows and sorts by, its label key and cell text."""
 
     field: str
     label_key: str
-    label: str
     text: Callable[[int], str] = str
 
 
-def offset_column(field: str, label_key: str, label: str) -> OffsetColumn:
-    return OffsetColumn(field, label_key, label, offset_text)
+def offset_column(field: str, label_key: str) -> OffsetColumn:
+    return OffsetColumn(field, label_key, offset_text)
 
 
-def size_column(field: str, label_key: str, label: str) -> OffsetColumn:
-    return OffsetColumn(field, label_key, label, size_text)
+def size_column(field: str, label_key: str) -> OffsetColumn:
+    return OffsetColumn(field, label_key, size_text)
 
 
 def offset_records(
@@ -108,7 +106,7 @@ class OffsetTableHandler(PreviewHandler):
 
     def __init__(
         self,
-        lang_dir: Path | None,
+        lang_dir: Path,
         columns: Sequence[OffsetColumn],
         read_records: ReadRecords,
         *,
@@ -122,10 +120,9 @@ class OffsetTableHandler(PreviewHandler):
         self._meta = meta
 
     def _columns(self) -> list[Column]:
-        strings = load_handler_strings(self.lang, self._lang_dir) if self._lang_dir else {}
-        labels = strings.get(self._lang_block, {})
+        labels = load_handler_strings(self.lang, self._lang_dir)[self._lang_block]
         return [
-            Column(labels.get(column.label_key, column.label), "num", sort_key=column.field)
+            Column(labels[column.label_key], "num", sort_key=column.field)
             for column in self._offset_columns
         ]
 

@@ -29,13 +29,13 @@ def _text(scene_id: int, str_id4: int, korean: str) -> str:
 
 class GroupCameraDataBssHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("sceneId", "Scene ID"), "num", sort_key="scene_id"),
-            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
-            Column(cols.get("title", "Title"), sort_key="title"),
-            Column(cols.get("description", "Description"), sort_key="description"),
-            Column(cols.get("quote", "Quote"), sort_key="quote"),
+            Column(cols["sceneId"], "num", sort_key="scene_id"),
+            Column(cols["icon"], sort_key="icon_path"),
+            Column(cols["title"], sort_key="title"),
+            Column(cols["description"], sort_key="description"),
+            Column(cols["quote"], sort_key="quote"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

@@ -24,7 +24,7 @@ def spawn_type_name(spawn_type: int) -> str:
 
 def role_label_overrides(lang: str) -> dict[str, str]:
     """`enum name -> label` for the roles whose label replaces the navi label."""
-    return load_handler_strings(lang, _LANG_DIR).get("roleLabels", {})
+    return load_handler_strings(lang, _LANG_DIR)["roleLabels"]
 
 
 def role_label(spawn_type: int, overrides: Mapping[str, str]) -> str:

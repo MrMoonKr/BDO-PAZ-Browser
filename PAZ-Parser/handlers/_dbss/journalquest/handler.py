@@ -39,10 +39,10 @@ def journal_quest_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("group_id", "group", "Group"),
-            OffsetColumn("entry_no", "entry", "Entry"),
-            offset_column("byte_offset", "offset", "Offset"),
-            size_column("byte_size", "size", "Size"),
+            OffsetColumn("group_id", "group"),
+            OffsetColumn("entry_no", "entry"),
+            offset_column("byte_offset", "offset"),
+            size_column("byte_size", "size"),
         ],
         parse_journalquest_offset_records,
         meta=_offset_meta,
@@ -51,20 +51,20 @@ def journal_quest_offset_handler() -> OffsetTableHandler:
 
 class JournalQuestDbssHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("group", "Group"), "num", sort_key="group_id"),
-            Column(cols.get("entry", "Entry"), "num", sort_key="entry_no"),
-            Column(cols.get("journalCategoryId", "Journal Category ID"), "num", sort_key="journal_cat_id"),
-            Column(cols.get("title", "Title"), sort_key="journal_title_text"),
-            Column(cols.get("subtitle", "Subtitle"), sort_key="subtitle_text"),
-            Column(cols.get("volume", "Volume"), sort_key="page_vol_title_text"),
-            Column(cols.get("pageTitles", "Page Titles")),
-            Column(cols.get("unlockCondition", "Unlock Condition"), sort_key="unlock_condition_text"),
-            Column(cols.get("pages", "Pages"), "num", sort_key="page_count"),
-            Column(cols.get("recordBook", "Record Book"), sort_key="is_record_book"),
-            Column(cols.get("combineModel", "Combine Model"), sort_key="combine_model"),
-            Column(cols.get("staticModel", "Static Model"), sort_key="static_model"),
+            Column(cols["group"], "num", sort_key="group_id"),
+            Column(cols["entry"], "num", sort_key="entry_no"),
+            Column(cols["journalCategoryId"], "num", sort_key="journal_cat_id"),
+            Column(cols["title"], sort_key="journal_title_text"),
+            Column(cols["subtitle"], sort_key="subtitle_text"),
+            Column(cols["volume"], sort_key="page_vol_title_text"),
+            Column(cols["pageTitles"]),
+            Column(cols["unlockCondition"], sort_key="unlock_condition_text"),
+            Column(cols["pages"], "num", sort_key="page_count"),
+            Column(cols["recordBook"], sort_key="is_record_book"),
+            Column(cols["combineModel"], sort_key="combine_model"),
+            Column(cols["staticModel"], sort_key="static_model"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:
@@ -124,8 +124,8 @@ class JournalQuestDbssHandler(PreviewHandler):
     ) -> str:
         start = page * page_size
         slice_ = records[start : start + page_size]
-        values = load_handler_strings(self.lang, _LANG_DIR).get("values", {})
-        yes, no = values.get("yes", "Yes"), values.get("no", "No")
+        values = load_handler_strings(self.lang, _LANG_DIR)["values"]
+        yes, no = values["yes"], values["no"]
         pages = sum(r["page_count"] for r in records)
         groups = len({r["group_id"] for r in records})
         meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records), groups=groups, pages=pages)

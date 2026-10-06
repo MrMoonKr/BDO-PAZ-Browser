@@ -24,16 +24,16 @@ _LANG_DIR = Path(__file__).parent / "lang"
 
 class PlantWorkerBssHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("workerId", "Worker ID"), "num", sort_key="worker_id"),
-            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
-            Column(cols.get("name", "Name"), sort_key="name"),
-            Column(cols.get("nextWorkerId", "Next Tier"), "num", sort_key="next_worker_id"),
-            Column(cols.get("moveSpeed", "Move"), "num", sort_key="move_speed"),
-            Column(cols.get("stamina", "Stamina"), "num", sort_key="stamina"),
-            Column(cols.get("luck", "Luck"), "num", sort_key="luck"),
-            Column(cols.get("baseWorkSpeed", "Work Speed"), "num", sort_key="base_work_speed"),
+            Column(cols["workerId"], "num", sort_key="worker_id"),
+            Column(cols["icon"], sort_key="icon_path"),
+            Column(cols["name"], sort_key="name"),
+            Column(cols["nextWorkerId"], "num", sort_key="next_worker_id"),
+            Column(cols["moveSpeed"], "num", sort_key="move_speed"),
+            Column(cols["stamina"], "num", sort_key="stamina"),
+            Column(cols["luck"], "num", sort_key="luck"),
+            Column(cols["baseWorkSpeed"], "num", sort_key="base_work_speed"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

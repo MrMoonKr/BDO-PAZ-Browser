@@ -84,9 +84,9 @@ def mental_theme_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("theme_id", "themeId", "Theme ID"),
-            offset_column("payload_offset", "payloadOffset", "Payload Offset"),
-            size_column("payload_size", "payloadSize", "Payload Size"),
+            OffsetColumn("theme_id", "themeId"),
+            offset_column("payload_offset", "payloadOffset"),
+            size_column("payload_size", "payloadSize"),
         ],
         picked_records(parse_mentalthemeoffset_records, ("theme_id", "payload_offset", "payload_size")),
     )
@@ -94,16 +94,16 @@ def mental_theme_offset_handler() -> OffsetTableHandler:
 
 class MentalThemeHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("themeId", "Theme ID"), "num", sort_key="theme_id"),
-            Column(cols.get("name", "Name"), sort_key="name"),
-            Column(cols.get("parentId", "Parent ID"), "num", sort_key="parent_id"),
-            Column(cols.get("parentName", "Parent Name"), sort_key="parent_name"),
-            Column(cols.get("energyReward1", "Energy Reward 1"), sort_key="energy_reward_1_amount"),
-            Column(cols.get("energyReward2", "Energy Reward 2"), sort_key="energy_reward_2_amount"),
-            Column(cols.get("entries", "Entries"), "num", sort_key="entry_count"),
-            Column(cols.get("childrenGroups", "Children Groups"), "num", sort_key="child_count"),
+            Column(cols["themeId"], "num", sort_key="theme_id"),
+            Column(cols["name"], sort_key="name"),
+            Column(cols["parentId"], "num", sort_key="parent_id"),
+            Column(cols["parentName"], sort_key="parent_name"),
+            Column(cols["energyReward1"], sort_key="energy_reward_1_amount"),
+            Column(cols["energyReward2"], sort_key="energy_reward_2_amount"),
+            Column(cols["entries"], "num", sort_key="entry_count"),
+            Column(cols["childrenGroups"], "num", sort_key="child_count"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

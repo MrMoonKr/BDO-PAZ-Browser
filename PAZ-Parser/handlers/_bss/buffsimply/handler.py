@@ -21,12 +21,12 @@ class BuffSimplyBssHandler(PreviewHandler):
         return load_handler_strings(self.lang, _LANG_DIR)
 
     def _columns(self) -> list[Column]:
-        cols = self._strings().get("columns", {})
+        cols = self._strings()["columns"]
         return [
-            Column(cols.get("buffId", "Buff ID"), "num", sort_key="buff_id"),
-            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
-            Column(cols.get("description", "Description"), sort_key="description"),
-            Column(cols.get("shown", "Shown"), sort_key="is_shown"),
+            Column(cols["buffId"], "num", sort_key="buff_id"),
+            Column(cols["icon"], sort_key="icon_path"),
+            Column(cols["description"], sort_key="description"),
+            Column(cols["shown"], sort_key="is_shown"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:
@@ -52,8 +52,8 @@ class BuffSimplyBssHandler(PreviewHandler):
     ) -> str:
         start = page * page_size
         slice_ = records[start : start + page_size]
-        values = self._strings().get("values", {})
-        yes, no = values.get("yes", "Yes"), values.get("no", "No")
+        values = self._strings()["values"]
+        yes, no = values["yes"], values["no"]
         meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records))
         rows = [
             [

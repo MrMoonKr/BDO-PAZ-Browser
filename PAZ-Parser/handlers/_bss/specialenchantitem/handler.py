@@ -52,13 +52,13 @@ class SpecialEnchantItemBssHandler(PreviewHandler):
         return load_handler_strings(self.lang, _LANG_DIR)
 
     def _columns(self) -> list[Column]:
-        cols = self._strings().get("columns", {})
+        cols = self._strings()["columns"]
         return [
-            Column(cols.get("itemId", "Item ID"), "num", sort_key="item_id"),
-            Column(cols.get("maxLevel", "Max Level"), "num", sort_key="enchant_level"),
-            Column(cols.get("shownAs", "Shown As"), sort_key="display_level"),
-            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
-            Column(cols.get("name", "Name"), sort_key="name"),
+            Column(cols["itemId"], "num", sort_key="item_id"),
+            Column(cols["maxLevel"], "num", sort_key="enchant_level"),
+            Column(cols["shownAs"], sort_key="display_level"),
+            Column(cols["icon"], sort_key="icon_path"),
+            Column(cols["name"], sort_key="name"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

@@ -31,9 +31,9 @@ def npc_gift_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("npc_id", "npcId", "NPC ID"),
-            offset_column("data_offset", "dataOffset", "Data Offset"),
-            size_column("data_size", "dataSize", "Data Size"),
+            OffsetColumn("npc_id", "npcId"),
+            offset_column("data_offset", "dataOffset"),
+            size_column("data_size", "dataSize"),
         ],
         _read_gift_offsets,
     )
@@ -41,14 +41,14 @@ def npc_gift_offset_handler() -> OffsetTableHandler:
 
 class NpcGiftHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("giftColumns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["giftColumns"]
         return [
-            Column(cols.get("npcId", "NPC ID"), "num", sort_key="npc_id"),
-            Column(cols.get("npcName", "NPC Name"), sort_key="npc_name"),
-            Column(cols.get("itemId", "Item ID"), "num", sort_key="item_id"),
-            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
-            Column(cols.get("itemName", "Item Name"), sort_key="item_name"),
-            Column(cols.get("amity", "Amity"), "num", sort_key="amity"),
+            Column(cols["npcId"], "num", sort_key="npc_id"),
+            Column(cols["npcName"], sort_key="npc_name"),
+            Column(cols["itemId"], "num", sort_key="item_id"),
+            Column(cols["icon"], sort_key="icon_path"),
+            Column(cols["itemName"], sort_key="item_name"),
+            Column(cols["amity"], "num", sort_key="amity"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:
@@ -101,11 +101,11 @@ class NpcGiftHandler(PreviewHandler):
 
 class NpcGiftDataHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("dataColumns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["dataColumns"]
         return [
-            Column(cols.get("npcId", "NPC ID"), "num", sort_key="npc_id"),
-            Column(cols.get("npcName", "NPC Name"), sort_key="npc_name"),
-            Column(cols.get("dialogue", "Dialogue"), sort_key="dialogue"),
+            Column(cols["npcId"], "num", sort_key="npc_id"),
+            Column(cols["npcName"], sort_key="npc_name"),
+            Column(cols["dialogue"], sort_key="dialogue"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

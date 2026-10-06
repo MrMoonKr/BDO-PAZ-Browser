@@ -36,9 +36,9 @@ def pet_action_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("action_id", "actionId", "Action ID"),
-            offset_column("record_offset", "recordOffset", "Record Offset"),
-            size_column("record_size", "recordSize", "Record Size"),
+            OffsetColumn("action_id", "actionId"),
+            offset_column("record_offset", "recordOffset"),
+            size_column("record_size", "recordSize"),
         ],
         parse_petactionoffset_records,
     )
@@ -46,11 +46,11 @@ def pet_action_offset_handler() -> OffsetTableHandler:
 
 class PetActionHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("actionId", "Action ID"), "num", sort_key="action_id"),
-            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
-            Column(cols.get("actionName", "Action Name"), sort_key="action_name"),
+            Column(cols["actionId"], "num", sort_key="action_id"),
+            Column(cols["icon"], sort_key="icon_path"),
+            Column(cols["actionName"], sort_key="action_name"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

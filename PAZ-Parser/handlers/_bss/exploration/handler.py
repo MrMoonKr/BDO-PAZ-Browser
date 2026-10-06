@@ -38,20 +38,20 @@ def _knowledge_names(knowledge_ids: list[int]) -> list[str]:
 
 class ExplorationBssHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("nodeKey", "Node Key"), "num", sort_key="node_key"),
-            Column(cols.get("nodeName", "Node Name"), sort_key="node_name"),
-            Column(cols.get("kind", "Kind"), sort_key="kind"),
-            Column(cols.get("mainSub", "Main/Sub"), sort_key="main_sub"),
-            Column(cols.get("contribution", "Contribution"), "num", sort_key="contribution"),
-            Column(cols.get("manager", "Manager"), sort_key="manager"),
-            Column(cols.get("representative", "Representative"), sort_key="representative"),
-            Column(cols.get("radius", "Radius"), "num", sort_key="radius"),
-            Column(cols.get("knowledge", "Knowledge"), "num", sort_key="knowledge_count"),
-            Column(cols.get("knowledgeEntries", "Knowledge Entries")),
-            Column(cols.get("connections", "Connections"), "num", sort_key="connection_count"),
-            Column(cols.get("connectedNodes", "Connected Nodes")),
+            Column(cols["nodeKey"], "num", sort_key="node_key"),
+            Column(cols["nodeName"], sort_key="node_name"),
+            Column(cols["kind"], sort_key="kind"),
+            Column(cols["mainSub"], sort_key="main_sub"),
+            Column(cols["contribution"], "num", sort_key="contribution"),
+            Column(cols["manager"], sort_key="manager"),
+            Column(cols["representative"], sort_key="representative"),
+            Column(cols["radius"], "num", sort_key="radius"),
+            Column(cols["knowledge"], "num", sort_key="knowledge_count"),
+            Column(cols["knowledgeEntries"]),
+            Column(cols["connections"], "num", sort_key="connection_count"),
+            Column(cols["connectedNodes"]),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:
@@ -66,8 +66,8 @@ class ExplorationBssHandler(PreviewHandler):
         entry: PazEntry,
         companions: dict[str, bytes],
     ) -> list[dict]:
-        strings = load_handler_strings(self.lang, _LANG_DIR).get("values", {})
-        main, sub = strings.get("main", "Main"), strings.get("sub", "Sub")
+        strings = load_handler_strings(self.lang, _LANG_DIR)["values"]
+        main, sub = strings["main"], strings["sub"]
 
         records: list[dict] = []
         for record in parse_exploration_records(data):

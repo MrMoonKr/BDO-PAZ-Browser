@@ -35,7 +35,7 @@ _TRADE_DEFAULTS = {
 def classes_label(class_mask: int, values: dict[str, str]) -> str:
     """'All', 'All except ...' or the class names; '' when no class may use it."""
     if is_all_classes(class_mask):
-        return values.get("allClasses", "All")
+        return values["allClasses"]
     if not class_mask & PLAYABLE_CLASSES_MASK:
         return ""
     missing_mask = PLAYABLE_CLASSES_MASK & ~class_mask
@@ -47,12 +47,12 @@ def classes_label(class_mask: int, values: dict[str, str]) -> str:
 def binding_label(vested_type: int, family_bound: bool, values: dict[str, str]) -> str:
     """'On obtain (Family)' and the like; '' for an item that never binds."""
     if vested_type == _BIND_ON_OBTAIN:
-        when = values.get("bindOnObtain", "On obtain")
+        when = values["bindOnObtain"]
     elif vested_type == _BIND_ON_EQUIP:
-        when = values.get("bindOnEquip", "On equip")
+        when = values["bindOnEquip"]
     else:
         return ""
-    owner = values.get("family", "Family") if family_bound else values.get("character", "Character")
+    owner = values["family"] if family_bound else values["character"]
     return f"{when} ({owner})"
 
 

@@ -27,9 +27,9 @@ def plant_zone_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("record_id", "recordId", "Record ID"),
-            offset_column("data_offset", "dataOffset", "Data Offset"),
-            size_column("data_size", "dataSize", "Data Size"),
+            OffsetColumn("record_id", "recordId"),
+            offset_column("data_offset", "dataOffset"),
+            size_column("data_size", "dataSize"),
         ],
         parse_offset_records,
     )
@@ -37,13 +37,13 @@ def plant_zone_offset_handler() -> OffsetTableHandler:
 
 class PlantZoneHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("zoneId", "Zone ID"), "num", sort_key="record_id"),
-            Column(cols.get("nodeName", "Node Name"), sort_key="node_name"),
-            Column(cols.get("productionKey", "Production Key"), "num", sort_key="production_key"),
+            Column(cols["zoneId"], "num", sort_key="record_id"),
+            Column(cols["nodeName"], sort_key="node_name"),
+            Column(cols["productionKey"], "num", sort_key="production_key"),
             # A list column: it would only sort by its string form.
-            Column(cols.get("producedItems", "Produced Items")),
+            Column(cols["producedItems"]),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

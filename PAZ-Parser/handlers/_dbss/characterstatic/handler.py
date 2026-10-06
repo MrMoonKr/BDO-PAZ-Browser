@@ -34,9 +34,9 @@ def character_static_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("character_id", "characterId", "Character ID"),
-            offset_column("offset", "byteOffset", "Byte Offset"),
-            size_column("size", "size", "Size"),
+            OffsetColumn("character_id", "characterId"),
+            offset_column("offset", "byteOffset"),
+            size_column("size", "size"),
         ],
         offset_records(parse_pabr_offset_rows, "character_id"),
     )
@@ -44,21 +44,21 @@ def character_static_offset_handler() -> OffsetTableHandler:
 
 class CharacterStaticHandler(PreviewHandler):
     def _columns(self, has_loc: bool) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         columns = [
-            Column(cols.get("characterId", "Character ID"), "num", sort_key="character_id"),
-            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
+            Column(cols["characterId"], "num", sort_key="character_id"),
+            Column(cols["icon"], sort_key="icon_path"),
         ]
         if has_loc:
-            columns.append(Column(cols.get("name", "Name"), sort_key="name"))
+            columns.append(Column(cols["name"], sort_key="name"))
         columns += [
-            Column(cols.get("actionScript", "Action Script"), sort_key="action_script"),
-            Column(cols.get("conditionScript", "Condition"), sort_key="condition_script"),
-            Column(cols.get("knowledgeId", "Knowledge ID"), "num", sort_key="knowledge_id"),
-            Column(cols.get("npcKind", "NPC Kind"), "num", sort_key="npc_kind_low"),
-            Column(cols.get("classType", "Class Type"), "num", sort_key="class_type"),
-            Column(cols.get("model", "Model"), sort_key="model_path"),
-            Column(cols.get("payloadSize", "Payload Size"), "num", sort_key="payload_size"),
+            Column(cols["actionScript"], sort_key="action_script"),
+            Column(cols["conditionScript"], sort_key="condition_script"),
+            Column(cols["knowledgeId"], "num", sort_key="knowledge_id"),
+            Column(cols["npcKind"], "num", sort_key="npc_kind_low"),
+            Column(cols["classType"], "num", sort_key="class_type"),
+            Column(cols["model"], sort_key="model_path"),
+            Column(cols["payloadSize"], "num", sort_key="payload_size"),
         ]
         return columns
 

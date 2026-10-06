@@ -77,10 +77,10 @@ def detail_dialog_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("character_id", "characterId", "Character ID"),
-            OffsetColumn("dialog_index", "dialog", "Dialog"),
-            offset_column("dbss_offset", "dbssOffset", "DBSS Offset"),
-            size_column("size", "size", "Size"),
+            OffsetColumn("character_id", "characterId"),
+            OffsetColumn("dialog_index", "dialog"),
+            offset_column("dbss_offset", "dbssOffset"),
+            size_column("size", "size"),
         ],
         _read_dialog_offsets,
     )
@@ -88,15 +88,15 @@ def detail_dialog_offset_handler() -> OffsetTableHandler:
 
 class DetailDialogHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("characterId", "Character ID"), "num", sort_key="character_id"),
-            Column(cols.get("dialog", "Dialog"), "num", sort_key="dialog_index"),
-            Column(cols.get("character", "Character"), sort_key="character"),
-            Column(cols.get("greeting", "Greeting"), sort_key="greeting"),
-            Column(cols.get("options", "Options"), "num", sort_key="option_count"),
-            Column(cols.get("optionTitles", "Option Titles")),
-            Column(cols.get("leases", "Leases")),
+            Column(cols["characterId"], "num", sort_key="character_id"),
+            Column(cols["dialog"], "num", sort_key="dialog_index"),
+            Column(cols["character"], sort_key="character"),
+            Column(cols["greeting"], sort_key="greeting"),
+            Column(cols["options"], "num", sort_key="option_count"),
+            Column(cols["optionTitles"]),
+            Column(cols["leases"]),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

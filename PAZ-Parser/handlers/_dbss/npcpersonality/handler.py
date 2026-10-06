@@ -28,8 +28,8 @@ def npc_personality_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("personality_id", "personalityId", "Personality ID"),
-            offset_column("data_offset", "dataOffset", "Data Offset"),
+            OffsetColumn("personality_id", "personalityId"),
+            offset_column("data_offset", "dataOffset"),
         ],
         picked_records(parse_npcpersonalityoffset_records, ("personality_id", "data_offset")),
     )
@@ -37,18 +37,18 @@ def npc_personality_offset_handler() -> OffsetTableHandler:
 
 class NpcPersonalityHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("id", "ID"), "num", sort_key="personality_id"),
-            Column(cols.get("row", "Row"), "num", sort_key="row"),
-            Column(cols.get("groupA", "Group A"), "num", sort_key="group_a_id"),
-            Column(cols.get("groupB", "Group B"), "num", sort_key="group_b_id"),
-            Column(cols.get("groupC", "Group C"), "num", sort_key="group_c_id"),
-            Column(cols.get("intMin", "Int Min"), "num", sort_key="interest_min"),
-            Column(cols.get("intMax", "Int Max"), "num", sort_key="interest_max"),
-            Column(cols.get("favMin", "Fav Min"), "num", sort_key="favor_min"),
-            Column(cols.get("favMax", "Fav Max"), "num", sort_key="favor_max"),
-            Column(cols.get("horoscope", "Horoscope"), sort_key="personality_type"),
+            Column(cols["id"], "num", sort_key="personality_id"),
+            Column(cols["row"], "num", sort_key="row"),
+            Column(cols["groupA"], "num", sort_key="group_a_id"),
+            Column(cols["groupB"], "num", sort_key="group_b_id"),
+            Column(cols["groupC"], "num", sort_key="group_c_id"),
+            Column(cols["intMin"], "num", sort_key="interest_min"),
+            Column(cols["intMax"], "num", sort_key="interest_max"),
+            Column(cols["favMin"], "num", sort_key="favor_min"),
+            Column(cols["favMax"], "num", sort_key="favor_max"),
+            Column(cols["horoscope"], sort_key="personality_type"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

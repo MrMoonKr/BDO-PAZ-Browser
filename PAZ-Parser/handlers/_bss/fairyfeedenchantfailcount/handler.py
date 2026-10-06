@@ -16,9 +16,9 @@ _LANG_DIR = Path(__file__).parent / "lang"
 class FairyFeedEnchantFailCountBssHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
         # Every entry field is unknown_*: kept for search and export, not shown.
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("record", "Record"), "num", sort_key="record"),
+            Column(cols["record"], "num", sort_key="record"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

@@ -35,13 +35,13 @@ def _record_dict(group: SkillGroup) -> dict:
 
 class SkillGroupBssHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("group", "Group"), "num", sort_key="group_no"),
-            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
-            Column(cols.get("name", "Name"), sort_key="name"),
-            Column(cols.get("ranks", "Ranks"), "num", sort_key="ranks"),
-            Column(cols.get("skills", "Skills")),
+            Column(cols["group"], "num", sort_key="group_no"),
+            Column(cols["icon"], sort_key="icon_path"),
+            Column(cols["name"], sort_key="name"),
+            Column(cols["ranks"], "num", sort_key="ranks"),
+            Column(cols["skills"]),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

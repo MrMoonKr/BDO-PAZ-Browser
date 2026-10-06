@@ -71,9 +71,9 @@ def mental_card_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("card_id", "cardId", "Knowledge ID"),
-            offset_column("dbss_offset", "dbssOffset", "DBSS Offset"),
-            size_column("size", "size", "Size"),
+            OffsetColumn("card_id", "cardId"),
+            offset_column("dbss_offset", "dbssOffset"),
+            size_column("size", "size"),
         ],
         offset_records(parse_mentalcard_offset_records, "card_id", "dbss_offset"),
     )
@@ -81,21 +81,21 @@ def mental_card_offset_handler() -> OffsetTableHandler:
 
 class MentalCardHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("knowledgeId", "Knowledge ID"), "num", sort_key="entry_id"),
-            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
-            Column(cols.get("knowledgeName", "Knowledge Name"), sort_key="entry_name"),
-            Column(cols.get("categoryId", "Category ID"), "num", sort_key="node_id"),
-            Column(cols.get("categoryName", "Category Name"), sort_key="node_name"),
-            Column(cols.get("description", "Description"), sort_key="description"),
-            Column(cols.get("minFavor", "Min Favor"), "num", sort_key="min_favor"),
-            Column(cols.get("maxFavor", "Max Favor"), "num", sort_key="max_favor"),
-            Column(cols.get("interest", "Interest"), "num", sort_key="interest"),
-            Column(cols.get("combo", "Combo"), sort_key="combo_text"),
-            Column(cols.get("obtain", "Obtain"), sort_key="obtain"),
-            Column(cols.get("learnedFrom", "Learned From")),
-            Column(cols.get("position", "Position")),
+            Column(cols["knowledgeId"], "num", sort_key="entry_id"),
+            Column(cols["icon"], sort_key="icon_path"),
+            Column(cols["knowledgeName"], sort_key="entry_name"),
+            Column(cols["categoryId"], "num", sort_key="node_id"),
+            Column(cols["categoryName"], sort_key="node_name"),
+            Column(cols["description"], sort_key="description"),
+            Column(cols["minFavor"], "num", sort_key="min_favor"),
+            Column(cols["maxFavor"], "num", sort_key="max_favor"),
+            Column(cols["interest"], "num", sort_key="interest"),
+            Column(cols["combo"], sort_key="combo_text"),
+            Column(cols["obtain"], sort_key="obtain"),
+            Column(cols["learnedFrom"]),
+            Column(cols["position"]),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

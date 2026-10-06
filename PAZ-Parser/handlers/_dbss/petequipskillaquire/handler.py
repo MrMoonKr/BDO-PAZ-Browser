@@ -33,10 +33,10 @@ def pet_equip_skill_acquire_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("acquire_type_id", "acquireTypeId", "Acquire Type ID"),
-            offset_column("data_offset", "dataOffset", "Data Offset"),
-            size_column("data_size", "dataSize", "Data Size"),
-            offset_column("record_start", "recordStart", "Record Start"),
+            OffsetColumn("acquire_type_id", "acquireTypeId"),
+            offset_column("data_offset", "dataOffset"),
+            size_column("data_size", "dataSize"),
+            offset_column("record_start", "recordStart"),
         ],
         parse_petequipskillaquireoffset_records,
     )
@@ -44,13 +44,13 @@ def pet_equip_skill_acquire_offset_handler() -> OffsetTableHandler:
 
 class PetEquipSkillAcquireHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("acquireTypeId", "Acquire Type ID"), "num", sort_key="acquire_type_id"),
-            Column(cols.get("equipSkillId", "Skill ID"), "num", sort_key="equip_skill_id"),
-            Column(cols.get("skillName", "Skill Name"), sort_key="skill_name"),
-            Column(cols.get("chance", "Chance"), "num", sort_key="chance_pct"),
-            Column(cols.get("weight", "Weight"), "num", sort_key="weight"),
+            Column(cols["acquireTypeId"], "num", sort_key="acquire_type_id"),
+            Column(cols["equipSkillId"], "num", sort_key="equip_skill_id"),
+            Column(cols["skillName"], sort_key="skill_name"),
+            Column(cols["chance"], "num", sort_key="chance_pct"),
+            Column(cols["weight"], "num", sort_key="weight"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

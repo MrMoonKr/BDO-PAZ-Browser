@@ -41,15 +41,15 @@ def _lease_fields(record: dict, has_loc: bool) -> dict:
 
 class NpcSimplyBssHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("characterId", "Character ID"), "num", sort_key="character_id"),
-            Column(cols.get("name", "Name"), sort_key="name"),
-            Column(cols.get("kind", "Kind"), sort_key="kind_label"),
-            Column(cols.get("role", "Role"), sort_key="role"),
-            Column(cols.get("knowledgeId", "Knowledge ID"), "num", sort_key="knowledge_id"),
-            Column(cols.get("leases", "Leases"), sort_key="lease_count"),
-            Column(cols.get("script", "Script"), sort_key="script"),
+            Column(cols["characterId"], "num", sort_key="character_id"),
+            Column(cols["name"], sort_key="name"),
+            Column(cols["kind"], sort_key="kind_label"),
+            Column(cols["role"], sort_key="role"),
+            Column(cols["knowledgeId"], "num", sort_key="knowledge_id"),
+            Column(cols["leases"], sort_key="lease_count"),
+            Column(cols["script"], sort_key="script"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

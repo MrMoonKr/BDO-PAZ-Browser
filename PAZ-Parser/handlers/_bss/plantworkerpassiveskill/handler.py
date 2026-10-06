@@ -44,17 +44,17 @@ def _row(record: dict) -> list[str]:
 
 class PlantWorkerPassiveSkillBssHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("skillId", "Skill ID"), "num", sort_key="skill_id"),
-            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
-            Column(cols.get("name", "Name"), sort_key="display_name"),
-            Column(cols.get("description", "Description"), sort_key="display_description"),
-            Column(cols.get("weight", "Weight"), "num", sort_key="acquisition_weight"),
-            Column(cols.get("effectType", "Effect Type"), sort_key="effect_type"),
-            Column(cols.get("target", "Target"), sort_key="target_sort_value"),
-            Column(cols.get("effectA", "Effect A"), "num", sort_key="effect_a_sort_value"),
-            Column(cols.get("effectB", "Effect B"), "num", sort_key="effect_b_sort_value"),
+            Column(cols["skillId"], "num", sort_key="skill_id"),
+            Column(cols["icon"], sort_key="icon_path"),
+            Column(cols["name"], sort_key="display_name"),
+            Column(cols["description"], sort_key="display_description"),
+            Column(cols["weight"], "num", sort_key="acquisition_weight"),
+            Column(cols["effectType"], sort_key="effect_type"),
+            Column(cols["target"], sort_key="target_sort_value"),
+            Column(cols["effectA"], "num", sort_key="effect_a_sort_value"),
+            Column(cols["effectB"], "num", sort_key="effect_b_sort_value"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

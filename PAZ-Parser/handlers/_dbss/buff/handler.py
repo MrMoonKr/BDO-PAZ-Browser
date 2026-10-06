@@ -89,9 +89,9 @@ def buff_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("buff_id", "buffId", "Buff ID"),
-            offset_column("offset", "dataOffset", "Data Offset"),
-            size_column("size", "size", "Size"),
+            OffsetColumn("buff_id", "buffId"),
+            offset_column("offset", "dataOffset"),
+            size_column("size", "size"),
         ],
         offset_records(parse_pabr_offset_rows, "buff_id"),
     )
@@ -134,18 +134,18 @@ def _buff_row(r: dict) -> list[str]:
 
 class BuffHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("buffId", "Buff ID"), "num", sort_key="buff_id"),
-            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
-            Column(cols.get("title", "Title"), sort_key="title"),
-            Column(cols.get("name", "Internal Name"), sort_key="name"),
-            Column(cols.get("description", "Description"), sort_key="description"),
-            Column(cols.get("effect", "Effect"), sort_key="effect"),
-            Column(cols.get("appliedBy", "Applied By"), sort_key="applied_by_count"),
-            Column(cols.get("level", "Level"), "num", sort_key="level"),
-            Column(cols.get("effectType", "Effect Type"), "num", sort_key="effect_type"),
-            Column(cols.get("duration", "Duration"), "num", sort_key="duration_ms"),
+            Column(cols["buffId"], "num", sort_key="buff_id"),
+            Column(cols["icon"], sort_key="icon_path"),
+            Column(cols["title"], sort_key="title"),
+            Column(cols["name"], sort_key="name"),
+            Column(cols["description"], sort_key="description"),
+            Column(cols["effect"], sort_key="effect"),
+            Column(cols["appliedBy"], sort_key="applied_by_count"),
+            Column(cols["level"], "num", sort_key="level"),
+            Column(cols["effectType"], "num", sort_key="effect_type"),
+            Column(cols["duration"], "num", sort_key="duration_ms"),
             *(
                 Column(cols.get(f"param{index}", f"Param {index}"), "num", sort_key=f"param_{index}")
                 for index in range(1, _SHOWN_PARAMS + 1)

@@ -26,10 +26,10 @@ def teleport_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("index", "index", "Index"),
-            OffsetColumn("section", "section", "Section"),
-            offset_column("offset", "byteOffset", "Byte Offset"),
-            size_column("size", "size", "Size"),
+            OffsetColumn("index", "index"),
+            OffsetColumn("section", "section"),
+            offset_column("offset", "byteOffset"),
+            size_column("size", "size"),
         ],
         parse_teleport_offset_rows,
     )
@@ -37,16 +37,16 @@ def teleport_offset_handler() -> OffsetTableHandler:
 
 class TeleportHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("key", "Key"), "num", sort_key="key"),
-            Column(cols.get("section", "Section"), "num", sort_key="section"),
-            Column(cols.get("x", "X"), "num", sort_key="x"),
-            Column(cols.get("y", "Y"), "num", sort_key="y"),
-            Column(cols.get("z", "Z"), "num", sort_key="z"),
-            Column(cols.get("nearestNode", "Nearest Node"), sort_key="nearest_node"),
-            Column(cols.get("distance", "Distance (m)"), "num", sort_key="distance_m"),
-            Column(cols.get("usedBy", "Used By"), sort_key="used_by_count"),
+            Column(cols["key"], "num", sort_key="key"),
+            Column(cols["section"], "num", sort_key="section"),
+            Column(cols["x"], "num", sort_key="x"),
+            Column(cols["y"], "num", sort_key="y"),
+            Column(cols["z"], "num", sort_key="z"),
+            Column(cols["nearestNode"], sort_key="nearest_node"),
+            Column(cols["distance"], "num", sort_key="distance_m"),
+            Column(cols["usedBy"], sort_key="used_by_count"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

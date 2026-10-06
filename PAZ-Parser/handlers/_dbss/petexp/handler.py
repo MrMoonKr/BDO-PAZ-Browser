@@ -18,9 +18,9 @@ def pet_exp_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("exp_table_id", "expTableId", "EXP Table ID"),
-            offset_column("data_offset", "dataOffset", "Data Offset"),
-            size_column("data_size", "dataSize", "Data Size"),
+            OffsetColumn("exp_table_id", "expTableId"),
+            offset_column("data_offset", "dataOffset"),
+            size_column("data_size", "dataSize"),
         ],
         parse_petexpoffset_records,
     )
@@ -28,12 +28,12 @@ def pet_exp_offset_handler() -> OffsetTableHandler:
 
 class PetExpHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("expTableId", "EXP Table ID"), "num", sort_key="exp_table_id"),
-            Column(cols.get("maxLevel", "Max Level"), "num", sort_key="max_level"),
-            Column(cols.get("level", "Level"), "num", sort_key="level"),
-            Column(cols.get("requiredExp", "Required EXP"), "num", sort_key="required_exp"),
+            Column(cols["expTableId"], "num", sort_key="exp_table_id"),
+            Column(cols["maxLevel"], "num", sort_key="max_level"),
+            Column(cols["level"], "num", sort_key="level"),
+            Column(cols["requiredExp"], "num", sort_key="required_exp"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

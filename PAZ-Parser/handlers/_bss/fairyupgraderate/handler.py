@@ -21,16 +21,16 @@ _CHANCE_DECIMALS = 4
 
 class FairyUpgradeRateBssHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("step", "Step"), "num", sort_key="step"),
-            Column(cols.get("upgrade", "Upgrade"), sort_key="upgrade"),
-            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
-            Column(cols.get("item", "Item"), sort_key="item_name"),
-            Column(cols.get("itemId", "Item ID"), "num", sort_key="item_id"),
-            Column(cols.get("chancePerItem", "Chance / Item"), "num", sort_key="chance_pct"),
-            Column(cols.get("ratePpm", "Rate (ppm)"), "num", sort_key="rate_ppm"),
-            Column(cols.get("itemsForMax", "Items for Max"), "num", sort_key="items_for_max"),
+            Column(cols["step"], "num", sort_key="step"),
+            Column(cols["upgrade"], sort_key="upgrade"),
+            Column(cols["icon"], sort_key="icon_path"),
+            Column(cols["item"], sort_key="item_name"),
+            Column(cols["itemId"], "num", sort_key="item_id"),
+            Column(cols["chancePerItem"], "num", sort_key="chance_pct"),
+            Column(cols["ratePpm"], "num", sort_key="rate_ppm"),
+            Column(cols["itemsForMax"], "num", sort_key="items_for_max"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

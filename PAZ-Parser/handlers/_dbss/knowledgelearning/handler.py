@@ -35,10 +35,10 @@ def knowledge_learning_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("source_id", "sourceId", "Source ID"),
-            OffsetColumn("table", "table", "Table"),
-            offset_column("offset", "dbssOffset", "DBSS Offset"),
-            size_column("size", "size", "Size"),
+            OffsetColumn("source_id", "sourceId"),
+            OffsetColumn("table", "table"),
+            offset_column("offset", "dbssOffset"),
+            size_column("size", "size"),
         ],
         _read_offsets,
     )
@@ -46,13 +46,13 @@ def knowledge_learning_offset_handler() -> OffsetTableHandler:
 
 class KnowledgeLearningHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("sourceId", "Source ID"), "num", sort_key="source_id"),
-            Column(cols.get("sourceType", "Source Type"), sort_key="source_type"),
-            Column(cols.get("sourceName", "Source Name"), sort_key="source_name"),
-            Column(cols.get("knowledgeId", "Knowledge ID"), "num", sort_key="card_id"),
-            Column(cols.get("knowledgeName", "Knowledge Name"), sort_key="card_name"),
+            Column(cols["sourceId"], "num", sort_key="source_id"),
+            Column(cols["sourceType"], sort_key="source_type"),
+            Column(cols["sourceName"], sort_key="source_name"),
+            Column(cols["knowledgeId"], "num", sort_key="card_id"),
+            Column(cols["knowledgeName"], sort_key="card_name"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:
@@ -72,8 +72,8 @@ class KnowledgeLearningHandler(PreviewHandler):
         if offset_raw is None:
             raise ValueError(f"{_OFFSET_FILE} companion not found.")
 
-        values = load_handler_strings(self.lang, _LANG_DIR).get("values", {})
-        character, item = values.get("character", "Character"), values.get("item", "Item")
+        values = load_handler_strings(self.lang, _LANG_DIR)["values"]
+        character, item = values["character"], values["item"]
         has_loc = is_loc_loaded()
 
         records: list[dict] = []

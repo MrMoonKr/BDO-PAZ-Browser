@@ -23,10 +23,10 @@ def _node_name(node_id: int) -> str:
 
 class PlantTownBssHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("nodeId", "Node ID"), "num", sort_key="node_id"),
-            Column(cols.get("nodeName", "Node Name"), sort_key="node_name"),
+            Column(cols["nodeId"], "num", sort_key="node_id"),
+            Column(cols["nodeName"], sort_key="node_name"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

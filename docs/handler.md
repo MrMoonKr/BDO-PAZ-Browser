@@ -223,15 +223,17 @@ A handler opts in with two pieces:
 2. Return `sort_keys(columns)` from `sortable_fields()`. It keeps column
    order, and the API rejects any field not in it.
 
-When the column labels come from the handler's `lang/*.json`, build the list in
-a `_columns()` method and use it in both places:
+The column labels come from the handler's `lang/*.json`, so build the list in a
+`_columns()` method and use it in both places. Index the table directly
+(`cols["buffId"]`): `en.json` holds every key, and a missing one should fail
+rather than show a stale English default:
 
 ```python
 def _columns(self) -> list[Column]:
-    cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+    cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
     return [
-        Column(cols.get("buffId", "Buff ID"), "num", sort_key="buff_id"),
-        Column(cols.get("icon", "Icon"), sort_key="icon_path"),
+        Column(cols["buffId"], "num", sort_key="buff_id"),
+        Column(cols["icon"], sort_key="icon_path"),
     ]
 
 def sortable_fields(self) -> tuple[str, ...]:
@@ -1033,16 +1035,16 @@ def buff_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("buff_id", "buffId", "Buff ID"),
-            offset_column("offset", "dataOffset", "Data Offset"),
-            size_column("size", "size", "Size"),
+            OffsetColumn("buff_id", "buffId"),
+            offset_column("offset", "dataOffset"),
+            size_column("size", "size"),
         ],
         offset_records(parse_pabr_offset_rows, "buff_id"),
     )
 ```
 
-- Each column names the record field it shows and sorts by, its label key in
-  the `offsetColumns` block of `lang/<lang>.json` and its English label.
+- Each column names the record field it shows and sorts by and its label key
+  in the `offsetColumns` block of `lang/<lang>.json`.
   `offset_column()` shows `0x0001A2B0`, `size_column()` shows `1,024`, and a
   plain `OffsetColumn` shows the number; pass `text=` for another form (a hash
   key through `offset_text`, a pet key as `0x5A06 (23046)`).
@@ -1052,8 +1054,7 @@ def buff_offset_handler() -> OffsetTableHandler:
   `parse_offset_table()` files, `picked_records()` to keep some fields of a
   parsed row, or the format's own reader when a key splits into several
   fields (`skill_offset_handler()`, `detail_dialog_offset_handler()`).
-- `lang_dir=None` shows the English labels (a package without a lang folder),
-  `lang_block=` names another label block, and `meta=` replaces the
+- `lang_block=` names another label block, and `meta=` replaces the
   "N offset records" header with a `(records, lang) -> str` function
   (`journalquestoffset.dbss` counts its groups). The shared header text is in
   `_common/lang/`.

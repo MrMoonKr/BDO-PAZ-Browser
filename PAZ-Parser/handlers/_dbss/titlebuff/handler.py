@@ -44,8 +44,8 @@ def title_buff_list_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("buff_id", "buffId", "Buff ID"),
-            offset_column("offset", "offset", "Offset"),
+            OffsetColumn("buff_id", "buffId"),
+            offset_column("offset", "offset"),
         ],
         offset_map_records("buff_id"),
     )
@@ -53,11 +53,11 @@ def title_buff_list_offset_handler() -> OffsetTableHandler:
 
 class TitleBuffListHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("level", "Level"), "num", sort_key="level"),
-            Column(cols.get("requiredTitles", "Required Titles"), "num", sort_key="required_titles"),
-            Column(cols.get("text", "Text"), sort_key="text"),
+            Column(cols["level"], "num", sort_key="level"),
+            Column(cols["requiredTitles"], "num", sort_key="required_titles"),
+            Column(cols["text"], sort_key="text"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

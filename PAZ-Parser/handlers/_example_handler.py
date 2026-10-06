@@ -14,19 +14,24 @@
 #   Disk files pre-loaded by the browser (e.g. languagedata_en.loc) are also merged
 #   in automatically.
 #
+# Text:
+#   Column labels and the count line above the table live in lang/en.json next
+#   to the handler, with de.json, fr.json, sp.json and ru.json beside it (see
+#   docs/handler.md, Localization):
+#
+#   {
+#     "columns": { "id": "ID", "value": "Value" },
+#     "meta": { "count": "{count} records" }
+#   }
+#
 # from __future__ import annotations
 # from pathlib import Path
 # from bdo_models import PazEntry
 # from bdo_preview import PreviewHandler, register_handler
 # from _common.html import Column, e, sort_keys, table
+# from _common.lang import handler_text, load_handler_strings
 #
-#
-# # sort_key names the record field a column sorts by (raw value, not the
-# # rendered text). Leave it out for columns that should not be sortable.
-# _COLUMNS = [
-#     Column("ID",    "num", sort_key="id"),
-#     Column("Value", "num", sort_key="value"),
-# ]
+# _LANG_DIR = Path(__file__).parent / "lang"
 #
 #
 # ── Simple handler ─────────────────────────────────────────────────────────────
@@ -36,12 +41,21 @@
 #
 # class MyHandler(PreviewHandler):
 #
+#     def _columns(self) -> list[Column]:
+#         # sort_key names the record field a column sorts by (raw value, not the
+#         # rendered text). Leave it out for columns that should not be sortable.
+#         cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
+#         return [
+#             Column(cols["id"],    "num", sort_key="id"),
+#             Column(cols["value"], "num", sort_key="value"),
+#         ]
+#
 #     def sortable_fields(self) -> tuple[str, ...]:
 #         # Opts the table into server-side sorting by these record fields, in
 #         # column order. The table opens sorted by the first one, descending;
 #         # override default_sort() to open on another field, or None for
 #         # get_records() order.
-#         return sort_keys(_COLUMNS)
+#         return sort_keys(self._columns())
 #
 #     def companions(self, entry: PazEntry) -> list[str]:
 #         # Return internal PAZ paths of files needed alongside the main file.
@@ -69,7 +83,8 @@
 #         start  = page * page_size
 #         slice_ = records[start : start + page_size]
 #         rows   = [[e(r["id"]), e(r["value"])] for r in slice_]
-#         return table(f"{len(records):,} records", _COLUMNS, rows)
+#         meta   = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records))
+#         return table(meta, self._columns(), rows)
 #
 #
 # register_handler("myfile.myext", MyHandler())   # by filename

@@ -44,14 +44,14 @@ def _title_cell(record: dict) -> str:
 
 class TitleDbssHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("titleId", "Title ID"), "num", sort_key="title_id"),
-            Column(cols.get("category", "Category"), sort_key="category"),
-            Column(cols.get("title", "Title"), sort_key="title"),
-            Column(cols.get("titleRequirements", "Title Requirements"), sort_key="requirement"),
-            Column(cols.get("special", "Special"), sort_key="is_special"),
-            Column(cols.get("effect", "Effect"), sort_key="title_effect_name"),
+            Column(cols["titleId"], "num", sort_key="title_id"),
+            Column(cols["category"], sort_key="category"),
+            Column(cols["title"], sort_key="title"),
+            Column(cols["titleRequirements"], sort_key="requirement"),
+            Column(cols["special"], sort_key="is_special"),
+            Column(cols["effect"], sort_key="title_effect_name"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

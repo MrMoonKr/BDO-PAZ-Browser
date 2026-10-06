@@ -18,9 +18,9 @@ def pet_skill_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("pet_skill_id", "petSkillId", "Pet Skill ID"),
-            offset_column("data_offset", "dataOffset", "Data Offset"),
-            size_column("data_size", "dataSize", "Data Size"),
+            OffsetColumn("pet_skill_id", "petSkillId"),
+            offset_column("data_offset", "dataOffset"),
+            size_column("data_size", "dataSize"),
         ],
         parse_petskilloffset_records,
     )
@@ -28,12 +28,12 @@ def pet_skill_offset_handler() -> OffsetTableHandler:
 
 class PetSkillHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("petSkillId", "Pet Skill ID"), "num", sort_key="pet_skill_id"),
-            Column(cols.get("level", "Level"), "num", sort_key="level"),
-            Column(cols.get("valueA", "Value A"), "num", sort_key="raw_value_a"),
-            Column(cols.get("valueB", "Value B"), "num", sort_key="raw_value_b"),
+            Column(cols["petSkillId"], "num", sort_key="pet_skill_id"),
+            Column(cols["level"], "num", sort_key="level"),
+            Column(cols["valueA"], "num", sort_key="raw_value_a"),
+            Column(cols["valueB"], "num", sort_key="raw_value_b"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

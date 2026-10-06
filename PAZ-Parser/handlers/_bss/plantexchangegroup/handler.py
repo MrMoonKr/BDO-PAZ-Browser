@@ -34,13 +34,13 @@ def _english_names(companions: dict[str, bytes]) -> dict[int, str]:
 
 class PlantExchangeGroupBssHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("productionKey", "Production Key"), "num", sort_key="production_key"),
-            Column(cols.get("name", "Name"), sort_key="name"),
-            Column(cols.get("itemSubgroup", "Item Subgroup"), "num", sort_key="item_subgroup_key"),
+            Column(cols["productionKey"], "num", sort_key="production_key"),
+            Column(cols["name"], sort_key="name"),
+            Column(cols["itemSubgroup"], "num", sort_key="item_subgroup_key"),
             # A list column: it would only sort by its string form.
-            Column(cols.get("items", "Items")),
+            Column(cols["items"]),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

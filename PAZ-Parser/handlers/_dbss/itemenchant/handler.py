@@ -80,10 +80,10 @@ def item_enchant_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("item_id", "itemId", "Item ID"),
-            OffsetColumn("enchant_level", "enchantLevel", "Enchant Level"),
-            offset_column("data_offset", "dataOffset", "Data Offset"),
-            size_column("data_size", "dataSize", "Data Size"),
+            OffsetColumn("item_id", "itemId"),
+            OffsetColumn("enchant_level", "enchantLevel"),
+            offset_column("data_offset", "dataOffset"),
+            size_column("data_size", "dataSize"),
         ],
         parse_itemenchantoffset_records,
     )
@@ -91,24 +91,24 @@ def item_enchant_offset_handler() -> OffsetTableHandler:
 
 class ItemEnchantHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("itemId", "Item ID"), "num", sort_key="item_id"),
-            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
-            Column(cols.get("item", "Item"), sort_key="item_name"),
-            Column(cols.get("description", "Description"), sort_key="description"),
-            Column(cols.get("maxLevel", "Max Level"), "num", sort_key="max_enchant_level"),
-            Column(cols.get("requiredLevel", "Req. Level"), "num", sort_key="required_level"),
-            Column(cols.get("classes", "Classes"), sort_key="classes"),
-            Column(cols.get("binding", "Binding"), sort_key="binding"),
-            Column(cols.get("durability", "Durability"), "num", sort_key="max_durability"),
-            Column(cols.get("marketable", "Marketable"), sort_key="marketable"),
-            Column(cols.get("familyInventory", "Family Inventory"), sort_key="family_inventory"),
-            Column(cols.get("trade", "Trade"), sort_key="trade"),
-            Column(cols.get("dyeable", "Dyeable"), sort_key="dyeable"),
-            Column(cols.get("objectId", "Object ID"), "num", sort_key="character_id"),
-            Column(cols.get("object", "Object"), sort_key="character_name"),
-            Column(cols.get("buffs", "Buffs"), sort_key="buff_count"),
+            Column(cols["itemId"], "num", sort_key="item_id"),
+            Column(cols["icon"], sort_key="icon_path"),
+            Column(cols["item"], sort_key="item_name"),
+            Column(cols["description"], sort_key="description"),
+            Column(cols["maxLevel"], "num", sort_key="max_enchant_level"),
+            Column(cols["requiredLevel"], "num", sort_key="required_level"),
+            Column(cols["classes"], sort_key="classes"),
+            Column(cols["binding"], sort_key="binding"),
+            Column(cols["durability"], "num", sort_key="max_durability"),
+            Column(cols["marketable"], sort_key="marketable"),
+            Column(cols["familyInventory"], sort_key="family_inventory"),
+            Column(cols["trade"], sort_key="trade"),
+            Column(cols["dyeable"], sort_key="dyeable"),
+            Column(cols["objectId"], "num", sort_key="character_id"),
+            Column(cols["object"], sort_key="character_name"),
+            Column(cols["buffs"], sort_key="buff_count"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:
@@ -130,7 +130,7 @@ class ItemEnchantHandler(PreviewHandler):
         if offset_raw is None:
             raise ValueError(f"{_OFFSET_FILE} companion not found.")
 
-        values = load_handler_strings(self.lang, _LANG_DIR).get("values", {})
+        values = load_handler_strings(self.lang, _LANG_DIR)["values"]
         records = parse_itemenchant_records(data, offset_raw)
         # About 150 masks cover all items, so each label is built once.
         classes = {mask: classes_label(mask, values) for mask in {record["class_mask"] for record in records}}

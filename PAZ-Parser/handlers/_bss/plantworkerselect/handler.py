@@ -30,13 +30,13 @@ def _plantworker_index(companions: dict[str, bytes]) -> dict[int, dict]:
 
 class PlantWorkerSelectBssHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("workerId", "Worker ID"), "num", sort_key="worker_id"),
-            Column(cols.get("workerName", "Worker Name"), sort_key="worker_name"),
-            Column(cols.get("cityId", "City ID"), "num", sort_key="selection_id"),
-            Column(cols.get("cityName", "City Name"), sort_key="selection_name"),
-            Column(cols.get("hireCost", "Hire Cost"), "num", sort_key="hire_cost"),
+            Column(cols["workerId"], "num", sort_key="worker_id"),
+            Column(cols["workerName"], sort_key="worker_name"),
+            Column(cols["cityId"], "num", sort_key="selection_id"),
+            Column(cols["cityName"], sort_key="selection_name"),
+            Column(cols["hireCost"], "num", sort_key="hire_cost"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

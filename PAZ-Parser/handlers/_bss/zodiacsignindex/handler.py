@@ -17,10 +17,10 @@ _LANG_DIR = Path(__file__).parent / "lang"
 
 class ZodiacSignIndexHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("zodiacId", "Zodiac ID"), "num", sort_key="zodiac_id"),
-            Column(cols.get("name", "Name"), sort_key="name"),
+            Column(cols["zodiacId"], "num", sort_key="zodiac_id"),
+            Column(cols["name"], sort_key="name"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

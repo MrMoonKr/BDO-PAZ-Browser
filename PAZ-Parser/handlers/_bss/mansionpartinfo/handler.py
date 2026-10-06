@@ -17,12 +17,12 @@ _EMPTY = "-"
 
 class MansionPartInfoBssHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("manorId", "Manor ID"), "num", sort_key="character_id"),
-            Column(cols.get("manor", "Manor"), sort_key="manor"),
-            Column(cols.get("part", "Part"), "num", sort_key="part_index"),
-            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
+            Column(cols["manorId"], "num", sort_key="character_id"),
+            Column(cols["manor"], sort_key="manor"),
+            Column(cols["part"], "num", sort_key="part_index"),
+            Column(cols["icon"], sort_key="icon_path"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

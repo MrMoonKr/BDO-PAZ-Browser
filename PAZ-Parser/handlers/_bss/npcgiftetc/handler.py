@@ -33,11 +33,11 @@ def _parse_value(data: bytes, offset: int, type_name: str) -> int:
 
 class NpcGiftEtcBssHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("field", "Field"), sort_key="field"),
-            Column(cols.get("value", "Value"), "num", sort_key="value"),
-            Column(cols.get("notes", "Notes"), sort_key="notes"),
+            Column(cols["field"], sort_key="field"),
+            Column(cols["value"], "num", sort_key="value"),
+            Column(cols["notes"], sort_key="notes"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:
@@ -72,7 +72,7 @@ class NpcGiftEtcBssHandler(PreviewHandler):
     ) -> str:
         start = page * page_size
         slice_ = records[start : start + page_size]
-        notes = load_handler_strings(self.lang, _LANG_DIR).get("notes", {})
+        notes = load_handler_strings(self.lang, _LANG_DIR)["notes"]
         rows = [
             [e(r["field"]), e(r["value"]), e(notes.get(r["notes"], r["notes"]))]
             for r in slice_

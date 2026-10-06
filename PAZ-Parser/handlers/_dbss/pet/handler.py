@@ -28,9 +28,9 @@ def pet_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("pet_id", "petId", "Pet ID", _pet_key_text),
-            offset_column("data_offset", "dataOffset", "Data Offset"),
-            size_column("data_size", "dataSize", "Data Size"),
+            OffsetColumn("pet_id", "petId", _pet_key_text),
+            offset_column("data_offset", "dataOffset"),
+            size_column("data_size", "dataSize"),
         ],
         parse_petoffset_records,
     )
@@ -38,14 +38,14 @@ def pet_offset_handler() -> OffsetTableHandler:
 
 class PetGradeHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("gradeColumns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["gradeColumns"]
         return [
-            Column(cols.get("key", "Key"), "num", sort_key="key"),
-            Column(cols.get("species", "Species"), "num", sort_key="species"),
-            Column(cols.get("variant", "Variant"), "num", sort_key="variant"),
-            Column(cols.get("grade", "Grade"), sort_key="grade"),
-            Column(cols.get("dataOffset", "Data Offset"), "num", sort_key="data_offset"),
-            Column(cols.get("dataSize", "Data Size"), "num", sort_key="data_size"),
+            Column(cols["key"], "num", sort_key="key"),
+            Column(cols["species"], "num", sort_key="species"),
+            Column(cols["variant"], "num", sort_key="variant"),
+            Column(cols["grade"], sort_key="grade"),
+            Column(cols["dataOffset"], "num", sort_key="data_offset"),
+            Column(cols["dataSize"], "num", sort_key="data_size"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:
@@ -66,7 +66,7 @@ class PetGradeHandler(PreviewHandler):
             raise ValueError("petgradeoffset.dbss companion not found.")
 
         records = parse_petgrade_records_with_offsets(data, offset_raw)
-        grade_names = load_handler_strings(self.lang, _LANG_DIR).get("grades", {})
+        grade_names = load_handler_strings(self.lang, _LANG_DIR)["grades"]
         for record in records:
             grade = record["grade"]
             record["grade_name"] = grade_names.get(str(grade), f"Unknown ({grade})")
@@ -99,11 +99,11 @@ def pet_grade_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("key", "key", "Key", _pet_key_text),
-            OffsetColumn("species", "species", "Species"),
-            OffsetColumn("variant", "variant", "Variant"),
-            offset_column("data_offset", "dataOffset", "Data Offset"),
-            size_column("data_size", "dataSize", "Data Size"),
+            OffsetColumn("key", "key", _pet_key_text),
+            OffsetColumn("species", "species"),
+            OffsetColumn("variant", "variant"),
+            offset_column("data_offset", "dataOffset"),
+            size_column("data_size", "dataSize"),
         ],
         parse_petgradeoffset_records,
         lang_block="gradeOffsetColumns",
@@ -112,18 +112,18 @@ def pet_grade_offset_handler() -> OffsetTableHandler:
 
 class PetDbssHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("petId", "Pet ID"), "num", sort_key="pet_id"),
-            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
-            Column(cols.get("name", "Name"), sort_key="display_name"),
-            Column(cols.get("species", "Species ID"), "num", sort_key="species"),
-            Column(cols.get("tier", "Tier"), "num", sort_key="tier"),
-            Column(cols.get("skillSlots", "Skill Slots"), "num", sort_key="equip_skill_slots"),
-            Column(cols.get("maxLevel", "Max Level"), "num", sort_key="max_level"),
-            Column(cols.get("acquireType", "Acquire Type"), "num", sort_key="acquire_type_id"),
-            Column(cols.get("equipSkillId", "Equip Skill ID"), "num", sort_key="equip_skill_id"),
-            Column(cols.get("grade", "Grade"), sort_key="grade"),
+            Column(cols["petId"], "num", sort_key="pet_id"),
+            Column(cols["icon"], sort_key="icon_path"),
+            Column(cols["name"], sort_key="display_name"),
+            Column(cols["species"], "num", sort_key="species"),
+            Column(cols["tier"], "num", sort_key="tier"),
+            Column(cols["skillSlots"], "num", sort_key="equip_skill_slots"),
+            Column(cols["maxLevel"], "num", sort_key="max_level"),
+            Column(cols["acquireType"], "num", sort_key="acquire_type_id"),
+            Column(cols["equipSkillId"], "num", sort_key="equip_skill_id"),
+            Column(cols["grade"], sort_key="grade"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:
@@ -148,7 +148,7 @@ class PetDbssHandler(PreviewHandler):
         grade_raw = companions.get("petgrade.dbss")
         records = parse_pet_records(data, offset_raw, grade_raw)
         strings = load_handler_strings(self.lang, _LANG_DIR)
-        grade_names = strings.get("grades", {})
+        grade_names = strings["grades"]
         for record in records:
             loc_name = character_name(record["pet_id"])
             record["pet_name"] = loc_name

@@ -17,13 +17,13 @@ _EMPTY = "-"
 
 class QuestJournalVideoInfoBssHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("mainId", "Main ID"), "num", sort_key="quest_chain_id"),
-            Column(cols.get("subId", "Sub ID"), "num", sort_key="quest_id"),
-            Column(cols.get("artwork", "Artwork"), sort_key="artwork_path"),
-            Column(cols.get("title", "Title"), sort_key="title"),
-            Column(cols.get("video", "Video"), sort_key="video_path"),
+            Column(cols["mainId"], "num", sort_key="quest_chain_id"),
+            Column(cols["subId"], "num", sort_key="quest_id"),
+            Column(cols["artwork"], sort_key="artwork_path"),
+            Column(cols["title"], sort_key="title"),
+            Column(cols["video"], sort_key="video_path"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

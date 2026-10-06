@@ -24,13 +24,13 @@ def _skill_name(loc_id: int) -> str:
 
 class PetEquipSkillBssHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("equipSkillId", "Equip Skill ID"), "num", sort_key="equip_skill_id"),
-            Column(cols.get("skillName", "Skill Name"), sort_key="skill_name"),
-            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
-            Column(cols.get("skillType", "Skill Type"), "num", sort_key="skill_type"),
-            Column(cols.get("section", "Section"), sort_key="section"),
+            Column(cols["equipSkillId"], "num", sort_key="equip_skill_id"),
+            Column(cols["skillName"], sort_key="skill_name"),
+            Column(cols["icon"], sort_key="icon_path"),
+            Column(cols["skillType"], "num", sort_key="skill_type"),
+            Column(cols["section"], sort_key="section"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

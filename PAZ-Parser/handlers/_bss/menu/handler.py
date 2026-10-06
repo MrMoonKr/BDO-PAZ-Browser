@@ -18,13 +18,13 @@ _EMPTY = "-"
 
 class MenuBssHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("menuId", "Menu ID"), "num", sort_key="menu_id"),
-            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
-            Column(cols.get("title", "Title"), sort_key="title"),
-            Column(cols.get("hotkey", "Hotkey"), sort_key="hotkey"),
-            Column(cols.get("entries", "Entries"), "num", sort_key="submenu_count"),
+            Column(cols["menuId"], "num", sort_key="menu_id"),
+            Column(cols["icon"], sort_key="icon_path"),
+            Column(cols["title"], sort_key="title"),
+            Column(cols["hotkey"], sort_key="hotkey"),
+            Column(cols["entries"], "num", sort_key="submenu_count"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

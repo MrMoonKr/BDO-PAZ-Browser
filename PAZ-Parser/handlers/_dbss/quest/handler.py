@@ -69,18 +69,18 @@ def _family_stat_text(stats: list[FamilyStat]) -> str:
 class QuestDbssHandler(PreviewHandler):
 
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("displayId", "Display ID"), "num", sort_key="packed_quest_id"),
-            Column(cols.get("chainId", "Chain ID"), "num", sort_key="quest_chain_id"),
-            Column(cols.get("questId", "Quest ID"), "num", sort_key="quest_id"),
-            Column(cols.get("category", "Category"), "num", sort_key="quest_category"),
-            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
-            Column(cols.get("titleName", "Title / Name"), sort_key="title"),
-            Column(cols.get("condition", "Condition"), sort_key="condition_script"),
-            Column(cols.get("action", "Action"), sort_key="action_script"),
-            Column(cols.get("objective", "Objective"), sort_key="objective"),
-            Column(cols.get("familyStat", "Family Stat"), sort_key="family_stat_text"),
+            Column(cols["displayId"], "num", sort_key="packed_quest_id"),
+            Column(cols["chainId"], "num", sort_key="quest_chain_id"),
+            Column(cols["questId"], "num", sort_key="quest_id"),
+            Column(cols["category"], "num", sort_key="quest_category"),
+            Column(cols["icon"], sort_key="icon_path"),
+            Column(cols["titleName"], sort_key="title"),
+            Column(cols["condition"], sort_key="condition_script"),
+            Column(cols["action"], sort_key="action_script"),
+            Column(cols["objective"], sort_key="objective"),
+            Column(cols["familyStat"], sort_key="family_stat_text"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

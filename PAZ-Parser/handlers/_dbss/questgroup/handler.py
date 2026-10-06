@@ -22,12 +22,12 @@ def _group_name_en(group_id: int) -> str:
 
 class QuestGroupDbssHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("groupId", "Group ID"), "num", sort_key="group_id"),
-            Column(cols.get("name", "Name"), sort_key="name"),
-            Column(cols.get("quests", "Quests"), "num", sort_key="quest_count"),
-            Column(cols.get("questTitles", "Quest Titles")),
+            Column(cols["groupId"], "num", sort_key="group_id"),
+            Column(cols["name"], sort_key="name"),
+            Column(cols["quests"], "num", sort_key="quest_count"),
+            Column(cols["questTitles"]),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

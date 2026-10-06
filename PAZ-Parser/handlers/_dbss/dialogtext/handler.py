@@ -31,9 +31,9 @@ def dialog_text_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("key", "key", "Key", offset_text),
-            offset_column("dbss_offset", "dbssOffset", "DBSS Offset"),
-            size_column("size", "size", "Size"),
+            OffsetColumn("key", "key", offset_text),
+            offset_column("dbss_offset", "dbssOffset"),
+            size_column("size", "size"),
         ],
         offset_records(parse_dialogtext_offset_rows, "key", "dbss_offset"),
     )
@@ -41,12 +41,12 @@ def dialog_text_offset_handler() -> OffsetTableHandler:
 
 class DialogTextHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("name", "Name"), sort_key="name"),
-            Column(cols.get("lines", "Lines"), "num", sort_key="line_count"),
-            Column(cols.get("text", "Text")),
-            Column(cols.get("voice", "Voice")),
+            Column(cols["name"], sort_key="name"),
+            Column(cols["lines"], "num", sort_key="line_count"),
+            Column(cols["text"]),
+            Column(cols["voice"]),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

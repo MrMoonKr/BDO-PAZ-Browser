@@ -19,10 +19,10 @@ _LANG_DIR = Path(__file__).parent / "lang"
 
 class FairySkillChangeHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("level", "Level"), "num", sort_key="level"),
-            Column(cols.get("orbCost", "Theiah's Orbs"), "num", sort_key="orb_cost"),
+            Column(cols["level"], "num", sort_key="level"),
+            Column(cols["orbCost"], "num", sort_key="orb_cost"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:
@@ -54,10 +54,10 @@ def fairy_skill_change_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("level", "level", "Level"),
-            offset_column("data_offset", "dataOffset", "Data Offset"),
-            size_column("data_size", "dataSize", "Data Size"),
-            offset_column("record_start", "recordStart", "Record Start"),
+            OffsetColumn("level", "level"),
+            offset_column("data_offset", "dataOffset"),
+            size_column("data_size", "dataSize"),
+            offset_column("record_start", "recordStart"),
         ],
         parse_fairyskillchangeoffset_records,
     )

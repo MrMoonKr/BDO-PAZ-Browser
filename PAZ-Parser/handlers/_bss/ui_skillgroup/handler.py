@@ -80,16 +80,16 @@ class UiSkillGroupBssHandler(PreviewHandler):
     """`ui_skillgroup_combat.bss`, `_awakening.bss` and `_succession.bss`."""
 
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("class", "Class"), sort_key="class"),
-            Column(cols.get("tab", "Tab"), sort_key="subgroup"),
-            Column(cols.get("cardColumn", "Card Column"), sort_key="card_column"),
-            Column(cols.get("row", "Row"), "num", sort_key="row"),
-            Column(cols.get("column", "Column"), "num", sort_key="column"),
-            Column(cols.get("group", "Group"), "num", sort_key="group_no"),
-            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
-            Column(cols.get("skill", "Skill"), sort_key="skill"),
+            Column(cols["class"], sort_key="class"),
+            Column(cols["tab"], sort_key="subgroup"),
+            Column(cols["cardColumn"], sort_key="card_column"),
+            Column(cols["row"], "num", sort_key="row"),
+            Column(cols["column"], "num", sort_key="column"),
+            Column(cols["group"], "num", sort_key="group_no"),
+            Column(cols["icon"], sort_key="icon_path"),
+            Column(cols["skill"], sort_key="skill"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:
@@ -113,7 +113,7 @@ class UiSkillGroupBssHandler(PreviewHandler):
         window = parse_ui_skillgroup(data)
         key_hashes = _game_key_hashes(companions)
         group_keys = _group_keys(companions)
-        column_labels = load_handler_strings(self.lang, _LANG_DIR).get("cardColumn", {})
+        column_labels = load_handler_strings(self.lang, _LANG_DIR)["cardColumn"]
 
         records: list[dict] = []
         for grid in window.grids:

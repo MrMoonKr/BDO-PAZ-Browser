@@ -54,11 +54,11 @@ def _parse(data: bytes) -> list[tuple[int, int]]:
 
 class TitleCategoryBssHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("titleId", "Title ID"), "num", sort_key="title_id"),
-            Column(cols.get("categoryId", "Cat ID"), "num", sort_key="category_id"),
-            Column(cols.get("category", "Category"), sort_key="category"),
+            Column(cols["titleId"], "num", sort_key="title_id"),
+            Column(cols["categoryId"], "num", sort_key="category_id"),
+            Column(cols["category"], sort_key="category"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

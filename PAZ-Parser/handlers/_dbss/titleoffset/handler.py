@@ -17,8 +17,8 @@ def title_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("title_id", "titleId", "Title ID"),
-            offset_column("offset", "offset", "Offset"),
+            OffsetColumn("title_id", "titleId"),
+            offset_column("offset", "offset"),
         ],
         offset_map_records("title_id"),
         lang_block="columns",

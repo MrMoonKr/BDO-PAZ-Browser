@@ -25,13 +25,13 @@ _TRAIT_PREVIEW_CHARS = 100
 
 class ZodiacSignHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("id", "ID"), "num", sort_key="zodiac_id"),
-            Column(cols.get("name", "Name"), sort_key="name"),
-            Column(cols.get("stars", "Stars"), "num", sort_key="float_count"),
-            Column(cols.get("pairs", "Pairs"), "num", sort_key="pairs_count"),
-            Column(cols.get("traits", "Traits"), sort_key="trait"),
+            Column(cols["id"], "num", sort_key="zodiac_id"),
+            Column(cols["name"], sort_key="name"),
+            Column(cols["stars"], "num", sort_key="float_count"),
+            Column(cols["pairs"], "num", sort_key="pairs_count"),
+            Column(cols["traits"], sort_key="trait"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:
@@ -84,8 +84,8 @@ def zodiac_sign_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("zodiac_id", "zodiacId", "Zodiac ID"),
-            offset_column("data_offset", "dataOffset", "Data Offset"),
+            OffsetColumn("zodiac_id", "zodiacId"),
+            offset_column("data_offset", "dataOffset"),
         ],
         picked_records(parse_zodiacsignoffset_records, ("zodiac_id", "data_offset")),
     )
@@ -93,14 +93,14 @@ def zodiac_sign_offset_handler() -> OffsetTableHandler:
 
 class ZodiacSignOrderHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("orderColumns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["orderColumns"]
         return [
-            Column(cols.get("personality", "Personality"), "num", sort_key="personality_type"),
-            Column(cols.get("row", "Row"), "num", sort_key="row"),
-            Column(cols.get("zodiac", "Zodiac"), sort_key="zodiac_name"),
-            Column(cols.get("variant", "Variant"), "num", sort_key="variant"),
-            Column(cols.get("triggers", "Triggers"), "num", sort_key="trigger_count"),
-            Column(cols.get("sequence", "Sequence"), sort_key="sequence"),
+            Column(cols["personality"], "num", sort_key="personality_type"),
+            Column(cols["row"], "num", sort_key="row"),
+            Column(cols["zodiac"], sort_key="zodiac_name"),
+            Column(cols["variant"], "num", sort_key="variant"),
+            Column(cols["triggers"], "num", sort_key="trigger_count"),
+            Column(cols["sequence"], sort_key="sequence"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:
@@ -168,8 +168,8 @@ def zodiac_sign_order_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("personality_type", "personalityType", "Personality Type"),
-            offset_column("data_offset", "dataOffset", "Data Offset"),
+            OffsetColumn("personality_type", "personalityType"),
+            offset_column("data_offset", "dataOffset"),
         ],
         picked_records(parse_zodiacsignorderoffset_records, ("personality_type", "data_offset")),
         lang_block="orderOffsetColumns",

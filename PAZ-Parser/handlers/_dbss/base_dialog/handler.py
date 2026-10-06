@@ -52,12 +52,12 @@ def _record_dict(record: BaseDialogRecord, has_loc: bool) -> dict:
 
 class BaseDialogHandler(PreviewHandler):
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         return [
-            Column(cols.get("characterId", "Character ID"), "num", sort_key="character_id"),
-            Column(cols.get("dialog", "Dialog"), "num", sort_key="dialog_index"),
-            Column(cols.get("character", "Character"), sort_key="character"),
-            Column(cols.get("lines", "Bubble Lines"), sort_key="line_count"),
+            Column(cols["characterId"], "num", sort_key="character_id"),
+            Column(cols["dialog"], "num", sort_key="dialog_index"),
+            Column(cols["character"], sort_key="character"),
+            Column(cols["lines"], sort_key="line_count"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

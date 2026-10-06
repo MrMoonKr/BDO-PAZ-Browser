@@ -43,24 +43,24 @@ class QuestListBssHandler(PreviewHandler):
         self._has_event_period = has_event_period
 
     def _columns(self) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         event_columns = [
-            Column(cols.get("eventStart", "Event Start"), sort_key="event_start"),
-            Column(cols.get("eventEnd", "Event End"), sort_key="event_end"),
+            Column(cols["eventStart"], sort_key="event_start"),
+            Column(cols["eventEnd"], sort_key="event_end"),
         ] if self._has_event_period else []
         # The script roles are read from their calls, not confirmed in game.
         guess = f'title="{e(cols.get("scriptGuess", _SCRIPT_GUESS_TOOLTIP))}"'
         return [
-            Column(cols.get("mainId", "Main ID"), "num", sort_key="quest_chain_id"),
-            Column(cols.get("subId", "Sub ID"), "num", sort_key="quest_id"),
-            Column(cols.get("groupKey", "Group Key"), "num", sort_key="group_key"),
-            Column(cols.get("groupName", "Group Name"), sort_key="group_name"),
+            Column(cols["mainId"], "num", sort_key="quest_chain_id"),
+            Column(cols["subId"], "num", sort_key="quest_id"),
+            Column(cols["groupKey"], "num", sort_key="group_key"),
+            Column(cols["groupName"], sort_key="group_name"),
             *event_columns,
-            Column(cols.get("icon", "Icon"), sort_key="icon_path"),
-            Column(cols.get("title", "Title"), sort_key="title"),
-            Column(cols.get("condition", "Condition"), sort_key="condition"),
-            Column(cols.get("offeredWhen", "Offered When*"), extra_attrs=guess, sort_key="script_2"),
-            Column(cols.get("ruledOutWhen", "Ruled Out When*"), extra_attrs=guess, sort_key="script_1"),
+            Column(cols["icon"], sort_key="icon_path"),
+            Column(cols["title"], sort_key="title"),
+            Column(cols["condition"], sort_key="condition"),
+            Column(cols["offeredWhen"], extra_attrs=guess, sort_key="script_2"),
+            Column(cols["ruledOutWhen"], extra_attrs=guess, sort_key="script_1"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:

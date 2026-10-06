@@ -41,9 +41,9 @@ def character_spawn_type_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
         _LANG_DIR,
         [
-            OffsetColumn("character_id", "characterId", "Character ID"),
-            offset_column("offset", "byteOffset", "Byte Offset"),
-            size_column("size", "size", "Size"),
+            OffsetColumn("character_id", "characterId"),
+            offset_column("offset", "byteOffset"),
+            size_column("size", "size"),
         ],
         offset_records(parse_pabr_offset_rows, "character_id"),
     )
@@ -51,11 +51,11 @@ def character_spawn_type_offset_handler() -> OffsetTableHandler:
 
 class CharacterSpawnTypeHandler(PreviewHandler):
     def _columns(self, active_roles: Iterable[int], has_loc: bool) -> list[Column]:
-        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        cols = load_handler_strings(self.lang, _LANG_DIR)["columns"]
         role_labels = role_label_overrides(self.lang)
-        columns = [Column(cols.get("characterId", "Character ID"), "num", sort_key="character_id")]
+        columns = [Column(cols["characterId"], "num", sort_key="character_id")]
         if has_loc:
-            columns.append(Column(cols.get("name", "Name"), sort_key="name"))
+            columns.append(Column(cols["name"], sort_key="name"))
         columns.extend(_role_column(i, role_labels) for i in active_roles)
         return columns
 
