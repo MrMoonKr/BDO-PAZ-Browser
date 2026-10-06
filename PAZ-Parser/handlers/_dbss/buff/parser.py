@@ -35,6 +35,8 @@ _TICK_MS = 0x6C
 
 # Tail block offset of the broad family byte (food, elixir, perfume, ...).
 _STACKING_CATEGORY = 0x18
+# Tail block flag: applying the buff ends the others of its stacking category.
+_IS_EXCLUSIVE = 0x19
 
 _I16 = struct.Struct("<h")
 _PARAMS_STRUCT = struct.Struct(f"<{PARAM_COUNT}q")
@@ -79,6 +81,7 @@ def _parse_record(data: bytes, row: PabrOffsetRow) -> dict:
         "apply_rate": apply_rate,
         "description_kr": decode_inline_text(description),
         "stacking_category": data[pos + _STACKING_CATEGORY],
+        "is_exclusive": bool(data[pos + _IS_EXCLUSIVE]),
     }
     record.update({f"param_{index}": value for index, value in enumerate(params, 1)})
     return record

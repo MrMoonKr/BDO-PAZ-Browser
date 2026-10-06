@@ -76,6 +76,7 @@ BUFF_CASE = HandlerCase(
                 "group",
                 "condition_type",
                 "stacking_category",
+                "is_exclusive",
             ]
         ),
         DeclaredCountTest(declared=header_count()),
@@ -204,6 +205,21 @@ BUFF_CASE = HandlerCase(
         RangeTest(col="group", min_val=0, max_val=0xFFFF),
         # Whale tendon elixirs have their own stacking category.
         TargetTest(col="buff_id", value=58025, expected={"stacking_category": 21}),
+        # Draughts end each other: the reset every non-Harmony draught applies
+        # is exclusive in the Harmony bonus category, an elixir buff is not.
+        TargetTest(
+            col="buff_id",
+            value=47321,
+            expected={"stacking_category": 26, "is_exclusive": True, "effect_type": 58},
+        ),
+        TargetTest(
+            col="buff_id",
+            value=48430,
+            expected={"stacking_category": 2, "is_exclusive": False},
+        ),
+        # Adventurer's Luck I and V share a group, ranked by level.
+        TargetTest(col="buff_id", value=57484, expected={"group": 6382, "level": 1}),
+        TargetTest(col="buff_id", value=57488, expected={"group": 6382, "level": 5}),
         RangeTest(col="level", min_val=0, max_val=math.inf),
         RangeTest(col="duration_ms", min_val=0, max_val=math.inf),
     ],

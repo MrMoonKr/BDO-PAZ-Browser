@@ -10,6 +10,7 @@ profile.prof
 files/
 json/
 tools/*
+.worktreeinclude
 todo.md
 done.md
 planner.md

@@ -79,7 +79,7 @@ Offsets are relative to the end of the name string.
 | ------- | ------- | --------------- | --------------------------------------------------------------------- |
 | `+0x00` | i16     | buff_level      | 1 to 999; `1` in 32,071 rows. Ranks buffs within a `group`; staged buffs count up, e.g. boss stages 1 to 10 |
 | `+0x02` | u8[2]   | reserved        | Always `0`                                                            |
-| `+0x04` | u16     | group           | `0` in 28,199 rows. Shared by some effect families, see Notes         |
+| `+0x04` | u16     | group           | `0` in 28,199 rows. Buffs of one group replace each other by level, see Stacking |
 | `+0x06` | i16     | condition_type  | `0` in 44,390 rows; the trigger of types 1 and 4, see `condition_type` |
 | `+0x08` | u8      | effect_type     | 173 distinct values; see Enum Values                                  |
 | `+0x09` | u8      | flag_09         | `1` in 44,489 rows                                                    |
@@ -115,8 +115,8 @@ Offsets are relative to the end of the description string. Mostly zero.
 | `+0x07` | i32  | unknown_07  | `0`, `1000000` or `-1000000`                 |
 | `+0x0B` | u8[12] | reserved  | Always `0`                                   |
 | `+0x17` | u8   | flag_17     | `1` in 221 rows                              |
-| `+0x18` | u8   | stacking_category | 61 distinct values; broad effect family, see Enum Values |
-| `+0x19` | u8   | flag_19     | `1` in 2,066 rows                            |
+| `+0x18` | u8   | stacking_category | 61 distinct values; item type such as food, draught or perfume, see Stacking |
+| `+0x19` | u8   | is_exclusive | `1` in 2,069 rows on client 3458, never with category `0`; applying the buff ends the other buffs of its category, see Stacking |
 | `+0x1A` | u8   | unknown_1a  | `6` in 18,895 rows, else `0` or `1`          |
 
 ---
@@ -733,18 +733,97 @@ crystals and Giant's Belt, types 29 and 67) are open; their skills have no
 tooltip on bdocodex. Fixed damage is stored negative and written as a
 positive amount.
 
-### `stacking_category` (tail block `+0x18`)
+### Stacking (`stacking_category`, `is_exclusive`, `group`, `buff_level`)
 
-A broad family byte. Confirmed values:
+Two mechanisms decide which buffs replace each other:
 
-| Value | Rows | Family                     | Evidence                                              |
-| ----- | ---: | -------------------------- | ----------------------------------------------------- |
-| 0     | 41,859 | None                     |                                                       |
-| 1     | 428  | Food                       | `최상위 음식` (top-tier food) buffs                    |
-| 6     | 118  | Perfume                    | `녹음의 향수` and its component buffs                  |
-| 21    | 4    | Whale tendon elixirs       | The three Whale Tendon Elixirs, plus `[Event] Sweet Pumpkin Pie`, which gives the same buff in game |
+- **Category.** `stacking_category` (tail `+0x18`) is the item type the
+  tooltips name (`※ Type: Draught`, `※ Type: Perfume`). A buff with
+  `is_exclusive` (tail `+0x19`) ends every active buff of its category, so
+  only the last item of that type used applies. Buffs without the flag
+  leave their category alone.
+- **Group.** Buffs of one `group` are one slot, ranked by `buff_level`; no
+  two buffs share a group and a level. Adventurer's Luck I to V (57484 to
+  57488) are group 6382 at levels 1 to 5, and their scrolls read `Lower
+  Adventurer's Luck cannot be applied while the higher effect is active`.
 
-Value `2` (647 rows) holds 600-minute elixir-style buffs and value `38` the Adventure's Boon blessings. bdo-data-extractor reads `2` as elixir/draught and `26` as a single draught-reset control record, but 82 buffs here carry `26`, many of them species extra AP (`카마실비아 종족 추가 공격력 +17`).
+Exclusive families do not need shared groups, since the category already
+replaces the whole set; the families without the flag do. That is why the
+18 food Max HP buffs share group `5616` (ordinary food, category 1, not
+exclusive) while each Adventure's Boon buff has its own (category 38, all
+exclusive). On client 3458, 119 of the 193 groups of non-exclusive
+categorised buffs hold more than one buff, against 36 of the 1,989
+exclusive ones (Perfume of Courage and its Immortal and event versions).
+
+Checked against the `※` lines of the English item descriptions (LOC type
+0), joined to the buffs through `BUFF_ITEMS`:
+
+- 155 items read `Only the effects of the last draught / perfume /
+  high-quality food / Golden Pig's Blessing ... used will be applied`. All
+  149 that apply buffs apply exclusive buffs of one category (72 draughts,
+  41 perfumes, 19 foods, 7 Golden Pig's Blessings, 5 each of the Glorious
+  Combat and Life Scrolls), plus category `0` buffs on the foods.
+- The 17 residence scrolls that read `Only the most recently applied scroll
+  or furniture buff will take effect` are all category 35, exclusive.
+- The Item Collection Increase scrolls (`Effects of same item types cannot
+  be stacked`) are category `0` or `8`, not exclusive; their limit comes
+  from groups.
+
+Draughts and elixirs share category 2. Every draught buff is exclusive (344
+buffs), as are the item-less `최상위 비약` ("top-tier elixir") draught
+buffs and the GM buffs; the 247 ordinary elixir buffs are not, and stack
+with each other except within a group: Elixir of Human Hunt (level 2),
+[Mix] Manhunt-Rage Elixir (3) and Elixir of Perfect Human Hunt (4) share
+groups 5647 and 8939. A draught therefore ends every active elixir and
+draught, which is the tooltip's `Draught effects do not stack with other
+elixir/draught effects`. Perfumes (6) and the whale tendon elixirs (21)
+have their own categories, which is the tooltip's exception list.
+
+Two effect-less buffs exist only to end a category. Harmony Draught keeps
+its last six effects (Critical Hit +5, the fixed damage and HP on hit
+lines, All Special Attack Extra Damage +18%) in category 26, apart from the
+category 2 ones. Every other draught applies 47321 (`영약 추가 효과
+초기화`, "draught bonus effect reset", type 58, no parameters, 20 min,
+exclusive in 26), so it ends those six as well. The 62 items that apply it
+are the 61 draughts without Harmony effects and Overflowing Earth Energy
+(42242), which applies draught buffs too; Glorious Giant's Draught applies
+no skill. Food does the same: 55793 (`서브 음식 효과`, "sub food effect", 1
+sec) is exclusive in category 10, the second effects of high-quality food,
+and the 7 high-quality foods that apply it have no category 10 effect of
+their own. bdo-data-extractor calls 26 a single
+draught-reset record; that is 47321, and the other 81 buffs of 26 are the
+Harmony effects.
+
+An ordinary elixir does not end an active draught, as the flag predicts;
+I checked it in game on 2026-10-06: Elixir of Mastery (1155) drunk after
+Beast's Draught left the draught's buffs in place. The tooltip's `do not
+stack` line only holds in one direction: a draught ends elixirs, an elixir
+leaves a draught alone. Still open: whether an equal level replaces a buff
+of the same group.
+
+| Value | Buffs | Exclusive | Item type |
+| ----- | ----: | --------- | --------- |
+| 0     | 41,892 | never    | None; buffs stack, limited only by group |
+| 1     | 428   | 88        | Food; the exclusive ones are high-quality food (`최상위 음식`), ordinary food stacks |
+| 2     | 647   | 400       | Elixir (not exclusive) and draught (exclusive) |
+| 3     | 131   | all       | Villa, camp and scroll body buffs (`[Villa] Body Enhancement`) |
+| 6     | 118   | all       | Perfume |
+| 7     | 64    | none      | Event consumables (clovers, lollipops) |
+| 8     | 14    | none      | Item Collection Increase scrolls |
+| 9     | 16    | 2         | Damage reducers and AP enhancers |
+| 10    | 39    | all       | High-quality food second effects, and the 55793 reset |
+| 14    | 8     | all       | Golden Pig's Blessing |
+| 21    | 4     | all       | Whale tendon elixirs, plus `[Event] Sweet Pumpkin Pie`, which gives the same buff in game |
+| 24, 25 | 10, 12 | all     | Glorious Combat Scroll, Glorious Life Scroll |
+| 26    | 82    | all       | Harmony Draught bonus effects, and the 47321 reset |
+| 35    | 515   | all       | Event items and residence furniture scrolls (822 items) |
+| 36, 37 | 6, 2 | all       | [Fame] Combat EXP and Skill EXP scrolls |
+| 38    | 18    | all       | Adventure's Boon |
+
+The other values each hold one item family, all exclusive: GM's Blessing
+(12, 13), the event bundles (18, 19, 22, 27, 209 to 212), the Korean
+holiday feasts (28 to 32), Token of Desert Trading (20), test and
+development items (233 to 250, 252). 248 to 251 are not exclusive.
 
 ---
 
@@ -791,7 +870,8 @@ Value `2` (647 rows) holds 600-minute elixir-style buffs and value `38` the Adve
   a skill in type 10. Some families share one value: the 18 food Max HP buffs
   (+100 to +300) all use `5616`. Others do not: each buff of Adventure's Boon
   has its own (9056 to 9061 below), and the same effect in the 60 and 300
-  minute variants uses 9050 and 9062. `+0x00` to `+0x07` used to be read as
+  minute variants uses 9050 and 9062, since its exclusive category already
+  replaces them (see Stacking). `+0x00` to `+0x07` used to be read as
   two u32 fields; bytes `+0x02` and `+0x03` are zero in every record.
 - `group` is a u16. Its keys run from `1` to `22100` and from `40001` to
   `60016`; the upper range holds 411 keys on 1,181 rows. Earlier versions of
@@ -891,14 +971,12 @@ Enum Values are confirmed; the rest have not been worked out. For 39, 40, 41
 and 43 `param_1` is `3`; bdo-data-extractor reads it as the target (`0` melee,
 `1` ranged, `2` magic, `3` all).
 
-### When is `group` shared?
+### Does an equal level replace a buff of the same group?
 
-Food Max HP buffs share group `5616`, but duration variants of Adventure's Boon
-each get their own value, so `group` is not simply "one effect across variants".
-What decides whether buffs share one is open. The unique (`group`,
-`buff_level`) pairs suggest a group is a set of buffs that replace each other,
-the higher level winning; that needs an in-game check, for example eating a
-+100 food with a +150 food active.
+A higher `buff_level` blocks a lower one in its `group` (see Stacking), but
+whether the same level refreshes or replaces the active buff is not known.
+Using the same Adventurer's Luck scroll twice settles it. Whether an elixir
+ends a draught is settled: it does not (see Stacking).
 
 ### Is `buff_level` a level or a category?
 
