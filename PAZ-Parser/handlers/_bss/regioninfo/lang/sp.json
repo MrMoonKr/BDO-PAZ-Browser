@@ -9,7 +9,14 @@
     "regionGroup": "Grupo de regiones",
     "nodeWarDay": "Día de Guerra de nodo",
     "desert": "Desierto",
-    "guildWharfManager": "Maestre de la hermandad"
+    "guildWharfManager": "Maestre de la hermandad",
+    "maxParticipants": "Participantes máximos",
+    "apLimit": "Ataque máx.",
+    "drLimit": "Reduc. de daño máx.",
+    "accuracyLimit": "Precisión máx.",
+    "evasionLimit": "Evasión máx.",
+    "drRateLimit": "Tasa de reduc. de daño máx.",
+    "resistanceLimit": "Resistencia máx."
   },
   "meta": {
     "count": "{count} regiones"

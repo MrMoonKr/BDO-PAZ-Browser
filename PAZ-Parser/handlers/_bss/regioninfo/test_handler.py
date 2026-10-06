@@ -52,6 +52,11 @@ CASE = HandlerCase(
                 "unknown_60",
                 "unknown_d2_keys",
                 "unknown_d2_vectors",
+                "max_participants",
+                "siege_ap_limit",
+                "siege_dr_rate_limit",
+                "siege_resistance_limits",
+                "unknown_tail_55",
             ],
         ),
         DeclaredCountTest(declared=header_count(offset=4)),
@@ -129,3 +134,13 @@ def test_each_territory_has_one_main_town_capital(regioninfo_result: HandlerResu
         capital = records[next(iter(keys))]
         assert capital["region_type"] == _MAIN_TOWN
         assert capital["territory_key"] == territory_key
+
+
+
+def test_node_war_limits_are_real_values(regioninfo_result: HandlerResult) -> None:
+    """Regions with a participant cap carry limits, not the FLT_MAX / INT32_MAX filler."""
+    for record in regioninfo_result.records:
+        if not record["max_participants"]:
+            continue
+        assert record["siege_ap_limit"] < 3.0e38, record["region_key"]
+        assert record["siege_dr_rate_limit"] != 0x7FFFFFFF, record["region_key"]

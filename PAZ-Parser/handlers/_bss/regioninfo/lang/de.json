@@ -9,7 +9,14 @@
     "regionGroup": "Regionsgruppe",
     "nodeWarDay": "Postenkriegstag",
     "desert": "Wüste",
-    "guildWharfManager": "Hafenmeister der Gilde"
+    "guildWharfManager": "Hafenmeister der Gilde",
+    "maxParticipants": "Max. Teilnehmeranzahl",
+    "apLimit": "Max. AK",
+    "drLimit": "Max. Schadensreduktion",
+    "accuracyLimit": "Max. Präzision",
+    "evasionLimit": "Max. Ausweichen",
+    "drRateLimit": "Max. Schadensreduktionsrate",
+    "resistanceLimit": "Max. Widerstand"
   },
   "meta": {
     "count": "{count} Regionen"

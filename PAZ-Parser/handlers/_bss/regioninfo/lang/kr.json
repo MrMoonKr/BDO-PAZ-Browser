@@ -9,7 +9,14 @@
     "regionGroup": "지역 그룹",
     "nodeWarDay": "거점전 요일",
     "desert": "사막",
-    "guildWharfManager": "길드 선착장 관리인"
+    "guildWharfManager": "길드 선착장 관리인",
+    "maxParticipants": "최대 인원",
+    "apLimit": "공격력 제한",
+    "drLimit": "피해 감소 제한",
+    "accuracyLimit": "적중력 제한",
+    "evasionLimit": "회피력 제한",
+    "drRateLimit": "피해 감소율 제한",
+    "resistanceLimit": "저항 제한"
   },
   "meta": {
     "count": "지역 {count}개"

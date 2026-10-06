@@ -20,6 +20,8 @@ _EMPTY = "-"
 # Territory names; str_id4 1 is the territory, 0 the nation.
 _LOC_TERRITORY = 12
 _LOC_TERRITORY_NAME = 1
+# Siege rate limits are stored on the 1,000,000 = 100% scale.
+_RATE_PER_PERCENT = 10_000
 
 
 def _enum_name(names: tuple[str, ...], value: int) -> str:
@@ -42,6 +44,23 @@ def _named_key(key: int, name_of: Callable[[int], str]) -> str | None:
     return f"{key} {name_of(key)}".strip()
 
 
+def _flat_limit(value: float | None) -> str:
+    return _EMPTY if value is None else f"{value:g}"
+
+
+def _rate(value: int) -> str:
+    return f"{value / _RATE_PER_PERCENT:g}%"
+
+
+def _resistance_limit(values: list[int] | None) -> str:
+    """One rate when all four resistances share it (every region so far), else each."""
+    if values is None:
+        return _EMPTY
+    if len(set(values)) == 1:
+        return _rate(values[0])
+    return " / ".join(_rate(value) for value in values)
+
+
 def _display_fields(record: dict) -> dict:
     day = record["node_war_day"]
     has_node_war = day < len(NODE_WAR_DAY_NAMES)
@@ -57,6 +76,9 @@ def _display_fields(record: dict) -> dict:
         "capital": _region_name(record["capital_region_key"]) or str(record["capital_region_key"]),
         "node": _named_key(record["node_key"], node_name),
         "guild_wharf_manager": _named_key(record["guild_wharf_manager_key"], character_name),
+        # 0 participants means no node war; sorts last.
+        "max_participants_sort": record["max_participants"] or None,
+        "siege_resistance_limit_sort": (record["siege_resistance_limits"] or [None])[0],
     }
 
 
@@ -74,6 +96,13 @@ class RegionInfoBssHandler(PreviewHandler):
             Column(cols["nodeWarDay"], sort_key="node_war_day_order"),
             Column(cols["desert"], sort_key="is_desert"),
             Column(cols["guildWharfManager"], sort_key="guild_wharf_manager"),
+            Column(cols["maxParticipants"], "num", sort_key="max_participants_sort"),
+            Column(cols["apLimit"], "num", sort_key="siege_ap_limit"),
+            Column(cols["drLimit"], "num", sort_key="siege_dr_limit"),
+            Column(cols["accuracyLimit"], "num", sort_key="siege_accuracy_limit"),
+            Column(cols["evasionLimit"], "num", sort_key="siege_evasion_limit"),
+            Column(cols["drRateLimit"], "num", sort_key="siege_dr_rate_limit"),
+            Column(cols["resistanceLimit"], "num", sort_key="siege_resistance_limit_sort"),
         ]
 
     def sortable_fields(self) -> tuple[str, ...]:
@@ -112,6 +141,13 @@ class RegionInfoBssHandler(PreviewHandler):
                 e(record["node_war_day_name"] or _EMPTY),
                 flag_cell(bool(record["is_desert"])),
                 e(record["guild_wharf_manager"] or _EMPTY),
+                e(record["max_participants"] or _EMPTY),
+                e(_flat_limit(record["siege_ap_limit"])),
+                e(_flat_limit(record["siege_dr_limit"])),
+                e(_flat_limit(record["siege_accuracy_limit"])),
+                e(_flat_limit(record["siege_evasion_limit"])),
+                e(_EMPTY if record["siege_dr_rate_limit"] is None else _rate(record["siege_dr_rate_limit"])),
+                e(_resistance_limit(record["siege_resistance_limits"])),
             ]
             for record in slice_
         ]

@@ -9,7 +9,14 @@
     "regionGroup": "Region Group",
     "nodeWarDay": "Node War Day",
     "desert": "Desert",
-    "guildWharfManager": "Guild Wharf Manager"
+    "guildWharfManager": "Guild Wharf Manager",
+    "maxParticipants": "Max Participants",
+    "apLimit": "AP Limit",
+    "drLimit": "DR Limit",
+    "accuracyLimit": "Accuracy Limit",
+    "evasionLimit": "Evasion Limit",
+    "drRateLimit": "DR Rate Limit",
+    "resistanceLimit": "Resistance Limit"
   },
   "meta": {
     "count": "{count} regions"

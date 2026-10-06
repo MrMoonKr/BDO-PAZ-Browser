@@ -9,7 +9,14 @@
     "regionGroup": "Groupe de régions",
     "nodeWarDay": "Jour de géoconflit",
     "desert": "Désert",
-    "guildWharfManager": "Boute-à-port de guilde"
+    "guildWharfManager": "Boute-à-port de guilde",
+    "maxParticipants": "Participants max.",
+    "apLimit": "PA max.",
+    "drLimit": "Réduction des dégâts max.",
+    "accuracyLimit": "Précision max.",
+    "evasionLimit": "Esquive max.",
+    "drRateLimit": "Taux de réduction des dégâts max.",
+    "resistanceLimit": "Résistance max."
   },
   "meta": {
     "count": "{count} régions"
