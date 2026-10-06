@@ -1,0 +1,13 @@
+{
+  "columns": {
+    "petSkillId": "ID навыка питомца",
+    "level": "Уровень",
+    "valueA": "Значение A",
+    "valueB": "Значение B"
+  },
+  "offsetColumns": {
+    "petSkillId": "ID навыка питомца",
+    "dataOffset": "Смещение данных",
+    "dataSize": "Размер данных"
+  }
+}

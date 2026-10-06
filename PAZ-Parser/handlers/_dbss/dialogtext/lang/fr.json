@@ -1,0 +1,13 @@
+{
+  "offsetColumns": {
+    "key": "Clé",
+    "dbssOffset": "Décalage DBSS",
+    "size": "Taille"
+  },
+  "columns": {
+    "name": "Nom",
+    "lines": "Répliques",
+    "text": "Texte",
+    "voice": "Voix"
+  }
+}

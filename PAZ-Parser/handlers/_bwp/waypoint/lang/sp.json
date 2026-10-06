@@ -1,0 +1,19 @@
+{
+  "columns": {
+    "key": "Clave",
+    "name": "Nombre",
+    "x": "X",
+    "y": "Y",
+    "z": "Z",
+    "property": "Propiedad",
+    "subWaypoint": "Subpunto de ruta",
+    "links": "Enlaces"
+  },
+  "messages": {
+    "oldLayout": "Plantilla antigua de mazmorra de instancia sin firma PABR; no se lee"
+  },
+  "values": {
+    "yes": "Sí",
+    "no": "No"
+  }
+}

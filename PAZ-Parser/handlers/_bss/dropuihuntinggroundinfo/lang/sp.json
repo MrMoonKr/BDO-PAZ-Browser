@@ -1,0 +1,20 @@
+{
+  "columns": {
+    "key": "Clave",
+    "name": "Nombre",
+    "region": "Región",
+    "categories": "Categorías",
+    "species": "Especie",
+    "ap": "Ataque",
+    "dp": "Defensa",
+    "totalAp": "Ataque total",
+    "totalDp": "Defensa total",
+    "maxAp": "Ataque máx.",
+    "node": "Nodo",
+    "monsters": "Monstruos",
+    "items": "Objetos",
+    "quests": "Misiones",
+    "tags": "Etiquetas",
+    "titles": "Títulos"
+  }
+}

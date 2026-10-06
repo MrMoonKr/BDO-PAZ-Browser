@@ -1,0 +1,18 @@
+{
+  "offsetColumns": {
+    "section": "Sección",
+    "index": "Índice",
+    "byteOffset": "Desplazamiento (bytes)",
+    "size": "Tamaño"
+  },
+  "columns": {
+    "section": "Sección",
+    "key": "Clave",
+    "x": "X",
+    "y": "Y",
+    "z": "Z",
+    "nearestNode": "Nodo más cercano",
+    "distance": "Distancia (m)",
+    "usedBy": "Usado por"
+  }
+}

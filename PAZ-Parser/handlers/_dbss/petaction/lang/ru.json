@@ -1,0 +1,12 @@
+{
+  "columns": {
+    "actionId": "ID действия",
+    "actionName": "Название действия",
+    "icon": "Значок"
+  },
+  "offsetColumns": {
+    "actionId": "ID действия",
+    "recordOffset": "Смещение записи",
+    "recordSize": "Размер записи"
+  }
+}

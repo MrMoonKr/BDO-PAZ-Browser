@@ -1,0 +1,33 @@
+{
+  "columns": {
+    "skillNo": "N° de compétence",
+    "level": "Niveau",
+    "icon": "Icône",
+    "name": "Nom",
+    "classes": "Classes",
+    "kind": "Genre",
+    "branch": "Branche",
+    "weapon": "Arme",
+    "quickSlot": "Emplacement rapide",
+    "needLevel": "Niveau requis",
+    "needSkillPoint": "Points de compétence",
+    "needSkills": "Compétences requises",
+    "previousRank": "Rang précédent",
+    "exclusiveSkills": "Compétences exclusives"
+  },
+  "kind": {
+    "0": "Autre",
+    "1": "Actif",
+    "2": "Passif"
+  },
+  "branch": {
+    "1": "Éveil",
+    "2": "Renaissance"
+  },
+  "weapon": {
+    "main": "Arme principale",
+    "sub": "Arme secondaire",
+    "awakening": "Arme d'éveil"
+  },
+  "allClasses": "Toutes"
+}

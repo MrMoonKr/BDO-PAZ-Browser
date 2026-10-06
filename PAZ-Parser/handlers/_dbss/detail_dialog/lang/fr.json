@@ -1,0 +1,17 @@
+{
+  "offsetColumns": {
+    "characterId": "ID du personnage",
+    "dialog": "Dialogue",
+    "dbssOffset": "Décalage DBSS",
+    "size": "Taille"
+  },
+  "columns": {
+    "characterId": "ID du personnage",
+    "dialog": "Dialogue",
+    "character": "Personnage",
+    "greeting": "Salutation",
+    "options": "Options",
+    "optionTitles": "Titres des options",
+    "leases": "Locations"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "columns": {
+    "buffId": "ID du bonus",
+    "icon": "Icône",
+    "description": "Description",
+    "shown": "Affiché"
+  },
+  "values": {
+    "yes": "Oui",
+    "no": "Non"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "columns": {
+    "productId": "ID du produit",
+    "icon": "Icône",
+    "product": "Produit",
+    "itemId": "ID d'objet",
+    "item": "Objet",
+    "description": "Description"
+  },
+  "offsetColumns": {
+    "productId": "ID du produit",
+    "dataOffset": "Décalage des données",
+    "dataSize": "Taille des données"
+  }
+}

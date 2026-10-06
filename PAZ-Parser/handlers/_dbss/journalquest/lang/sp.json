@@ -1,0 +1,26 @@
+{
+  "offsetColumns": {
+    "group": "Grupo",
+    "entry": "Entrada",
+    "offset": "Desplazamiento",
+    "size": "Tamaño"
+  },
+  "columns": {
+    "group": "Grupo",
+    "entry": "Entrada",
+    "journalCategoryId": "ID de categoría del diario",
+    "title": "Título",
+    "subtitle": "Subtítulo",
+    "volume": "Tomo",
+    "pageTitles": "Títulos de páginas",
+    "unlockCondition": "Condición de desbloqueo",
+    "pages": "Páginas",
+    "recordBook": "Diario",
+    "combineModel": "Modelo combinado",
+    "staticModel": "Modelo estático"
+  },
+  "values": {
+    "yes": "Sí",
+    "no": "No"
+  }
+}

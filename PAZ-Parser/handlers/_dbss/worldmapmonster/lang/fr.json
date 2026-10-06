@@ -1,0 +1,16 @@
+{
+  "offsetColumns": {
+    "key": "Clé",
+    "byteOffset": "Décalage (octets)",
+    "size": "Taille"
+  },
+  "columns": {
+    "key": "Clé",
+    "icon": "Icône",
+    "name": "Nom",
+    "label": "Libellé",
+    "detail": "Détail",
+    "huntingGround": "Zone de chasse",
+    "condition": "Condition"
+  }
+}

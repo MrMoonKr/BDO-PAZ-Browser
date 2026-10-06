@@ -1,0 +1,13 @@
+{
+  "offsetColumns": {
+    "key": "Clave",
+    "dbssOffset": "Desplazamiento DBSS",
+    "size": "Tamaño"
+  },
+  "columns": {
+    "name": "Nombre",
+    "lines": "Líneas",
+    "text": "Texto",
+    "voice": "Voz"
+  }
+}

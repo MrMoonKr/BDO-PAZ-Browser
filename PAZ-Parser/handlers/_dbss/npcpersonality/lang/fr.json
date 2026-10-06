@@ -1,0 +1,18 @@
+{
+  "offsetColumns": {
+    "personalityId": "ID de personnalité",
+    "dataOffset": "Décalage des données"
+  },
+  "columns": {
+    "row": "Ligne",
+    "id": "ID",
+    "groupA": "Groupe A",
+    "groupB": "Groupe B",
+    "groupC": "Groupe C",
+    "intMin": "Intérêt min.",
+    "intMax": "Intérêt max.",
+    "favMin": "Amitié min.",
+    "favMax": "Amitié max.",
+    "horoscope": "Constellation"
+  }
+}

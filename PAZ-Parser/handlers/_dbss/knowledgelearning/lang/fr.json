@@ -1,0 +1,19 @@
+{
+  "offsetColumns": {
+    "table": "Table",
+    "sourceId": "ID de la source",
+    "dbssOffset": "Décalage DBSS",
+    "size": "Taille"
+  },
+  "columns": {
+    "sourceType": "Type de source",
+    "sourceId": "ID de la source",
+    "sourceName": "Nom de la source",
+    "knowledgeId": "ID de connaissance",
+    "knowledgeName": "Nom de la connaissance"
+  },
+  "values": {
+    "character": "Personnage",
+    "item": "Objet"
+  }
+}

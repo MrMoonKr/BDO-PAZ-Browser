@@ -1,0 +1,39 @@
+{
+  "columns": {
+    "itemId": "ID d'objet",
+    "icon": "Icône",
+    "item": "Objet",
+    "description": "Description",
+    "maxLevel": "Niveau max.",
+    "requiredLevel": "Niv. requis",
+    "classes": "Classes",
+    "binding": "Liaison",
+    "durability": "Durabilité",
+    "marketable": "Vendable au marché",
+    "familyInventory": "Inventaire de famille",
+    "trade": "Commerce",
+    "dyeable": "Colorable",
+    "objectId": "ID d'objet placé",
+    "object": "Objet placé",
+    "buffs": "Bonus"
+  },
+  "offsetColumns": {
+    "itemId": "ID d'objet",
+    "enchantLevel": "Niveau d'optimisation",
+    "dataOffset": "Décalage des données",
+    "dataSize": "Taille des données"
+  },
+  "values": {
+    "allClasses": "Toutes",
+    "allExcept": "Toutes sauf",
+    "bindOnObtain": "À l'obtention",
+    "bindOnEquip": "À l'équipement",
+    "family": "Famille",
+    "character": "Personnage",
+    "tradeManager": "Chef de commerce",
+    "tradeKarma": "Chef de commerce (perte de karma)",
+    "tradeImperialCrafting": "Livraison impériale d'artisanat",
+    "tradeGuild": "Commerce de guilde",
+    "tradeType": "Type"
+  }
+}

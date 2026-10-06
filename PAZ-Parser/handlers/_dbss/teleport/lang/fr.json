@@ -1,0 +1,18 @@
+{
+  "offsetColumns": {
+    "section": "Section",
+    "index": "Index",
+    "byteOffset": "Décalage (octets)",
+    "size": "Taille"
+  },
+  "columns": {
+    "section": "Section",
+    "key": "Clé",
+    "x": "X",
+    "y": "Y",
+    "z": "Z",
+    "nearestNode": "Géopoint le plus proche",
+    "distance": "Distance (m)",
+    "usedBy": "Utilisé par"
+  }
+}

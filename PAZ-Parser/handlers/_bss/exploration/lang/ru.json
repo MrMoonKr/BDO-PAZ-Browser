@@ -1,0 +1,20 @@
+{
+  "columns": {
+    "nodeKey": "Ключ узла",
+    "nodeName": "Название узла",
+    "kind": "Вид",
+    "mainSub": "Основной/доп.",
+    "contribution": "Очки влияния",
+    "manager": "Управляющий узлом",
+    "representative": "Представитель",
+    "radius": "Радиус",
+    "knowledge": "Знания",
+    "knowledgeEntries": "Записи знаний",
+    "connections": "Связи",
+    "connectedNodes": "Связанные узлы"
+  },
+  "values": {
+    "main": "Основной",
+    "sub": "Доп."
+  }
+}

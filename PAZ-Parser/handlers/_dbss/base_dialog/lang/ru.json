@@ -1,0 +1,8 @@
+{
+  "columns": {
+    "characterId": "ID персонажа",
+    "dialog": "Диалог",
+    "character": "Персонаж",
+    "lines": "Реплики в облачках"
+  }
+}

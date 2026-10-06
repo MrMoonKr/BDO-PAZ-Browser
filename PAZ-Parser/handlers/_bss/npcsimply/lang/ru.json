@@ -1,0 +1,11 @@
+{
+  "columns": {
+    "characterId": "ID персонажа",
+    "name": "Имя",
+    "kind": "Вид",
+    "role": "Роль",
+    "knowledgeId": "ID знания",
+    "leases": "Аренда",
+    "script": "Скрипт"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "offsetColumns": {
+    "characterId": "ID du personnage",
+    "byteOffset": "Décalage (octets)",
+    "size": "Taille"
+  },
+  "columns": {
+    "characterId": "ID du personnage",
+    "name": "Nom"
+  },
+  "roleLabels": {
+    "NormalNpc": "PNJ normal",
+    "RandomShop": "Marchand de nuit",
+    "RandomShopDay": "Marchand de jour",
+    "FishSupplyShop": "Livraison impériale de poisson",
+    "GuildStable": "Écurie de guilde",
+    "GuildWharf": "Quai de guilde",
+    "Unknown41": "Grand Prix",
+    "ChangeMarniStone": "Pierre de Marni"
+  }
+}

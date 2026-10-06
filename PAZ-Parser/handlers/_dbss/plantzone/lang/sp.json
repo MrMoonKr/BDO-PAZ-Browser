@@ -1,0 +1,13 @@
+{
+  "offsetColumns": {
+    "recordId": "ID de registro",
+    "dataOffset": "Desplazamiento de datos",
+    "dataSize": "Tamaño de datos"
+  },
+  "columns": {
+    "zoneId": "ID de zona",
+    "nodeName": "Nombre del nodo",
+    "productionKey": "Clave de producción",
+    "producedItems": "Objetos producidos"
+  }
+}

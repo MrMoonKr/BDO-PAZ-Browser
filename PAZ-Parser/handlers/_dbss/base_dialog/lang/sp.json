@@ -1,0 +1,8 @@
+{
+  "columns": {
+    "characterId": "ID del personaje",
+    "dialog": "Diálogo",
+    "character": "Personaje",
+    "lines": "Bocadillos"
+  }
+}

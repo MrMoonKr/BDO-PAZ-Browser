@@ -1,0 +1,15 @@
+{
+  "offsetColumns": {
+    "acquireTypeId": "ID del tipo de obtención",
+    "dataOffset": "Desplazamiento de datos",
+    "dataSize": "Tamaño de datos",
+    "recordStart": "Inicio de registro"
+  },
+  "columns": {
+    "acquireTypeId": "ID del tipo de obtención",
+    "equipSkillId": "ID de habilidad",
+    "skillName": "Nombre de habilidad",
+    "chance": "Probabilidad",
+    "weight": "Ponderación"
+  }
+}

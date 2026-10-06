@@ -1,0 +1,21 @@
+{
+  "offsetColumns": {
+    "characterId": "ID персонажа",
+    "byteOffset": "Смещение (байт)",
+    "size": "Размер"
+  },
+  "columns": {
+    "characterId": "ID персонажа",
+    "name": "Имя"
+  },
+  "roleLabels": {
+    "NormalNpc": "Обычный НИП",
+    "RandomShop": "Ночной торговец",
+    "RandomShopDay": "Дневной торговец",
+    "FishSupplyShop": "Имперская рыбалка",
+    "GuildStable": "Конюшня гильдии",
+    "GuildWharf": "Пристань гильдии",
+    "Unknown41": "Гран-при",
+    "ChangeMarniStone": "Камень Марни"
+  }
+}

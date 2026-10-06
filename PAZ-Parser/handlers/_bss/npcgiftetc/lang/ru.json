@@ -1,0 +1,11 @@
+{
+  "columns": {
+    "field": "Поле",
+    "value": "Значение",
+    "notes": "Примечания"
+  },
+  "notes": {
+    "Global gift-system value": "Общее значение системы подарков",
+    "Observed zero": "Пока всегда ноль"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "columns": {
+    "productionKey": "Clave de producción",
+    "name": "Nombre",
+    "itemSubgroup": "Subgrupo de objetos",
+    "items": "Objetos"
+  }
+}

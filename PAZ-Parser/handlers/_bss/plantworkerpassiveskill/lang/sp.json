@@ -1,0 +1,13 @@
+{
+  "columns": {
+    "skillId": "ID de habilidad",
+    "icon": "Icono",
+    "name": "Nombre",
+    "description": "Descripción",
+    "weight": "Ponderación",
+    "effectType": "Tipo de efecto",
+    "target": "Objetivo",
+    "effectA": "Efecto A",
+    "effectB": "Efecto B"
+  }
+}

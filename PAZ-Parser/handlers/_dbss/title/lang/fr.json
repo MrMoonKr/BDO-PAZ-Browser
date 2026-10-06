@@ -1,0 +1,10 @@
+{
+  "columns": {
+    "titleId": "ID du titre",
+    "category": "Catégorie",
+    "title": "Titre",
+    "titleRequirements": "Conditions du titre",
+    "special": "Spécial",
+    "effect": "Effet"
+  }
+}

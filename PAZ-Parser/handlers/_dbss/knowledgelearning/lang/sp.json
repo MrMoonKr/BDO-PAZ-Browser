@@ -1,0 +1,19 @@
+{
+  "offsetColumns": {
+    "table": "Tabla",
+    "sourceId": "ID de origen",
+    "dbssOffset": "Desplazamiento DBSS",
+    "size": "Tamaño"
+  },
+  "columns": {
+    "sourceType": "Tipo de origen",
+    "sourceId": "ID de origen",
+    "sourceName": "Nombre de origen",
+    "knowledgeId": "ID de conocimiento",
+    "knowledgeName": "Nombre del conocimiento"
+  },
+  "values": {
+    "character": "Personaje",
+    "item": "Objeto"
+  }
+}

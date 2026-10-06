@@ -1,0 +1,9 @@
+{
+  "columns": {
+    "equipSkillId": "ID навыка снаряжения",
+    "skillName": "Название навыка",
+    "icon": "Значок",
+    "skillType": "Тип навыка",
+    "section": "Раздел"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "columns": {
+    "key": "Clé",
+    "name": "Nom",
+    "region": "Région",
+    "categories": "Catégories",
+    "species": "Espèce",
+    "ap": "PA",
+    "dp": "PD",
+    "totalAp": "PA total",
+    "totalDp": "PD total",
+    "maxAp": "PA max.",
+    "node": "Géopoint",
+    "monsters": "Monstres",
+    "items": "Objets",
+    "quests": "Quêtes",
+    "tags": "Étiquettes",
+    "titles": "Titres"
+  }
+}

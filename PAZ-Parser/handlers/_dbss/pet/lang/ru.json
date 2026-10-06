@@ -1,0 +1,41 @@
+{
+  "columns": {
+    "petId": "ID питомца",
+    "name": "Название",
+    "species": "ID вида",
+    "tier": "Ранг",
+    "skillSlots": "Ячейки навыков",
+    "maxLevel": "Макс. ур.",
+    "acquireType": "Способ получения",
+    "equipSkillId": "ID навыка снаряжения",
+    "grade": "Редкость",
+    "icon": "Значок"
+  },
+  "grades": {
+    "5": "Особый",
+    "4": "Редкий",
+    "3": "Премиум",
+    "2": "Редкий",
+    "1": "Классика"
+  },
+  "offsetColumns": {
+    "petId": "ID питомца",
+    "dataOffset": "Смещение данных",
+    "dataSize": "Размер данных"
+  },
+  "gradeColumns": {
+    "key": "Ключ",
+    "species": "Вид",
+    "variant": "Вариант",
+    "grade": "Редкость",
+    "dataOffset": "Смещение данных",
+    "dataSize": "Размер данных"
+  },
+  "gradeOffsetColumns": {
+    "key": "Ключ",
+    "species": "Вид",
+    "variant": "Вариант",
+    "dataOffset": "Смещение данных",
+    "dataSize": "Размер данных"
+  }
+}

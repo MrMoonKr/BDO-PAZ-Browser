@@ -1,0 +1,15 @@
+{
+  "offsetColumns": {
+    "acquireTypeId": "ID способа получения",
+    "dataOffset": "Смещение данных",
+    "dataSize": "Размер данных",
+    "recordStart": "Начало записи"
+  },
+  "columns": {
+    "acquireTypeId": "ID способа получения",
+    "equipSkillId": "ID навыка",
+    "skillName": "Название навыка",
+    "chance": "Шанс",
+    "weight": "Вес"
+  }
+}

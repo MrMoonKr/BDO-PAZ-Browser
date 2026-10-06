@@ -1,0 +1,12 @@
+{
+  "columns": {
+    "step": "Шаг",
+    "upgrade": "Улучшение",
+    "icon": "Значок",
+    "item": "Предмет",
+    "itemId": "ID предмета",
+    "chancePerItem": "Шанс / предмет",
+    "ratePpm": "Частота (ppm)",
+    "itemsForMax": "Предметов до максимума"
+  }
+}

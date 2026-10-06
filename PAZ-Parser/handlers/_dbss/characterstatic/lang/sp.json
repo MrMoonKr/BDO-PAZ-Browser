@@ -1,0 +1,19 @@
+{
+  "offsetColumns": {
+    "characterId": "ID del personaje",
+    "byteOffset": "Desplazamiento (bytes)",
+    "size": "Tamaño"
+  },
+  "columns": {
+    "characterId": "ID del personaje",
+    "name": "Nombre",
+    "icon": "Icono",
+    "actionScript": "Script de acción",
+    "conditionScript": "Condición",
+    "knowledgeId": "ID de conocimiento",
+    "npcKind": "Tipo de PNJ",
+    "classType": "Tipo de clase",
+    "model": "Modelo",
+    "payloadSize": "Tamaño de carga"
+  }
+}

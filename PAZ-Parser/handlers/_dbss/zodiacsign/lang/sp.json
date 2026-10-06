@@ -1,0 +1,25 @@
+{
+  "columns": {
+    "id": "ID",
+    "name": "Nombre",
+    "stars": "Estrellas",
+    "pairs": "Pares",
+    "traits": "Rasgos"
+  },
+  "offsetColumns": {
+    "zodiacId": "ID del signo del zodiaco",
+    "dataOffset": "Desplazamiento de datos"
+  },
+  "orderColumns": {
+    "row": "Fila",
+    "personality": "Personalidad",
+    "zodiac": "Signo del zodiaco",
+    "variant": "Variante",
+    "triggers": "Activadores",
+    "sequence": "Secuencia"
+  },
+  "orderOffsetColumns": {
+    "personalityType": "Tipo de personalidad",
+    "dataOffset": "Desplazamiento de datos"
+  }
+}

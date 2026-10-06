@@ -1,0 +1,16 @@
+{
+  "columns": {
+    "groupKey": "Clé de groupe",
+    "groupName": "Nom du groupe",
+    "eventStart": "Début de l'événement",
+    "eventEnd": "Fin de l'événement",
+    "condition": "Condition",
+    "mainId": "ID principal",
+    "subId": "ID secondaire",
+    "icon": "Icône",
+    "title": "Titre",
+    "offeredWhen": "Proposée si*",
+    "ruledOutWhen": "Exclue si*",
+    "scriptGuess": "* Notre lecture du script ; non confirmée en jeu"
+  }
+}

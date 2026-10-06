@@ -1,0 +1,19 @@
+{
+  "columns": {
+    "key": "Clé",
+    "name": "Nom",
+    "x": "X",
+    "y": "Y",
+    "z": "Z",
+    "property": "Propriété",
+    "subWaypoint": "Sous-point de passage",
+    "links": "Liens"
+  },
+  "messages": {
+    "oldLayout": "Ancien modèle de donjon d'instance sans signature PABR ; non lu"
+  },
+  "values": {
+    "yes": "Oui",
+    "no": "Non"
+  }
+}

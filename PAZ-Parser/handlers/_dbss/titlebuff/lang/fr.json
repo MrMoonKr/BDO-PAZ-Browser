@@ -1,0 +1,11 @@
+{
+  "offsetColumns": {
+    "buffId": "ID du bonus",
+    "offset": "Décalage"
+  },
+  "columns": {
+    "level": "Niveau",
+    "requiredTitles": "Titres requis",
+    "text": "Texte"
+  }
+}

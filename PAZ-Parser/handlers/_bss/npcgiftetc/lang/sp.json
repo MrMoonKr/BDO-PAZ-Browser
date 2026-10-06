@@ -1,0 +1,11 @@
+{
+  "columns": {
+    "field": "Campo",
+    "value": "Valor",
+    "notes": "Notas"
+  },
+  "notes": {
+    "Global gift-system value": "Valor global del sistema de regalos",
+    "Observed zero": "Siempre cero hasta ahora"
+  }
+}

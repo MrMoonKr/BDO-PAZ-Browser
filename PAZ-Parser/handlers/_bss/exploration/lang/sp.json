@@ -1,0 +1,20 @@
+{
+  "columns": {
+    "nodeKey": "Clave del nodo",
+    "nodeName": "Nombre del nodo",
+    "kind": "Tipo",
+    "mainSub": "Principal/Secundario",
+    "contribution": "Puntos de contribución",
+    "manager": "Responsable de nodo",
+    "representative": "Representante",
+    "radius": "Radio",
+    "knowledge": "Conocimiento",
+    "knowledgeEntries": "Entradas de conocimiento",
+    "connections": "Conexiones",
+    "connectedNodes": "Nodos conectados"
+  },
+  "values": {
+    "main": "Principal",
+    "sub": "Secundario"
+  }
+}

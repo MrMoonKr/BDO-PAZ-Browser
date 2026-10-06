@@ -1,0 +1,26 @@
+{
+  "offsetColumns": {
+    "group": "Groupe",
+    "entry": "Entrée",
+    "offset": "Décalage",
+    "size": "Taille"
+  },
+  "columns": {
+    "group": "Groupe",
+    "entry": "Entrée",
+    "journalCategoryId": "ID de catégorie du journal",
+    "title": "Titre",
+    "subtitle": "Sous-titre",
+    "volume": "Tome",
+    "pageTitles": "Titres des pages",
+    "unlockCondition": "Condition de déblocage",
+    "pages": "Pages",
+    "recordBook": "Journal",
+    "combineModel": "Modèle combiné",
+    "staticModel": "Modèle statique"
+  },
+  "values": {
+    "yes": "Oui",
+    "no": "Non"
+  }
+}

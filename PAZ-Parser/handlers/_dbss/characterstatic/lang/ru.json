@@ -1,0 +1,19 @@
+{
+  "offsetColumns": {
+    "characterId": "ID персонажа",
+    "byteOffset": "Смещение (байт)",
+    "size": "Размер"
+  },
+  "columns": {
+    "characterId": "ID персонажа",
+    "name": "Имя",
+    "icon": "Значок",
+    "actionScript": "Скрипт действия",
+    "conditionScript": "Условие",
+    "knowledgeId": "ID знания",
+    "npcKind": "Вид НИП",
+    "classType": "Тип класса",
+    "model": "Модель",
+    "payloadSize": "Размер полезных данных"
+  }
+}

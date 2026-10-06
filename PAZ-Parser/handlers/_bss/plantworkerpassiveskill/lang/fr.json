@@ -1,0 +1,13 @@
+{
+  "columns": {
+    "skillId": "ID de compétence",
+    "icon": "Icône",
+    "name": "Nom",
+    "description": "Description",
+    "weight": "Pondération",
+    "effectType": "Type d'effet",
+    "target": "Cible",
+    "effectA": "Effet A",
+    "effectB": "Effet B"
+  }
+}

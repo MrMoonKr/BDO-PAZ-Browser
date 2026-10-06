@@ -1,0 +1,13 @@
+{
+  "columns": {
+    "expTableId": "ID таблицы опыта",
+    "maxLevel": "Макс. ур.",
+    "level": "Уровень",
+    "requiredExp": "Требуемый опыт"
+  },
+  "offsetColumns": {
+    "expTableId": "ID таблицы опыта",
+    "dataOffset": "Смещение данных",
+    "dataSize": "Размер данных"
+  }
+}

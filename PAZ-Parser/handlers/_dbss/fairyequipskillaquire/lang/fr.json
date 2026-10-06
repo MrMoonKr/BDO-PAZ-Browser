@@ -1,0 +1,15 @@
+{
+  "offsetColumns": {
+    "acquireTypeId": "ID du type d'obtention",
+    "dataOffset": "Décalage des données",
+    "dataSize": "Taille des données",
+    "recordStart": "Début d'enregistrement"
+  },
+  "columns": {
+    "fairyGrade": "Rang de fée",
+    "equipSkillId": "ID de compétence",
+    "skillName": "Nom de compétence",
+    "chance": "Probabilité",
+    "weight": "Pondération"
+  }
+}

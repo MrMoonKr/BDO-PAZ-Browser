@@ -1,0 +1,10 @@
+{
+  "columns": {
+    "equipSkillId": "ID de habilidad de equipo",
+    "icon": "Icono",
+    "skillName": "Nombre de habilidad",
+    "description": "Descripción",
+    "skillType": "Tipo de habilidad",
+    "locId": "ID LOC"
+  }
+}

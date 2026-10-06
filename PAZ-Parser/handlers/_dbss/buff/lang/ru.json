@@ -1,0 +1,22 @@
+{
+  "offsetColumns": {
+    "buffId": "ID эффекта",
+    "dataOffset": "Смещение данных",
+    "size": "Размер"
+  },
+  "columns": {
+    "buffId": "ID эффекта",
+    "icon": "Значок",
+    "title": "Название",
+    "name": "Внутреннее имя",
+    "description": "Описание",
+    "effect": "Эффект",
+    "appliedBy": "Источник",
+    "level": "Уровень",
+    "effectType": "Тип эффекта",
+    "duration": "Длительность",
+    "param1": "Парам. 1",
+    "param2": "Парам. 2",
+    "param3": "Парам. 3"
+  }
+}

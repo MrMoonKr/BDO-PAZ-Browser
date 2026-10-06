@@ -1,0 +1,13 @@
+{
+  "offsetColumns": {
+    "key": "Ключ",
+    "dbssOffset": "Смещение DBSS",
+    "size": "Размер"
+  },
+  "columns": {
+    "name": "Имя",
+    "lines": "Реплики",
+    "text": "Текст",
+    "voice": "Голос"
+  }
+}

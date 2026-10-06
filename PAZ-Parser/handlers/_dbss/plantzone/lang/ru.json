@@ -1,0 +1,13 @@
+{
+  "offsetColumns": {
+    "recordId": "ID записи",
+    "dataOffset": "Смещение данных",
+    "dataSize": "Размер данных"
+  },
+  "columns": {
+    "zoneId": "ID зоны",
+    "nodeName": "Название узла",
+    "productionKey": "Ключ производства",
+    "producedItems": "Производимые предметы"
+  }
+}

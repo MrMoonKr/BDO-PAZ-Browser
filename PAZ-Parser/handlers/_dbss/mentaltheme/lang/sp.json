@@ -1,0 +1,17 @@
+{
+  "offsetColumns": {
+    "themeId": "ID de tema",
+    "payloadOffset": "Desplazamiento de carga",
+    "payloadSize": "Tamaño de carga"
+  },
+  "columns": {
+    "themeId": "ID de tema",
+    "name": "Nombre",
+    "parentId": "ID superior",
+    "parentName": "Nombre superior",
+    "energyReward1": "Recompensa de energía 1",
+    "energyReward2": "Recompensa de energía 2",
+    "entries": "Entradas",
+    "childrenGroups": "Subgrupos"
+  }
+}

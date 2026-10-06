@@ -1,0 +1,9 @@
+{
+  "columns": {
+    "itemId": "ID d'objet",
+    "maxLevel": "Niveau max.",
+    "shownAs": "Affiché comme",
+    "icon": "Icône",
+    "name": "Nom"
+  }
+}

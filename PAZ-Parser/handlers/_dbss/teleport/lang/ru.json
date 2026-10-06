@@ -1,0 +1,18 @@
+{
+  "offsetColumns": {
+    "section": "Раздел",
+    "index": "Индекс",
+    "byteOffset": "Смещение (байт)",
+    "size": "Размер"
+  },
+  "columns": {
+    "section": "Раздел",
+    "key": "Ключ",
+    "x": "X",
+    "y": "Y",
+    "z": "Z",
+    "nearestNode": "Ближайший узел",
+    "distance": "Расстояние (м)",
+    "usedBy": "Используется"
+  }
+}

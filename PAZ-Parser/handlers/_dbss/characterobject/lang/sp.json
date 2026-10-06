@@ -1,0 +1,16 @@
+{
+  "offsetColumns": {
+    "characterId": "ID del personaje",
+    "byteOffset": "Desplazamiento (bytes)",
+    "size": "Tamaño"
+  },
+  "columns": {
+    "characterId": "ID del personaje",
+    "icon": "Icono",
+    "name": "Nombre",
+    "itemId": "ID del objeto",
+    "itemName": "Objeto",
+    "objectKind": "Tipo",
+    "modelPath": "Modelo"
+  }
+}

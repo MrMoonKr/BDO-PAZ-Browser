@@ -1,0 +1,13 @@
+{
+  "columns": {
+    "skillId": "ID навыка",
+    "icon": "Значок",
+    "name": "Название",
+    "description": "Описание",
+    "weight": "Вес",
+    "effectType": "Тип эффекта",
+    "target": "Цель",
+    "effectA": "Эффект A",
+    "effectB": "Эффект B"
+  }
+}

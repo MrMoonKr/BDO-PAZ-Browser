@@ -1,0 +1,9 @@
+{
+  "columns": {
+    "group": "Grupo",
+    "icon": "Icono",
+    "name": "Nombre",
+    "ranks": "Rangos",
+    "skills": "Habilidades"
+  }
+}

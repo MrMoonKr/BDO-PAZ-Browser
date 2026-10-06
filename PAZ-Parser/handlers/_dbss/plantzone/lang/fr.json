@@ -1,0 +1,13 @@
+{
+  "offsetColumns": {
+    "recordId": "ID d'enregistrement",
+    "dataOffset": "Décalage des données",
+    "dataSize": "Taille des données"
+  },
+  "columns": {
+    "zoneId": "ID de zone",
+    "nodeName": "Nom de géopoint",
+    "productionKey": "Clé de production",
+    "producedItems": "Objets produits"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "columns": {
+    "mainId": "ID principal",
+    "subId": "ID secundario",
+    "icon": "Icono",
+    "title": "Título"
+  }
+}

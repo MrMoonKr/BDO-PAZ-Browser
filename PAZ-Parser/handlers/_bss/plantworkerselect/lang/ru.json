@@ -1,0 +1,9 @@
+{
+  "columns": {
+    "workerId": "ID рабочего",
+    "workerName": "Имя рабочего",
+    "cityId": "ID города",
+    "cityName": "Название города",
+    "hireCost": "Стоимость найма"
+  }
+}

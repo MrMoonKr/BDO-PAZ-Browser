@@ -1,0 +1,22 @@
+{
+  "columns": {
+    "skillNo": "N.º de habilidad",
+    "level": "Nivel",
+    "icon": "Icono",
+    "name": "Nombre",
+    "description": "Descripción",
+    "cooldown": "Tiempo de reutilización",
+    "resourceCost": "Recurso",
+    "staminaCost": "Aguante",
+    "buffs": "Bonificadores",
+    "nextSkills": "Habilidades siguientes",
+    "baseSkill": "Habilidad base",
+    "script": "Script"
+  },
+  "offsetColumns": {
+    "skillNo": "N.º de habilidad",
+    "level": "Nivel",
+    "dbssOffset": "Desplazamiento DBSS",
+    "size": "Tamaño"
+  }
+}

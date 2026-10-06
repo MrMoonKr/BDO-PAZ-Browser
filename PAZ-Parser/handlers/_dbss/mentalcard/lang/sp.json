@@ -1,0 +1,22 @@
+{
+  "offsetColumns": {
+    "cardId": "ID de conocimiento",
+    "dbssOffset": "Desplazamiento DBSS",
+    "size": "Tamaño"
+  },
+  "columns": {
+    "knowledgeId": "ID de conocimiento",
+    "icon": "Icono",
+    "knowledgeName": "Nombre del conocimiento",
+    "categoryId": "ID de categoría",
+    "categoryName": "Nombre de categoría",
+    "description": "Descripción",
+    "minFavor": "Afinidad mín.",
+    "maxFavor": "Afinidad máx.",
+    "interest": "Interés",
+    "combo": "Combo",
+    "obtain": "Conseguir",
+    "learnedFrom": "Aprendido de",
+    "position": "Posición"
+  }
+}

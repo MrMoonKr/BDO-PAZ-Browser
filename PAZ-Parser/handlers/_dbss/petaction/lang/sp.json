@@ -1,0 +1,12 @@
+{
+  "columns": {
+    "actionId": "ID de acción",
+    "actionName": "Nombre de la acción",
+    "icon": "Icono"
+  },
+  "offsetColumns": {
+    "actionId": "ID de acción",
+    "recordOffset": "Desplazamiento de registro",
+    "recordSize": "Tamaño de registro"
+  }
+}

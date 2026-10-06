@@ -1,0 +1,20 @@
+{
+  "columns": {
+    "nodeKey": "Clé du géopoint",
+    "nodeName": "Nom de géopoint",
+    "kind": "Genre",
+    "mainSub": "Principal/Secondaire",
+    "contribution": "Points de contribution",
+    "manager": "Cartographe",
+    "representative": "Représentant",
+    "radius": "Rayon",
+    "knowledge": "Connaissance",
+    "knowledgeEntries": "Entrées de connaissance",
+    "connections": "Liaisons",
+    "connectedNodes": "Géopoints reliés"
+  },
+  "values": {
+    "main": "Principal",
+    "sub": "Secondaire"
+  }
+}

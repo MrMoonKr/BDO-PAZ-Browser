@@ -1,0 +1,41 @@
+{
+  "columns": {
+    "petId": "ID de la mascota",
+    "name": "Nombre",
+    "species": "ID de especie",
+    "tier": "Grado",
+    "skillSlots": "Huecos de habilidad",
+    "maxLevel": "Nivel máx.",
+    "acquireType": "Tipo de obtención",
+    "equipSkillId": "ID de habilidad de equipo",
+    "grade": "Rareza",
+    "icon": "Icono"
+  },
+  "grades": {
+    "5": "Especial",
+    "4": "Raro",
+    "3": "Premium",
+    "2": "Raro",
+    "1": "Clásico"
+  },
+  "offsetColumns": {
+    "petId": "ID de la mascota",
+    "dataOffset": "Desplazamiento de datos",
+    "dataSize": "Tamaño de datos"
+  },
+  "gradeColumns": {
+    "key": "Clave",
+    "species": "Especie",
+    "variant": "Variante",
+    "grade": "Rareza",
+    "dataOffset": "Desplazamiento de datos",
+    "dataSize": "Tamaño de datos"
+  },
+  "gradeOffsetColumns": {
+    "key": "Clave",
+    "species": "Especie",
+    "variant": "Variante",
+    "dataOffset": "Desplazamiento de datos",
+    "dataSize": "Tamaño de datos"
+  }
+}

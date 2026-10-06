@@ -1,0 +1,12 @@
+{
+  "columns": {
+    "level": "Уровень",
+    "orbCost": "Сферы Тейи"
+  },
+  "offsetColumns": {
+    "level": "Уровень",
+    "dataOffset": "Смещение данных",
+    "dataSize": "Размер данных",
+    "recordStart": "Начало записи"
+  }
+}

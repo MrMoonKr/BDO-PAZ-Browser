@@ -1,0 +1,10 @@
+{
+  "columns": {
+    "equipSkillId": "ID навыка снаряжения",
+    "icon": "Значок",
+    "skillName": "Название навыка",
+    "description": "Описание",
+    "skillType": "Тип навыка",
+    "locId": "ID LOC"
+  }
+}

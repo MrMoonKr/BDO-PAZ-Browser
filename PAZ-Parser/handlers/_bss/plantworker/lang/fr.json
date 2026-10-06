@@ -1,0 +1,12 @@
+{
+  "columns": {
+    "workerId": "ID de l'ouvrier",
+    "name": "Nom",
+    "nextWorkerId": "Rang suivant",
+    "moveSpeed": "Vitesse de déplacement",
+    "stamina": "Endurance",
+    "luck": "Chance",
+    "baseWorkSpeed": "Vitesse de travail",
+    "icon": "Icône"
+  }
+}

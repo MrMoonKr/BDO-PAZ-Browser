@@ -1,0 +1,17 @@
+{
+  "offsetColumns": {
+    "themeId": "ID темы",
+    "payloadOffset": "Смещение полезных данных",
+    "payloadSize": "Размер полезных данных"
+  },
+  "columns": {
+    "themeId": "ID темы",
+    "name": "Название",
+    "parentId": "ID родителя",
+    "parentName": "Имя родителя",
+    "energyReward1": "Награда энергией 1",
+    "energyReward2": "Награда энергией 2",
+    "entries": "Записи",
+    "childrenGroups": "Подгруппы"
+  }
+}

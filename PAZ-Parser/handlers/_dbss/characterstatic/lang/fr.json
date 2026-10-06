@@ -1,0 +1,19 @@
+{
+  "offsetColumns": {
+    "characterId": "ID du personnage",
+    "byteOffset": "Décalage (octets)",
+    "size": "Taille"
+  },
+  "columns": {
+    "characterId": "ID du personnage",
+    "name": "Nom",
+    "icon": "Icône",
+    "actionScript": "Script d'action",
+    "conditionScript": "Condition",
+    "knowledgeId": "ID de connaissance",
+    "npcKind": "Genre de PNJ",
+    "classType": "Type de classe",
+    "model": "Modèle",
+    "payloadSize": "Taille des données utiles"
+  }
+}

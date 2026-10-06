@@ -1,0 +1,9 @@
+{
+  "columns": {
+    "sceneId": "ID de scène",
+    "icon": "Icône",
+    "title": "Titre",
+    "description": "Description",
+    "quote": "Citation"
+  }
+}

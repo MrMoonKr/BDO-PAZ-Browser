@@ -1,0 +1,12 @@
+{
+  "offsetColumns": {
+    "subgroupKey": "Ключ подгруппы",
+    "dataOffset": "Смещение данных",
+    "size": "Размер"
+  },
+  "columns": {
+    "subgroupKey": "Ключ подгруппы",
+    "entryCount": "Предметы",
+    "items": "Названия предметов"
+  }
+}

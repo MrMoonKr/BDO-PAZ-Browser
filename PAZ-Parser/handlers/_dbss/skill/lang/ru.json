@@ -1,0 +1,22 @@
+{
+  "columns": {
+    "skillNo": "№ навыка",
+    "level": "Уровень",
+    "icon": "Значок",
+    "name": "Название",
+    "description": "Описание",
+    "cooldown": "Перезарядка",
+    "resourceCost": "Ресурс",
+    "staminaCost": "Силы",
+    "buffs": "Эффекты",
+    "nextSkills": "Следующие навыки",
+    "baseSkill": "Базовый навык",
+    "script": "Скрипт"
+  },
+  "offsetColumns": {
+    "skillNo": "№ навыка",
+    "level": "Уровень",
+    "dbssOffset": "Смещение DBSS",
+    "size": "Размер"
+  }
+}

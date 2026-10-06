@@ -1,0 +1,11 @@
+{
+  "offsetColumns": {
+    "employeeNameId": "ID имени работника",
+    "dataOffset": "Смещение данных",
+    "dataSize": "Размер данных"
+  },
+  "columns": {
+    "employeeNameId": "ID имени работника",
+    "name": "Имя"
+  }
+}

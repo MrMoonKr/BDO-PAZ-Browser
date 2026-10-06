@@ -1,0 +1,12 @@
+{
+  "columns": {
+    "workerId": "ID del trabajador",
+    "name": "Nombre",
+    "nextWorkerId": "Grado siguiente",
+    "moveSpeed": "Vel. movimiento",
+    "stamina": "Aguante",
+    "luck": "Suerte",
+    "baseWorkSpeed": "Vel. trabajo",
+    "icon": "Icono"
+  }
+}

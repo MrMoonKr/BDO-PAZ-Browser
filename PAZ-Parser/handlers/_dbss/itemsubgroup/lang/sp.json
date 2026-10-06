@@ -1,0 +1,12 @@
+{
+  "offsetColumns": {
+    "subgroupKey": "Clave de subgrupo",
+    "dataOffset": "Desplazamiento de datos",
+    "size": "Tamaño"
+  },
+  "columns": {
+    "subgroupKey": "Clave de subgrupo",
+    "entryCount": "Objetos",
+    "items": "Nombres de objetos"
+  }
+}

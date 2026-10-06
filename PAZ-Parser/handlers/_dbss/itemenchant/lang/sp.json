@@ -1,0 +1,39 @@
+{
+  "columns": {
+    "itemId": "ID del objeto",
+    "icon": "Icono",
+    "item": "Objeto",
+    "description": "Descripción",
+    "maxLevel": "Nivel máx.",
+    "requiredLevel": "Nivel req.",
+    "classes": "Clases",
+    "binding": "Vinculación",
+    "durability": "Durabilidad",
+    "marketable": "Vendible en el mercado",
+    "familyInventory": "Inventario (familia)",
+    "trade": "Comercio",
+    "dyeable": "Teñible",
+    "objectId": "ID del objeto colocado",
+    "object": "Objeto colocado",
+    "buffs": "Bonificadores"
+  },
+  "offsetColumns": {
+    "itemId": "ID del objeto",
+    "enchantLevel": "Nivel de refuerzo",
+    "dataOffset": "Desplazamiento de datos",
+    "dataSize": "Tamaño de datos"
+  },
+  "values": {
+    "allClasses": "Todas",
+    "allExcept": "Todas excepto",
+    "bindOnObtain": "Al conseguir",
+    "bindOnEquip": "Al equipar",
+    "family": "Familia",
+    "character": "Personaje",
+    "tradeManager": "Intendente",
+    "tradeKarma": "Intendente (pérdida de alineamiento)",
+    "tradeImperialCrafting": "Artesanía imperial",
+    "tradeGuild": "Comercio de la hermandad",
+    "tradeType": "Tipo"
+  }
+}

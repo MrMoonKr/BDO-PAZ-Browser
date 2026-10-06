@@ -1,0 +1,16 @@
+{
+  "offsetColumns": {
+    "key": "Clave",
+    "byteOffset": "Desplazamiento (bytes)",
+    "size": "Tamaño"
+  },
+  "columns": {
+    "key": "Clave",
+    "icon": "Icono",
+    "name": "Nombre",
+    "label": "Etiqueta",
+    "detail": "Detalle",
+    "huntingGround": "Zona de caza",
+    "condition": "Condición"
+  }
+}

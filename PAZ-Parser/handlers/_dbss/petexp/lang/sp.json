@@ -1,0 +1,13 @@
+{
+  "columns": {
+    "expTableId": "ID de tabla de Exp.",
+    "maxLevel": "Nivel máx.",
+    "level": "Nivel",
+    "requiredExp": "Exp. requerida"
+  },
+  "offsetColumns": {
+    "expTableId": "ID de tabla de Exp.",
+    "dataOffset": "Desplazamiento de datos",
+    "dataSize": "Tamaño de datos"
+  }
+}

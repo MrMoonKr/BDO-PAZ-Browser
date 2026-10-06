@@ -1,0 +1,18 @@
+{
+  "offsetColumns": {
+    "personalityId": "ID de personalidad",
+    "dataOffset": "Desplazamiento de datos"
+  },
+  "columns": {
+    "row": "Fila",
+    "id": "ID",
+    "groupA": "Grupo A",
+    "groupB": "Grupo B",
+    "groupC": "Grupo C",
+    "intMin": "Interés mín.",
+    "intMax": "Interés máx.",
+    "favMin": "Afinidad mín.",
+    "favMax": "Afinidad máx.",
+    "horoscope": "Horóscopo"
+  }
+}

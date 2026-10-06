@@ -1,0 +1,9 @@
+{
+  "columns": {
+    "entryId": "ID записи",
+    "category": "Категория",
+    "position": "Позиция",
+    "icon": "Значок",
+    "title": "Название"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "columns": {
+    "titleId": "ID титула",
+    "category": "Категория",
+    "title": "Титул",
+    "titleRequirements": "Условия титула",
+    "special": "Особый",
+    "effect": "Эффект"
+  }
+}

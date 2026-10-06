@@ -1,0 +1,15 @@
+{
+  "columns": {
+    "productId": "ID товара",
+    "icon": "Значок",
+    "product": "Товар",
+    "itemId": "ID предмета",
+    "item": "Предмет",
+    "description": "Описание"
+  },
+  "offsetColumns": {
+    "productId": "ID товара",
+    "dataOffset": "Смещение данных",
+    "dataSize": "Размер данных"
+  }
+}

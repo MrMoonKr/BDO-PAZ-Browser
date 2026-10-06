@@ -1,0 +1,22 @@
+{
+  "offsetColumns": {
+    "buffId": "ID du bonus",
+    "dataOffset": "Décalage des données",
+    "size": "Taille"
+  },
+  "columns": {
+    "buffId": "ID du bonus",
+    "icon": "Icône",
+    "title": "Titre",
+    "name": "Nom interne",
+    "description": "Description",
+    "effect": "Effet",
+    "appliedBy": "Appliqué par",
+    "level": "Niveau",
+    "effectType": "Type d'effet",
+    "duration": "Durée",
+    "param1": "Param. 1",
+    "param2": "Param. 2",
+    "param3": "Param. 3"
+  }
+}

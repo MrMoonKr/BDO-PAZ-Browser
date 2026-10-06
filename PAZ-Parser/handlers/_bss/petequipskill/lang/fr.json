@@ -1,0 +1,9 @@
+{
+  "columns": {
+    "equipSkillId": "ID de compétence d'équipement",
+    "skillName": "Nom de compétence",
+    "icon": "Icône",
+    "skillType": "Type de compétence",
+    "section": "Section"
+  }
+}

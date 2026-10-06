@@ -1,0 +1,19 @@
+{
+  "offsetColumns": {
+    "table": "Таблица",
+    "sourceId": "ID источника",
+    "dbssOffset": "Смещение DBSS",
+    "size": "Размер"
+  },
+  "columns": {
+    "sourceType": "Тип источника",
+    "sourceId": "ID источника",
+    "sourceName": "Название источника",
+    "knowledgeId": "ID знания",
+    "knowledgeName": "Название знания"
+  },
+  "values": {
+    "character": "Персонаж",
+    "item": "Предмет"
+  }
+}

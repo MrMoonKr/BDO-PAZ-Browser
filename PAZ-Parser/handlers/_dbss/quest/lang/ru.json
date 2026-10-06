@@ -1,0 +1,14 @@
+{
+  "columns": {
+    "displayId": "ID отображения",
+    "chainId": "ID цепочки",
+    "questId": "ID задания",
+    "category": "Категория",
+    "icon": "Значок",
+    "titleName": "Название / имя",
+    "condition": "Условие",
+    "action": "Действие",
+    "objective": "Цель",
+    "familyStat": "Характеристика семьи"
+  }
+}

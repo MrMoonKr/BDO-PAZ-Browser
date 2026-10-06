@@ -1,0 +1,21 @@
+{
+  "offsetColumns": {
+    "characterId": "ID del personaje",
+    "byteOffset": "Desplazamiento (bytes)",
+    "size": "Tamaño"
+  },
+  "columns": {
+    "characterId": "ID del personaje",
+    "name": "Nombre"
+  },
+  "roleLabels": {
+    "NormalNpc": "PNJ normal",
+    "RandomShop": "Mercader nocturno",
+    "RandomShopDay": "Mercader diurno",
+    "FishSupplyShop": "Entrega de pesca imperial",
+    "GuildStable": "Establo de la hermandad",
+    "GuildWharf": "Muelle de la hermandad",
+    "Unknown41": "Gran Premio",
+    "ChangeMarniStone": "Piedra de Marni"
+  }
+}

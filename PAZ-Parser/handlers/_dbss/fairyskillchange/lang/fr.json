@@ -1,0 +1,12 @@
+{
+  "columns": {
+    "level": "Niveau",
+    "orbCost": "Orbes de Theiah"
+  },
+  "offsetColumns": {
+    "level": "Niveau",
+    "dataOffset": "Décalage des données",
+    "dataSize": "Taille des données",
+    "recordStart": "Début d'enregistrement"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "columns": {
+    "equipSkillId": "ID de habilidad de equipo",
+    "skillName": "Nombre de habilidad",
+    "icon": "Icono",
+    "skillType": "Tipo de habilidad",
+    "section": "Sección"
+  }
+}

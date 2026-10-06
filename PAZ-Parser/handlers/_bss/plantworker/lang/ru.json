@@ -1,0 +1,12 @@
+{
+  "columns": {
+    "workerId": "ID рабочего",
+    "name": "Название",
+    "nextWorkerId": "Следующий ранг",
+    "moveSpeed": "Скорость передвижения",
+    "stamina": "Силы",
+    "luck": "Удача",
+    "baseWorkSpeed": "Скорость работы",
+    "icon": "Значок"
+  }
+}

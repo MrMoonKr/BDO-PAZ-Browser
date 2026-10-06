@@ -1,0 +1,26 @@
+{
+  "offsetColumns": {
+    "group": "Группа",
+    "entry": "Запись",
+    "offset": "Смещение",
+    "size": "Размер"
+  },
+  "columns": {
+    "group": "Группа",
+    "entry": "Запись",
+    "journalCategoryId": "ID категории журнала",
+    "title": "Название",
+    "subtitle": "Подзаголовок",
+    "volume": "Том",
+    "pageTitles": "Названия страниц",
+    "unlockCondition": "Условие открытия",
+    "pages": "Страницы",
+    "recordBook": "Журнал",
+    "combineModel": "Составная модель",
+    "staticModel": "Статичная модель"
+  },
+  "values": {
+    "yes": "Да",
+    "no": "Нет"
+  }
+}

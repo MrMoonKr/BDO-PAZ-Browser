@@ -1,0 +1,14 @@
+{
+  "columns": {
+    "displayId": "ID d'affichage",
+    "chainId": "ID de chaîne",
+    "questId": "ID de quête",
+    "category": "Catégorie",
+    "icon": "Icône",
+    "titleName": "Titre / nom",
+    "condition": "Condition",
+    "action": "Action",
+    "objective": "Objectif",
+    "familyStat": "Statistique de famille"
+  }
+}

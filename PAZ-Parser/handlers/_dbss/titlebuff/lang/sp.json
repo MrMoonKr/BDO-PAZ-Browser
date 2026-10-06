@@ -1,0 +1,11 @@
+{
+  "offsetColumns": {
+    "buffId": "ID del bonificador",
+    "offset": "Desplazamiento"
+  },
+  "columns": {
+    "level": "Nivel",
+    "requiredTitles": "Títulos requeridos",
+    "text": "Texto"
+  }
+}

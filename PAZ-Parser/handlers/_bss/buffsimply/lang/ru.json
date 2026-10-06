@@ -1,0 +1,12 @@
+{
+  "columns": {
+    "buffId": "ID эффекта",
+    "icon": "Значок",
+    "description": "Описание",
+    "shown": "Показан"
+  },
+  "values": {
+    "yes": "Да",
+    "no": "Нет"
+  }
+}

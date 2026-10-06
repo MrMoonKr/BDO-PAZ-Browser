@@ -1,0 +1,14 @@
+{
+  "columns": {
+    "displayId": "ID de visualización",
+    "chainId": "ID de cadena",
+    "questId": "ID de misión",
+    "category": "Categoría",
+    "icon": "Icono",
+    "titleName": "Título / nombre",
+    "condition": "Condición",
+    "action": "Acción",
+    "objective": "Objetivo",
+    "familyStat": "Estadística de familia"
+  }
+}

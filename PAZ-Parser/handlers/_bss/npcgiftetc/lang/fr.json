@@ -1,0 +1,11 @@
+{
+  "columns": {
+    "field": "Champ",
+    "value": "Valeur",
+    "notes": "Remarques"
+  },
+  "notes": {
+    "Global gift-system value": "Valeur globale du système de cadeaux",
+    "Observed zero": "Toujours zéro jusqu'ici"
+  }
+}

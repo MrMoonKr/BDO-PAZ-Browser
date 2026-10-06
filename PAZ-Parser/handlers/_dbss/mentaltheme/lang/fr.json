@@ -1,0 +1,17 @@
+{
+  "offsetColumns": {
+    "themeId": "ID de thème",
+    "payloadOffset": "Décalage des données utiles",
+    "payloadSize": "Taille des données utiles"
+  },
+  "columns": {
+    "themeId": "ID de thème",
+    "name": "Nom",
+    "parentId": "ID parent",
+    "parentName": "Nom du parent",
+    "energyReward1": "Récompense d'énergie 1",
+    "energyReward2": "Récompense d'énergie 2",
+    "entries": "Entrées",
+    "childrenGroups": "Sous-groupes"
+  }
+}

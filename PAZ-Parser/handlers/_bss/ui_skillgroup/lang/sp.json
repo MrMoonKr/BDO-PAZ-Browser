@@ -1,0 +1,17 @@
+{
+  "columns": {
+    "class": "Clase",
+    "tab": "Pestaña",
+    "cardColumn": "Columna de tarjeta",
+    "row": "Fila",
+    "column": "Columna",
+    "group": "Grupo",
+    "icon": "Icono",
+    "skill": "Habilidad"
+  },
+  "cardColumn": {
+    "0": "Izquierda",
+    "1": "Centro",
+    "2": "Derecha"
+  }
+}

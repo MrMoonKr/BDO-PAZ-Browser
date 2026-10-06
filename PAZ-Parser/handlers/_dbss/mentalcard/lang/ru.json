@@ -1,0 +1,22 @@
+{
+  "offsetColumns": {
+    "cardId": "ID знания",
+    "dbssOffset": "Смещение DBSS",
+    "size": "Размер"
+  },
+  "columns": {
+    "knowledgeId": "ID знания",
+    "icon": "Значок",
+    "knowledgeName": "Название знания",
+    "categoryId": "ID категории",
+    "categoryName": "Название категории",
+    "description": "Описание",
+    "minFavor": "Мин. дружба",
+    "maxFavor": "Макс. дружба",
+    "interest": "Интерес",
+    "combo": "Комбо",
+    "obtain": "Получение",
+    "learnedFrom": "Источник знания",
+    "position": "Позиция"
+  }
+}

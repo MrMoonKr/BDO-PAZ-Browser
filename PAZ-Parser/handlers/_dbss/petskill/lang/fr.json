@@ -1,0 +1,13 @@
+{
+  "columns": {
+    "petSkillId": "ID de compétence de familier",
+    "level": "Niveau",
+    "valueA": "Valeur A",
+    "valueB": "Valeur B"
+  },
+  "offsetColumns": {
+    "petSkillId": "ID de compétence de familier",
+    "dataOffset": "Décalage des données",
+    "dataSize": "Taille des données"
+  }
+}

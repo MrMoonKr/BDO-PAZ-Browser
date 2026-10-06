@@ -1,0 +1,6 @@
+{
+  "columns": {
+    "zodiacId": "ID del signo del zodiaco",
+    "name": "Nombre"
+  }
+}

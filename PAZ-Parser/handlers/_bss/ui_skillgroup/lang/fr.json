@@ -1,0 +1,17 @@
+{
+  "columns": {
+    "class": "Classe",
+    "tab": "Onglet",
+    "cardColumn": "Colonne de carte",
+    "row": "Ligne",
+    "column": "Colonne",
+    "group": "Groupe",
+    "icon": "Icône",
+    "skill": "Compétence"
+  },
+  "cardColumn": {
+    "0": "Gauche",
+    "1": "Milieu",
+    "2": "Droite"
+  }
+}

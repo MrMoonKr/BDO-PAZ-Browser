@@ -1,0 +1,11 @@
+{
+  "offsetColumns": {
+    "employeeNameId": "ID del nombre de empleado",
+    "dataOffset": "Desplazamiento de datos",
+    "dataSize": "Tamaño de datos"
+  },
+  "columns": {
+    "employeeNameId": "ID del nombre de empleado",
+    "name": "Nombre"
+  }
+}

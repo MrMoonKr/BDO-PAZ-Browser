@@ -1,0 +1,11 @@
+{
+  "offsetColumns": {
+    "buffId": "ID эффекта",
+    "offset": "Смещение"
+  },
+  "columns": {
+    "level": "Уровень",
+    "requiredTitles": "Требуемые титулы",
+    "text": "Текст"
+  }
+}

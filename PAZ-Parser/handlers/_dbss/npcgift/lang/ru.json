@@ -1,0 +1,20 @@
+{
+  "offsetColumns": {
+    "npcId": "ID НИП",
+    "dataOffset": "Смещение данных",
+    "dataSize": "Размер данных"
+  },
+  "giftColumns": {
+    "npcId": "ID НИП",
+    "npcName": "Имя НИП",
+    "itemId": "ID предмета",
+    "icon": "Значок",
+    "itemName": "Название предмета",
+    "amity": "Дружба"
+  },
+  "dataColumns": {
+    "npcId": "ID НИП",
+    "npcName": "Имя НИП",
+    "dialogue": "Диалог"
+  }
+}

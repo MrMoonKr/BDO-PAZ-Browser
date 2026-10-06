@@ -1,0 +1,33 @@
+{
+  "columns": {
+    "skillNo": "N.º de habilidad",
+    "level": "Nivel",
+    "icon": "Icono",
+    "name": "Nombre",
+    "classes": "Clases",
+    "kind": "Tipo",
+    "branch": "Rama",
+    "weapon": "Arma",
+    "quickSlot": "Acceso rápido",
+    "needLevel": "Nivel requerido",
+    "needSkillPoint": "Puntos de habilidad",
+    "needSkills": "Habilidades requeridas",
+    "previousRank": "Rango anterior",
+    "exclusiveSkills": "Habilidades exclusivas"
+  },
+  "kind": {
+    "0": "Otros",
+    "1": "Activa",
+    "2": "Pasiva"
+  },
+  "branch": {
+    "1": "Despertar",
+    "2": "Renacer"
+  },
+  "weapon": {
+    "main": "Arma principal",
+    "sub": "Arma secundaria",
+    "awakening": "Arma del Despertar"
+  },
+  "allClasses": "Todas"
+}

@@ -1,0 +1,6 @@
+{
+  "columns": {
+    "nodeId": "ID узла",
+    "nodeName": "Название узла"
+  }
+}

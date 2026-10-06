@@ -1,0 +1,20 @@
+{
+  "offsetColumns": {
+    "npcId": "ID du PNJ",
+    "dataOffset": "Décalage des données",
+    "dataSize": "Taille des données"
+  },
+  "giftColumns": {
+    "npcId": "ID du PNJ",
+    "npcName": "Nom du PNJ",
+    "itemId": "ID d'objet",
+    "icon": "Icône",
+    "itemName": "Nom de l'objet",
+    "amity": "Amitié"
+  },
+  "dataColumns": {
+    "npcId": "ID du PNJ",
+    "npcName": "Nom du PNJ",
+    "dialogue": "Dialogue"
+  }
+}

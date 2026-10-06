@@ -1,0 +1,16 @@
+{
+  "offsetColumns": {
+    "key": "Ключ",
+    "byteOffset": "Смещение (байт)",
+    "size": "Размер"
+  },
+  "columns": {
+    "key": "Ключ",
+    "icon": "Значок",
+    "name": "Название",
+    "label": "Метка",
+    "detail": "Подробности",
+    "huntingGround": "Место охоты",
+    "condition": "Условие"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "offsetColumns": {
+    "characterId": "ID персонажа",
+    "byteOffset": "Смещение (байт)",
+    "size": "Размер"
+  },
+  "columns": {
+    "characterId": "ID персонажа",
+    "icon": "Значок",
+    "name": "Название",
+    "itemId": "ID предмета",
+    "itemName": "Предмет",
+    "objectKind": "Вид",
+    "modelPath": "Модель"
+  }
+}

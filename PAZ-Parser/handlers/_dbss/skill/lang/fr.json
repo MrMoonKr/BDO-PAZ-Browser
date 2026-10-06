@@ -1,0 +1,22 @@
+{
+  "columns": {
+    "skillNo": "N° de compétence",
+    "level": "Niveau",
+    "icon": "Icône",
+    "name": "Nom",
+    "description": "Description",
+    "cooldown": "Temps de recharge",
+    "resourceCost": "Ressource",
+    "staminaCost": "Endurance",
+    "buffs": "Bonus",
+    "nextSkills": "Compétences suivantes",
+    "baseSkill": "Compétence de base",
+    "script": "Script"
+  },
+  "offsetColumns": {
+    "skillNo": "N° de compétence",
+    "level": "Niveau",
+    "dbssOffset": "Décalage DBSS",
+    "size": "Taille"
+  }
+}

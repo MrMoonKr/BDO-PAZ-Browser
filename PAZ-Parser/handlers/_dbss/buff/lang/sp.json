@@ -1,0 +1,22 @@
+{
+  "offsetColumns": {
+    "buffId": "ID del bonificador",
+    "dataOffset": "Desplazamiento de datos",
+    "size": "Tamaño"
+  },
+  "columns": {
+    "buffId": "ID del bonificador",
+    "icon": "Icono",
+    "title": "Título",
+    "name": "Nombre interno",
+    "description": "Descripción",
+    "effect": "Efecto",
+    "appliedBy": "Aplicado por",
+    "level": "Nivel",
+    "effectType": "Tipo de efecto",
+    "duration": "Duración",
+    "param1": "Parám. 1",
+    "param2": "Parám. 2",
+    "param3": "Parám. 3"
+  }
+}

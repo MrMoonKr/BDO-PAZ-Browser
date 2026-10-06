@@ -1,0 +1,13 @@
+{
+  "columns": {
+    "skillNo": "N° de compétence",
+    "icon": "Icône",
+    "name": "Nom",
+    "kind": "Genre"
+  },
+  "kind": {
+    "0": "Autre",
+    "1": "Actif",
+    "2": "Passif"
+  }
+}

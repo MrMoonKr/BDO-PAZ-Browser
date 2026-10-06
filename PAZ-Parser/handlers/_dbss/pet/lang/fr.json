@@ -1,0 +1,41 @@
+{
+  "columns": {
+    "petId": "ID du familier",
+    "name": "Nom",
+    "species": "ID d'espèce",
+    "tier": "Tier",
+    "skillSlots": "Emplacements de compétence",
+    "maxLevel": "Niveau max.",
+    "acquireType": "Type d'obtention",
+    "equipSkillId": "ID de compétence d'équipement",
+    "grade": "Rareté",
+    "icon": "Icône"
+  },
+  "grades": {
+    "5": "Spécial",
+    "4": "Rare",
+    "3": "Premium",
+    "2": "Rare",
+    "1": "Classique"
+  },
+  "offsetColumns": {
+    "petId": "ID du familier",
+    "dataOffset": "Décalage des données",
+    "dataSize": "Taille des données"
+  },
+  "gradeColumns": {
+    "key": "Clé",
+    "species": "Espèce",
+    "variant": "Variante",
+    "grade": "Rareté",
+    "dataOffset": "Décalage des données",
+    "dataSize": "Taille des données"
+  },
+  "gradeOffsetColumns": {
+    "key": "Clé",
+    "species": "Espèce",
+    "variant": "Variante",
+    "dataOffset": "Décalage des données",
+    "dataSize": "Taille des données"
+  }
+}

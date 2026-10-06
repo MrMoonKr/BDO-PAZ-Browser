@@ -1,0 +1,25 @@
+{
+  "columns": {
+    "id": "ID",
+    "name": "Название",
+    "stars": "Звёзды",
+    "pairs": "Пары",
+    "traits": "Черты"
+  },
+  "offsetColumns": {
+    "zodiacId": "ID знака зодиака",
+    "dataOffset": "Смещение данных"
+  },
+  "orderColumns": {
+    "row": "Строка",
+    "personality": "Характер",
+    "zodiac": "Знак зодиака",
+    "variant": "Вариант",
+    "triggers": "Триггеры",
+    "sequence": "Последовательность"
+  },
+  "orderOffsetColumns": {
+    "personalityType": "Тип характера",
+    "dataOffset": "Смещение данных"
+  }
+}

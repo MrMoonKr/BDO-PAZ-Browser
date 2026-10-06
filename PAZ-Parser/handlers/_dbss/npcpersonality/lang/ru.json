@@ -1,0 +1,18 @@
+{
+  "offsetColumns": {
+    "personalityId": "ID характера",
+    "dataOffset": "Смещение данных"
+  },
+  "columns": {
+    "row": "Строка",
+    "id": "ID",
+    "groupA": "Группа A",
+    "groupB": "Группа B",
+    "groupC": "Группа C",
+    "intMin": "Интерес мин.",
+    "intMax": "Интерес макс.",
+    "favMin": "Дружба мин.",
+    "favMax": "Дружба макс.",
+    "horoscope": "Созвездие"
+  }
+}

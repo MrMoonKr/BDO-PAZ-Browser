@@ -1,0 +1,9 @@
+{
+  "columns": {
+    "entryId": "ID de entrada",
+    "category": "Categoría",
+    "position": "Posición",
+    "icon": "Icono",
+    "title": "Título"
+  }
+}

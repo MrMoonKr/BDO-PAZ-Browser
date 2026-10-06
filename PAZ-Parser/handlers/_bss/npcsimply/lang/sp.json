@@ -1,0 +1,11 @@
+{
+  "columns": {
+    "characterId": "ID del personaje",
+    "name": "Nombre",
+    "kind": "Tipo",
+    "role": "Función",
+    "knowledgeId": "ID de conocimiento",
+    "leases": "Alquileres",
+    "script": "Script"
+  }
+}

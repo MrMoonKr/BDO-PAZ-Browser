@@ -1,0 +1,17 @@
+{
+  "offsetColumns": {
+    "characterId": "ID персонажа",
+    "dialog": "Диалог",
+    "dbssOffset": "Смещение DBSS",
+    "size": "Размер"
+  },
+  "columns": {
+    "characterId": "ID персонажа",
+    "dialog": "Диалог",
+    "character": "Персонаж",
+    "greeting": "Приветствие",
+    "options": "Варианты",
+    "optionTitles": "Названия вариантов",
+    "leases": "Аренда"
+  }
+}

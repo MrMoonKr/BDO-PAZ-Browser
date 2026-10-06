@@ -1,0 +1,13 @@
+{
+  "columns": {
+    "skillNo": "N.º de habilidad",
+    "icon": "Icono",
+    "name": "Nombre",
+    "kind": "Tipo"
+  },
+  "kind": {
+    "0": "Otros",
+    "1": "Activa",
+    "2": "Pasiva"
+  }
+}

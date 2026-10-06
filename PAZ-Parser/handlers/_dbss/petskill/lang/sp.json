@@ -1,0 +1,13 @@
+{
+  "columns": {
+    "petSkillId": "ID de habilidad de mascota",
+    "level": "Nivel",
+    "valueA": "Valor A",
+    "valueB": "Valor B"
+  },
+  "offsetColumns": {
+    "petSkillId": "ID de habilidad de mascota",
+    "dataOffset": "Desplazamiento de datos",
+    "dataSize": "Tamaño de datos"
+  }
+}

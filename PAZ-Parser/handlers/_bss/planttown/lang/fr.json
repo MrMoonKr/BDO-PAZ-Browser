@@ -1,0 +1,6 @@
+{
+  "columns": {
+    "nodeId": "ID du géopoint",
+    "nodeName": "Nom de géopoint"
+  }
+}

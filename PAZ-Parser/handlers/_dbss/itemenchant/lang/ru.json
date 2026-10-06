@@ -1,0 +1,39 @@
+{
+  "columns": {
+    "itemId": "ID предмета",
+    "icon": "Значок",
+    "item": "Предмет",
+    "description": "Описание",
+    "maxLevel": "Макс. ур.",
+    "requiredLevel": "Треб. ур.",
+    "classes": "Классы",
+    "binding": "Привязка",
+    "durability": "Прочность",
+    "marketable": "Продажа на аукционе",
+    "familyInventory": "Инвентарь аккаунта",
+    "trade": "Торговля",
+    "dyeable": "Покраска",
+    "objectId": "ID объекта",
+    "object": "Объект",
+    "buffs": "Эффекты"
+  },
+  "offsetColumns": {
+    "itemId": "ID предмета",
+    "enchantLevel": "Уровень усиления",
+    "dataOffset": "Смещение данных",
+    "dataSize": "Размер данных"
+  },
+  "values": {
+    "allClasses": "Все",
+    "allExcept": "Все, кроме",
+    "bindOnObtain": "При получении",
+    "bindOnEquip": "При экипировке",
+    "family": "Семья",
+    "character": "Персонаж",
+    "tradeManager": "Управляющий торговлей",
+    "tradeKarma": "Управляющий торговлей (потеря кармы)",
+    "tradeImperialCrafting": "Имперский караван",
+    "tradeGuild": "Торговля гильдии",
+    "tradeType": "Тип"
+  }
+}

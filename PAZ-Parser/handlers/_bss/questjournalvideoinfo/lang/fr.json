@@ -1,0 +1,9 @@
+{
+  "columns": {
+    "mainId": "ID principal",
+    "subId": "ID secondaire",
+    "artwork": "Illustration",
+    "title": "Titre",
+    "video": "Vidéo"
+  }
+}

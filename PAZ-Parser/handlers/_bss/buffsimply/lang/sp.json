@@ -1,0 +1,12 @@
+{
+  "columns": {
+    "buffId": "ID del bonificador",
+    "icon": "Icono",
+    "description": "Descripción",
+    "shown": "Visible"
+  },
+  "values": {
+    "yes": "Sí",
+    "no": "No"
+  }
+}
