@@ -1,0 +1,10 @@
+{
+  "columns": {
+    "key": "Clave",
+    "regionKey": "Clave de región",
+    "regionName": "Región"
+  },
+  "meta": {
+    "count": "{count} regiones de ventisca"
+  }
+}

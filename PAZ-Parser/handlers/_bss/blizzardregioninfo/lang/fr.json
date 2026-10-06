@@ -1,0 +1,10 @@
+{
+  "columns": {
+    "key": "Clé",
+    "regionKey": "Clé de région",
+    "regionName": "Région"
+  },
+  "meta": {
+    "count": "{count} régions de blizzard"
+  }
+}

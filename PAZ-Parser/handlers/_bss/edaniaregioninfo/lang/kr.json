@@ -1,0 +1,9 @@
+{
+  "columns": {
+    "edaniaRegion": "에다니아 지역",
+    "castle": "성"
+  },
+  "meta": {
+    "count": "에다니아 지역 {count}개"
+  }
+}

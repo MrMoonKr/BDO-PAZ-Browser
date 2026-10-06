@@ -1,0 +1,9 @@
+{
+  "columns": {
+    "edaniaRegion": "Регион Идании",
+    "castle": "Замок"
+  },
+  "meta": {
+    "count": "Регионов Идании: {count}"
+  }
+}

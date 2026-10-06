@@ -1,0 +1,9 @@
+{
+  "columns": {
+    "edaniaRegion": "Edania-Region",
+    "castle": "Burg"
+  },
+  "meta": {
+    "count": "{count} Edania-Regionen"
+  }
+}

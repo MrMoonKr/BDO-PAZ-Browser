@@ -1,0 +1,10 @@
+{
+  "columns": {
+    "key": "키",
+    "regionKey": "지역 키",
+    "regionName": "지역"
+  },
+  "meta": {
+    "count": "눈보라 지역 {count}개"
+  }
+}

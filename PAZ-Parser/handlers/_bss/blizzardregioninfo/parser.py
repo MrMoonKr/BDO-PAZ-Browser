@@ -1,0 +1,46 @@
+"""`blizzardregioninfo.bss`: the snow regions of the Mountain of Eternal Winter and Ulukita.
+
+    PABR | u32 count | count x 26-byte row | u32 0 (empty string table)
+    | u32 string_table_start | u32 0
+
+Each row joins one `regioninfo.bss` region by its region key; the three values
+after it are not confirmed. Full layout in docs/file-formats/blizzardregioninfo_bss.md.
+"""
+
+from __future__ import annotations
+
+from _common.binary import f32, u16, u32
+from _common.pabr_strings import fixed_row_offsets, string_table_start
+
+
+ROW_SIZE = 26
+
+# Row field offsets.
+_KEY = 0x00
+_REGION_KEY = 0x04
+_UNKNOWN_06 = 0x06
+_UNKNOWN_0A = 0x0A
+_UNKNOWN_0E = 0x0E
+_UNKNOWN_12 = 0x12
+_UNKNOWN_16 = 0x16
+
+
+def _parse_row(data: bytes, pos: int) -> dict:
+    return {
+        "key": u32(data, pos + _KEY),
+        "region_key": u16(data, pos + _REGION_KEY),
+        "unknown_06": u32(data, pos + _UNKNOWN_06),
+        "unknown_0a": u32(data, pos + _UNKNOWN_0A),
+        "unknown_0e": f32(data, pos + _UNKNOWN_0E),
+        "unknown_12": u32(data, pos + _UNKNOWN_12),
+        "unknown_16": u32(data, pos + _UNKNOWN_16),
+    }
+
+
+def parse_blizzardregioninfo_records(data: bytes) -> list[dict]:
+    """Every row in file order.
+
+    Raises ValueError on a missing magic or a row count that does not end
+    where the trailer says the string table starts.
+    """
+    return [_parse_row(data, pos) for pos in fixed_row_offsets(data, ROW_SIZE, "blizzardregioninfo.bss")]

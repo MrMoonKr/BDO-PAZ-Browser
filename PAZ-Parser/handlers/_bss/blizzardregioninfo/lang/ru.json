@@ -1,0 +1,10 @@
+{
+  "columns": {
+    "key": "Ключ",
+    "regionKey": "Ключ региона",
+    "regionName": "Регион"
+  },
+  "meta": {
+    "count": "Регионов с метелью: {count}"
+  }
+}

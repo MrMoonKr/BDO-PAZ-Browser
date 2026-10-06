@@ -3,8 +3,10 @@ from __future__ import annotations
 from bdo_preview import register_handler
 
 from .allquestlist.handler import AllQuestListBssHandler
+from .blizzardregioninfo.handler import BlizzardRegionInfoBssHandler
 from .buffsimply.handler import BuffSimplyBssHandler
 from .dropuihuntinggroundinfo.handler import DropUiHuntingGroundInfoBssHandler
+from .edaniaregioninfo.handler import EdaniaRegionInfoBssHandler
 from .employeeexp.handler import EmployeeExpBssHandler
 from .employeestaticstatus.handler import EmployeeStaticStatusBssHandler
 from .exploration.handler import ExplorationBssHandler
@@ -42,11 +44,13 @@ from .zodiacsignindex.handler import ZodiacSignIndexHandler
 
 def register_bss_handlers() -> None:
     register_handler("allquestlist.bss", AllQuestListBssHandler())
+    register_handler("blizzardregioninfo.bss", BlizzardRegionInfoBssHandler())
     register_handler("buffsimply.bss", BuffSimplyBssHandler())
     register_handler(
         "dropuihuntinggroundinfo.bss",
         DropUiHuntingGroundInfoBssHandler(),
     )
+    register_handler("edaniaregioninfo.bss", EdaniaRegionInfoBssHandler())
     register_handler("employeeexp.bss", EmployeeExpBssHandler())
     register_handler("employeestaticstatus.bss", EmployeeStaticStatusBssHandler())
     register_handler("exploration.bss", ExplorationBssHandler())

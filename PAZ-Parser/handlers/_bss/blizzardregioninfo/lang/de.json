@@ -1,0 +1,10 @@
+{
+  "columns": {
+    "key": "Schlüssel",
+    "regionKey": "Regionsschlüssel",
+    "regionName": "Region"
+  },
+  "meta": {
+    "count": "{count} Schneesturmregionen"
+  }
+}
