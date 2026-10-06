@@ -16,5 +16,8 @@
     "quests": "Quests",
     "tags": "Tags",
     "titles": "Titel"
+  },
+  "meta": {
+    "count": "{count} Jagdgebiete"
   }
 }

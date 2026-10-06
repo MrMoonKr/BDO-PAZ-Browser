@@ -15,5 +15,8 @@
   "values": {
     "yes": "Oui",
     "no": "Non"
+  },
+  "meta": {
+    "count": "{count} points de passage · {links} liens"
   }
 }

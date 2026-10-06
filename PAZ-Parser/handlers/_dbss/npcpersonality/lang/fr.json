@@ -14,5 +14,8 @@
     "favMin": "Amitié min.",
     "favMax": "Amitié max.",
     "horoscope": "Constellation"
+  },
+  "meta": {
+    "count": "{count} personnalités"
   }
 }

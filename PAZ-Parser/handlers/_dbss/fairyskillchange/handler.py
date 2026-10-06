@@ -6,7 +6,7 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, sort_keys, table
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, size_column
 from .parser import (
     parse_fairyskillchange_records,
@@ -47,7 +47,7 @@ class FairySkillChangeHandler(PreviewHandler):
 
         rows = [[e(record["level"]), e(record["orb_cost"])] for record in slice_]
 
-        return table(f"{len(records):,} fairy level records", self._columns(), rows)
+        return table(handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records)), self._columns(), rows)
 
 
 def fairy_skill_change_offset_handler() -> OffsetTableHandler:

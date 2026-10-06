@@ -16,5 +16,8 @@
     "quests": "Quests",
     "tags": "Tags",
     "titles": "Titles"
+  },
+  "meta": {
+    "count": "{count} hunting grounds"
   }
 }

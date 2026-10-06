@@ -3,5 +3,8 @@
     "titleId": "ID del título",
     "categoryId": "ID cat.",
     "category": "Categoría"
+  },
+  "meta": {
+    "count": "{count} entradas"
   }
 }

@@ -16,5 +16,11 @@
     "npcId": "NPC-ID",
     "npcName": "NPC-Name",
     "dialogue": "Dialog"
+  },
+  "meta": {
+    "count": "{count} Geschenkzeilen",
+    "dataCount": "{count} NPC-Dialogeinträge",
+    "withNpcName": " · {with_npc_name} NPC-Namen · {with_item_name} Gegenstandsnamen",
+    "withLoc": " · {with_loc} mit Text aus LOC-Typ 54"
   }
 }

@@ -35,5 +35,9 @@
     "tradeImperialCrafting": "Artesanía imperial",
     "tradeGuild": "Comercio de la hermandad",
     "tradeType": "Tipo"
+  },
+  "meta": {
+    "count": "{count} objetos · {enhanceable} reforzables",
+    "withIcon": " · {with_icon} rutas de icono"
   }
 }

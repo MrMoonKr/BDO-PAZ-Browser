@@ -7,7 +7,7 @@ from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, sort_keys, table
 from _common.item_key import item_key_list_cell, item_key_text
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.pabr_offset import parse_pabr_offset_rows
 from _common.offset_table import (
     OffsetColumn,
@@ -82,7 +82,7 @@ class ItemSubgroupHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         entries = sum(record["entry_count"] for record in records)
-        meta = f"{len(records):,} item subgroups · {entries:,} entries"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records), entries=entries)
         rows = [
             [
                 e(record["subgroup_key"]),

@@ -7,7 +7,7 @@ from bdo_preview import PreviewHandler
 
 from _common.character import character_name
 from _common.html import Column, e, sort_keys, table
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.town import town_name
 from _common.worker import worker_grade, worker_name_cell
 from _bss.plantworker.parser import parse_plantworker_records
@@ -88,9 +88,9 @@ class PlantWorkerSelectBssHandler(PreviewHandler):
             if record.get("selection_name") or record.get("worker_name")
         )
 
-        meta = f"{len(records):,} worker selection records"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records))
         if named:
-            meta += f" · {named:,} with LOC names"
+            meta += handler_text(self.lang, _LANG_DIR, "meta.named", named=named)
 
         rows = [
             [

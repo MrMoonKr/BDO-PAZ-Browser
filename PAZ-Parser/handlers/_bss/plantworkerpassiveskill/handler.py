@@ -6,7 +6,7 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, icon_cell, sort_keys, table
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 from .display import effect_sort_values, format_effect, format_effect_type
 from .parser import parse_plantworkerpassiveskill_records
@@ -102,9 +102,9 @@ class PlantWorkerPassiveSkillBssHandler(PreviewHandler):
             or record.get("display_description") != record.get("inline_description")
         )
 
-        meta = f"{len(records):,} worker passive skill records"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records))
         if localized:
-            meta += f" · {localized:,} with LOC text"
+            meta += handler_text(self.lang, _LANG_DIR, "meta.localized", localized=localized)
 
         rows = [_row(record) for record in slice_]
         return table(meta, self._columns(), rows)

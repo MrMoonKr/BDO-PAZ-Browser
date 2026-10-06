@@ -5,5 +5,9 @@
     "icon": "Icono",
     "skillType": "Tipo de habilidad",
     "section": "Sección"
+  },
+  "meta": {
+    "count": "{count} habilidades de equipo de mascota",
+    "localized": " · {localized} nombres LOC"
   }
 }

@@ -12,5 +12,9 @@
     "offeredWhen": "Выдаётся, если*",
     "ruledOutWhen": "Исключается, если*",
     "scriptGuess": "* Наше толкование скрипта; в игре не подтверждено"
+  },
+  "meta": {
+    "count": "Ссылок на задания: {count} · групп: {group_count}",
+    "withTitles": " · с названием LOC: {with_titles}"
   }
 }

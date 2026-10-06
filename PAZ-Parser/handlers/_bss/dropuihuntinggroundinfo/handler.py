@@ -10,7 +10,7 @@ from _common.character import character_name
 from _common.html import Column, e, sort_keys, table, text_list_cell
 from _common.hunting_ground import hunting_ground_name
 from _common.item_key import item_key_list_cell, item_name
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.loc import loc_text
 from _common.node import node_name
 from _common.quest.quest import quest_title
@@ -140,7 +140,7 @@ class DropUiHuntingGroundInfoBssHandler(PreviewHandler):
     ) -> str:
         start = page * page_size
         slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} hunting grounds"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records))
         rows = [
             [
                 e(r["key"]),

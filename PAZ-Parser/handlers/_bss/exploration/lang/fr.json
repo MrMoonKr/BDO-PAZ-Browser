@@ -16,5 +16,8 @@
   "values": {
     "main": "Principal",
     "sub": "Secondaire"
+  },
+  "meta": {
+    "count": "{count} géopoints de la carte du monde"
   }
 }

@@ -9,5 +9,8 @@
     "nodeName": "Nombre del nodo",
     "productionKey": "Clave de producción",
     "producedItems": "Objetos producidos"
+  },
+  "meta": {
+    "count": "{count} nodos de producción · {resolved} con objetos"
   }
 }

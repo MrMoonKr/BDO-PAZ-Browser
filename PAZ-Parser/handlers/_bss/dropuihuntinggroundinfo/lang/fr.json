@@ -16,5 +16,8 @@
     "quests": "Quêtes",
     "tags": "Étiquettes",
     "titles": "Titres"
+  },
+  "meta": {
+    "count": "{count} zones de chasse"
   }
 }

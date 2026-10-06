@@ -9,5 +9,9 @@
     "target": "Objetivo",
     "effectA": "Efecto A",
     "effectB": "Efecto B"
+  },
+  "meta": {
+    "count": "{count} habilidades pasivas de trabajador",
+    "localized": " · {localized} con texto LOC"
   }
 }

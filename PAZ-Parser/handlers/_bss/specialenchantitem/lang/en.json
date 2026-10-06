@@ -5,5 +5,8 @@
     "shownAs": "Shown As",
     "icon": "Icon",
     "name": "Name"
+  },
+  "meta": {
+    "count": "{count} item levels"
   }
 }

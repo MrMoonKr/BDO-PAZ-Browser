@@ -6,7 +6,7 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, sort_keys, table, text_list_cell
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.loc import is_loc_loaded
 from _common.pa_text import pa_key, pa_list_cell
 from _common.offset_table import (
@@ -90,7 +90,7 @@ class DialogTextHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         lines = sum(r["line_count"] for r in records)
-        meta = f"{len(records):,} text pools · {lines:,} lines"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records), lines=lines)
         rows = [
             [
                 e(r["name"]),

@@ -5,5 +5,9 @@
     "icon": "Symbol",
     "skillType": "Talenttyp",
     "section": "Abschnitt"
+  },
+  "meta": {
+    "count": "{count} Begleiter-Ausrüstungstalente",
+    "localized": " · {localized} LOC-Namen"
   }
 }

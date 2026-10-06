@@ -8,5 +8,9 @@
     "actionId": "ID действия",
     "recordOffset": "Смещение записи",
     "recordSize": "Размер записи"
+  },
+  "meta": {
+    "count": "Действий питомцев: {count}",
+    "withLoc": " · с названием LOC типа 19: {with_loc}"
   }
 }

@@ -7,7 +7,7 @@ from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.icon_index import IconKind, icon_path
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.loc import loc_text
 from .parser import parse_fairyequipskill_records
 
@@ -61,9 +61,9 @@ class FairyEquipSkillBssHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         localized = sum(1 for record in records if record.get("skill_name"))
-        meta = f"{len(records):,} fairy skill records"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records))
         if localized:
-            meta += f" · {localized:,} LOC names"
+            meta += handler_text(self.lang, _LANG_DIR, "meta.localized", localized=localized)
 
         rows = [
             [

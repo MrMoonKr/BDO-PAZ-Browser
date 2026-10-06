@@ -9,5 +9,8 @@
     "expTableId": "EXP Table ID",
     "dataOffset": "Data Offset",
     "dataSize": "Data Size"
+  },
+  "meta": {
+    "count": "{count} level thresholds · {table_count} EXP tables"
   }
 }

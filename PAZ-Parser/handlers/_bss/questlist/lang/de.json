@@ -12,5 +12,9 @@
     "offeredWhen": "Angeboten, wenn*",
     "ruledOutWhen": "Ausgeschlossen, wenn*",
     "scriptGuess": "* Unsere Deutung des Skripts; im Spiel nicht bestätigt"
+  },
+  "meta": {
+    "count": "{count} Quest-Verweise · {group_count} Gruppen",
+    "withTitles": " · {with_titles} mit LOC-Titeln"
   }
 }

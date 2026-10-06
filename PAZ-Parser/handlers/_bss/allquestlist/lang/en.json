@@ -4,5 +4,9 @@
     "subId": "Sub ID",
     "icon": "Icon",
     "title": "Title"
+  },
+  "meta": {
+    "count": "{count} quest list entries",
+    "withTitles": " · {with_titles} with LOC titles"
   }
 }

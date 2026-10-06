@@ -12,5 +12,8 @@
     "detail": "Detail",
     "huntingGround": "Hunting Ground",
     "condition": "Condition"
+  },
+  "meta": {
+    "count": "{count} world map markers"
   }
 }

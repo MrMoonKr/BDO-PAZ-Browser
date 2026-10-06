@@ -9,5 +9,8 @@
     "lines": "Líneas",
     "text": "Texto",
     "voice": "Voz"
+  },
+  "meta": {
+    "count": "{count} grupos de textos · {lines} líneas"
   }
 }

@@ -13,5 +13,8 @@
     "energyReward2": "Recompensa de energía 2",
     "entries": "Entradas",
     "childrenGroups": "Subgrupos"
+  },
+  "meta": {
+    "count": "{count} temas de conocimiento · {with_theme_name} nombres de tema · {with_parent_name} nombres superiores"
   }
 }

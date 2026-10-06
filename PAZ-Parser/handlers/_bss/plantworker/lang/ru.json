@@ -8,5 +8,9 @@
     "luck": "Удача",
     "baseWorkSpeed": "Скорость работы",
     "icon": "Значок"
+  },
+  "meta": {
+    "count": "Рабочих: {count}",
+    "named": " · с названием LOC: {named}"
   }
 }

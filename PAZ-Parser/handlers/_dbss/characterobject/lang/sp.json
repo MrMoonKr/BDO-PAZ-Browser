@@ -12,5 +12,8 @@
     "itemName": "Objeto",
     "objectKind": "Tipo",
     "modelPath": "Modelo"
+  },
+  "meta": {
+    "count": "{count} entradas"
   }
 }

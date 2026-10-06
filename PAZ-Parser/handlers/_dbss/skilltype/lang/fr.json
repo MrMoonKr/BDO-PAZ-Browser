@@ -9,5 +9,8 @@
     "0": "Autre",
     "1": "Actif",
     "2": "Passif"
+  },
+  "meta": {
+    "count": "{count} compétences · {with_icon} avec icône"
   }
 }

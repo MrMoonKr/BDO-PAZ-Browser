@@ -8,7 +8,7 @@ from bdo_preview import PreviewHandler
 from _common.class_type import ALL_CLASSES_MASK, class_name, class_types_in_mask
 from _common.html import Column, e, flag_cell, icon_cell, sort_keys, table, text_list_cell
 from _common.icon_index import IconKind, icon_path
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.pa_text import pa_cell, pa_fields
 from _common.skill import skill_name, skill_name_tagged
 from .parser import SkillSimplyRecord, parse_skillsimply_records
@@ -130,7 +130,7 @@ class SkillSimplyHandler(PreviewHandler):
         slice_ = records[start : start + page_size]
         # Neither every class (item and event skills) nor none (ship and item effects).
         class_skills = sum(1 for r in records if r["class_mask"] not in (0, ALL_CLASSES_MASK))
-        meta = f"{len(records):,} skill ranks · {class_skills:,} class skills"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records), class_skills=class_skills)
         rows = [
             [
                 e(r["skill_no"]),

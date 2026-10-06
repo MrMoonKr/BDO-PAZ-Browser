@@ -8,7 +8,7 @@ from bdo_preview import PreviewHandler
 from _common.fairy import upgrade_step_label
 from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.icon_index import IconKind, icon_path
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.item_key import item_name_tagged
 from _common.pa_text import pa_cell, pa_fields
 from .parser import parse_fairyupgraderate_records
@@ -63,11 +63,11 @@ class FairyUpgradeRateBssHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         steps = len({record["step"] for record in records})
-        meta = f"{len(records):,} Sprouting rates across {steps} upgrade steps"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records), steps=steps)
 
         localized = sum(1 for record in records if record.get("item_name"))
         if localized:
-            meta += f" · {localized:,} LOC names"
+            meta += handler_text(self.lang, _LANG_DIR, "meta.localized", localized=localized)
 
         rows = [
             [

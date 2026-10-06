@@ -7,5 +7,8 @@
     "knowledgeId": "ID знания",
     "leases": "Аренда",
     "script": "Скрипт"
+  },
+  "meta": {
+    "count": "НИП: {count}"
   }
 }

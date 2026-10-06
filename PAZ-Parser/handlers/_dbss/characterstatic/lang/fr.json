@@ -15,5 +15,8 @@
     "classType": "Type de classe",
     "model": "Modèle",
     "payloadSize": "Taille des données utiles"
+  },
+  "meta": {
+    "count": "{count} entrées"
   }
 }

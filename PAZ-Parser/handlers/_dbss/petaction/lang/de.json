@@ -8,5 +8,9 @@
     "actionId": "Aktions-ID",
     "recordOffset": "Datensatz-Offset",
     "recordSize": "Datensatzgröße"
+  },
+  "meta": {
+    "count": "{count} Begleiter-Aktionen",
+    "withLoc": " · {with_loc} mit Namen aus LOC-Typ 19"
   }
 }

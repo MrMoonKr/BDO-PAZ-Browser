@@ -13,5 +13,8 @@
     "energyReward2": "Energy Reward 2",
     "entries": "Entries",
     "childrenGroups": "Children Groups"
+  },
+  "meta": {
+    "count": "{count} mentaltheme records · {with_theme_name} theme names · {with_parent_name} parent names"
   }
 }

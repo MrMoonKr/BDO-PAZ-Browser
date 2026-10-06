@@ -21,5 +21,9 @@
   "orderOffsetColumns": {
     "personalityType": "Persönlichkeitstyp",
     "dataOffset": "Daten-Offset"
+  },
+  "meta": {
+    "count": "{count} Sternzeichen",
+    "orderCount": "{count} Reihenfolge-Einträge"
   }
 }

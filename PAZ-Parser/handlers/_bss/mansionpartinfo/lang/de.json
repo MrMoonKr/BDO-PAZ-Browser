@@ -4,5 +4,8 @@
     "manor": "Anwesen",
     "part": "Teil",
     "icon": "Symbol"
+  },
+  "meta": {
+    "count": "{count} Anwesensteile"
   }
 }

@@ -1054,7 +1054,9 @@ def buff_offset_handler() -> OffsetTableHandler:
   fields (`skill_offset_handler()`, `detail_dialog_offset_handler()`).
 - `lang_dir=None` shows the English labels (a package without a lang folder),
   `lang_block=` names another label block, and `meta=` replaces the
-  "N offset records" header (`journalquestoffset.dbss` counts its groups).
+  "N offset records" header with a `(records, lang) -> str` function
+  (`journalquestoffset.dbss` counts its groups). The shared header text is in
+  `_common/lang/`.
 
 ---
 
@@ -1532,6 +1534,24 @@ same `{placeholders}`: `tests/test_handler_lang.py` fails on a missing or extra 
 handler is either English only or fully translated in a language. For text with values in
 it, fill the placeholders with `fill_placeholders(text, name=value)` from `ui_text.py`,
 the same rule `ui_text()` uses.
+
+The count line above a table (`table(meta, ...)`) is handler text too: put it
+in a `meta` block of `lang/en.json` and fill it with `handler_text()`, which
+formats whole numbers with `,` in every language:
+
+```python
+meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records), groups=group_count)
+```
+
+```json
+"meta": {
+  "count": "{count} quest references · {groups} groups"
+}
+```
+
+A part added only sometimes (`meta += ...`) gets its own key with the leading
+` · `. The simple examples elsewhere in this guide keep an English f-string for
+brevity; a real handler uses `handler_text()`.
 
 Text that belongs to a built-in viewer rather than one format (the hex, text and LOC
 views) goes through `ui_text()` and the `ui/lang/*.json` files instead; the LOC viewer's

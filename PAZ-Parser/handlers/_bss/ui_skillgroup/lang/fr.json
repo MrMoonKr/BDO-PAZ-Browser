@@ -13,5 +13,8 @@
     "0": "Gauche",
     "1": "Milieu",
     "2": "Droite"
+  },
+  "meta": {
+    "count": "{count} cases de compétence · {classes} classes"
   }
 }

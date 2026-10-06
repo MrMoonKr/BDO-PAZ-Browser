@@ -15,5 +15,8 @@
   "values": {
     "character": "Personnage",
     "item": "Objet"
+  },
+  "meta": {
+    "count": "{count} entrées · {with_names} noms de connaissance"
   }
 }

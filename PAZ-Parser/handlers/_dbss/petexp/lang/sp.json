@@ -9,5 +9,8 @@
     "expTableId": "ID de tabla de Exp.",
     "dataOffset": "Desplazamiento de datos",
     "dataSize": "Tamaño de datos"
+  },
+  "meta": {
+    "count": "{count} umbrales de nivel · {table_count} tablas de Exp."
   }
 }

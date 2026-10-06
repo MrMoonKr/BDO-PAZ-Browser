@@ -14,5 +14,8 @@
     "favMin": "Freundsch. min.",
     "favMax": "Freundsch. max.",
     "horoscope": "Sternzeichen"
+  },
+  "meta": {
+    "count": "{count} Persönlichkeitseinträge"
   }
 }

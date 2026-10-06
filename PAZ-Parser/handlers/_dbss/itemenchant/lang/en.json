@@ -35,5 +35,9 @@
     "tradeImperialCrafting": "Imperial Crafting Delivery",
     "tradeGuild": "Guild trade",
     "tradeType": "Type"
+  },
+  "meta": {
+    "count": "{count} items · {enhanceable} enhanceable",
+    "withIcon": " · {with_icon} icon paths"
   }
 }

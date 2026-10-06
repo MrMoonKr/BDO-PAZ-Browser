@@ -14,5 +14,8 @@
     "nearestNode": "Nächster Posten",
     "distance": "Distanz (m)",
     "usedBy": "Verwendet von"
+  },
+  "meta": {
+    "count": "{count} Teleportpunkte"
   }
 }

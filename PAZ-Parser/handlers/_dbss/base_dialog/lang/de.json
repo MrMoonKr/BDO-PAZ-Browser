@@ -4,5 +4,8 @@
     "dialog": "Dialog",
     "character": "Charakter",
     "lines": "Sprechblasen"
+  },
+  "meta": {
+    "count": "{count} Dialoge · {with_lines} mit Zeilen"
   }
 }

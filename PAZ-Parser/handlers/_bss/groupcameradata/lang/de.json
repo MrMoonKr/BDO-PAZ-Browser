@@ -5,5 +5,8 @@
     "title": "Titel",
     "description": "Beschreibung",
     "quote": "Zitat"
+  },
+  "meta": {
+    "count": "{count} Zwischensequenzen"
   }
 }

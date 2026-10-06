@@ -5,5 +5,8 @@
     "title": "Titre",
     "hotkey": "Raccourci",
     "entries": "Entrées"
+  },
+  "meta": {
+    "count": "{count} catégories de menu"
   }
 }

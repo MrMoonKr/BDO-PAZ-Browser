@@ -5,5 +5,8 @@
     "name": "Name",
     "ranks": "Ranks",
     "skills": "Skills"
+  },
+  "meta": {
+    "count": "{count} skill groups"
   }
 }

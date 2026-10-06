@@ -29,5 +29,8 @@
     "sub": "Arma secundaria",
     "awakening": "Arma del Despertar"
   },
-  "allClasses": "Todas"
+  "allClasses": "Todas",
+  "meta": {
+    "count": "{count} rangos de habilidad · {class_skills} habilidades de clase"
+  }
 }

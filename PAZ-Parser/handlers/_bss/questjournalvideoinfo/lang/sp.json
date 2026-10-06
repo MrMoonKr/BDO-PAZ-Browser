@@ -5,5 +5,8 @@
     "artwork": "Ilustración",
     "title": "Título",
     "video": "Vídeo"
+  },
+  "meta": {
+    "count": "{count} vídeos del diario"
   }
 }

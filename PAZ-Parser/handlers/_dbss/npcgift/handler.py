@@ -9,7 +9,7 @@ from _common.loc import is_loc_loaded
 from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.icon_index import IconKind, icon_path
 from _common.item_grade import item_grade, item_grade_tagged
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.pa_text import pa_cell, pa_key
 from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, size_column
 from .parser import (
@@ -81,9 +81,9 @@ class NpcGiftHandler(PreviewHandler):
 
         with_npc_name  = sum(1 for r in records if r["npc_name"])
         with_item_name = sum(1 for r in records if r["item_name"])
-        meta = f"{len(records):,} gift rows"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records))
         if loc:
-            meta += f" · {with_npc_name:,} NPC names · {with_item_name:,} item names"
+            meta += handler_text(self.lang, _LANG_DIR, "meta.withNpcName", with_npc_name=with_npc_name, with_item_name=with_item_name)
 
         rows = [
             [
@@ -130,9 +130,9 @@ class NpcGiftDataHandler(PreviewHandler):
         loc = is_loc_loaded()
 
         with_loc = sum(1 for r in records if r["dialogue_source"] == "loc")
-        meta = f"{len(records):,} NPC dialogue records"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.dataCount", count=len(records))
         if loc:
-            meta += f" · {with_loc:,} with LOC type 54 text"
+            meta += handler_text(self.lang, _LANG_DIR, "meta.withLoc", with_loc=with_loc)
 
         rows = [
             [

@@ -7,7 +7,7 @@ from bdo_preview import PreviewHandler
 
 from _common.buff import buff_loc_description
 from _common.html import Column, e, icon_cell, sort_keys, table
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.pa_text import pa_cell, pa_fields
 from .parser import parse_buffsimply_records
 
@@ -54,7 +54,7 @@ class BuffSimplyBssHandler(PreviewHandler):
         slice_ = records[start : start + page_size]
         values = self._strings().get("values", {})
         yes, no = values.get("yes", "Yes"), values.get("no", "No")
-        meta = f"{len(records):,} buffs"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records))
         rows = [
             [
                 e(r["buff_id"]),

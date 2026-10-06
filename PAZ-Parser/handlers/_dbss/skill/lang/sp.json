@@ -18,5 +18,8 @@
     "level": "Nivel",
     "dbssOffset": "Desplazamiento DBSS",
     "size": "Tamaño"
+  },
+  "meta": {
+    "count": "{count} rangos de habilidad · {with_buffs} con bonificadores"
   }
 }

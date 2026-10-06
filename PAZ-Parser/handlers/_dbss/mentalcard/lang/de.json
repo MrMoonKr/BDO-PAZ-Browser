@@ -18,5 +18,8 @@
     "obtain": "Erhalten",
     "learnedFrom": "Erlernt durch",
     "position": "Position"
+  },
+  "meta": {
+    "count": "{count} Wissenskarten · {with_node_name} Kategorienamen"
   }
 }

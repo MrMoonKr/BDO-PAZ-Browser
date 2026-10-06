@@ -11,5 +11,8 @@
     "productId": "Produkt-ID",
     "dataOffset": "Daten-Offset",
     "dataSize": "Datengröße"
+  },
+  "meta": {
+    "count": "{count} Shop-Produkte · {linked} verknüpfte Gegenstände"
   }
 }

@@ -5,5 +5,9 @@
     "cityId": "City ID",
     "cityName": "City Name",
     "hireCost": "Hire Cost"
+  },
+  "meta": {
+    "count": "{count} worker selection records",
+    "named": " · {named} with LOC names"
   }
 }

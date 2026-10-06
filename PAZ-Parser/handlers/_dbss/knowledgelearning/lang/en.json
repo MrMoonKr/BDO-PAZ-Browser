@@ -15,5 +15,8 @@
   "values": {
     "character": "Character",
     "item": "Item"
+  },
+  "meta": {
+    "count": "{count} records · {with_names} knowledge names"
   }
 }

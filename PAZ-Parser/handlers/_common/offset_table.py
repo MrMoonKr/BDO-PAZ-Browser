@@ -19,10 +19,15 @@ from bdo_preview import PreviewHandler
 
 from _common.binary import parse_offset_table
 from _common.html import Column, e, sort_keys, table
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.pabr_offset import PabrOffsetRow
 
 ReadRecords = Callable[[bytes], list[dict]]
+# The count line above the table, from the records and the UI language.
+MetaText = Callable[[list[dict], str], str]
+
+# Text every offset table shares.
+_COMMON_LANG_DIR = Path(__file__).parent / "lang"
 
 
 def offset_text(value: int) -> str:
@@ -94,8 +99,8 @@ def picked_records(
     return read
 
 
-def count_meta(records: list[dict]) -> str:
-    return f"{len(records):,} offset records"
+def count_meta(records: list[dict], lang: str) -> str:
+    return handler_text(lang, _COMMON_LANG_DIR, "meta.offsetRecords", count=len(records))
 
 
 class OffsetTableHandler(PreviewHandler):
@@ -108,7 +113,7 @@ class OffsetTableHandler(PreviewHandler):
         read_records: ReadRecords,
         *,
         lang_block: str = "offsetColumns",
-        meta: Callable[[list[dict]], str] = count_meta,
+        meta: MetaText = count_meta,
     ) -> None:
         self._lang_dir = lang_dir
         self._offset_columns = tuple(columns)
@@ -146,4 +151,4 @@ class OffsetTableHandler(PreviewHandler):
             [e(column.text(record[column.field])) for column in self._offset_columns]
             for record in records[start : start + page_size]
         ]
-        return table(self._meta(records), self._columns(), rows)
+        return table(self._meta(records, self.lang), self._columns(), rows)

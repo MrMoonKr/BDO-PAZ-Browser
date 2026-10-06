@@ -9,5 +9,8 @@
     "petSkillId": "ID de compétence de familier",
     "dataOffset": "Décalage des données",
     "dataSize": "Taille des données"
+  },
+  "meta": {
+    "count": "{skill_count} compétences de familier · {count} lignes de niveau"
   }
 }

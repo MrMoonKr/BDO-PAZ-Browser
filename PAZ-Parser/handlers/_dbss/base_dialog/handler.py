@@ -7,7 +7,7 @@ from bdo_preview import PreviewHandler
 
 from _common.character import character_name
 from _common.html import Column, e, sort_keys, table
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup
 from _common.pa_text import pa_key, pa_list_cell, strip_pa_tags
 from .parser import BaseDialogRecord, parse_base_dialog_records
@@ -89,7 +89,7 @@ class BaseDialogHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         with_lines = sum(1 for r in records if r["lines"])
-        meta = f"{len(records):,} dialogs · {with_lines:,} with lines"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records), with_lines=with_lines)
         rows = [
             [
                 e(r["character_id"]),

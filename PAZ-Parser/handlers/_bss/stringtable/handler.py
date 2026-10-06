@@ -6,7 +6,7 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, sort_keys, table
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.pa_text import pa_cell, pa_fields, strip_pa_tags
 from .parser import StringRow, parse_rows
 from .text import ui_hash_tagged
@@ -60,7 +60,7 @@ class StringTableBssHandler(PreviewHandler):
     ) -> str:
         start = page * page_size
         slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} strings"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records))
         rows = [
             [
                 e(f"0x{r['key_hash']:08X}"),

@@ -10,5 +10,9 @@
     "action": "Action",
     "objective": "Objective",
     "familyStat": "Family Stat"
+  },
+  "meta": {
+    "count": "{count} quests",
+    "withLoc": " · {with_loc} with LOC type 18 text"
   }
 }

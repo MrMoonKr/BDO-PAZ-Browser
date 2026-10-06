@@ -16,5 +16,8 @@
     "quests": "Misiones",
     "tags": "Etiquetas",
     "titles": "Títulos"
+  },
+  "meta": {
+    "count": "{count} zonas de caza"
   }
 }

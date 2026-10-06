@@ -6,7 +6,7 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, sort_keys, table
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.offset_table import (
     OffsetColumn,
     OffsetTableHandler,
@@ -136,9 +136,13 @@ class MentalThemeHandler(PreviewHandler):
 
         with_theme_name = sum(1 for r in records if r["name"])
         with_parent_name = sum(1 for r in records if r["parent_name"])
-        meta = (
-            f"{len(records):,} mentaltheme records"
-            f" · {with_theme_name:,} theme names · {with_parent_name:,} parent names"
+        meta = handler_text(
+            self.lang,
+            _LANG_DIR,
+            "meta.count",
+            count=len(records),
+            with_theme_name=with_theme_name,
+            with_parent_name=with_parent_name,
         )
 
         rows = [

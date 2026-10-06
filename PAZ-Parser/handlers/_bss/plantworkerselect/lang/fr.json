@@ -5,5 +5,9 @@
     "cityId": "ID de ville",
     "cityName": "Nom de ville",
     "hireCost": "Coût d'embauche"
+  },
+  "meta": {
+    "count": "{count} choix d'ouvriers",
+    "named": " · {named} avec nom LOC"
   }
 }

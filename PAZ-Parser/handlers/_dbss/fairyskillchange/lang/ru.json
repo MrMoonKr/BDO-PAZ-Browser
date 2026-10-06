@@ -8,5 +8,8 @@
     "dataOffset": "Смещение данных",
     "dataSize": "Размер данных",
     "recordStart": "Начало записи"
+  },
+  "meta": {
+    "count": "Уровней феи: {count}"
   }
 }

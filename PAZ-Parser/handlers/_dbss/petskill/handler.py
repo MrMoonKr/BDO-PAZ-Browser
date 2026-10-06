@@ -6,7 +6,7 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, sort_keys, table
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, size_column
 from .parser import parse_petskill_records, parse_petskilloffset_records
 
@@ -63,7 +63,7 @@ class PetSkillHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         skill_count = len({r["pet_skill_id"] for r in records})
-        meta = f"{skill_count:,} pet skills · {len(records):,} level rows"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", skill_count=skill_count, count=len(records))
         rows = [
             [
                 e(r["pet_skill_id"]),

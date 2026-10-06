@@ -29,5 +29,8 @@
     "sub": "Arme secondaire",
     "awakening": "Arme d'éveil"
   },
-  "allClasses": "Toutes"
+  "allClasses": "Toutes",
+  "meta": {
+    "count": "{count} rangs de compétence · {class_skills} compétences de classe"
+  }
 }

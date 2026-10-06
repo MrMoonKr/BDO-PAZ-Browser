@@ -6,7 +6,7 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, sort_keys, table
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, size_column
 from .parser import parse_employeename_records, parse_employeenameoffset_records
@@ -73,7 +73,7 @@ class EmployeeNameHandler(PreviewHandler):
     ) -> str:
         start = page * page_size
         slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} employee names"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records))
         rows = [
             [
                 e(r["employee_name_id"]),

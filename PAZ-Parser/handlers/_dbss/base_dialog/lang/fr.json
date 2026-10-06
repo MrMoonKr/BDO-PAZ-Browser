@@ -4,5 +4,8 @@
     "dialog": "Dialogue",
     "character": "Personnage",
     "lines": "Bulles"
+  },
+  "meta": {
+    "count": "{count} dialogues · {with_lines} avec répliques"
   }
 }

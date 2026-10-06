@@ -29,5 +29,8 @@
     "sub": "Sub",
     "awakening": "Awakening"
   },
-  "allClasses": "All"
+  "allClasses": "All",
+  "meta": {
+    "count": "{count} skill ranks · {class_skills} class skills"
+  }
 }

@@ -12,5 +12,8 @@
     "detail": "Detail",
     "huntingGround": "Jagdgebiet",
     "condition": "Bedingung"
+  },
+  "meta": {
+    "count": "{count} Weltkartenmarkierungen"
   }
 }

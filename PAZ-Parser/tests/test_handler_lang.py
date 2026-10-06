@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from api.bdo_languages import UI_LANGUAGE_CODES
 
 from tests.lang_files import flat_strings, placeholders
@@ -52,6 +52,25 @@ def test_a_broken_language_file_reads_english(tmp_path: Path) -> None:
 
 def test_a_folder_without_files_reads_empty(tmp_path: Path) -> None:
     assert load_handler_strings("de", tmp_path) == {}
+
+
+def test_handler_text_fills_counts_with_thousands_separators(tmp_path: Path) -> None:
+    _write(tmp_path / "en.json", {"meta": {"count": "{count} rows · {groups} groups"}})
+
+    assert handler_text("en", tmp_path, "meta.count", count=12345, groups=7) == "12,345 rows · 7 groups"
+
+
+def test_handler_text_reads_the_language(tmp_path: Path) -> None:
+    _write(tmp_path / "en.json", {"meta": {"count": "{count} rows"}})
+    _write(tmp_path / "de.json", {"meta": {"count": "{count} Zeilen"}})
+
+    assert handler_text("de", tmp_path, "meta.count", count=1000) == "1,000 Zeilen"
+
+
+def test_handler_text_reads_an_unknown_key_as_the_key(tmp_path: Path) -> None:
+    _write(tmp_path / "en.json", {"meta": {}})
+
+    assert handler_text("en", tmp_path, "meta.count", count=1) == "meta.count"
 
 
 def test_translations_are_named_after_ui_languages() -> None:

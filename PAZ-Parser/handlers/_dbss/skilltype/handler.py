@@ -6,7 +6,7 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, icon_cell, sort_keys, table
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.pa_text import pa_cell, pa_fields
 from _common.skill import skill_name_tagged
 from .parser import SkillTypeRecord, parse_skilltype_records
@@ -73,7 +73,7 @@ class SkillTypeHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         with_icon = sum(1 for r in records if r["icon_path"])
-        meta = f"{len(records):,} skills · {with_icon:,} with an icon"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records), with_icon=with_icon)
         rows = [
             [
                 e(r["skill_no"]),

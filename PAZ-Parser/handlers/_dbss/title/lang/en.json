@@ -1,10 +1,13 @@
 {
   "columns": {
-    "titleId":            "Title ID",
-    "category":           "Category",
-    "title":              "Title",
-    "titleRequirements":  "Title Requirements",
-    "special":            "Special",
-    "effect":             "Effect"
+    "titleId": "Title ID",
+    "category": "Category",
+    "title": "Title",
+    "titleRequirements": "Title Requirements",
+    "special": "Special",
+    "effect": "Effect"
+  },
+  "meta": {
+    "count": "{count} titles decoded"
   }
 }

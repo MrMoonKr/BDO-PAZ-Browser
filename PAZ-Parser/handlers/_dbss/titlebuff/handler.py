@@ -7,7 +7,7 @@ from bdo_preview import PreviewHandler
 
 from _common.binary import parse_offset_table
 from _common.html import Column, e, sort_keys, table
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.pa_text import pa_cell, pa_fields
 from _common.offset_table import (
     OffsetColumn,
@@ -98,7 +98,7 @@ class TitleBuffListHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
 
-        meta = f"{len(records):,} title effect tiers"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records))
         rows = [
             [e(r["level"]), e(r["required_titles"]), pa_cell(r, "text")]
             for r in slice_

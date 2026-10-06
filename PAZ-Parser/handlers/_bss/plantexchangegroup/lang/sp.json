@@ -4,5 +4,8 @@
     "name": "Nombre",
     "itemSubgroup": "Subgrupo de objetos",
     "items": "Objetos"
+  },
+  "meta": {
+    "count": "{count} grupos de producción · {resolved} con objetos"
   }
 }

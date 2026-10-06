@@ -5,5 +5,8 @@
     "artwork": "Illustration",
     "title": "Titel",
     "video": "Video"
+  },
+  "meta": {
+    "count": "{count} Tagebuchvideos"
   }
 }

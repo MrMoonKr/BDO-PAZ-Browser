@@ -6,7 +6,7 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, sort_keys, table
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from .parser import parse_fairyfeedenchantfailcount_records
 
 
@@ -41,7 +41,7 @@ class FairyFeedEnchantFailCountBssHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         record_count = len({record["record"] for record in records})
-        meta = f"{len(records):,} entries across {record_count} records"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records), record_count=record_count)
 
         rows = [[e(record["record"])] for record in slice_]
 

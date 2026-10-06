@@ -18,5 +18,8 @@
     "obtain": "Obtain",
     "learnedFrom": "Learned From",
     "position": "Position"
+  },
+  "meta": {
+    "count": "{count} knowledge cards · {with_node_name} category names"
   }
 }

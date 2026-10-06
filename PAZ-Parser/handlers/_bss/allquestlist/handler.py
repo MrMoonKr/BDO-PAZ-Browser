@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.icon_index import IconKind, icon_path
 from _common.loc import is_loc_loaded
@@ -57,9 +57,9 @@ class AllQuestListBssHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         with_titles = sum(1 for record in records if record.get("title"))
-        meta = f"{len(records):,} quest list entries"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records))
         if with_titles:
-            meta += f" · {with_titles:,} with LOC titles"
+            meta += handler_text(self.lang, _LANG_DIR, "meta.withTitles", with_titles=with_titles)
 
         rows = [
             [

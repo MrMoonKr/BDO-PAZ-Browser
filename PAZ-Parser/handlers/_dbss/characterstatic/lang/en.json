@@ -15,5 +15,8 @@
     "classType": "Class Type",
     "model": "Model",
     "payloadSize": "Payload Size"
+  },
+  "meta": {
+    "count": "{count} records"
   }
 }

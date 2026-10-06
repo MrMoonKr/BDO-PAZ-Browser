@@ -6,7 +6,7 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, sort_keys, sprite_icon_cell, table
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _bss.menu.parser import parse_menu_records
 from _bss.menu.titles import menu_title, title_hashes
 from _bss.stringtable.text import STRINGTABLE_FILE
@@ -66,7 +66,7 @@ class SubmenuBssHandler(PreviewHandler):
     ) -> str:
         start = page * page_size
         slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} menu entries"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records))
         rows = [
             [
                 e(r["entry_id"]),

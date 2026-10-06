@@ -5,5 +5,8 @@
     "shownAs": "Affiché comme",
     "icon": "Icône",
     "name": "Nom"
+  },
+  "meta": {
+    "count": "{count} niveaux d'objet"
   }
 }

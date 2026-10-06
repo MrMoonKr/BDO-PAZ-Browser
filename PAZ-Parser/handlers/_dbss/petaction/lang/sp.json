@@ -8,5 +8,9 @@
     "actionId": "ID de acción",
     "recordOffset": "Desplazamiento de registro",
     "recordSize": "Tamaño de registro"
+  },
+  "meta": {
+    "count": "{count} acciones de mascota",
+    "withLoc": " · {with_loc} con nombre LOC de tipo 19"
   }
 }

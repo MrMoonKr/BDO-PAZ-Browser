@@ -18,5 +18,8 @@
     "level": "Niveau",
     "dbssOffset": "Décalage DBSS",
     "size": "Taille"
+  },
+  "meta": {
+    "count": "{count} rangs de compétence · {with_buffs} avec bonus"
   }
 }

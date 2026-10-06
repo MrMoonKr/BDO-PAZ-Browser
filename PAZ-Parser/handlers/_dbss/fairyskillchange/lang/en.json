@@ -8,5 +8,8 @@
     "dataOffset": "Data Offset",
     "dataSize": "Data Size",
     "recordStart": "Record Start"
+  },
+  "meta": {
+    "count": "{count} fairy level records"
   }
 }

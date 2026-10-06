@@ -9,5 +9,8 @@
     "expTableId": "ID de table d'EXP",
     "dataOffset": "Décalage des données",
     "dataSize": "Taille des données"
+  },
+  "meta": {
+    "count": "{count} paliers de niveau · {table_count} tables d'EXP"
   }
 }

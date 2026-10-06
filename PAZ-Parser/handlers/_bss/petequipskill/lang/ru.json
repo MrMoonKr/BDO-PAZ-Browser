@@ -5,5 +5,9 @@
     "icon": "Значок",
     "skillType": "Тип навыка",
     "section": "Раздел"
+  },
+  "meta": {
+    "count": "Навыков снаряжения питомцев: {count}",
+    "localized": " · названий LOC: {localized}"
   }
 }

@@ -21,5 +21,9 @@
   "orderOffsetColumns": {
     "personalityType": "Type de personnalité",
     "dataOffset": "Décalage des données"
+  },
+  "meta": {
+    "count": "{count} signes astrologiques",
+    "orderCount": "{count} entrées d'ordre"
   }
 }

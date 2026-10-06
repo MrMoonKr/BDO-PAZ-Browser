@@ -22,5 +22,9 @@
   "values": {
     "yes": "Ja",
     "no": "Nein"
+  },
+  "meta": {
+    "count": "{count} Tagebucheinträge · {groups} Gruppen · {pages} Seiten",
+    "offsetCount": "{count} Einträge · {groups} Gruppen"
   }
 }

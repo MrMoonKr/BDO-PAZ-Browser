@@ -9,7 +9,7 @@ from _common.buff import buff_loc_description
 from _common.duration import format_duration
 from _common.html import Column, e, icon_cell, sort_keys, table, truncate
 from _common.item_key import item_key_list_cell, item_key_text
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.lookup_index import IndexKind, index_entries, lookup
 from _common.pa_text import pa_cell, pa_fields, pa_html, pa_key
 from _common.pabr_offset import parse_pabr_offset_rows
@@ -193,5 +193,5 @@ class BuffHandler(PreviewHandler):
     ) -> str:
         start = page * page_size
         slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} buffs"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records))
         return table(meta, self._columns(), [_buff_row(r) for r in slice_])

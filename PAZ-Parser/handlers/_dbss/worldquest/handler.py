@@ -6,7 +6,7 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, sort_keys, table
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from .parser import parse_worldquest_records
 
 
@@ -41,7 +41,7 @@ class WorldQuestDbssHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         count = records[0]["count"] if records else 0
-        meta = f"Header count: {count:,}"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=count)
         rows = [
             [
                 e(r["count"]),

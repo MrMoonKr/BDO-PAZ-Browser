@@ -2,5 +2,8 @@
   "columns": {
     "zodiacId": "ID del signo del zodiaco",
     "name": "Nombre"
+  },
+  "meta": {
+    "count": "{count} entradas del índice del zodiaco"
   }
 }

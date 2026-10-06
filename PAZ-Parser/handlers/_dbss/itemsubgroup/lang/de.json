@@ -8,5 +8,8 @@
     "subgroupKey": "Untergruppenschlüssel",
     "entryCount": "Gegenstände",
     "items": "Gegenstandsnamen"
+  },
+  "meta": {
+    "count": "{count} Gegenstandsuntergruppen · {entries} Einträge"
   }
 }

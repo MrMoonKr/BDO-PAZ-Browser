@@ -6,7 +6,7 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, icon_cell, sort_keys, table
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.loc import loc_text
 from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, size_column
 from .parser import parse_petaction_records, parse_petactionoffset_records
@@ -81,10 +81,10 @@ class PetActionHandler(PreviewHandler):
     ) -> str:
         start = page * page_size
         slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} pet actions"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records))
         with_loc = sum(1 for r in records if r["has_loc_name"])
         if with_loc:
-            meta += f" · {with_loc:,} with LOC type 19 names"
+            meta += handler_text(self.lang, _LANG_DIR, "meta.withLoc", with_loc=with_loc)
         rows = [
             [
                 e(r["action_id"]),

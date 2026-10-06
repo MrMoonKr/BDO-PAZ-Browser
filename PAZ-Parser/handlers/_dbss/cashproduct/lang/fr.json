@@ -11,5 +11,8 @@
     "productId": "ID du produit",
     "dataOffset": "Décalage des données",
     "dataSize": "Taille des données"
+  },
+  "meta": {
+    "count": "{count} produits de la boutique · {linked} objets liés"
   }
 }

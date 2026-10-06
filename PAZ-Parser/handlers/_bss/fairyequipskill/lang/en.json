@@ -6,5 +6,9 @@
     "description": "Description",
     "skillType": "Skill Type",
     "locId": "Loc ID"
+  },
+  "meta": {
+    "count": "{count} fairy skill records",
+    "localized": " · {localized} LOC names"
   }
 }

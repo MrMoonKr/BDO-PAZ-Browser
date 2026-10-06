@@ -4,5 +4,9 @@
     "subId": "ID secundario",
     "icon": "Icono",
     "title": "Título"
+  },
+  "meta": {
+    "count": "{count} entradas de lista de misiones",
+    "withTitles": " · {with_titles} con título LOC"
   }
 }

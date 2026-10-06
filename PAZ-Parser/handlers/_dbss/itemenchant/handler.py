@@ -8,7 +8,7 @@ from bdo_preview import PreviewHandler
 from _common.buff import buff_label, buff_list_cell
 from _common.html import Column, e, flag_cell, icon_cell, sort_keys, table
 from _common.item_grade import item_grade_tagged
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.loc import LOC_NULL, loc_tagged, loc_text
 from _common.pa_text import pa_cell, pa_fields, pa_line_cell
 from _common.skill import skill_buff_ids
@@ -145,11 +145,11 @@ class ItemEnchantHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         enhanceable = sum(1 for record in records if record["max_enchant_level"])
-        meta = f"{len(records):,} items · {enhanceable:,} enhanceable"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records), enhanceable=enhanceable)
 
         with_icon = sum(1 for record in records if record["icon_path"])
         if with_icon:
-            meta += f" · {with_icon:,} icon paths"
+            meta += handler_text(self.lang, _LANG_DIR, "meta.withIcon", with_icon=with_icon)
 
         rows = [
             [

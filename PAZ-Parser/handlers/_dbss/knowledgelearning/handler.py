@@ -9,7 +9,7 @@ from _common.character import LOC_CHARACTER_NAME
 from _common.html import Column, e, sort_keys, table
 from _common.item_key import LOC_ITEM_NAME
 from _common.knowledge import knowledge_name
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.loc import is_loc_loaded, loc_text
 from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, size_column
 from .parser import (
@@ -99,7 +99,7 @@ class KnowledgeLearningHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         with_names = sum(1 for r in records if r["card_name"])
-        meta = f"{len(records):,} records · {with_names:,} knowledge names"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records), with_names=with_names)
 
         rows = [
             [

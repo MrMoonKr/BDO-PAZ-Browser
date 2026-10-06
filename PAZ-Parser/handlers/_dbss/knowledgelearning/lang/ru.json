@@ -15,5 +15,8 @@
   "values": {
     "character": "Персонаж",
     "item": "Предмет"
+  },
+  "meta": {
+    "count": "Записей: {count} · названий знаний: {with_names}"
   }
 }

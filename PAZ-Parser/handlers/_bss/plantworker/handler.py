@@ -7,7 +7,7 @@ from bdo_preview import PreviewHandler
 
 from _common.character import character_name
 from _common.html import Column, e, icon_cell, sort_keys, table
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.worker import (
     LUCK_SCALE,
     MOVE_SPEED_SCALE,
@@ -66,9 +66,9 @@ class PlantWorkerBssHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         named = sum(1 for record in records if record.get("name"))
-        meta = f"{len(records):,} worker records"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records))
         if named:
-            meta += f" · {named:,} with LOC names"
+            meta += handler_text(self.lang, _LANG_DIR, "meta.named", named=named)
 
         rows = [
             [

@@ -37,5 +37,10 @@
     "variant": "Variante",
     "dataOffset": "Décalage des données",
     "dataSize": "Taille des données"
+  },
+  "meta": {
+    "gradeCount": "{count} raretés de familier",
+    "count": "{count} familiers · {species_count} espèces",
+    "withGrade": " · {with_grade} avec données de rareté"
   }
 }

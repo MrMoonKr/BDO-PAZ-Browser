@@ -14,5 +14,8 @@
     "favMin": "Afinidad mín.",
     "favMax": "Afinidad máx.",
     "horoscope": "Horóscopo"
+  },
+  "meta": {
+    "count": "{count} personalidades"
   }
 }

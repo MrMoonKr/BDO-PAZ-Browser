@@ -11,5 +11,8 @@
     "productId": "Product ID",
     "dataOffset": "Data Offset",
     "dataSize": "Data Size"
+  },
+  "meta": {
+    "count": "{count} cash products · {linked} linked items"
   }
 }

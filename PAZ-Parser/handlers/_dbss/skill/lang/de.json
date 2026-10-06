@@ -18,5 +18,8 @@
     "level": "Stufe",
     "dbssOffset": "DBSS-Offset",
     "size": "Größe"
+  },
+  "meta": {
+    "count": "{count} Talentränge · {with_buffs} mit Buffs"
   }
 }

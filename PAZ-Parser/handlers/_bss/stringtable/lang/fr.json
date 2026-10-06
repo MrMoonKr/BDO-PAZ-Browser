@@ -4,5 +4,8 @@
     "hash": "Hash",
     "key": "Clé",
     "text": "Texte"
+  },
+  "meta": {
+    "count": "{count} textes"
   }
 }

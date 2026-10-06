@@ -13,5 +13,8 @@
     "0": "Left",
     "1": "Middle",
     "2": "Right"
+  },
+  "meta": {
+    "count": "{count} skill cells · {classes} classes"
   }
 }

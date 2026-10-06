@@ -8,5 +8,9 @@
     "actionId": "ID d'action",
     "recordOffset": "Décalage d'enregistrement",
     "recordSize": "Taille d'enregistrement"
+  },
+  "meta": {
+    "count": "{count} actions de familier",
+    "withLoc": " · {with_loc} avec nom LOC de type 19"
   }
 }

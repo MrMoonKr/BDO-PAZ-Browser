@@ -5,5 +5,8 @@
     "shownAs": "Angezeigt als",
     "icon": "Symbol",
     "name": "Name"
+  },
+  "meta": {
+    "count": "{count} Gegenstandsstufen"
   }
 }

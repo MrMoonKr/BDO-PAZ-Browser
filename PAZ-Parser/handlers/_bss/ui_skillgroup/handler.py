@@ -10,7 +10,7 @@ from table_sort import TableSort
 from _common.class_type import class_name
 from _common.html import Column, e, icon_cell, sort_keys, table
 from _common.icon_index import IconKind, icon_path
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.pa_text import pa_cell, pa_fields
 from _common.skill import skill_name_tagged, split_skill_key
 from _bss.skillgroup.parser import skill_keys_by_group
@@ -134,7 +134,7 @@ class UiSkillGroupBssHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         classes = len({r["class_type"] for r in records})
-        meta = f"{len(records):,} skill cells · {classes:,} classes"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records), classes=classes)
         rows = [
             [
                 e(r["class"]),

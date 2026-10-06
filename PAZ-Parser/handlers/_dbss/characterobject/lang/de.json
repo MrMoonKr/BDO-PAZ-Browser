@@ -12,5 +12,8 @@
     "itemName": "Gegenstand",
     "objectKind": "Art",
     "modelPath": "Modell"
+  },
+  "meta": {
+    "count": "{count} Einträge"
   }
 }

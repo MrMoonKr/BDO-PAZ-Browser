@@ -16,5 +16,11 @@
     "npcId": "ID НИП",
     "npcName": "Имя НИП",
     "dialogue": "Диалог"
+  },
+  "meta": {
+    "count": "Строк подарков: {count}",
+    "dataCount": "Диалогов НИП: {count}",
+    "withNpcName": " · имён НИП: {with_npc_name} · названий предметов: {with_item_name}",
+    "withLoc": " · с текстом LOC типа 54: {with_loc}"
   }
 }

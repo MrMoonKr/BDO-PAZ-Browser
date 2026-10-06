@@ -8,5 +8,9 @@
     "chancePerItem": "Chance / Gegenstand",
     "ratePpm": "Rate (ppm)",
     "itemsForMax": "Gegenstände bis Maximum"
+  },
+  "meta": {
+    "count": "{count} Metamorphose-Raten in {steps} Verbesserungsstufen",
+    "localized": " · {localized} LOC-Namen"
   }
 }

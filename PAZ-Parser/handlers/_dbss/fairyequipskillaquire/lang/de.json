@@ -11,5 +11,8 @@
     "skillName": "Talentname",
     "chance": "Chance",
     "weight": "Gewichtung"
+  },
+  "meta": {
+    "count": "{count} Würfeleinträge in {grades} Feenrängen"
   }
 }

@@ -22,5 +22,9 @@
   "values": {
     "yes": "Да",
     "no": "Нет"
+  },
+  "meta": {
+    "count": "Записей журнала: {count} · групп: {groups} · страниц: {pages}",
+    "offsetCount": "Записей: {count} · групп: {groups}"
   }
 }

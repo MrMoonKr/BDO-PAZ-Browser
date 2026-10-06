@@ -5,5 +5,8 @@
     "title": "Título",
     "description": "Descripción",
     "quote": "Cita"
+  },
+  "meta": {
+    "count": "{count} cinemáticas"
   }
 }

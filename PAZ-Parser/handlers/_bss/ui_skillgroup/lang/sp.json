@@ -13,5 +13,8 @@
     "0": "Izquierda",
     "1": "Centro",
     "2": "Derecha"
+  },
+  "meta": {
+    "count": "{count} casillas de habilidad · {classes} clases"
   }
 }

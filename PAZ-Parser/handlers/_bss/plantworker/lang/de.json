@@ -8,5 +8,9 @@
     "luck": "Glück",
     "baseWorkSpeed": "Arbeitstempo",
     "icon": "Symbol"
+  },
+  "meta": {
+    "count": "{count} Arbeitereinträge",
+    "named": " · {named} mit LOC-Namen"
   }
 }

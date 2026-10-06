@@ -7,7 +7,7 @@ from bdo_preview import PreviewHandler
 
 from _common.character import character_name
 from _common.html import Column, e, icon_cell, sort_keys, table
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, size_column
 from .parser import (
     parse_pet_records,
@@ -80,7 +80,7 @@ class PetGradeHandler(PreviewHandler):
     ) -> str:
         start = page * page_size
         slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} pet grade records"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.gradeCount", count=len(records))
         rows = [
             [
                 e(f"0x{r['key']:04X} ({r['key']})"),
@@ -167,9 +167,9 @@ class PetDbssHandler(PreviewHandler):
         slice_ = records[start : start + page_size]
         species_count = len({r["species"] for r in records})
         with_grade = sum(1 for r in records if r.get("grade") is not None)
-        meta = f"{len(records):,} pets · {species_count:,} species"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records), species_count=species_count)
         if with_grade:
-            meta += f" · {with_grade:,} with grade metadata"
+            meta += handler_text(self.lang, _LANG_DIR, "meta.withGrade", with_grade=with_grade)
         rows = [
             [
                 e(r["pet_id"]),

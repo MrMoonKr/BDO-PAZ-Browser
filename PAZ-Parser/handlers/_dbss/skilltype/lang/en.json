@@ -9,5 +9,8 @@
     "0": "Other",
     "1": "Active",
     "2": "Passive"
+  },
+  "meta": {
+    "count": "{count} skills · {with_icon} with an icon"
   }
 }

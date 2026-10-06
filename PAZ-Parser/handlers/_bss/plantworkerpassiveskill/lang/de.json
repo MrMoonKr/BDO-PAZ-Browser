@@ -9,5 +9,9 @@
     "target": "Ziel",
     "effectA": "Effekt A",
     "effectB": "Effekt B"
+  },
+  "meta": {
+    "count": "{count} passive Arbeitertalente",
+    "localized": " · {localized} mit LOC-Text"
   }
 }

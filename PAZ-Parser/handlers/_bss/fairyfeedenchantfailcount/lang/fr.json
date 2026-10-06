@@ -1,5 +1,8 @@
 {
   "columns": {
     "record": "Enregistrement"
+  },
+  "meta": {
+    "count": "{count} entrées dans {record_count} enregistrements"
   }
 }

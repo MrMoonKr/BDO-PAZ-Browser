@@ -3,5 +3,8 @@
     "titleId": "ID титула",
     "categoryId": "ID кат.",
     "category": "Категория"
+  },
+  "meta": {
+    "count": "Записей: {count}"
   }
 }

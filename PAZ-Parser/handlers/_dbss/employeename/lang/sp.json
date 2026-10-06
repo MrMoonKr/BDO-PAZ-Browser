@@ -7,5 +7,8 @@
   "columns": {
     "employeeNameId": "ID del nombre de empleado",
     "name": "Nombre"
+  },
+  "meta": {
+    "count": "{count} nombres de empleados"
   }
 }

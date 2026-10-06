@@ -7,7 +7,7 @@ from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, icon_cell, sort_keys, table, text_list_cell
 from _common.icon_index import IconKind, icon_path
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.pa_text import pa_cell, pa_fields
 from _common.skill import skill_name, skill_name_tagged, split_skill_key
 from .parser import SkillGroup, parse_skillgroup_records
@@ -63,7 +63,7 @@ class SkillGroupBssHandler(PreviewHandler):
     ) -> str:
         start = page * page_size
         slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} skill groups"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records))
         rows = [
             [
                 e(r["group_no"]),

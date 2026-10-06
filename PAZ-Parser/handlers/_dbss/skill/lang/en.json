@@ -18,5 +18,8 @@
     "level": "Level",
     "dbssOffset": "DBSS Offset",
     "size": "Size"
+  },
+  "meta": {
+    "count": "{count} skill ranks · {with_buffs} with buffs"
   }
 }

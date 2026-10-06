@@ -9,7 +9,7 @@ from _common.character import character_name
 from _common.loc import is_loc_loaded
 from _common.html import Column, e, error, icon_cell, sort_keys, table
 from _common.icon_index import IconKind, icon_path
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.pabr_offset import parse_pabr_offset_rows
 from _common.offset_table import (
     OffsetColumn,
@@ -119,7 +119,7 @@ class CharacterStaticHandler(PreviewHandler):
 
         start = page * page_size
         slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} records"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records))
 
         rows: list[list[str]] = []
         for r in slice_:

@@ -7,7 +7,7 @@ from bdo_preview import PreviewHandler
 
 from _common.character import character_name, character_title
 from _common.html import Column, e, sort_keys, table
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.loc import is_loc_loaded
 from _dbss.characterspawntype.role_labels import role_label, role_label_overrides, role_tooltip, spawn_type_name
 from _common.pa_text import pa_key, pa_list_cell, pa_list_fields
@@ -84,7 +84,7 @@ class NpcSimplyBssHandler(PreviewHandler):
     ) -> str:
         start = page * page_size
         slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} NPCs"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records))
 
         rows = [
             [

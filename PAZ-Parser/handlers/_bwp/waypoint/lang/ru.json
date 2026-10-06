@@ -6,7 +6,7 @@
     "y": "Y",
     "z": "Z",
     "property": "Свойство",
-    "subWaypoint": "Доп. путевая точка",
+    "subWaypoint": "Доп. точка маршрута",
     "links": "Связи"
   },
   "messages": {
@@ -15,5 +15,8 @@
   "values": {
     "yes": "Да",
     "no": "Нет"
+  },
+  "meta": {
+    "count": "Точек маршрута: {count} · связей: {links}"
   }
 }

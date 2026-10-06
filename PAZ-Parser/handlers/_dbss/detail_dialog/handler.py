@@ -7,7 +7,7 @@ from bdo_preview import PreviewHandler
 
 from _common.character import character_name
 from _common.html import Column, e, sort_keys, table
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup
 from _common.pa_text import pa_fields, pa_key, pa_line_cell, pa_list_cell, pa_list_fields, strip_pa_tags
 from _common.lease import lease_text_tagged
@@ -129,7 +129,7 @@ class DetailDialogHandler(PreviewHandler):
         slice_ = records[start : start + page_size]
         options = sum(r["option_count"] for r in records)
         characters = len({r["character_id"] for r in records})
-        meta = f"{len(records):,} dialogs · {characters:,} characters · {options:,} options"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records), characters=characters, options=options)
         rows = [
             [
                 e(r["character_id"]),

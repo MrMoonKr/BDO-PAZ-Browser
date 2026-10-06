@@ -7,5 +7,8 @@
     "knowledgeId": "Wissens-ID",
     "leases": "Verleih",
     "script": "Skript"
+  },
+  "meta": {
+    "count": "{count} NPCs"
   }
 }

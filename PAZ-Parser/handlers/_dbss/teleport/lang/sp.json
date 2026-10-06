@@ -14,5 +14,8 @@
     "nearestNode": "Nodo más cercano",
     "distance": "Distancia (m)",
     "usedBy": "Usado por"
+  },
+  "meta": {
+    "count": "{count} puntos de teletransporte"
   }
 }

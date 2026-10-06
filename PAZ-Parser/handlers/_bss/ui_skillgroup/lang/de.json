@@ -13,5 +13,8 @@
     "0": "Links",
     "1": "Mitte",
     "2": "Rechts"
+  },
+  "meta": {
+    "count": "{count} Talentfelder · {classes} Klassen"
   }
 }

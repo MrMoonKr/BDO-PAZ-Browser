@@ -9,5 +9,8 @@
     "petSkillId": "ID de habilidad de mascota",
     "dataOffset": "Desplazamiento de datos",
     "dataSize": "Tamaño de datos"
+  },
+  "meta": {
+    "count": "{skill_count} habilidades de mascota · {count} filas de nivel"
   }
 }

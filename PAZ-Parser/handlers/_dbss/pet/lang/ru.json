@@ -37,5 +37,10 @@
     "variant": "Вариант",
     "dataOffset": "Смещение данных",
     "dataSize": "Размер данных"
+  },
+  "meta": {
+    "gradeCount": "Редкостей питомцев: {count}",
+    "count": "Питомцев: {count} · видов: {species_count}",
+    "withGrade": " · с данными редкости: {with_grade}"
   }
 }

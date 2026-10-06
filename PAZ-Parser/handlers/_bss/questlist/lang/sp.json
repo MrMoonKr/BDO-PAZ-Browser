@@ -12,5 +12,9 @@
     "offeredWhen": "Se ofrece si*",
     "ruledOutWhen": "Se descarta si*",
     "scriptGuess": "* Nuestra lectura del script; no confirmada en el juego"
+  },
+  "meta": {
+    "count": "{count} referencias de misiones · {group_count} grupos",
+    "withTitles": " · {with_titles} con título LOC"
   }
 }

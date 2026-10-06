@@ -4,5 +4,8 @@
     "name": "Name",
     "itemSubgroup": "Gegenstandsuntergruppe",
     "items": "Gegenstände"
+  },
+  "meta": {
+    "count": "{count} Produktionsgruppen · {resolved} mit Gegenständen"
   }
 }

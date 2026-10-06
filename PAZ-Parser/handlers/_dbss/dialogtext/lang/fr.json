@@ -9,5 +9,8 @@
     "lines": "Répliques",
     "text": "Texte",
     "voice": "Voix"
+  },
+  "meta": {
+    "count": "{count} groupes de textes · {lines} répliques"
   }
 }

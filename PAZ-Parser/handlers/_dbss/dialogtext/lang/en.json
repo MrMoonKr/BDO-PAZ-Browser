@@ -9,5 +9,8 @@
     "lines": "Lines",
     "text": "Text",
     "voice": "Voice"
+  },
+  "meta": {
+    "count": "{count} text pools · {lines} lines"
   }
 }

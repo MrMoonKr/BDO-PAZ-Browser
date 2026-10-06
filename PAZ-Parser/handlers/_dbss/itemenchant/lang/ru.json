@@ -35,5 +35,9 @@
     "tradeImperialCrafting": "Имперский караван",
     "tradeGuild": "Торговля гильдии",
     "tradeType": "Тип"
+  },
+  "meta": {
+    "count": "Предметов: {count} · можно усилить: {enhanceable}",
+    "withIcon": " · путей к значкам: {with_icon}"
   }
 }

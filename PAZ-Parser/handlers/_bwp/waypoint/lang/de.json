@@ -15,5 +15,8 @@
   "values": {
     "yes": "Ja",
     "no": "Nein"
+  },
+  "meta": {
+    "count": "{count} Wegpunkte · {links} Verknüpfungen"
   }
 }

@@ -8,7 +8,7 @@ from bdo_preview import PreviewHandler
 from _common.character import character_name
 from _common.html import Column, e, sort_keys, table, text_list_cell
 from _common.knowledge import knowledge_name
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.node import node_name
 from _bwp.waypoint.worldmap import worldmap_companion, worldmap_links
 from .connections import connection_fields
@@ -104,7 +104,7 @@ class ExplorationBssHandler(PreviewHandler):
     ) -> str:
         start = page * page_size
         slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} worldmap nodes"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records))
 
         rows = [
             [

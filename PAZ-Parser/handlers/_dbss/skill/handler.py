@@ -10,7 +10,7 @@ from _common.buff import buff_label, buff_list_cell
 from _common.duration import format_duration
 from _common.html import Column, e, icon_cell, sort_keys, table, truncate
 from _common.icon_index import IconKind, icon_path
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.pabr_offset import PabrOffsetRow, parse_pabr_u32_offset_rows
 from _common.pa_text import pa_cell, pa_fields, pa_key, pa_list_cell, pa_list_fields
 from _common.skill import skill_description_tagged, skill_name_tagged, split_skill_key
@@ -143,7 +143,7 @@ class SkillHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         with_buffs = sum(1 for r in records if r["buff_ids"])
-        meta = f"{len(records):,} skill ranks · {with_buffs:,} with buffs"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records), with_buffs=with_buffs)
         rows = [
             [
                 e(r["skill_no"]),

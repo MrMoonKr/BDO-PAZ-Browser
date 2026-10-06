@@ -8,5 +8,9 @@
     "luck": "Chance",
     "baseWorkSpeed": "Vitesse de travail",
     "icon": "Icône"
+  },
+  "meta": {
+    "count": "{count} ouvriers",
+    "named": " · {named} avec nom LOC"
   }
 }

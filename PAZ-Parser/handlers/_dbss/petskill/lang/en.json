@@ -9,5 +9,8 @@
     "petSkillId": "Pet Skill ID",
     "dataOffset": "Data Offset",
     "dataSize": "Data Size"
+  },
+  "meta": {
+    "count": "{skill_count} pet skills · {count} level rows"
   }
 }

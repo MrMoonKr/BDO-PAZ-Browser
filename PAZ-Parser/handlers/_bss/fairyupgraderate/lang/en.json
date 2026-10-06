@@ -8,5 +8,9 @@
     "chancePerItem": "Chance / Item",
     "ratePpm": "Rate (ppm)",
     "itemsForMax": "Items for Max"
+  },
+  "meta": {
+    "count": "{count} Sprouting rates across {steps} upgrade steps",
+    "localized": " · {localized} LOC names"
   }
 }

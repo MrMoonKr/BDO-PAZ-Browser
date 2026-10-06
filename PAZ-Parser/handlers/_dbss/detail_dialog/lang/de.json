@@ -13,5 +13,8 @@
     "options": "Optionen",
     "optionTitles": "Optionstitel",
     "leases": "Verleih"
+  },
+  "meta": {
+    "count": "{count} Dialoge · {characters} Charaktere · {options} Optionen"
   }
 }

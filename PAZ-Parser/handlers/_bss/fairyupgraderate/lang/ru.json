@@ -8,5 +8,9 @@
     "chancePerItem": "Шанс / предмет",
     "ratePpm": "Частота (ppm)",
     "itemsForMax": "Предметов до максимума"
+  },
+  "meta": {
+    "count": "Шансов улучшения крыльев: {count} · шагов улучшения: {steps}",
+    "localized": " · названий LOC: {localized}"
   }
 }

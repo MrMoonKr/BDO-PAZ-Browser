@@ -9,5 +9,9 @@
     "target": "Target",
     "effectA": "Effect A",
     "effectB": "Effect B"
+  },
+  "meta": {
+    "count": "{count} worker passive skill records",
+    "localized": " · {localized} with LOC text"
   }
 }

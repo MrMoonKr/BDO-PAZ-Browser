@@ -5,7 +5,7 @@ from pathlib import Path
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup
 from _common.pa_text import argb_css, pa_cell, pa_fields, pa_html, pa_key
 
@@ -110,4 +110,4 @@ class TitleDbssHandler(PreviewHandler):
             for record in slice_
         ]
 
-        return table(f"{len(records):,} titles decoded", self._columns(), rows)
+        return table(handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records)), self._columns(), rows)

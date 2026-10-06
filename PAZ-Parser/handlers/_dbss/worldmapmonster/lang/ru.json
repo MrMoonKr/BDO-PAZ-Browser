@@ -12,5 +12,8 @@
     "detail": "Подробности",
     "huntingGround": "Место охоты",
     "condition": "Условие"
+  },
+  "meta": {
+    "count": "Меток карты мира: {count}"
   }
 }

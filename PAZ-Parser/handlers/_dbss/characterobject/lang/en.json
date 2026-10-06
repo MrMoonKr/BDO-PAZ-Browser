@@ -12,5 +12,8 @@
     "itemName": "Item",
     "objectKind": "Kind",
     "modelPath": "Model"
+  },
+  "meta": {
+    "count": "{count} records"
   }
 }

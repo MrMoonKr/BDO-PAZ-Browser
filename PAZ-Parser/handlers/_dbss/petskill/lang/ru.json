@@ -9,5 +9,8 @@
     "petSkillId": "ID навыка питомца",
     "dataOffset": "Смещение данных",
     "dataSize": "Размер данных"
+  },
+  "meta": {
+    "count": "Навыков питомцев: {skill_count} · строк уровней: {count}"
   }
 }

@@ -8,5 +8,8 @@
     "subgroupKey": "Clave de subgrupo",
     "entryCount": "Objetos",
     "items": "Nombres de objetos"
+  },
+  "meta": {
+    "count": "{count} subgrupos de objetos · {entries} entradas"
   }
 }

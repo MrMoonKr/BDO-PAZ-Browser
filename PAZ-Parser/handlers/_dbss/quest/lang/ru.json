@@ -10,5 +10,9 @@
     "action": "Действие",
     "objective": "Цель",
     "familyStat": "Характеристика семьи"
+  },
+  "meta": {
+    "count": "Заданий: {count}",
+    "withLoc": " · с текстом LOC типа 18: {with_loc}"
   }
 }

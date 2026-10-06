@@ -8,5 +8,9 @@
     "luck": "Luck",
     "baseWorkSpeed": "Work Speed",
     "icon": "Icon"
+  },
+  "meta": {
+    "count": "{count} worker records",
+    "named": " · {named} with LOC names"
   }
 }

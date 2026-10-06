@@ -8,7 +8,7 @@ from bdo_preview import PreviewHandler
 from _common.character import character_name
 from _common.html import Column, e, icon_cell, sort_keys, table, text_list_cell
 from _common.knowledge import LOC_KNOWLEDGE, knowledge_name, theme_name
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.loc import is_loc_loaded, loc_tagged
 from _common.pa_text import pa_cell, pa_fields, pa_line_cell
 from _common.lookup_index import IndexKind, lookup
@@ -156,7 +156,7 @@ class MentalCardHandler(PreviewHandler):
         slice_ = records[start : start + page_size]
 
         with_node_name = sum(1 for r in records if r["node_name"])
-        meta = f"{len(records):,} knowledge cards · {with_node_name:,} category names"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records), with_node_name=with_node_name)
 
         rows = [
             [

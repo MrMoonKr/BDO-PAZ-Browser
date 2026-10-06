@@ -4,5 +4,9 @@
     "subId": "Доп. ID",
     "icon": "Значок",
     "title": "Название"
+  },
+  "meta": {
+    "count": "Записей списка заданий: {count}",
+    "withTitles": " · с названием LOC: {with_titles}"
   }
 }

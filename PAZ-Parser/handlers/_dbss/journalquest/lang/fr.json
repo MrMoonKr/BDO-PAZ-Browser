@@ -22,5 +22,9 @@
   "values": {
     "yes": "Oui",
     "no": "Non"
+  },
+  "meta": {
+    "count": "{count} entrées de journal · {groups} groupes · {pages} pages",
+    "offsetCount": "{count} entrées · {groups} groupes"
   }
 }

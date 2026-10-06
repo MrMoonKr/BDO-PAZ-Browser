@@ -21,5 +21,9 @@
   "orderOffsetColumns": {
     "personalityType": "Personality Type",
     "dataOffset": "Data Offset"
+  },
+  "meta": {
+    "count": "{count} zodiac signs",
+    "orderCount": "{count} order records"
   }
 }

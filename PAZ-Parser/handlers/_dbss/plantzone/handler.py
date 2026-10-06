@@ -7,7 +7,7 @@ from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, sort_keys, table
 from _common.item_key import item_key_list_cell
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.node import node_name
 from _common.production_items import production_item_fields
 from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, size_column
@@ -86,7 +86,7 @@ class PlantZoneHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         resolved = sum(1 for record in records if record["item_keys"] is not None)
-        meta = f"{len(records):,} plant zone records · {resolved:,} with items"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records), resolved=resolved)
         rows = [
             [
                 e(r["record_id"]),

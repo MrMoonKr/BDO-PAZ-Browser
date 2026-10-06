@@ -14,5 +14,8 @@
     "favMin": "Fav Min",
     "favMax": "Fav Max",
     "horoscope": "Horoscope"
+  },
+  "meta": {
+    "count": "{count} personality records"
   }
 }

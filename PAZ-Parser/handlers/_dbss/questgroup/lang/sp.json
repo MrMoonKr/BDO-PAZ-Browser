@@ -4,5 +4,8 @@
     "name": "Nombre",
     "quests": "Misiones",
     "questTitles": "Títulos de misiones"
+  },
+  "meta": {
+    "count": "{count} grupos de misiones · {total_links} enlaces de misiones"
   }
 }

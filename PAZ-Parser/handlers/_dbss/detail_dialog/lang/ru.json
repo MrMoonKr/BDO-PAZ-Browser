@@ -13,5 +13,8 @@
     "options": "Варианты",
     "optionTitles": "Названия вариантов",
     "leases": "Аренда"
+  },
+  "meta": {
+    "count": "Диалогов: {count} · персонажей: {characters} · вариантов: {options}"
   }
 }

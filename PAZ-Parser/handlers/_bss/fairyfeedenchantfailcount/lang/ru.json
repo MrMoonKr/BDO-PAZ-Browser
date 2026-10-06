@@ -1,5 +1,8 @@
 {
   "columns": {
     "record": "Запись"
+  },
+  "meta": {
+    "count": "Значений: {count} · записей: {record_count}"
   }
 }

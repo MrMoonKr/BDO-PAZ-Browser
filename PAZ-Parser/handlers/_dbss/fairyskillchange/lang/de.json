@@ -8,5 +8,8 @@
     "dataOffset": "Daten-Offset",
     "dataSize": "Datengröße",
     "recordStart": "Datensatzbeginn"
+  },
+  "meta": {
+    "count": "{count} Feenstufen-Einträge"
   }
 }

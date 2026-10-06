@@ -7,7 +7,7 @@ from bdo_preview import PreviewHandler
 
 from _bwp.waypoint.worldmap import worldmap_companion, worldmap_waypoints
 from _common.html import Column, e, sort_keys, table
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.node import full_node_name
 from _common.pa_text import pa_key
 from _common.teleport import teleport_buff_ids
@@ -90,7 +90,7 @@ class TeleportHandler(PreviewHandler):
     ) -> str:
         start = page * page_size
         slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} teleport points"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records))
         rows = [
             [
                 e(r["key"]),

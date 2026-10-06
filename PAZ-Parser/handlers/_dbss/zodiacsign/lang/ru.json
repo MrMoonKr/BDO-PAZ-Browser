@@ -21,5 +21,9 @@
   "orderOffsetColumns": {
     "personalityType": "Тип характера",
     "dataOffset": "Смещение данных"
+  },
+  "meta": {
+    "count": "Знаков зодиака: {count}",
+    "orderCount": "Записей порядка: {count}"
   }
 }

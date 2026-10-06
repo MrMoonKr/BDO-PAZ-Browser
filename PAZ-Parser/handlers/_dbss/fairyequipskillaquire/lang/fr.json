@@ -11,5 +11,8 @@
     "skillName": "Nom de compétence",
     "chance": "Probabilité",
     "weight": "Pondération"
+  },
+  "meta": {
+    "count": "{count} tirages sur {grades} rangs de fée"
   }
 }

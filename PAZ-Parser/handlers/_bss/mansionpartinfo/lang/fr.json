@@ -4,5 +4,8 @@
     "manor": "Manoir",
     "part": "Partie",
     "icon": "Icône"
+  },
+  "meta": {
+    "count": "{count} parties de manoir"
   }
 }

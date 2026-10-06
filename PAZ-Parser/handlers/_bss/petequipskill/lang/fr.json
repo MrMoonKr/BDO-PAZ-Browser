@@ -5,5 +5,9 @@
     "icon": "Icône",
     "skillType": "Type de compétence",
     "section": "Section"
+  },
+  "meta": {
+    "count": "{count} compétences d'équipement de familier",
+    "localized": " · {localized} noms LOC"
   }
 }

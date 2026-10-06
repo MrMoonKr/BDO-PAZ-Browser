@@ -15,5 +15,8 @@
     "classType": "Klassentyp",
     "model": "Modell",
     "payloadSize": "Nutzdatengröße"
+  },
+  "meta": {
+    "count": "{count} Einträge"
   }
 }

@@ -9,5 +9,8 @@
     "expTableId": "EP-Tabellen-ID",
     "dataOffset": "Daten-Offset",
     "dataSize": "Datengröße"
+  },
+  "meta": {
+    "count": "{count} Stufenschwellen · {table_count} EP-Tabellen"
   }
 }

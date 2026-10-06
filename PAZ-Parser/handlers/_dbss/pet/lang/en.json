@@ -37,5 +37,10 @@
     "variant": "Variant",
     "dataOffset": "Data Offset",
     "dataSize": "Data Size"
+  },
+  "meta": {
+    "gradeCount": "{count} pet grade records",
+    "count": "{count} pets · {species_count} species",
+    "withGrade": " · {with_grade} with grade metadata"
   }
 }

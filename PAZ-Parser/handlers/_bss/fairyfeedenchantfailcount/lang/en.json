@@ -1,5 +1,8 @@
 {
   "columns": {
     "record": "Record"
+  },
+  "meta": {
+    "count": "{count} entries across {record_count} records"
   }
 }

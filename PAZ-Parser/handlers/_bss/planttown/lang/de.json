@@ -2,5 +2,9 @@
   "columns": {
     "nodeId": "Posten-ID",
     "nodeName": "Postenname"
+  },
+  "meta": {
+    "count": "{count} Stadteinträge",
+    "named": " · {named} LOC-Namen"
   }
 }

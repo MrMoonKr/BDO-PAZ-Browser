@@ -35,5 +35,9 @@
     "tradeImperialCrafting": "Kaiserliche Herstellungslieferung",
     "tradeGuild": "Gildenhandel",
     "tradeType": "Typ"
+  },
+  "meta": {
+    "count": "{count} Gegenstände · {enhanceable} verstärkbar",
+    "withIcon": " · {with_icon} Symbolpfade"
   }
 }

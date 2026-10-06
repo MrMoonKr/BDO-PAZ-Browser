@@ -8,5 +8,8 @@
   "values": {
     "yes": "Yes",
     "no": "No"
+  },
+  "meta": {
+    "count": "{count} buffs"
   }
 }

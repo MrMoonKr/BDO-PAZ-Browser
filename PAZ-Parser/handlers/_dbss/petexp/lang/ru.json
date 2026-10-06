@@ -9,5 +9,8 @@
     "expTableId": "ID таблицы опыта",
     "dataOffset": "Смещение данных",
     "dataSize": "Размер данных"
+  },
+  "meta": {
+    "count": "Порогов уровня: {count} · таблиц опыта: {table_count}"
   }
 }

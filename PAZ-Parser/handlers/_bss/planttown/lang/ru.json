@@ -2,5 +2,9 @@
   "columns": {
     "nodeId": "ID узла",
     "nodeName": "Название узла"
+  },
+  "meta": {
+    "count": "Городов: {count}",
+    "named": " · названий LOC: {named}"
   }
 }

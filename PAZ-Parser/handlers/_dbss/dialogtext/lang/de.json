@@ -9,5 +9,8 @@
     "lines": "Zeilen",
     "text": "Text",
     "voice": "Stimme"
+  },
+  "meta": {
+    "count": "{count} Textsammlungen · {lines} Zeilen"
   }
 }

@@ -37,5 +37,10 @@
     "variant": "Variante",
     "dataOffset": "Desplazamiento de datos",
     "dataSize": "Tamaño de datos"
+  },
+  "meta": {
+    "gradeCount": "{count} rarezas de mascota",
+    "count": "{count} mascotas · {species_count} especies",
+    "withGrade": " · {with_grade} con datos de rareza"
   }
 }

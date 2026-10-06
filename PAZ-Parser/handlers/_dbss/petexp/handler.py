@@ -6,7 +6,7 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, sort_keys, table
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, size_column
 from .parser import parse_petexp_records, parse_petexpoffset_records
 
@@ -64,7 +64,7 @@ class PetExpHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         table_count = len({r["exp_table_id"] for r in records})
-        meta = f"{len(records):,} level thresholds · {table_count:,} EXP tables"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records), table_count=table_count)
         rows = [
             [
                 e(r["exp_table_id"]),

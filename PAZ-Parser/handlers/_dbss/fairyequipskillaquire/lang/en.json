@@ -11,5 +11,8 @@
     "skillName": "Skill Name",
     "chance": "Chance",
     "weight": "Weight"
+  },
+  "meta": {
+    "count": "{count} roll entries across {grades} fairy grades"
   }
 }

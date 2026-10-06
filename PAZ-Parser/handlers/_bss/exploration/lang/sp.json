@@ -16,5 +16,8 @@
   "values": {
     "main": "Principal",
     "sub": "Secundario"
+  },
+  "meta": {
+    "count": "{count} nodos del mapa del mundo"
   }
 }

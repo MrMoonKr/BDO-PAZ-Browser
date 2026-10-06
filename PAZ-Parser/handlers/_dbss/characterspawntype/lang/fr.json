@@ -17,5 +17,8 @@
     "GuildWharf": "Quai de guilde",
     "Unknown41": "Grand Prix",
     "ChangeMarniStone": "Pierre de Marni"
+  },
+  "meta": {
+    "count": "{count} entrées · {active} colonnes de rôle actives"
   }
 }

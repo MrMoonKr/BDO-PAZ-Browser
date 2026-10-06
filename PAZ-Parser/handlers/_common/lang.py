@@ -7,6 +7,8 @@ import logging
 from functools import cache
 from pathlib import Path
 
+from ui_text import fill_placeholders
+
 _FALLBACK = "en"
 
 
@@ -31,6 +33,25 @@ def load_handler_strings(lang: str, strings_dir: str | Path) -> dict:
                 ...
     """
     return _merged_strings(lang, Path(strings_dir))
+
+
+def handler_text(lang: str, strings_dir: str | Path, key: str, **args: object) -> str:
+    """The text of `key` (`section.name`) in a handler's table for *lang*, filled in.
+
+    Each `{name}` takes its argument; whole numbers show with `,` as the
+    thousands separator in every language. An unknown key reads as the key.
+    """
+    node: object = load_handler_strings(lang, strings_dir)
+    for part in key.split("."):
+        node = node.get(part) if isinstance(node, dict) else None
+    if not isinstance(node, str):
+        return key
+    return fill_placeholders(node, **{name: _shown(value) for name, value in args.items()})
+
+
+def _shown(value: object) -> object:
+    is_count = isinstance(value, int) and not isinstance(value, bool)
+    return f"{value:,}" if is_count else value
 
 
 @cache

@@ -5,5 +5,8 @@
     "title": "Title",
     "description": "Description",
     "quote": "Quote"
+  },
+  "meta": {
+    "count": "{count} cutscenes"
   }
 }

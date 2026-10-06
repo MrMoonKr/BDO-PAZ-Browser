@@ -8,5 +8,8 @@
   "values": {
     "yes": "Sí",
     "no": "No"
+  },
+  "meta": {
+    "count": "{count} bonificadores"
   }
 }

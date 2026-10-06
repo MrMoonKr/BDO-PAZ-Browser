@@ -6,7 +6,7 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, sort_keys, table, truncate
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.zodiacsign.loc import zodiac_name, zodiac_trait
 from _common.zodiacsign.parser import parse_zodiacsign_records
 from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, picked_records
@@ -66,7 +66,7 @@ class ZodiacSignHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
 
-        meta = f"{len(records):,} zodiac signs"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records))
         rows = [
             [
                 e(r["zodiac_id"]),
@@ -149,7 +149,7 @@ class ZodiacSignOrderHandler(PreviewHandler):
     ) -> str:
         start = page * page_size
         slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} order records"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.orderCount", count=len(records))
         rows = [
             [
                 e(r["personality_type"]),

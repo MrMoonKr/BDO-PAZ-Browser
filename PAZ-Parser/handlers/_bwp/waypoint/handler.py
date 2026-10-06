@@ -7,7 +7,7 @@ from bdo_preview import PreviewHandler
 from table_sort import TableSort
 
 from _common.html import Column, e, sort_keys, table, text_list_cell
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from .parser import PROPERTY_NAMES, WaypointGraph, is_waypoint_graph, neighbours, parse_waypoint_graph
 
 
@@ -113,7 +113,7 @@ class WaypointBwpHandler(PreviewHandler):
         yes, no = values.get("yes", "Yes"), values.get("no", "No")
         # Every linked pair is listed on both of its waypoints.
         links = sum(record["link_count"] or 0 for record in records)
-        meta = f"{len(records):,} waypoints · {links // 2:,} links"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records), links=links // 2)
         rows = [
             [
                 e(record["key"]),

@@ -14,5 +14,8 @@
     "nearestNode": "Géopoint le plus proche",
     "distance": "Distance (m)",
     "usedBy": "Utilisé par"
+  },
+  "meta": {
+    "count": "{count} points de téléportation"
   }
 }

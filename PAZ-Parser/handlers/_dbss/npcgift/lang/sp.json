@@ -16,5 +16,11 @@
     "npcId": "ID del PNJ",
     "npcName": "Nombre del PNJ",
     "dialogue": "Diálogo"
+  },
+  "meta": {
+    "count": "{count} filas de regalos",
+    "dataCount": "{count} diálogos de PNJ",
+    "withNpcName": " · {with_npc_name} nombres de PNJ · {with_item_name} nombres de objetos",
+    "withLoc": " · {with_loc} con texto LOC de tipo 54"
   }
 }

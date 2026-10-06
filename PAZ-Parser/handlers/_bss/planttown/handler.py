@@ -6,7 +6,7 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, sort_keys, table
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 from .parser import parse_planttown_records
 
@@ -56,9 +56,9 @@ class PlantTownBssHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         named = sum(1 for record in records if record.get("node_name"))
-        meta = f"{len(records):,} plant town records"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records))
         if named:
-            meta += f" · {named:,} LOC names"
+            meta += handler_text(self.lang, _LANG_DIR, "meta.named", named=named)
 
         rows = [
             [

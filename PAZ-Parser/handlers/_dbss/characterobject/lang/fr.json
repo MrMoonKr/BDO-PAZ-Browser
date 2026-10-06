@@ -12,5 +12,8 @@
     "itemName": "Objet",
     "objectKind": "Genre",
     "modelPath": "Modèle"
+  },
+  "meta": {
+    "count": "{count} entrées"
   }
 }

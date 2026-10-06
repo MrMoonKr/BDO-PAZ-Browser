@@ -12,5 +12,9 @@
     "offeredWhen": "Proposée si*",
     "ruledOutWhen": "Exclue si*",
     "scriptGuess": "* Notre lecture du script ; non confirmée en jeu"
+  },
+  "meta": {
+    "count": "{count} références de quêtes · {group_count} groupes",
+    "withTitles": " · {with_titles} avec titre LOC"
   }
 }

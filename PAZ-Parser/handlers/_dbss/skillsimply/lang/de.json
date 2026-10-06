@@ -29,5 +29,8 @@
     "sub": "Sekundärwaffe",
     "awakening": "Erweckungswaffe"
   },
-  "allClasses": "Alle"
+  "allClasses": "Alle",
+  "meta": {
+    "count": "{count} Talentränge · {class_skills} Klassentalente"
+  }
 }

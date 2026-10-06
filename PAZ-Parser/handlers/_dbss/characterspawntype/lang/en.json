@@ -17,5 +17,8 @@
     "GuildWharf": "Guild Wharf",
     "Unknown41": "Grand Prix",
     "ChangeMarniStone": "Marni's Stone"
+  },
+  "meta": {
+    "count": "{count} records · {active} active role columns"
   }
 }

@@ -15,5 +15,8 @@
   "values": {
     "yes": "Yes",
     "no": "No"
+  },
+  "meta": {
+    "count": "{count} waypoints · {links} links"
   }
 }

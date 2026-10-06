@@ -9,5 +9,8 @@
     "nodeName": "Node Name",
     "productionKey": "Production Key",
     "producedItems": "Produced Items"
+  },
+  "meta": {
+    "count": "{count} plant zone records · {resolved} with items"
   }
 }

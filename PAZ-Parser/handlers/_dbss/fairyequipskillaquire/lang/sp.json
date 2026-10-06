@@ -11,5 +11,8 @@
     "skillName": "Nombre de habilidad",
     "chance": "Probabilidad",
     "weight": "Ponderación"
+  },
+  "meta": {
+    "count": "{count} tiradas en {grades} grados de hada"
   }
 }

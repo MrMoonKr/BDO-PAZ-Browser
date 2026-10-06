@@ -9,5 +9,9 @@
     "target": "Цель",
     "effectA": "Эффект A",
     "effectB": "Эффект B"
+  },
+  "meta": {
+    "count": "Пассивных навыков рабочих: {count}",
+    "localized": " · с текстом LOC: {localized}"
   }
 }

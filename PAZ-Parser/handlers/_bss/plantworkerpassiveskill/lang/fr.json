@@ -9,5 +9,9 @@
     "target": "Cible",
     "effectA": "Effet A",
     "effectB": "Effet B"
+  },
+  "meta": {
+    "count": "{count} compétences passives d'ouvrier",
+    "localized": " · {localized} avec texte LOC"
   }
 }

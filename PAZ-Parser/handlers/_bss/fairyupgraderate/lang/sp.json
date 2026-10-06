@@ -8,5 +8,9 @@
     "chancePerItem": "Probabilidad / objeto",
     "ratePpm": "Tasa (ppm)",
     "itemsForMax": "Objetos hasta el máx."
+  },
+  "meta": {
+    "count": "{count} tasas de metamorfosis en {steps} pasos de mejora",
+    "localized": " · {localized} nombres LOC"
   }
 }

@@ -7,7 +7,7 @@ from bdo_preview import PreviewHandler
 
 from _common.binary import u16, u32
 from _common.html import Column, e, sort_keys, table
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 
 
 _SIZE = 32
@@ -77,4 +77,4 @@ class NpcGiftEtcBssHandler(PreviewHandler):
             [e(r["field"]), e(r["value"]), e(notes.get(r["notes"], r["notes"]))]
             for r in slice_
         ]
-        return table(f"{len(records):,} config fields", self._columns(), rows)
+        return table(handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records)), self._columns(), rows)

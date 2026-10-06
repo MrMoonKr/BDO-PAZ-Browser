@@ -6,7 +6,7 @@
     "y": "Y",
     "z": "Z",
     "property": "Propiedad",
-    "subWaypoint": "Subpunto de ruta",
+    "subWaypoint": "Subpunto de paso",
     "links": "Enlaces"
   },
   "messages": {
@@ -15,5 +15,8 @@
   "values": {
     "yes": "Sí",
     "no": "No"
+  },
+  "meta": {
+    "count": "{count} puntos de paso · {links} enlaces"
   }
 }

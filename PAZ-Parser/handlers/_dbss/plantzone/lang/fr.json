@@ -9,5 +9,8 @@
     "nodeName": "Nom de géopoint",
     "productionKey": "Clé de production",
     "producedItems": "Objets produits"
+  },
+  "meta": {
+    "count": "{count} géopoints de production · {resolved} avec objets"
   }
 }

@@ -8,5 +8,9 @@
     "actionId": "Action ID",
     "recordOffset": "Record Offset",
     "recordSize": "Record Size"
+  },
+  "meta": {
+    "count": "{count} pet actions",
+    "withLoc": " · {with_loc} with LOC type 19 names"
   }
 }

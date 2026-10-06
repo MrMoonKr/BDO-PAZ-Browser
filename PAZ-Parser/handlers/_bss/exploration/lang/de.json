@@ -16,5 +16,8 @@
   "values": {
     "main": "Haupt",
     "sub": "Neben"
+  },
+  "meta": {
+    "count": "{count} Weltkartenposten"
   }
 }

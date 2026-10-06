@@ -12,7 +12,7 @@ from _common.loc import is_loc_loaded, loc_lookup
 from _common.pa_text import pa_cell, pa_fields, strip_pa_tags
 
 from _common.html import Column, e, icon_cell, sort_keys, table, truncate
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _bss.allquestlist.parser import parse_allquestlist_records
 from .model import FamilyStat
 from .parser import QuestIndex, build_quest_index, parse_quest_record
@@ -225,8 +225,8 @@ class QuestDbssHandler(PreviewHandler):
                 e(record["family_stat_text"] or "-"),
             ])
 
-        meta = f"{total:,} quests"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=total)
         if with_loc:
-            meta += f" · {with_loc:,} with LOC type 18 text"
+            meta += handler_text(self.lang, _LANG_DIR, "meta.withLoc", with_loc=with_loc)
 
         return table(meta, self._columns(), rows)

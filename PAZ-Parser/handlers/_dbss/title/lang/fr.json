@@ -6,5 +6,8 @@
     "titleRequirements": "Conditions du titre",
     "special": "Spécial",
     "effect": "Effet"
+  },
+  "meta": {
+    "count": "{count} titres lus"
   }
 }

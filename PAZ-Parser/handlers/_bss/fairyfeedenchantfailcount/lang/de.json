@@ -1,5 +1,8 @@
 {
   "columns": {
     "record": "Datensatz"
+  },
+  "meta": {
+    "count": "{count} Einträge in {record_count} Datensätzen"
   }
 }

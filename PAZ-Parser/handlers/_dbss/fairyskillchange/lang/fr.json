@@ -8,5 +8,8 @@
     "dataOffset": "Décalage des données",
     "dataSize": "Taille des données",
     "recordStart": "Début d'enregistrement"
+  },
+  "meta": {
+    "count": "{count} niveaux de fée"
   }
 }

@@ -18,5 +18,8 @@
     "obtain": "Получение",
     "learnedFrom": "Источник знания",
     "position": "Позиция"
+  },
+  "meta": {
+    "count": "Карточек знаний: {count} · названий категорий: {with_node_name}"
   }
 }

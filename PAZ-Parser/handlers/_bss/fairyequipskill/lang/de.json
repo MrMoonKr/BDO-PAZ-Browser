@@ -6,5 +6,9 @@
     "description": "Beschreibung",
     "skillType": "Talenttyp",
     "locId": "LOC-ID"
+  },
+  "meta": {
+    "count": "{count} Feentalent-Einträge",
+    "localized": " · {localized} LOC-Namen"
   }
 }

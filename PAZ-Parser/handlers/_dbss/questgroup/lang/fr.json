@@ -4,5 +4,8 @@
     "name": "Nom",
     "quests": "Quêtes",
     "questTitles": "Titres des quêtes"
+  },
+  "meta": {
+    "count": "{count} groupes de quêtes · {total_links} liens de quêtes"
   }
 }

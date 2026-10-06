@@ -2,5 +2,8 @@
   "columns": {
     "zodiacId": "ID du signe astrologique",
     "name": "Nom"
+  },
+  "meta": {
+    "count": "{count} entrées d'index des signes astrologiques"
   }
 }

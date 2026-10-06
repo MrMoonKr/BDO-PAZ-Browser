@@ -6,5 +6,8 @@
     "titleRequirements": "Условия титула",
     "special": "Особый",
     "effect": "Эффект"
+  },
+  "meta": {
+    "count": "Прочитано титулов: {count}"
   }
 }

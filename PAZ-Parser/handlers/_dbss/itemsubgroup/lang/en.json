@@ -8,5 +8,8 @@
     "subgroupKey": "Subgroup Key",
     "entryCount": "Items",
     "items": "Item Names"
+  },
+  "meta": {
+    "count": "{count} item subgroups · {entries} entries"
   }
 }

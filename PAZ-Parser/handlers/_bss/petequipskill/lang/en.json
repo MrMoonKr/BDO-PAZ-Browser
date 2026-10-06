@@ -5,5 +5,9 @@
     "icon": "Icon",
     "skillType": "Skill Type",
     "section": "Section"
+  },
+  "meta": {
+    "count": "{count} pet equip skill records",
+    "localized": " · {localized} LOC names"
   }
 }

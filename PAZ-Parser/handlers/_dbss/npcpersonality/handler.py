@@ -7,7 +7,7 @@ from bdo_preview import PreviewHandler
 
 from _common.loc import loc_lookup
 from _common.html import Column, e, sort_keys, table
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, picked_records
 from .parser import parse_npcpersonality_records, parse_npcpersonalityoffset_records
 
@@ -88,7 +88,7 @@ class NpcPersonalityHandler(PreviewHandler):
     ) -> str:
         start = page * page_size
         slice_ = records[start : start + page_size]
-        meta = f"{len(records):,} personality records"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records))
         rows = [
             [
                 e(r["personality_id"]),

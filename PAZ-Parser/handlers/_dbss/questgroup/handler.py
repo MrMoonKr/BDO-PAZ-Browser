@@ -6,7 +6,7 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, sort_keys, table, text_list_cell
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 from _common.quest.quest import quest_title
 from .parser import parse_questgroup_records
@@ -73,7 +73,7 @@ class QuestGroupDbssHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start:start + page_size]
         total_links = sum(r["quest_count"] for r in records)
-        meta = f"{len(records):,} quest groups · {total_links:,} quest links"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records), total_links=total_links)
         rows = [
             [
                 e(r["group_id"]),

@@ -7,7 +7,7 @@ from bdo_preview import PreviewHandler
 
 from _common.equipskill_roll import flatten_roll_rows, read_skill_loc_ids
 from _common.html import Column, e, sort_keys, table
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, strip_pa_tags
 from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, size_column
 from .parser import (
@@ -93,7 +93,7 @@ class PetEquipSkillAcquireHandler(PreviewHandler):
         start = page * page_size
         slice_ = records[start : start + page_size]
         types = len({r["acquire_type_id"] for r in records})
-        meta = f"{len(records):,} roll entries across {types} acquire types"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records), types=types)
 
         rows = [
             [

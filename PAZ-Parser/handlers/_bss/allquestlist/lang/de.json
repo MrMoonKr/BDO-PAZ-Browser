@@ -4,5 +4,9 @@
     "subId": "Unter-ID",
     "icon": "Symbol",
     "title": "Titel"
+  },
+  "meta": {
+    "count": "{count} Questlisten-Einträge",
+    "withTitles": " · {with_titles} mit LOC-Titeln"
   }
 }

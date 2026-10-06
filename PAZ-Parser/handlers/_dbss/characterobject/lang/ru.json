@@ -12,5 +12,8 @@
     "itemName": "Предмет",
     "objectKind": "Вид",
     "modelPath": "Модель"
+  },
+  "meta": {
+    "count": "Записей: {count}"
   }
 }

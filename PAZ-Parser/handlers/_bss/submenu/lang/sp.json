@@ -5,5 +5,8 @@
     "position": "Posición",
     "icon": "Icono",
     "title": "Título"
+  },
+  "meta": {
+    "count": "{count} entradas de menú"
   }
 }

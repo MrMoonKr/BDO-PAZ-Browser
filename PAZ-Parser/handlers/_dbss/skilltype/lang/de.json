@@ -9,5 +9,8 @@
     "0": "Sonstiges",
     "1": "Aktiv",
     "2": "Passiv"
+  },
+  "meta": {
+    "count": "{count} Talente · {with_icon} mit Symbol"
   }
 }

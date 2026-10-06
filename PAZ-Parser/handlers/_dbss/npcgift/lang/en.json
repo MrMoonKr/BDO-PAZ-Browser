@@ -16,5 +16,11 @@
     "npcId": "NPC ID",
     "npcName": "NPC Name",
     "dialogue": "Dialogue"
+  },
+  "meta": {
+    "count": "{count} gift rows",
+    "dataCount": "{count} NPC dialogue records",
+    "withNpcName": " · {with_npc_name} NPC names · {with_item_name} item names",
+    "withLoc": " · {with_loc} with LOC type 54 text"
   }
 }

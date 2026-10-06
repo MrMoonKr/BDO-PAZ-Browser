@@ -17,5 +17,8 @@
     "GuildWharf": "Пристань гильдии",
     "Unknown41": "Гран-при",
     "ChangeMarniStone": "Камень Марни"
+  },
+  "meta": {
+    "count": "Записей: {count} · активных столбцов ролей: {active}"
   }
 }

@@ -29,5 +29,8 @@
     "sub": "Доп. оружие",
     "awakening": "Пробужденное оружие"
   },
-  "allClasses": "Все"
+  "allClasses": "Все",
+  "meta": {
+    "count": "Рангов навыков: {count} · навыков классов: {class_skills}"
+  }
 }

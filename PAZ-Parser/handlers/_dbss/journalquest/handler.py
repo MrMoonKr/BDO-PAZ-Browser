@@ -6,7 +6,7 @@ from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, sort_keys, table, text_list_cell
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup
 from _common.pa_text import pa_cell, pa_fields, strip_pa_tags
 from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, size_column
@@ -30,9 +30,9 @@ def _journal_text(group_id: int, entry_no: int, field_id: int) -> str:
     return strip_pa_tags(_journal_tagged(group_id, entry_no, field_id)).strip()
 
 
-def _offset_meta(records: list[dict]) -> str:
+def _offset_meta(records: list[dict], lang: str) -> str:
     groups = len({record["group_id"] for record in records})
-    return f"{len(records):,} entries · {groups:,} groups"
+    return handler_text(lang, _LANG_DIR, "meta.offsetCount", count=len(records), groups=groups)
 
 
 def journal_quest_offset_handler() -> OffsetTableHandler:
@@ -128,7 +128,7 @@ class JournalQuestDbssHandler(PreviewHandler):
         yes, no = values.get("yes", "Yes"), values.get("no", "No")
         pages = sum(r["page_count"] for r in records)
         groups = len({r["group_id"] for r in records})
-        meta = f"{len(records):,} journal entries · {groups:,} groups · {pages:,} pages"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records), groups=groups, pages=pages)
         rows = [
             [
                 e(r["group_id"]),

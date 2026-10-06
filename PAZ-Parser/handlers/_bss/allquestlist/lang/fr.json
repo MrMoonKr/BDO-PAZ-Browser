@@ -4,5 +4,9 @@
     "subId": "ID secondaire",
     "icon": "Icône",
     "title": "Titre"
+  },
+  "meta": {
+    "count": "{count} entrées de liste de quêtes",
+    "withTitles": " · {with_titles} avec titre LOC"
   }
 }

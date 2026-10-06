@@ -35,5 +35,9 @@
     "tradeImperialCrafting": "Livraison impériale d'artisanat",
     "tradeGuild": "Commerce de guilde",
     "tradeType": "Type"
+  },
+  "meta": {
+    "count": "{count} objets · {enhanceable} optimisables",
+    "withIcon": " · {with_icon} chemins d'icône"
   }
 }

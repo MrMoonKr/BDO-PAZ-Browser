@@ -6,5 +6,8 @@
     "titleRequirements": "Requisitos del título",
     "special": "Especial",
     "effect": "Efecto"
+  },
+  "meta": {
+    "count": "{count} títulos leídos"
   }
 }

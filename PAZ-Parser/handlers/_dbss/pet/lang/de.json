@@ -37,5 +37,10 @@
     "variant": "Variante",
     "dataOffset": "Daten-Offset",
     "dataSize": "Datengröße"
+  },
+  "meta": {
+    "gradeCount": "{count} Begleiter-Seltenheitseinträge",
+    "count": "{count} Begleiter · {species_count} Spezies",
+    "withGrade": " · {with_grade} mit Seltenheitsdaten"
   }
 }

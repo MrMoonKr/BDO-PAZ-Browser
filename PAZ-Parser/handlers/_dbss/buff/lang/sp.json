@@ -18,5 +18,8 @@
     "param1": "Parám. 1",
     "param2": "Parám. 2",
     "param3": "Parám. 3"
+  },
+  "meta": {
+    "count": "{count} bonificadores"
   }
 }

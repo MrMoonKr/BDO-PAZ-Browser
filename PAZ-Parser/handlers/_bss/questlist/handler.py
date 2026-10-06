@@ -7,7 +7,7 @@ from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, icon_cell, sort_keys, table, truncate
 from _common.icon_index import IconKind, icon_path
-from _common.lang import load_handler_strings
+from _common.lang import handler_text, load_handler_strings
 from _common.loc import is_loc_loaded, loc_lookup, loc_tagged
 from _common.pa_text import LINE_PREVIEW_CHARS, pa_cell, pa_fields
 from _common.quest.quest import quest_title_tagged
@@ -100,9 +100,9 @@ class QuestListBssHandler(PreviewHandler):
         slice_ = records[start : start + page_size]
         with_titles = sum(1 for record in records if record.get("title"))
         group_count = len({record["group"] for record in records})
-        meta = f"{len(records):,} quest references · {group_count:,} groups"
+        meta = handler_text(self.lang, _LANG_DIR, "meta.count", count=len(records), group_count=group_count)
         if with_titles:
-            meta += f" · {with_titles:,} with LOC titles"
+            meta += handler_text(self.lang, _LANG_DIR, "meta.withTitles", with_titles=with_titles)
 
         rows = [self._row_cells(record) for record in slice_]
         return table(meta, self._columns(), rows)

@@ -15,5 +15,8 @@
     "classType": "Tipo de clase",
     "model": "Modelo",
     "payloadSize": "Tamaño de carga"
+  },
+  "meta": {
+    "count": "{count} entradas"
   }
 }

@@ -8,5 +8,8 @@
     "dataOffset": "Desplazamiento de datos",
     "dataSize": "Tamaño de datos",
     "recordStart": "Inicio de registro"
+  },
+  "meta": {
+    "count": "{count} niveles de hada"
   }
 }

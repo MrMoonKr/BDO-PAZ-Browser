@@ -2,5 +2,9 @@
   "columns": {
     "nodeId": "Node ID",
     "nodeName": "Node Name"
+  },
+  "meta": {
+    "count": "{count} plant town records",
+    "named": " · {named} LOC names"
   }
 }

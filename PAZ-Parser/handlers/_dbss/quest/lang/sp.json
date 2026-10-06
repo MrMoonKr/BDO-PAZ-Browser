@@ -10,5 +10,9 @@
     "action": "Acción",
     "objective": "Objetivo",
     "familyStat": "Estadística de familia"
+  },
+  "meta": {
+    "count": "{count} misiones",
+    "withLoc": " · {with_loc} con texto LOC de tipo 18"
   }
 }

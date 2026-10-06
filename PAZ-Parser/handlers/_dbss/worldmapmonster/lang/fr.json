@@ -12,5 +12,8 @@
     "detail": "Détail",
     "huntingGround": "Zone de chasse",
     "condition": "Condition"
+  },
+  "meta": {
+    "count": "{count} marqueurs de carte du monde"
   }
 }

@@ -12,5 +12,9 @@
     "offeredWhen": "Offered When*",
     "ruledOutWhen": "Ruled Out When*",
     "scriptGuess": "* What we think this script does; not confirmed in game"
+  },
+  "meta": {
+    "count": "{count} quest references · {group_count} groups",
+    "withTitles": " · {with_titles} with LOC titles"
   }
 }

@@ -4,5 +4,8 @@
     "dialog": "Dialog",
     "character": "Character",
     "lines": "Bubble Lines"
+  },
+  "meta": {
+    "count": "{count} dialogs · {with_lines} with lines"
   }
 }

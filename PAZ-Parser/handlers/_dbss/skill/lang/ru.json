@@ -18,5 +18,8 @@
     "level": "Уровень",
     "dbssOffset": "Смещение DBSS",
     "size": "Размер"
+  },
+  "meta": {
+    "count": "Рангов навыков: {count} · с эффектами: {with_buffs}"
   }
 }

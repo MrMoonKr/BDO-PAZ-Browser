@@ -7,5 +7,8 @@
     "level": "Nivel",
     "requiredTitles": "Títulos requeridos",
     "text": "Texto"
+  },
+  "meta": {
+    "count": "{count} niveles de efecto de título"
   }
 }

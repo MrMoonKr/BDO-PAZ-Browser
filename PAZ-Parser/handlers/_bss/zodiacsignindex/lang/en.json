@@ -2,5 +2,8 @@
   "columns": {
     "zodiacId": "Zodiac ID",
     "name": "Name"
+  },
+  "meta": {
+    "count": "{count} zodiac index entries"
   }
 }

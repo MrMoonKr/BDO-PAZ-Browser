@@ -5,5 +5,8 @@
     "title": "Название",
     "description": "Описание",
     "quote": "Цитата"
+  },
+  "meta": {
+    "count": "Кат-сцен: {count}"
   }
 }

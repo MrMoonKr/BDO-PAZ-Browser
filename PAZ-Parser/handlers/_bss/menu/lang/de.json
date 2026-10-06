@@ -5,5 +5,8 @@
     "title": "Titel",
     "hotkey": "Tastenkürzel",
     "entries": "Einträge"
+  },
+  "meta": {
+    "count": "{count} Menükategorien"
   }
 }

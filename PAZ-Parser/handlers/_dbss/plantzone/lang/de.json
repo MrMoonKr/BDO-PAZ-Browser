@@ -9,5 +9,8 @@
     "nodeName": "Postenname",
     "productionKey": "Produktionsschlüssel",
     "producedItems": "Erzeugte Gegenstände"
+  },
+  "meta": {
+    "count": "{count} Produktionsposten · {resolved} mit Gegenständen"
   }
 }
