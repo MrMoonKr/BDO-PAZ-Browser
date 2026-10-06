@@ -1,6 +1,7 @@
 """What a benchmark decodes, and the stages it times on it.
 
-A workload is one PAZ entry (`--entry`) or one whole archive (`--archive`).
+A workload is one PAZ entry (`--entry`), one whole archive (`--archive`) or
+the client's file index (`--index`).
 
 On an entry, `decrypt` and `decompress` work on bytes already in memory, so
 disk speed and the OS file cache stay out of their numbers. `read` is the
@@ -11,8 +12,13 @@ the decoded file, with LOC and the lookup indexes loaded as in the app; it only
 exists for a file with a parsed view.
 
 On an archive, `extract` runs `extract_all`'s loop over every entry in it. It
-leaves out `extract_all`'s meta file parse, which reads every entry of the
-client on each call (over a minute) and would swamp the decode time.
+leaves out `extract_all`'s meta file parse (the `index` stage below), which
+reads every archive's file table on each call and would swamp the decode time.
+
+On the index, `index` is that meta file parse on its own: the file table and
+decrypted path block of every archive, which the app runs when the client
+changed and its index cache is out of date. The warm-up reads every archive
+header, so the timed runs see a warm file cache.
 """
 from __future__ import annotations
 
@@ -26,8 +32,9 @@ from cli.errors import CliError
 from api.bdo_api import Api
 from bdo_preview import get_handler, has_parsed_view
 from cli.parsed_file import ParsedFile, find_entry, load_parsed_file
-from cli.session import open_session
-from paz.bdo_paz_extract import extract_entries, extract_entry
+from cli.session import open_session, resolve_paz_root
+from paz.bdo_meta_reader import read_bdo_meta
+from paz.bdo_paz_extract import extract_entries, extract_entry, find_single_meta_file, parse_meta_file
 from paz.bdo_payload_reader import (
     bdo_decompress,
     ice_decrypt_bytes,
@@ -45,7 +52,7 @@ DEFAULT_ENTRY = "morningland_boss_03_02_full.dds"
 # A median-size archive (9 MB, about 800 files) mixing .bwp, .xml, .bss,
 # .dbss and more, compressed and stored, encrypted and plain.
 DEFAULT_ARCHIVE = "pad05889.paz"
-STAGE_NAMES = ("decrypt", "decompress", "read", "extract", "parse")
+STAGE_NAMES = ("decrypt", "decompress", "read", "extract", "parse", "index")
 _HASH_CHUNK_BYTES = 1024 * 1024
 
 
@@ -119,6 +126,27 @@ def load_archive_workload(paz_folder: str | None, archive: str) -> Workload:
         info,
         lambda scratch: [Stage("extract", lambda: _extract_archive(paz_root, scratch, in_archive))],
     )
+
+
+def load_index_workload(paz_folder: str | None) -> Workload:
+    """The client's `.meta` file and every archive it lists."""
+    paz_root = resolve_paz_root(paz_folder)
+    try:
+        meta_path = find_single_meta_file(paz_root)
+        meta = read_bdo_meta(meta_path)
+    except (OSError, ValueError) as ex:
+        raise CliError(f"cannot read the meta file in {paz_root}: {ex}") from ex
+
+    info = FixtureInfo(
+        name=meta_path.name,
+        files=meta.paz_file_count,
+        stored_bytes=sum(table.size for table in meta.paz_files),
+        size_bytes=0,
+        sha256=_file_sha256(meta_path),
+    )
+    # The collector stays on, as in the app: the parse builds one PazEntry
+    # per file of the client.
+    return Workload(info, lambda _scratch: [Stage("index", lambda: parse_meta_file(meta_path), with_gc=True)])
 
 
 def archive_file_name(text: str) -> str:

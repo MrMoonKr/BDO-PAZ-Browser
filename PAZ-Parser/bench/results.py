@@ -21,7 +21,8 @@ SCHEMA_VERSION = 1
 class FixtureInfo:
     """What a run decoded; the hash catches a client patch changing it.
 
-    `name` is the entry's internal path, or the archive's file name.
+    `name` is the entry's internal path, the archive's file name or the meta
+    file's. `size_bytes` is 0 for the index, which decodes no file.
     """
 
     name: str

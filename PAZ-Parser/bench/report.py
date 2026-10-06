@@ -30,10 +30,8 @@ def describe_pin(pin: PinState) -> str:
 
 def describe_fixture(fixture: FixtureInfo) -> str:
     files = "" if fixture.files == 1 else f"{fixture.files:,} files, "
-    return (
-        f"{fixture.name} "
-        f"({files}{fixture.stored_bytes / _MB:.1f} MB stored, {fixture.size_bytes / _MB:.1f} MB decoded)"
-    )
+    decoded = f", {fixture.size_bytes / _MB:.1f} MB decoded" if fixture.size_bytes else ""
+    return f"{fixture.name} ({files}{fixture.stored_bytes / _MB:.1f} MB stored{decoded})"
 
 
 def format_timings(result: BenchResult) -> str:

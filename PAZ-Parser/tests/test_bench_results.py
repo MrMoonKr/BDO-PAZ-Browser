@@ -10,6 +10,7 @@ import pytest
 from bench.compare import environment_differences, format_comparison, stage_deltas
 from bench.machine import Machine
 from bench.pinning import UNPINNED, PinState
+from bench.report import describe_fixture
 from bench.results import (
     SCHEMA_VERSION,
     BenchResult,
@@ -52,6 +53,14 @@ def test_a_result_survives_the_json_round_trip() -> None:
     result = _result()
 
     assert result_from_json(json.loads(json.dumps(result_to_json(result)))) == result
+
+
+def test_the_fixture_line_names_the_decoded_size_when_there_is_one() -> None:
+    archive = FixtureInfo(name="pad00001.paz", files=3, stored_bytes=1024**2, size_bytes=3 * 1024**2, sha256="ab" * 32)
+    index = replace(archive, name="pad00000.meta", size_bytes=0)
+
+    assert describe_fixture(archive) == "pad00001.paz (3 files, 1.0 MB stored, 3.0 MB decoded)"
+    assert describe_fixture(index) == "pad00000.meta (3 files, 1.0 MB stored)"
 
 
 def test_write_and_read_result_use_the_same_file(tmp_path: Path) -> None:
