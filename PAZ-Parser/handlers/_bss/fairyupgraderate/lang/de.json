@@ -1,0 +1,12 @@
+{
+  "columns": {
+    "step": "Schritt",
+    "upgrade": "Verbesserung",
+    "icon": "Symbol",
+    "item": "Gegenstand",
+    "itemId": "Gegenstands-ID",
+    "chancePerItem": "Chance / Gegenstand",
+    "ratePpm": "Rate (ppm)",
+    "itemsForMax": "Gegenstände bis Maximum"
+  }
+}

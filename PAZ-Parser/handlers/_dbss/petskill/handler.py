@@ -1,24 +1,22 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
 
 from _common.html import Column, e, sort_keys, table
+from _common.lang import load_handler_strings
 from _common.offset_table import OffsetColumn, OffsetTableHandler, offset_column, size_column
 from .parser import parse_petskill_records, parse_petskilloffset_records
 
 
-_COLUMNS = [
-    Column("Pet Skill ID", "num", sort_key="pet_skill_id"),
-    Column("Level", "num", sort_key="level"),
-    Column("Value A", "num", sort_key="raw_value_a"),
-    Column("Value B", "num", sort_key="raw_value_b"),
-]
+_LANG_DIR = Path(__file__).parent / "lang"
 
 
 def pet_skill_offset_handler() -> OffsetTableHandler:
     return OffsetTableHandler(
-        None,
+        _LANG_DIR,
         [
             OffsetColumn("pet_skill_id", "petSkillId", "Pet Skill ID"),
             offset_column("data_offset", "dataOffset", "Data Offset"),
@@ -29,8 +27,17 @@ def pet_skill_offset_handler() -> OffsetTableHandler:
 
 
 class PetSkillHandler(PreviewHandler):
+    def _columns(self) -> list[Column]:
+        cols = load_handler_strings(self.lang, _LANG_DIR).get("columns", {})
+        return [
+            Column(cols.get("petSkillId", "Pet Skill ID"), "num", sort_key="pet_skill_id"),
+            Column(cols.get("level", "Level"), "num", sort_key="level"),
+            Column(cols.get("valueA", "Value A"), "num", sort_key="raw_value_a"),
+            Column(cols.get("valueB", "Value B"), "num", sort_key="raw_value_b"),
+        ]
+
     def sortable_fields(self) -> tuple[str, ...]:
-        return sort_keys(_COLUMNS)
+        return sort_keys(self._columns())
 
     def companions(self, entry: PazEntry) -> list[str]:
         folder = entry.internal_path.rsplit("/", 1)[0]
@@ -66,4 +73,4 @@ class PetSkillHandler(PreviewHandler):
             ]
             for r in slice_
         ]
-        return table(meta, _COLUMNS, rows)
+        return table(meta, self._columns(), rows)

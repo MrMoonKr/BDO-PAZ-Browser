@@ -1,0 +1,17 @@
+{
+  "columns": {
+    "class": "Klasse",
+    "tab": "Tab",
+    "cardColumn": "Kartenspalte",
+    "row": "Zeile",
+    "column": "Spalte",
+    "group": "Gruppe",
+    "icon": "Symbol",
+    "skill": "Talent"
+  },
+  "cardColumn": {
+    "0": "Links",
+    "1": "Mitte",
+    "2": "Rechts"
+  }
+}

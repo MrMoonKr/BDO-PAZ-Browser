@@ -1,0 +1,33 @@
+{
+  "columns": {
+    "skillNo": "Talent-Nr.",
+    "level": "Stufe",
+    "icon": "Symbol",
+    "name": "Name",
+    "classes": "Klassen",
+    "kind": "Art",
+    "branch": "Zweig",
+    "weapon": "Waffe",
+    "quickSlot": "Schnellauswahl",
+    "needLevel": "Erforderliche Stufe",
+    "needSkillPoint": "Talentpunkte",
+    "needSkills": "Erforderliche Talente",
+    "previousRank": "Vorheriger Rang",
+    "exclusiveSkills": "Exklusive Talente"
+  },
+  "kind": {
+    "0": "Sonstiges",
+    "1": "Aktiv",
+    "2": "Passiv"
+  },
+  "branch": {
+    "1": "Erweckung",
+    "2": "Wiedergeburt"
+  },
+  "weapon": {
+    "main": "Hauptwaffe",
+    "sub": "Sekundärwaffe",
+    "awakening": "Erweckungswaffe"
+  },
+  "allClasses": "Alle"
+}

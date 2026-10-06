@@ -1,0 +1,15 @@
+{
+  "offsetColumns": {
+    "acquireTypeId": "Erwerbsart-ID",
+    "dataOffset": "Daten-Offset",
+    "dataSize": "Datengröße",
+    "recordStart": "Datensatzbeginn"
+  },
+  "columns": {
+    "acquireTypeId": "Erwerbsart-ID",
+    "equipSkillId": "Talent-ID",
+    "skillName": "Talentname",
+    "chance": "Chance",
+    "weight": "Gewichtung"
+  }
+}

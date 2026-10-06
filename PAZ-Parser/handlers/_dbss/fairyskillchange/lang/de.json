@@ -1,0 +1,12 @@
+{
+  "columns": {
+    "level": "Stufe",
+    "orbCost": "Theiahs Kugeln"
+  },
+  "offsetColumns": {
+    "level": "Stufe",
+    "dataOffset": "Daten-Offset",
+    "dataSize": "Datengröße",
+    "recordStart": "Datensatzbeginn"
+  }
+}

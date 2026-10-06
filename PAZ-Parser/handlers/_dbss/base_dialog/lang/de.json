@@ -1,0 +1,8 @@
+{
+  "columns": {
+    "characterId": "Charakter-ID",
+    "dialog": "Dialog",
+    "character": "Charakter",
+    "lines": "Sprechblasen"
+  }
+}

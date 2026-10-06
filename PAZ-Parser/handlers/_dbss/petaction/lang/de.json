@@ -1,0 +1,12 @@
+{
+  "columns": {
+    "actionId": "Aktions-ID",
+    "actionName": "Aktionsname",
+    "icon": "Symbol"
+  },
+  "offsetColumns": {
+    "actionId": "Aktions-ID",
+    "recordOffset": "Datensatz-Offset",
+    "recordSize": "Datensatzgröße"
+  }
+}

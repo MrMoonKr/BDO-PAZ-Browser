@@ -1,0 +1,39 @@
+{
+  "columns": {
+    "itemId": "Gegenstands-ID",
+    "icon": "Symbol",
+    "item": "Gegenstand",
+    "description": "Beschreibung",
+    "maxLevel": "Höchststufe",
+    "requiredLevel": "Erf. Stufe",
+    "classes": "Klassen",
+    "binding": "Bindung",
+    "durability": "Haltbarkeit",
+    "marketable": "Marktfähig",
+    "familyInventory": "Familieninventar",
+    "trade": "Handel",
+    "dyeable": "Färbbar",
+    "objectId": "Objekt-ID",
+    "object": "Objekt",
+    "buffs": "Buffs"
+  },
+  "offsetColumns": {
+    "itemId": "Gegenstands-ID",
+    "enchantLevel": "Verstärkungsstufe",
+    "dataOffset": "Daten-Offset",
+    "dataSize": "Datengröße"
+  },
+  "values": {
+    "allClasses": "Alle",
+    "allExcept": "Alle außer",
+    "bindOnObtain": "Beim Erhalt",
+    "bindOnEquip": "Beim Ausrüsten",
+    "family": "Familie",
+    "character": "Charakter",
+    "tradeManager": "Handelsaufsicht",
+    "tradeKarma": "Handelsaufsicht (Karmaverlust)",
+    "tradeImperialCrafting": "Kaiserliche Herstellungslieferung",
+    "tradeGuild": "Gildenhandel",
+    "tradeType": "Typ"
+  }
+}

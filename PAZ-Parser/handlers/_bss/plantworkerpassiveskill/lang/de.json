@@ -1,0 +1,13 @@
+{
+  "columns": {
+    "skillId": "Talent-ID",
+    "icon": "Symbol",
+    "name": "Name",
+    "description": "Beschreibung",
+    "weight": "Gewichtung",
+    "effectType": "Effekttyp",
+    "target": "Ziel",
+    "effectA": "Effekt A",
+    "effectB": "Effekt B"
+  }
+}

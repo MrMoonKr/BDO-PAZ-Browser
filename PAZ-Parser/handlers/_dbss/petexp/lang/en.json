@@ -1,0 +1,13 @@
+{
+  "columns": {
+    "expTableId": "EXP Table ID",
+    "maxLevel": "Max Level",
+    "level": "Level",
+    "requiredExp": "Required EXP"
+  },
+  "offsetColumns": {
+    "expTableId": "EXP Table ID",
+    "dataOffset": "Data Offset",
+    "dataSize": "Data Size"
+  }
+}

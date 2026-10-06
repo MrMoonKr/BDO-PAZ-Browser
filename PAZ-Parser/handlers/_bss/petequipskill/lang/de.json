@@ -1,0 +1,9 @@
+{
+  "columns": {
+    "equipSkillId": "Ausrüstungstalent-ID",
+    "skillName": "Talentname",
+    "icon": "Symbol",
+    "skillType": "Talenttyp",
+    "section": "Abschnitt"
+  }
+}

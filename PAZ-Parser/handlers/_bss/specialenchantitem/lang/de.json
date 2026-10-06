@@ -1,0 +1,9 @@
+{
+  "columns": {
+    "itemId": "Gegenstands-ID",
+    "maxLevel": "Höchststufe",
+    "shownAs": "Angezeigt als",
+    "icon": "Symbol",
+    "name": "Name"
+  }
+}

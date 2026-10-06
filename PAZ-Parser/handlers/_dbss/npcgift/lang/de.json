@@ -1,0 +1,20 @@
+{
+  "offsetColumns": {
+    "npcId": "NPC-ID",
+    "dataOffset": "Daten-Offset",
+    "dataSize": "Datengröße"
+  },
+  "giftColumns": {
+    "npcId": "NPC-ID",
+    "npcName": "NPC-Name",
+    "itemId": "Gegenstands-ID",
+    "icon": "Symbol",
+    "itemName": "Gegenstandsname",
+    "amity": "Freundschaft"
+  },
+  "dataColumns": {
+    "npcId": "NPC-ID",
+    "npcName": "NPC-Name",
+    "dialogue": "Dialog"
+  }
+}

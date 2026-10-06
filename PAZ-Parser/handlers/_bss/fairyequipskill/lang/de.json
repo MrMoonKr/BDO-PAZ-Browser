@@ -1,0 +1,10 @@
+{
+  "columns": {
+    "equipSkillId": "Ausrüstungstalent-ID",
+    "icon": "Symbol",
+    "skillName": "Talentname",
+    "description": "Beschreibung",
+    "skillType": "Talenttyp",
+    "locId": "LOC-ID"
+  }
+}

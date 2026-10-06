@@ -1,0 +1,12 @@
+{
+  "offsetColumns": {
+    "subgroupKey": "Untergruppenschlüssel",
+    "dataOffset": "Daten-Offset",
+    "size": "Größe"
+  },
+  "columns": {
+    "subgroupKey": "Untergruppenschlüssel",
+    "entryCount": "Gegenstände",
+    "items": "Gegenstandsnamen"
+  }
+}

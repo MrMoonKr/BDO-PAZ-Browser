@@ -1,0 +1,26 @@
+{
+  "offsetColumns": {
+    "group": "Gruppe",
+    "entry": "Eintrag",
+    "offset": "Offset",
+    "size": "Größe"
+  },
+  "columns": {
+    "group": "Gruppe",
+    "entry": "Eintrag",
+    "journalCategoryId": "Tagebuchkategorie-ID",
+    "title": "Titel",
+    "subtitle": "Untertitel",
+    "volume": "Band",
+    "pageTitles": "Seitentitel",
+    "unlockCondition": "Freischaltbedingung",
+    "pages": "Seiten",
+    "recordBook": "Tagebuch",
+    "combineModel": "Kombiniertes Modell",
+    "staticModel": "Statisches Modell"
+  },
+  "values": {
+    "yes": "Ja",
+    "no": "Nein"
+  }
+}

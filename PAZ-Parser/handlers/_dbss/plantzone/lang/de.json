@@ -1,0 +1,13 @@
+{
+  "offsetColumns": {
+    "recordId": "Datensatz-ID",
+    "dataOffset": "Daten-Offset",
+    "dataSize": "Datengröße"
+  },
+  "columns": {
+    "zoneId": "Zonen-ID",
+    "nodeName": "Postenname",
+    "productionKey": "Produktionsschlüssel",
+    "producedItems": "Erzeugte Gegenstände"
+  }
+}

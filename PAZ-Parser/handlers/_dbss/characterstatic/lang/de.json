@@ -1,0 +1,19 @@
+{
+  "offsetColumns": {
+    "characterId": "Charakter-ID",
+    "byteOffset": "Byte-Offset",
+    "size": "Größe"
+  },
+  "columns": {
+    "characterId": "Charakter-ID",
+    "name": "Name",
+    "icon": "Symbol",
+    "actionScript": "Aktionsskript",
+    "conditionScript": "Bedingung",
+    "knowledgeId": "Wissens-ID",
+    "npcKind": "NPC-Art",
+    "classType": "Klassentyp",
+    "model": "Modell",
+    "payloadSize": "Nutzdatengröße"
+  }
+}

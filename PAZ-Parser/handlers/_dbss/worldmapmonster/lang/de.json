@@ -1,0 +1,16 @@
+{
+  "offsetColumns": {
+    "key": "Schlüssel",
+    "byteOffset": "Byte-Offset",
+    "size": "Größe"
+  },
+  "columns": {
+    "key": "Schlüssel",
+    "icon": "Symbol",
+    "name": "Name",
+    "label": "Bezeichnung",
+    "detail": "Detail",
+    "huntingGround": "Jagdgebiet",
+    "condition": "Bedingung"
+  }
+}

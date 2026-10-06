@@ -1,0 +1,22 @@
+{
+  "offsetColumns": {
+    "buffId": "Buff-ID",
+    "dataOffset": "Daten-Offset",
+    "size": "Größe"
+  },
+  "columns": {
+    "buffId": "Buff-ID",
+    "icon": "Symbol",
+    "title": "Titel",
+    "name": "Interner Name",
+    "description": "Beschreibung",
+    "effect": "Effekt",
+    "appliedBy": "Angewendet durch",
+    "level": "Stufe",
+    "effectType": "Effekttyp",
+    "duration": "Dauer",
+    "param1": "Param. 1",
+    "param2": "Param. 2",
+    "param3": "Param. 3"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "columns": {
+    "nodeKey": "Postenschlüssel",
+    "nodeName": "Postenname",
+    "kind": "Art",
+    "mainSub": "Haupt/Neben",
+    "contribution": "Beitragspunkte",
+    "manager": "Postenwart",
+    "representative": "Repräsentant",
+    "radius": "Radius",
+    "knowledge": "Wissen",
+    "knowledgeEntries": "Wissenseinträge",
+    "connections": "Verbindungen",
+    "connectedNodes": "Verbundene Posten"
+  },
+  "values": {
+    "main": "Haupt",
+    "sub": "Neben"
+  }
+}

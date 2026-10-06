@@ -1,0 +1,21 @@
+{
+  "offsetColumns": {
+    "characterId": "Charakter-ID",
+    "byteOffset": "Byte-Offset",
+    "size": "Größe"
+  },
+  "columns": {
+    "characterId": "Charakter-ID",
+    "name": "Name"
+  },
+  "roleLabels": {
+    "NormalNpc": "Normaler NPC",
+    "RandomShop": "Nachthändler",
+    "RandomShopDay": "Taghändler",
+    "FishSupplyShop": "Kaiserliche Fischlieferung",
+    "GuildStable": "Gildenstall",
+    "GuildWharf": "Gildenhafen",
+    "Unknown41": "Großer Preis",
+    "ChangeMarniStone": "Marni-Stein"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "columns": {
+    "key": "Schlüssel",
+    "name": "Name",
+    "region": "Region",
+    "categories": "Kategorien",
+    "species": "Spezies",
+    "ap": "AK",
+    "dp": "VK",
+    "totalAp": "Gesamt-AK",
+    "totalDp": "Gesamt-VK",
+    "maxAp": "Max. AK",
+    "node": "Posten",
+    "monsters": "Monster",
+    "items": "Gegenstände",
+    "quests": "Quests",
+    "tags": "Tags",
+    "titles": "Titel"
+  }
+}

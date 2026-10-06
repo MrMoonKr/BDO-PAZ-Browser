@@ -1,0 +1,19 @@
+{
+  "offsetColumns": {
+    "table": "Tabelle",
+    "sourceId": "Quellen-ID",
+    "dbssOffset": "DBSS-Offset",
+    "size": "Größe"
+  },
+  "columns": {
+    "sourceType": "Quellentyp",
+    "sourceId": "Quellen-ID",
+    "sourceName": "Quellenname",
+    "knowledgeId": "Wissens-ID",
+    "knowledgeName": "Wissensname"
+  },
+  "values": {
+    "character": "Charakter",
+    "item": "Gegenstand"
+  }
+}

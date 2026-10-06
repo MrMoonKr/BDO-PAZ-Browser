@@ -1,0 +1,25 @@
+{
+  "columns": {
+    "id": "ID",
+    "name": "Name",
+    "stars": "Sterne",
+    "pairs": "Paare",
+    "traits": "Eigenschaften"
+  },
+  "offsetColumns": {
+    "zodiacId": "Sternzeichen-ID",
+    "dataOffset": "Daten-Offset"
+  },
+  "orderColumns": {
+    "row": "Zeile",
+    "personality": "Persönlichkeit",
+    "zodiac": "Sternzeichen",
+    "variant": "Variante",
+    "triggers": "Auslöser",
+    "sequence": "Sequenz"
+  },
+  "orderOffsetColumns": {
+    "personalityType": "Persönlichkeitstyp",
+    "dataOffset": "Daten-Offset"
+  }
+}

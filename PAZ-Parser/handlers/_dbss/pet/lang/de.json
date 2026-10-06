@@ -1,0 +1,41 @@
+{
+  "columns": {
+    "petId": "Begleiter-ID",
+    "name": "Name",
+    "species": "Spezies-ID",
+    "tier": "Rang",
+    "skillSlots": "Talentplätze",
+    "maxLevel": "Höchststufe",
+    "acquireType": "Erwerbsart",
+    "equipSkillId": "Ausrüstungstalent-ID",
+    "grade": "Seltenheit",
+    "icon": "Symbol"
+  },
+  "grades": {
+    "5": "Spezial",
+    "4": "Selten",
+    "3": "Premium",
+    "2": "Selten",
+    "1": "Klassisch"
+  },
+  "offsetColumns": {
+    "petId": "Begleiter-ID",
+    "dataOffset": "Daten-Offset",
+    "dataSize": "Datengröße"
+  },
+  "gradeColumns": {
+    "key": "Schlüssel",
+    "species": "Spezies",
+    "variant": "Variante",
+    "grade": "Seltenheit",
+    "dataOffset": "Daten-Offset",
+    "dataSize": "Datengröße"
+  },
+  "gradeOffsetColumns": {
+    "key": "Schlüssel",
+    "species": "Spezies",
+    "variant": "Variante",
+    "dataOffset": "Daten-Offset",
+    "dataSize": "Datengröße"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "columns": {
+    "key": "Schlüssel",
+    "name": "Name",
+    "x": "X",
+    "y": "Y",
+    "z": "Z",
+    "property": "Eigenschaft",
+    "subWaypoint": "Unter-Wegpunkt",
+    "links": "Verknüpfungen"
+  },
+  "messages": {
+    "oldLayout": "Alte Instanzdungeon-Vorlage ohne PABR-Kennung; nicht gelesen"
+  },
+  "values": {
+    "yes": "Ja",
+    "no": "Nein"
+  }
+}

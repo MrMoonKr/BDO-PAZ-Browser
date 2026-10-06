@@ -1,0 +1,9 @@
+{
+  "columns": {
+    "menuId": "Menü-ID",
+    "icon": "Symbol",
+    "title": "Titel",
+    "hotkey": "Tastenkürzel",
+    "entries": "Einträge"
+  }
+}

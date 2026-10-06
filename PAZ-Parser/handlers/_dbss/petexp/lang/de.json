@@ -1,0 +1,13 @@
+{
+  "columns": {
+    "expTableId": "EP-Tabellen-ID",
+    "maxLevel": "Höchststufe",
+    "level": "Stufe",
+    "requiredExp": "Erforderliche EP"
+  },
+  "offsetColumns": {
+    "expTableId": "EP-Tabellen-ID",
+    "dataOffset": "Daten-Offset",
+    "dataSize": "Datengröße"
+  }
+}

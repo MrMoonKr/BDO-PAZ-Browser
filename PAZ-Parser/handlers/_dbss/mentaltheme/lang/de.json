@@ -1,0 +1,17 @@
+{
+  "offsetColumns": {
+    "themeId": "Themen-ID",
+    "payloadOffset": "Nutzdaten-Offset",
+    "payloadSize": "Nutzdatengröße"
+  },
+  "columns": {
+    "themeId": "Themen-ID",
+    "name": "Name",
+    "parentId": "Übergeordnete ID",
+    "parentName": "Übergeordneter Name",
+    "energyReward1": "Energiebelohnung 1",
+    "energyReward2": "Energiebelohnung 2",
+    "entries": "Einträge",
+    "childrenGroups": "Untergruppen"
+  }
+}

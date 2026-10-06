@@ -1,0 +1,12 @@
+{
+  "columns": {
+    "buffId": "Buff-ID",
+    "icon": "Symbol",
+    "description": "Beschreibung",
+    "shown": "Angezeigt"
+  },
+  "values": {
+    "yes": "Ja",
+    "no": "Nein"
+  }
+}

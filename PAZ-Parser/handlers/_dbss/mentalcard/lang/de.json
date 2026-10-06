@@ -1,0 +1,22 @@
+{
+  "offsetColumns": {
+    "cardId": "Wissens-ID",
+    "dbssOffset": "DBSS-Offset",
+    "size": "Größe"
+  },
+  "columns": {
+    "knowledgeId": "Wissens-ID",
+    "icon": "Symbol",
+    "knowledgeName": "Wissensname",
+    "categoryId": "Kategorie-ID",
+    "categoryName": "Kategoriename",
+    "description": "Beschreibung",
+    "minFavor": "Min. Freundschaft",
+    "maxFavor": "Max. Freundschaft",
+    "interest": "Interesse",
+    "combo": "Kombo",
+    "obtain": "Erhalten",
+    "learnedFrom": "Erlernt durch",
+    "position": "Position"
+  }
+}

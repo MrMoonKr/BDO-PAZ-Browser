@@ -1,0 +1,14 @@
+{
+  "columns": {
+    "displayId": "Anzeige-ID",
+    "chainId": "Ketten-ID",
+    "questId": "Quest-ID",
+    "category": "Kategorie",
+    "icon": "Symbol",
+    "titleName": "Titel / Name",
+    "condition": "Bedingung",
+    "action": "Aktion",
+    "objective": "Ziel",
+    "familyStat": "Familienstatistik"
+  }
+}

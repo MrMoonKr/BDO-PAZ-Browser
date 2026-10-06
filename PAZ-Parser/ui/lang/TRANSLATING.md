@@ -25,6 +25,10 @@ The same files hold the text the Python side builds: error messages (`errors`), 
 
 The parsed tables of each file format keep their column labels in the handler's own folder, `handlers/<group>/<format>/lang/en.json`. A translation there is `<code>.json` next to it, with every key of that `en.json` (`tests/test_handler_lang.py` checks this per file).
 
+## Game terms
+
+Use the words the game client uses in that language, so a column reads like the game's own UI. Each `languagedata_<code>.loc` stores the same row under the same key as `languagedata_en.loc`, so pairing the two gives the client's word for an English term. German, for example, says Talent (skill), Posten (node), Stufe (level), Rang (grade, tier), Gegenstand (item), Begleiter (pet), AK / VK (AP / DP), EP (EXP), Verstärkung (enhancement) and Postenwart (node manager). Where one table would show the same word twice (pet Tier and Grade are both Rang in German), pick a second word for one of them.
+
 ## Example
 
 `en.json` (reference):

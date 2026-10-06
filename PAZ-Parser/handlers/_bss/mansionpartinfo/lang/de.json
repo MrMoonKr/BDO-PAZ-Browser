@@ -1,0 +1,8 @@
+{
+  "columns": {
+    "manorId": "Anwesen-ID",
+    "manor": "Anwesen",
+    "part": "Teil",
+    "icon": "Symbol"
+  }
+}

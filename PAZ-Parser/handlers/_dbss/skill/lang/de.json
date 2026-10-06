@@ -1,0 +1,22 @@
+{
+  "columns": {
+    "skillNo": "Talent-Nr.",
+    "level": "Stufe",
+    "icon": "Symbol",
+    "name": "Name",
+    "description": "Beschreibung",
+    "cooldown": "Abklingzeit",
+    "resourceCost": "Ressource",
+    "staminaCost": "Ausdauer",
+    "buffs": "Buffs",
+    "nextSkills": "Folgetalente",
+    "baseSkill": "Grundtalent",
+    "script": "Skript"
+  },
+  "offsetColumns": {
+    "skillNo": "Talent-Nr.",
+    "level": "Stufe",
+    "dbssOffset": "DBSS-Offset",
+    "size": "Größe"
+  }
+}

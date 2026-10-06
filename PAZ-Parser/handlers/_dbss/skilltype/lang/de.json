@@ -1,0 +1,13 @@
+{
+  "columns": {
+    "skillNo": "Talent-Nr.",
+    "icon": "Symbol",
+    "name": "Name",
+    "kind": "Art"
+  },
+  "kind": {
+    "0": "Sonstiges",
+    "1": "Aktiv",
+    "2": "Passiv"
+  }
+}

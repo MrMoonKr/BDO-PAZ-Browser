@@ -1,0 +1,11 @@
+{
+  "offsetColumns": {
+    "buffId": "Buff-ID",
+    "offset": "Offset"
+  },
+  "columns": {
+    "level": "Stufe",
+    "requiredTitles": "Erforderliche Titel",
+    "text": "Text"
+  }
+}

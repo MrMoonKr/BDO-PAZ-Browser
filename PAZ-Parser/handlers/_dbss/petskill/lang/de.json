@@ -1,0 +1,13 @@
+{
+  "columns": {
+    "petSkillId": "Begleitertalent-ID",
+    "level": "Stufe",
+    "valueA": "Wert A",
+    "valueB": "Wert B"
+  },
+  "offsetColumns": {
+    "petSkillId": "Begleitertalent-ID",
+    "dataOffset": "Daten-Offset",
+    "dataSize": "Datengröße"
+  }
+}
