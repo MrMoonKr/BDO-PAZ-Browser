@@ -24,6 +24,7 @@ from .stages import (
     load_archive_workload,
     load_entry_workload,
     load_index_workload,
+    load_loc_workload,
     parse_stage_names,
     select_stages,
 )
@@ -104,6 +105,10 @@ def _add_fixture_options(parser: argparse.ArgumentParser) -> None:
     workload.add_argument(
         "--index", action="store_true",
         help="Parse the client's file index (the .meta file and every archive's file table), as after a patch",
+    )
+    workload.add_argument(
+        "--loc", metavar="LANG", nargs="?", const="",
+        help="Build the LOC text index of one language, as every start does (default: the language picked in the app)",
     )
     parser.add_argument(
         "--stages", metavar="A,B",
@@ -193,6 +198,8 @@ def run_profile(args: argparse.Namespace) -> int:
 def _load_workload(args: argparse.Namespace, wanted: Sequence[str] | None) -> Workload:
     if args.index:
         return load_index_workload(args.paz_folder)
+    if args.loc is not None:
+        return load_loc_workload(args.paz_folder, args.loc or None)
     if args.archive is not None:
         return load_archive_workload(args.paz_folder, args.archive)
     return load_entry_workload(args.paz_folder, args.entry or DEFAULT_ENTRY, wanted)

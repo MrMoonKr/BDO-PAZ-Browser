@@ -1,7 +1,7 @@
 """What a benchmark decodes, and the stages it times on it.
 
-A workload is one PAZ entry (`--entry`), one whole archive (`--archive`) or
-the client's file index (`--index`).
+A workload is one PAZ entry (`--entry`), one whole archive (`--archive`),
+the client's file index (`--index`) or one LOC file (`--loc`).
 
 On an entry, `decrypt` and `decompress` work on bytes already in memory, so
 disk speed and the OS file cache stay out of their numbers. `read` is the
@@ -19,6 +19,10 @@ On the index, `index` is that meta file parse on its own: the file table and
 decrypted path block of every archive, which the app runs when the client
 changed and its index cache is out of date. The warm-up reads every archive
 header, so the timed runs see a warm file cache.
+
+On a LOC file, `loc` is `init_loc()` on the file's bytes in memory: the
+decompress and the text index every table's game text comes from, which the
+app builds on every start and language switch.
 """
 from __future__ import annotations
 
@@ -32,7 +36,10 @@ from cli.errors import CliError
 from api.bdo_api import Api
 from bdo_preview import get_handler, has_parsed_view
 from cli.parsed_file import ParsedFile, find_entry, load_parsed_file
+from api.bdo_config import load_config
+from api.bdo_languages import loc_path
 from cli.session import open_session, resolve_paz_root
+from _common.loc import decompress_loc, init_loc
 from paz.bdo_meta_reader import read_bdo_meta
 from paz.bdo_paz_extract import extract_entries, extract_entry, find_single_meta_file, parse_meta_file
 from paz.bdo_payload_reader import (
@@ -52,7 +59,7 @@ DEFAULT_ENTRY = "morningland_boss_03_02_full.dds"
 # A median-size archive (9 MB, about 800 files) mixing .bwp, .xml, .bss,
 # .dbss and more, compressed and stored, encrypted and plain.
 DEFAULT_ARCHIVE = "pad05889.paz"
-STAGE_NAMES = ("decrypt", "decompress", "read", "extract", "parse", "index")
+STAGE_NAMES = ("decrypt", "decompress", "read", "extract", "parse", "index", "loc")
 _HASH_CHUNK_BYTES = 1024 * 1024
 
 
@@ -147,6 +154,32 @@ def load_index_workload(paz_folder: str | None) -> Workload:
     # The collector stays on, as in the app: the parse builds one PazEntry
     # per file of the client.
     return Workload(info, lambda _scratch: [Stage("index", lambda: parse_meta_file(meta_path), with_gc=True)])
+
+
+def load_loc_workload(paz_folder: str | None, language: str | None) -> Workload:
+    """The LOC file of `language`, or of the language picked in the app."""
+    code = language or load_config().get("language", "en")
+    path = loc_path(resolve_paz_root(paz_folder), code)
+    if path is None:
+        raise CliError(f"the language '{code}' has no LOC file to read.")
+    try:
+        raw = path.read_bytes()
+    except OSError as ex:
+        raise CliError(f"cannot read {path}: {ex}") from ex
+    decompressed = decompress_loc(raw)
+    if decompressed is None:
+        raise CliError(f"{path.name} does not decompress.")
+
+    info = FixtureInfo(
+        name=path.name,
+        files=1,
+        stored_bytes=len(raw),
+        size_bytes=len(decompressed),
+        sha256=hashlib.sha256(raw).hexdigest(),
+    )
+    # The collector stays on, as in the app: the index holds one string and
+    # one key tuple per text.
+    return Workload(info, lambda _scratch: [Stage("loc", lambda: init_loc(raw), with_gc=True)])
 
 
 def archive_file_name(text: str) -> str:

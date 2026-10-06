@@ -1,17 +1,22 @@
 from __future__ import annotations
 
+import codecs
 import struct
 import zlib
 from collections.abc import Mapping
 from types import MappingProxyType
 
-from _common.binary import u32
 from _common.data_deps import LOC, note_read
 # Re-exported: handlers import strip_pa_tags from here.
 from _common.pa_text import strip_pa_tags as strip_pa_tags
 
 # Some LOC keys store this literal instead of a text.
 LOC_NULL = "<null>"
+
+# Record header: text length in UTF-16 units, str_type, str_id1 to str_id4.
+_RECORD_HEADER = struct.Struct("<IIIHBB")
+# A u32 terminator, always 0, follows every text.
+_RECORD_TRAILER_SIZE = 4
 
 
 def decompress_loc(raw: bytes) -> bytes | None:
@@ -49,30 +54,45 @@ def init_loc(raw: bytes | None) -> None:
     if data is None:
         return
 
-    index:     dict[tuple[int, int, int, int, int], str] = {}
-    prefix:    dict[tuple[int, int], list[str]] = {}
+    _LOC_INDEX, _LOC_PREFIX = _index_texts(data)
+
+
+def _index_texts(
+    data: bytes,
+) -> tuple[dict[tuple[int, int, int, int, int], str], dict[tuple[int, int], list[str]]]:
+    """The full-key index and the (str_type, str_id1) prefix lists of `data`.
+
+    Runs once per text, 1.4 million times on an English client, so the header
+    is one precompiled unpack (the loop condition already checks its bounds),
+    the decoder is called without the codec lookup `bytes.decode` does, and
+    a prefix list is only built for a new key.
+    """
+    index: dict[tuple[int, int, int, int, int], str] = {}
+    prefix: dict[tuple[int, int], list[str]] = {}
+    unpack_header = _RECORD_HEADER.unpack_from
+    header_size = _RECORD_HEADER.size
+    decode = codecs.utf_16_le_decode
+    data_size = len(data)
 
     pos = 0
-    while pos + 16 <= len(data):
-        str_size = u32(data, pos)
-        str_type = u32(data, pos + 4)
-        str_id1  = u32(data, pos + 8)
-        str_id2  = struct.unpack_from("<H", data, pos + 12)[0]
-        str_id3  = data[pos + 14]
-        str_id4  = data[pos + 15]
-        text_end = pos + 16 + str_size * 2
-
-        if text_end + 4 > len(data):
+    while pos + header_size <= data_size:
+        str_size, str_type, str_id1, str_id2, str_id3, str_id4 = unpack_header(data, pos)
+        text_start = pos + header_size
+        text_end = text_start + str_size * 2
+        if text_end + _RECORD_TRAILER_SIZE > data_size:
             break
 
-        text = data[pos + 16:text_end].decode("utf-16-le", errors="replace")
-        pos = text_end + 4
+        text = decode(data[text_start:text_end], "replace")[0]
+        pos = text_end + _RECORD_TRAILER_SIZE
 
         index[(str_type, str_id1, str_id2, str_id3, str_id4)] = text
-        prefix.setdefault((str_type, str_id1), []).append(text)
+        texts = prefix.get((str_type, str_id1))
+        if texts is None:
+            prefix[(str_type, str_id1)] = [text]
+        else:
+            texts.append(text)
 
-    _LOC_INDEX  = index
-    _LOC_PREFIX = prefix
+    return index, prefix
 
 
 # ── Public API ────────────────────────────────────────────────────────────────
