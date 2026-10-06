@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Defines the new-quest (event) list: quest IDs grouped under events such as `[Event] Mastering Life Skills`, each group with an event period, and per quest a condition line and two condition scripts. 232 groups and 1,281 quest references on client 3458. All text sits in a string pool at the end of the file (Korean group names, Korean condition lines, scripts, dates); LOC type 58 holds the English names and condition lines.
+Defines the new-quest (event) list: quest IDs grouped under events such as `[Event] Mastering Life Skills`, each group with an event period, and per quest a condition line and two condition scripts. 232 groups and 1,281 quest references on client 3458. All text sits in a string table at the end of the file (Korean group names, Korean condition lines, scripts, dates); LOC type 58 holds the English names and condition lines.
 
 [`mainquest.bss`](mainquest_bss.md), [`recommendationquest.bss`](recommendationquest_bss.md) and [`repetitionquest.bss`](repetitionquest_bss.md) share this layout, each with its own LOC type; one handler reads all four. This doc is the layout reference for all four.
 
@@ -27,7 +27,7 @@ group[group_count]:
     group header (10)
     quest reference row (17) x quest_ref_count
     group trailer (13)
-string pool: u32 string_count, string entry x string_count
+string table: u32 string_count, string entry x string_count
 file trailer (8)
 ```
 
@@ -43,7 +43,7 @@ file trailer (8)
 | Offset  | Type | Field           | Notes                                                                   |
 | ------- | ---- | --------------- | ----------------------------------------------------------------------- |
 | `+0x00` | u16  | group_key       | The group's key, see Localization; unique per group                     |
-| `+0x02` | u32  | name index      | String pool index of the Korean group name; `0` for the first group     |
+| `+0x02` | u32  | name_index      | String table index of the Korean group name (`group_name_kr`); `0` for the first group |
 | `+0x06` | u8   | unknown_06      | `0` on most groups; see Open Questions                                  |
 | `+0x07` | u16  | quest_ref_count | Number of following rows                                                |
 | `+0x09` | u8   | padding         | Observed zero                                                           |
@@ -55,37 +55,41 @@ file trailer (8)
 | `+0x00` | u8   | unknown_00     | `0` on every row here; `1` on 7 `mainquest.bss` rows                    |
 | `+0x01` | u16  | quest_chain_id | LOC type 18 `str_id1`; combines with `quest_id` to form quest key       |
 | `+0x03` | u16  | quest_id       | LOC type 18 `str_id2`; combines with `quest_chain_id` to form quest key |
-| `+0x05` | u32  | unknown_05     | String pool index of the Korean condition line, the source of the LOC condition line |
-| `+0x09` | u32  | unknown_09     | String pool index of a condition script, often the empty string; see String Pool |
-| `+0x0D` | u32  | unknown_0d     | String pool index of a second condition script, often the empty string; see String Pool |
+| `+0x05` | u32  | condition_index | String table index of the Korean condition line (`condition_kr`), the source of the LOC condition line |
+| `+0x09` | u32  | script_1_index | String table index of the first condition script (`script_1`), often the empty string; see String Table |
+| `+0x0D` | u32  | script_2_index | String table index of the second condition script (`script_2`), often the empty string; see String Table |
 
 ### Group Trailer (13 bytes)
 
 | Offset  | Type | Field        | Notes                                                                  |
 | ------- | ---- | ------------ | ---------------------------------------------------------------------- |
 | `+0x00` | u8   | unknown_00   | Observed zero                                                          |
-| `+0x01` | u32  | start index  | String pool index of the event start, e.g. `2019-10-16 04:00`; the empty string in the other three lists |
-| `+0x05` | u32  | end index    | String pool index of the event end, e.g. `2019-11-13 05:59`; always after the start |
+| `+0x01` | u32  | event_start_index | String table index of the event start (`event_start`), e.g. `2019-10-16 04:00`; the empty string in the other three lists |
+| `+0x05` | u32  | event_end_index   | String table index of the event end (`event_end`), e.g. `2019-11-13 05:59`; always after the start |
 | `+0x09` | u32  | unknown_09   | Observed `0` in every group of the four files                          |
 
 The start of group 1 `[Event] Black Desert 2019 Halloween` is `2019-10-16 04:00`, and its English condition lines read `Oct 16 (after maintenance) - ...`.
 
-### String Pool
+The times are stored without zero padding (`2018-10-3 10:00`, `2019-7-24 9:00`). The parser pads month, day and hour (`2018-10-03 10:00`) so they sort as text, and keeps text in any other form as stored. All 464 times on client 3458 have the `YYYY-M-D H:MM` form.
 
-Follows the last group trailer: a u32 `string_count`, then `string_count` entries, indexed from `0`.
+### String Table
+
+Follows the last group trailer: a u32 `string_count`, then `string_count` entries, indexed from `0`. It is the counted string table other PABR `.bss` files end with (`exploration.bss`, `npcsimply.bss`, `menu.bss`), read by `_common/pabr_strings.py`.
 
 | Offset  | Type      | Field  | Notes                                     |
 | ------- | --------- | ------ | ----------------------------------------- |
-| `+0x00` | u8        | marker | `1` on every entry                        |
-| `+0x01` | u32       | length | Text length in bytes                      |
-| `+0x05` | u16[]     | text   | UTF-16-LE, `length` bytes, no terminator  |
+| `+0x00` | u8        | is_wide | `1` on every entry here: UTF-16-LE (`0` would be UTF-8) |
+| `+0x01` | u32       | length  | Text length in bytes                      |
+| `+0x05` | u8[]      | text    | `length` bytes, no terminator             |
 
-The pool holds each distinct string once, in first-use order: the group name, then each row's condition line and two scripts, then the trailer's dates. On client 3458 every entry is used (1,840 here). Index `0` is the first group's name, and the empty string sits at a low index (`2` here), which is why the script fields read `2` on so many rows.
+The table holds each distinct string once, in first-use order: the group name, then each row's condition line and two scripts, then the trailer's dates. On client 3458 every entry is used (1,840 here). Index `0` is the first group's name, and the empty string sits where it is first used: index `2` here and in `mainquest.bss` and `recommendationquest.bss`, `31` in `repetitionquest.bss`. That is why the script indexes repeat one value on so many rows.
 
 The condition lines are the Korean source of the LOC lines and carry the same `<PAColor>` tags. The scripts are client condition calls separated by `;`, with `<or>` between alternatives and `!` for negation: `checkperiodbyGmt(0, 2019/9/4-00:00, 2019/9/25-09:00);`, `clearquest(40022,1);`, `progressquest(...)`, `getLevel()>59;`, `isContentsGroupOpen(0,2177);`, `checkClass(...)`, `getLifeLevel(6)>80;`. Across the four files:
 
-- `unknown_0d` reads as the condition for the quest to be offered: event periods, content groups, level and class checks, prerequisite quests (`mainquest.bss` quest 40022 / 2 needs `clearquest(40022,1);`).
-- `unknown_09` mostly lists the quests that rule this one out: the other branches of a crossroad (7500 / 81 lists 7500 / 82), `do not accept Techthon and Quality Iron` (2001 / 138 lists 2001 / 137), and the other quests of a "once a week per Family" set. No level check ever appears in it.
+- `script_2` reads as the condition for the quest to be offered: event periods, content groups, level and class checks, prerequisite quests (`mainquest.bss` quest 40022 / 2 needs `clearquest(40022,1);`), and `!clearquest` / `!progressquest` of the quest itself.
+- `script_1` mostly lists the quests that rule this one out: the other branches of a crossroad (7500 / 81 lists 7500 / 82), `do not accept Techthon and Quality Iron` (2001 / 138 lists 2001 / 137), and the other quests of a "once a week per Family" set. No level check ever appears in it.
+
+Calls across the four files on client 3458: `script_1` holds `clearquest` 2,846 times and `progressquest` 1,990 times against 336 negated calls, and never `getLevel` or `checkperiodbyGmt`. `script_2` holds `isContentsGroupOpen` 6,833 times, `checkperiodbyGmt` 5,494, `getLevel` 1,410 and a negated `clearquest` / `progressquest` 4,577 times.
 
 Neither script holds every condition its LOC line names: of 496 `repetitionquest.bss` lines that start `from Lv. N`, 75 have the level check in a script. The rest is likely checked by the quest itself.
 
@@ -93,14 +97,8 @@ Neither script holds every condition its LOC line names: of 496 `repetitionquest
 
 | Offset  | Type | Field         | Notes                                                    |
 | ------- | ---- | ------------- | -------------------------------------------------------- |
-| `+0x00` | u32  | pool offset   | File offset of the string pool's `string_count` (`0x69F1` here) |
+| `+0x00` | u32  | table offset  | File offset of the string table's `string_count` (`0x69F1` here) |
 | `+0x04` | u32  | unknown_04    | Observed `0`                                             |
-
-### Reading With the Old Framing
-
-The handler still reads the older framing of this doc, which gives the same rows: a 10-byte "first group header" (the group header above, whose u16 key and zero name index read together as a u32 key) and a 23-byte "later group header", which is the previous group's 13-byte trailer followed by the next group's 10-byte header. In that framing the later header's `unknown_00`, `unknown_01`, `unknown_05`, `unknown_09` are the trailer fields, `+0x0D` is `group_key`, `unknown_0f` is the name index, `unknown_13` is `unknown_06` and `+0x14` the row count. The "text payload" after the stream was the last group's trailer, the string pool and the file trailer.
-
-Earlier versions of this doc called the row's `unknown_00` `flags` and `unknown_05` / `unknown_09` / `unknown_0d` `sequence_a` / `sequence_b` / `sequence_c`, and named the header fields `header_flag`, `unknown_a`, `unknown_b`, `unknown_c`, `group_key_a`, `group_key_b` and `unknown_d`.
 
 Derived packed quest ID:
 
@@ -124,7 +122,7 @@ condition line. A quest in two groups has a line under each key: quest
 11060 / 1 sits in the groups with keys 2 (`[Event] Black Desert 2019
 Halloween`) and 62 (`[Event] Black Desert 2020 Halloween`). Condition lines carry `<PAColor>`
 tags; group names do not. The Korean names and condition lines in the
-string pool are the source of both, so they can stand in where LOC has no row.
+string table are the source of both, and the handler shows them where LOC has no row.
 
 ---
 
@@ -132,8 +130,8 @@ string pool are the source of both, so they can stand in where LOC has no row.
 
 Client 3458:
 
-| Group | Row | Group Key | Quest Chain ID | Quest ID | unknown_05 | unknown_09 | unknown_0d | Example LOC Title |
-| ----: | --: | --------: | -------------: | -------: | ---------: | ---------: | ---------: | ----------------- |
+| Group | Row | Group Key | Quest Chain ID | Quest ID | condition_index | script_1_index | script_2_index | Example LOC Title |
+| ----: | --: | --------: | -------------: | -------: | --------------: | -------------: | -------------: | ----------------- |
 | 0     | 0   | `1`       | `11059`        | `9`      | `1`        | `2`        | `2`        | `[Event] Love for Pets` |
 | 0     | 1   | `1`       | `11059`        | `10`     | `1`        | `2`        | `2`        | `[Event] Savory Good Feed` |
 
@@ -146,12 +144,16 @@ Client 3458:
 | Main ID      | num  | `quest_chain_id`; LOC type 18 `str_id1`                          |
 | Sub ID       | num  | `quest_id`; LOC type 18 `str_id2`                                |
 | Group Key    | num  | `group_key` of the row's group                                   |
-| Group Name   | text | LOC type 58 `str_id1 = group_key`, `str_id4 = 0`                 |
+| Group Name   | text | LOC type 58 `str_id1 = group_key`, `str_id4 = 0`; else the Korean `group_name_kr` |
+| Event Start  | text | `event_start`; `newquest.bss` only                               |
+| Event End    | text | `event_end`; `newquest.bss` only                                 |
 | Icon         | text | Quest icon resolved from `packed_quest_id` through the quest icon index |
 | Title        | text | Prefer LOC type 18 row with matching main/sub ID and `str_id4=0`, in its game colours |
-| Condition    | text | LOC type 58 `(packed_quest_id, group_key)`, `str_id4 = 1`, in its game colours |
+| Condition    | text | LOC type 58 `(packed_quest_id, group_key)`, `str_id4 = 1`, in its game colours; else the Korean `condition_kr` |
+| Offered When* | text | `script_2` on one line; the `*` marks the role as our reading, not confirmed (see Open Questions) |
+| Ruled Out When* | text | `script_1` on one line; the `*` marks the role as our reading, not confirmed (see Open Questions) |
 
-`group` (the index in file order), `unknown_05`, `unknown_09` and `unknown_0d` stay on the record for search and export but are not shown. The handler does not read the string pool yet, so the event period and the two scripts are not shown either.
+`group` (the index in file order), `unknown_00`, `unknown_06`, the string table indexes and the Korean `group_name_kr` / `condition_kr` stay on the record for search and export but are not shown. The other three lists show the same columns without Event Start and Event End.
 
 ---
 
@@ -159,7 +161,8 @@ Client 3458:
 
 - Decompressed size is `820,905` bytes on client 3458 (`816,761` with 224 groups and 1,255 rows before 2026-09-27).
 - 27 quests sit in two groups (29 before 2026-09-27); each copy has its own condition line in LOC.
-- The string pool indexes shift whenever a string is added earlier in the file, so `unknown_05` / `unknown_09` / `unknown_0d` are not stable across patches: quest `77129` had `unknown_05 = 899` before 2026-09-27 and `896` after.
+- The string table indexes shift whenever a string is added earlier in the file, so `condition_index` / `script_1_index` / `script_2_index` are not stable across patches: quest `77129` had `condition_index = 899` before 2026-09-27 and `896` after.
+- Earlier versions of this doc and the handler read a 10-byte first group header and a 23-byte later one: the previous group's trailer followed by the next group's header. The rows were the same. They called the row's `unknown_00` `flags`, called `condition_index` / `script_1_index` / `script_2_index` `sequence_a` / `sequence_b` / `sequence_c` and later `unknown_05` / `unknown_09` / `unknown_0d`, and named the header fields `header_flag`, `unknown_a` to `unknown_d`, `group_key_a` and `group_key_b`.
 
 ---
 
@@ -171,7 +174,14 @@ Client 3458:
 
 ### Script Roles
 
-Which of `unknown_09` and `unknown_0d` hides a quest and which offers it is read from the patterns above, not confirmed. Some `mainquest.bss` rows put a requirement in `unknown_09` with a negation (4015 / 5 `Another Chaser` has `!clearquest(4001,1);`), which fits "hidden while this holds".
+What we think: `script_2` says when the quest is offered and `script_1` when it is ruled out. This is read from the patterns above, not confirmed in game, so the columns are labelled Offered When* and Ruled Out When*, the `*` (with a header tooltip) marking the role as our reading. The record fields stay `script_1` / `script_2` by position. Some `mainquest.bss` rows put a requirement in `script_1` with a negation (all of chain 4015, `Descendant of Giants` to `Elric Monastery Report`, has `!clearquest(4001,1);`), which fits "hidden while this holds". `Bridle of Destiny` (4001 / 1), the quest that check names, carries it in its own `script_1` too, so under this reading it and the 4015 chain only show for a character that cleared it before. That looks like an older Mediah opening that newer characters skip. The client Lua (`panel_newquest.luac`, `panel_widget_mainquest.luac`) gets the lists through `ToClient_GetQuestList` and names neither script.
+
+In-game checks that would confirm the roles (client 3458 data). Each says what the game shows if the reading is right:
+
+- **Branch ruled out once the other is taken** (`recommendationquest.bss`, group `[ADV Support] Inventory Expansion!`): `Techthon and Quality Iron` (2001 / 137) and `Puia and the Wooden Box Design` (2001 / 138) each list the other in `script_1` with `clearQuest` or `progressQuest`. Accept one, and the other should leave the group's list right away, not only after the first is completed.
+- **Crossroad ruled out once the other is cleared** (`mainquest.bss`, group `[Mountain of Eternal Winter] In Search of the Flame that Consumes Gods`): `[Crossroad] One Game is All Yar Need` (7500 / 81) and `[Crossroad] No Silver, No Meal` (7500 / 82) list only `clearquest` of each other. The other branch should stay listed while the first is in progress and leave once it is completed.
+- **Hidden until cleared** (`mainquest.bss`, group `[Lv. 51 Mediah] Dark Energy that Looms Over Mediah`): on a character that never did `Bridle of Destiny`, neither it nor `Descendant of Giants` to `Elric Monastery Report` (4015 / 1 to 7) should be listed in the group.
+- **Offered from a level** (`recommendationquest.bss`, group `[Life 101] The Adventurer That Does It All`): every quest has `getLevel()>59;` in `script_2`. On a level 59 character the group's quests should not be offered; at level 60 they should.
 
 ### Duplicate Quest References
 

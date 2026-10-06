@@ -23,7 +23,7 @@ from .plantworkerpassiveskill.handler import PlantWorkerPassiveSkillBssHandler
 from .plantworkerselect.handler import PlantWorkerSelectBssHandler
 from .planttown.handler import PlantTownBssHandler
 from .questjournalvideoinfo.handler import QuestJournalVideoInfoBssHandler
-from .questlist.handler import QUEST_LIST_LOC_TYPES, QuestListBssHandler
+from .questlist.handler import EVENT_PERIOD_LISTS, QUEST_LIST_LOC_TYPES, QuestListBssHandler
 from .skillgroup.handler import SkillGroupBssHandler
 from .specialenchantitem.handler import SpecialEnchantItemBssHandler
 from .stringtable.handler import StringTableBssHandler
@@ -64,7 +64,7 @@ def register_bss_handlers() -> None:
     register_handler("questjournalvideoinfo.bss", QuestJournalVideoInfoBssHandler())
     # One layout for the four quest lists, each with its own LOC type.
     for name, loc_type in QUEST_LIST_LOC_TYPES.items():
-        register_handler(name, QuestListBssHandler(loc_type))
+        register_handler(name, QuestListBssHandler(loc_type, has_event_period=name in EVENT_PERIOD_LISTS))
     register_handler("skillgroup.bss", SkillGroupBssHandler())
     register_handler("specialenchantitem.bss", SpecialEnchantItemBssHandler())
     register_handler("stringtable.bss", StringTableBssHandler())

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from dataclasses import replace
 from typing import Any
 
@@ -12,16 +13,23 @@ from tests.framework import (
     RangeTest,
     SchemaTest,
     TargetTest,
+    UserLanguageTest,
     case_id,
     header_count,
     run_case,
 )
+
+from _bss.questlist.handler import EVENT_PERIOD_LISTS
 
 
 _REQUIRED_KEYS = [
     "group",
     "group_key",
     "group_name",
+    "group_name_kr",
+    "unknown_06",
+    "event_start",
+    "event_end",
     "row",
     "unknown_00",
     "quest_chain_id",
@@ -29,10 +37,15 @@ _REQUIRED_KEYS = [
     "packed_quest_id",
     "title",
     "condition",
-    "unknown_05",
-    "unknown_09",
-    "unknown_0d",
+    "condition_index",
+    "condition_kr",
+    "script_1_index",
+    "script_1",
+    "script_2_index",
+    "script_2",
 ]
+# Event times as the parser pads them.
+_EVENT_TIME_RE = re.compile(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}")
 
 
 def _list_case(name: str, tests: list) -> HandlerCase:
@@ -49,6 +62,8 @@ def _list_case(name: str, tests: list) -> HandlerCase:
             SchemaTest(required_keys=_REQUIRED_KEYS),
             # Condition lines name NPCs and quests in yellow.
             PaFieldTest(field="condition"),
+            # LOC first, the Korean text from the string table only where LOC has no row.
+            UserLanguageTest(fields=["group_name", "condition"]),
             *tests,
         ],
     )
@@ -64,8 +79,10 @@ NEWQUEST_CASE = _list_case("newquest", [
             "quest_chain_id": 11059,
             "quest_id": 9,
             "title": "[Event] Love for Pets",
-            # The first group's key is the u32 at the start of its header.
             "group_key": 1,
+            # The file stores `2018-10-3 10:00`; the parser pads it.
+            "event_start": "2018-10-03 10:00",
+            "event_end": "2018-11-07 09:59",
         },
     ),
     TargetTest(
@@ -87,6 +104,12 @@ MAINQUEST_CASE = _list_case("mainquest", [
             "title": "[Special Growth] Birth of a Prestigious Family",
             "group_name": "[Special Growth] Taking My Own Path",
         },
+    ),
+    # The second quest of the chain is offered once the first is cleared.
+    TargetTest(
+        col="packed_quest_id",
+        value=171094,
+        expected={"quest_chain_id": 40022, "quest_id": 2, "script_2": "clearquest(40022,1);"},
     ),
 ])
 
@@ -163,3 +186,16 @@ def test_group_keys_are_unique_per_group(case: HandlerCase) -> None:
     keys = {record["group"]: record["group_key"] for record in _result(case).records}
 
     assert len(set(keys.values())) == len(keys)
+
+
+@pytest.mark.parametrize("case", CASES, ids=lambda case: case.handler_name)
+def test_event_period_only_in_the_event_list(case: HandlerCase) -> None:
+    """`newquest.bss` gives every group a start before its end; the other lists leave both blank."""
+    has_period = case.handler_name in EVENT_PERIOD_LISTS
+    for record in _result(case).records:
+        start, end = record["event_start"], record["event_end"]
+        if not has_period:
+            assert (start, end) == ("", ""), record["group"]
+            continue
+        assert _EVENT_TIME_RE.fullmatch(start) and _EVENT_TIME_RE.fullmatch(end), (start, end)
+        assert start < end, record["group"]

@@ -2,10 +2,15 @@
   "columns": {
     "groupKey": "Group Key",
     "groupName": "Group Name",
+    "eventStart": "Event Start",
+    "eventEnd": "Event End",
     "condition": "Condition",
     "mainId": "Main ID",
     "subId": "Sub ID",
     "icon": "Icon",
-    "title": "Title"
+    "title": "Title",
+    "offeredWhen": "Offered When*",
+    "ruledOutWhen": "Ruled Out When*",
+    "scriptGuess": "* What we think this script does; not confirmed in game"
   }
 }
