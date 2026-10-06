@@ -14,13 +14,23 @@ TreeNode = dict | PazEntry
 
 
 def build_tree(entries: list[PazEntry]) -> dict:
+    """The folder tree of `entries`.
+
+    Folders are found by their path, so a file only walks the tree when it
+    is the first in its folder; the client has 872,774 files in far fewer
+    folders.
+    """
     root: dict = {}
+    folders: dict[str, dict] = {"": root}
     for entry in entries:
-        parts = _norm(entry.internal_path).split("/")
-        node = root
-        for part in parts[:-1]:
-            node = node.setdefault(part, {})
-        node[parts[-1]] = entry
+        folder_path, _, name = _norm(entry.internal_path).rpartition("/")
+        folder = folders.get(folder_path)
+        if folder is None:
+            folder = root
+            for part in folder_path.split("/"):
+                folder = folder.setdefault(part, {})
+            folders[folder_path] = folder
+        folder[name] = entry
     return root
 
 

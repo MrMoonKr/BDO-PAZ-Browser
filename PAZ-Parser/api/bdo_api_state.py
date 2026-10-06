@@ -34,7 +34,8 @@ class ApiState:
         self._paz_root: Path | None = None
         self._entries: list[PazEntry] = []
         self._entry_map: dict[str, PazEntry] = {}
-        self._entry_map_lower: dict[str, PazEntry] = {}
+        # `fold_entry_map(_entry_map)`, for `_entry_ignoring_case()`.
+        self._entry_map_folded: dict[str, PazEntry] = {}
         self._icon_entry_cache: dict[str, PazEntry | None] = {}
         self._icon_data_url_cache: dict[str, str] = {}
         self._icon_decode_lock = threading.Lock()
@@ -88,6 +89,11 @@ class ApiState:
         runs every call on its own thread, so the window stays responsive.
         """
         self._folder_text_ready.wait()
+
+    def _entry_ignoring_case(self, path: str) -> PazEntry | None:
+        """The entry at the normalised `path` in any letter case, or None."""
+        folded = path.lower()
+        return self._entry_map.get(folded) or self._entry_map_folded.get(folded)
 
     def _mark_activity(self) -> None:
         self._last_activity = time.monotonic()

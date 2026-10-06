@@ -1,7 +1,8 @@
 """What a benchmark decodes, and the stages it times on it.
 
 A workload is one PAZ entry (`--entry`), one whole archive (`--archive`),
-the client's file index (`--index`) or one LOC file (`--loc`).
+the client's file index (`--index`), one LOC file (`--loc`) or the folder's
+entry list (`--folder`).
 
 On an entry, `decrypt` and `decompress` work on bytes already in memory, so
 disk speed and the OS file cache stay out of their numbers. `read` is the
@@ -23,6 +24,10 @@ header, so the timed runs see a warm file cache.
 On a LOC file, `loc` is `init_loc()` on the file's bytes in memory: the
 decompress and the text index every table's game text comes from, which the
 app builds on every start and language switch.
+
+On the folder, `entries` is what a start does before the page gets the tree:
+the PAZ index cache load, the entry maps and the tree, without LOC and the
+lookup indexes (`--loc` times LOC).
 """
 from __future__ import annotations
 
@@ -40,6 +45,7 @@ from api.bdo_config import load_config
 from api.bdo_languages import loc_path
 from cli.session import open_session, resolve_paz_root
 from _common.loc import decompress_loc, init_loc
+from paz.bdo_cache import CACHE_FILE
 from paz.bdo_meta_reader import read_bdo_meta
 from paz.bdo_paz_extract import extract_entries, extract_entry, find_single_meta_file, parse_meta_file
 from paz.bdo_payload_reader import (
@@ -59,7 +65,7 @@ DEFAULT_ENTRY = "morningland_boss_03_02_full.dds"
 # A median-size archive (9 MB, about 800 files) mixing .bwp, .xml, .bss,
 # .dbss and more, compressed and stored, encrypted and plain.
 DEFAULT_ARCHIVE = "pad05889.paz"
-STAGE_NAMES = ("decrypt", "decompress", "read", "extract", "parse", "index", "loc")
+STAGE_NAMES = ("decrypt", "decompress", "read", "extract", "parse", "index", "loc", "entries")
 _HASH_CHUNK_BYTES = 1024 * 1024
 
 
@@ -180,6 +186,29 @@ def load_loc_workload(paz_folder: str | None, language: str | None) -> Workload:
     # The collector stays on, as in the app: the index holds one string and
     # one key tuple per text.
     return Workload(info, lambda _scratch: [Stage("loc", lambda: init_loc(raw), with_gc=True)])
+
+
+def load_folder_workload(paz_folder: str | None) -> Workload:
+    """The folder's PAZ index cache, which must match the client already."""
+    api = _open_api(paz_folder)
+    paz_root = _paz_root(api)
+    cache_path = paz_root / CACHE_FILE
+    if not cache_path.is_file():
+        raise CliError(f"no {CACHE_FILE} in {paz_root}; open the folder once first.")
+
+    info = FixtureInfo(
+        name=CACHE_FILE,
+        files=len(api.entries),
+        stored_bytes=cache_path.stat().st_size,
+        size_bytes=0,
+        sha256=_file_sha256(cache_path),
+    )
+
+    def load_entries() -> None:
+        Api().load_folder(paz_root, load_loc=False, load_indexes=False)
+
+    # The collector stays on, as in the app.
+    return Workload(info, lambda _scratch: [Stage("entries", load_entries, with_gc=True)])
 
 
 def archive_file_name(text: str) -> str:

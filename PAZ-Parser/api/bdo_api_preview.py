@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import html
 import time
+from itertools import chain
 from typing import Any
 from pathlib import Path
 
@@ -74,19 +75,18 @@ class PreviewMixin(ApiState):
         if norm in cache:
             return cache[norm]
 
-        entry = self._entry_map.get(norm)
-        if entry is None:
-            entry = self._entry_map_lower.get(norm.lower())
+        entry = self._entry_map.get(norm) or self._entry_ignoring_case(norm)
 
         if entry is None:
             for sibling in _icon_sibling_paths(norm):
-                entry = self._entry_map.get(sibling) or self._entry_map_lower.get(sibling.lower())
+                entry = self._entry_map.get(sibling) or self._entry_ignoring_case(sibling)
                 if entry is not None:
                     break
 
         if entry is None:
+            # Lowercase paths match in `_entry_map`, the others in the folded map.
             suffix = norm.lower()
-            for key, candidate in self._entry_map_lower.items():
+            for key, candidate in chain(self._entry_map.items(), self._entry_map_folded.items()):
                 if key.endswith(suffix):
                     entry = candidate
                     break

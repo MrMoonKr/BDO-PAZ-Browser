@@ -21,7 +21,7 @@ from .bdo_config import (
     show_pa_tags_setting,
 )
 from .bdo_languages import UI_LANGUAGE_CODES, UI_LANGUAGES, game_language, loc_path, missing_loc_file
-from .bdo_api_helpers import _DISK_VIRTUAL_PREFIX, _file_icon, _norm, path_matcher
+from .bdo_api_helpers import _DISK_VIRTUAL_PREFIX, _file_icon, _norm, fold_entry_map, path_matcher
 from .bdo_api_preview import PreviewMixin
 from .bdo_api_search import SearchMixin
 from .bdo_tree import build_tree, collect_entries, count_entries, find_node, handled_entries
@@ -297,7 +297,7 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
 
         self._entries = entries
         self._entry_map = {_norm(e.internal_path): e for e in entries}
-        self._entry_map_lower = {path.lower(): entry for path, entry in self._entry_map.items()}
+        self._entry_map_folded = fold_entry_map(self._entry_map)
         self._icon_entry_cache.clear()
         self._icon_data_url_cache.clear()
         self._icon_preview_images.clear()
@@ -376,7 +376,7 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
         else:
             try:
                 indexes = build_indexes(
-                    self._load_companion_sync, self._entry_map_lower.__contains__
+                    self._load_companion_sync, lambda path: self._entry_ignoring_case(path) is not None
                 )
             except Exception as ex:
                 logging.warning("Could not build the lookup indexes", exc_info=True)

@@ -3,6 +3,8 @@ from __future__ import annotations
 import fnmatch
 from collections.abc import Callable
 
+from bdo_models import PazEntry
+
 _DISK_VIRTUAL_PREFIX = "__disk__"
 
 _ICON_MAP: dict[str, str] = {
@@ -19,6 +21,16 @@ _ICON_MAP: dict[str, str] = {
 
 def _norm(path: str) -> str:
     return path.replace("\\", "/")
+
+
+def fold_entry_map(entry_map: dict[str, PazEntry]) -> dict[str, PazEntry]:
+    """Lowercased path -> entry, for the paths of `entry_map` not lowercase already.
+
+    Nearly every client path is lowercase (all but 14 of 872,774 on client
+    3458), so a full lowercase copy of the map would hold about 116 MB to
+    find the few others.
+    """
+    return {path.lower(): entry for path, entry in entry_map.items() if not path.islower()}
 
 
 def _file_icon(ext: str) -> str:

@@ -111,6 +111,7 @@ def test_parse_stage_names_accepts_a_comma_list_in_any_case() -> None:
     assert parse_stage_names("parse") == ["parse"]
     assert parse_stage_names("index") == ["index"]
     assert parse_stage_names("loc") == ["loc"]
+    assert parse_stage_names("entries") == ["entries"]
 
 
 @pytest.mark.parametrize("text", ["", "decrypt,unpack"])

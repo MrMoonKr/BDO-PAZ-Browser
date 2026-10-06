@@ -166,6 +166,9 @@ python benchmark.py run --index --repeats 3 --output before.json
 # Build the LOC text index, as every start does (default: the app's language)
 python benchmark.py run --loc --output before.json
 
+# Load the entry list from its cache and build the tree, as every start does
+python benchmark.py run --folder --output before.json
+
 # After a change: same command, then compare stage by stage
 python benchmark.py run --output after.json
 python benchmark.py compare before.json after.json
@@ -177,8 +180,8 @@ python benchmark.py profile --archive --stages extract --save extract.prof
 The workload is one entry (`--entry`, default
 `morningland_boss_03_02_full.dds`, a 14 MB texture), one archive
 (`--archive`, default `pad05889.paz`, about 800 mixed files) or the client's
-file index (`--index`) or one LOC file (`--loc`, optionally a language code
-such as `--loc de`). The stages:
+file index (`--index`), one LOC file (`--loc`, optionally a language code
+such as `--loc de`) or the folder's entry list (`--folder`). The stages:
 
 | Stage | What it times |
 |---|---|
@@ -189,6 +192,7 @@ such as `--loc de`). The stages:
 | `parse` | The handler's `all_records()` (the cached `get_records()` the app's table uses) on the decoded entry, with its companions, LOC in the language picked in the app and the lookup indexes loaded. Only for a file with a parsed view; LOC and the indexes add about 5 s to start-up, so they only load when this stage runs. Every run parses cold (the handler's cached records and index are dropped first) and runs with the garbage collector on, as in the app, which pauses it while the records are built. The input hash covers the entry only, not its companions or LOC |
 | `index` | `--index` only: the `.meta` file parse, which reads the file table and decrypts the path block of every archive, with the garbage collector on. The app runs it when its index cache is out of date. The warm-up leaves every archive header in the OS file cache, so the timed runs are warm (about 2 s on client 3458); a cold parse right after a reboot reads 11,000 archives from disk and takes about a minute. For a cold figure, run `--warmup 0 --repeats 1` first thing after a reboot. The input hash is the meta file's |
 | `loc` | `--loc` only: `init_loc()` on the LOC file's bytes in memory, the decompress and the text index every table's game text comes from, which the app builds on every start and language switch. With the garbage collector on, as in the app |
+| `entries` | `--folder` only: what a start does before the page gets the tree. It loads the entry list from the PAZ index cache and builds the entry maps and the tree, without LOC (`loc`) and the lookup indexes. With the garbage collector on, as in the app. Needs an index cache that matches the client, so open the folder once first. The input hash is the cache file's |
 
 To keep numbers comparable, each run:
 
