@@ -1,0 +1,26 @@
+{
+  "columns": {
+    "fitnessType": "단련",
+    "level": "레벨",
+    "exp": "다음 레벨 필요 경험치",
+    "maxStamina": "최대 지구력",
+    "weightLimit": "최대 소지 무게",
+    "maxHp": "최대 생명력",
+    "maxMp": "최대 투지/정신력/신성력"
+  },
+  "offsetColumns": {
+    "fitnessType": "단련",
+    "level": "레벨",
+    "dataOffset": "데이터 오프셋",
+    "dataSize": "데이터 크기"
+  },
+  "fitnessTypes": {
+    "0": "호흡",
+    "1": "힘",
+    "2": "건강"
+  },
+  "meta": {
+    "count": "레벨 {count}개 · 단련 종류 {types}개",
+    "offsetCount": "오프셋 레코드 {count}개 · 단련 종류 {types}개"
+  }
+}

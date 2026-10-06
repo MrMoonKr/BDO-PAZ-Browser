@@ -1,0 +1,26 @@
+{
+  "columns": {
+    "fitnessType": "Atributos físicos",
+    "level": "Nivel",
+    "exp": "Exp. para el siguiente nivel",
+    "maxStamina": "Aguante máx.",
+    "weightLimit": "Capacidad de carga",
+    "maxHp": "Salud máx.",
+    "maxMp": "Maná/Voluntad/Fe máx."
+  },
+  "offsetColumns": {
+    "fitnessType": "Atributos físicos",
+    "level": "Nivel",
+    "dataOffset": "Desplazamiento de datos",
+    "dataSize": "Tamaño de datos"
+  },
+  "fitnessTypes": {
+    "0": "Aliento",
+    "1": "Fuerza",
+    "2": "Constitución"
+  },
+  "meta": {
+    "count": "{count} niveles · {types} atributos físicos",
+    "offsetCount": "{count} entradas de desplazamiento · {types} atributos físicos"
+  }
+}

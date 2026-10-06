@@ -1,0 +1,26 @@
+{
+  "columns": {
+    "fitnessType": "Fitness",
+    "level": "Stufe",
+    "exp": "EP bis zur nächsten Stufe",
+    "maxStamina": "Max. Ausdauer",
+    "weightLimit": "Max. Traglast",
+    "maxHp": "Max. LP",
+    "maxMp": "Max. MP/WP/KP"
+  },
+  "offsetColumns": {
+    "fitnessType": "Fitness",
+    "level": "Stufe",
+    "dataOffset": "Daten-Offset",
+    "dataSize": "Datengröße"
+  },
+  "fitnessTypes": {
+    "0": "Atem",
+    "1": "Stärke",
+    "2": "Gesundheit"
+  },
+  "meta": {
+    "count": "{count} Stufen · {types} Fitness-Arten",
+    "offsetCount": "{count} Offset-Einträge · {types} Fitness-Arten"
+  }
+}

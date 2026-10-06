@@ -1,0 +1,26 @@
+{
+  "columns": {
+    "fitnessType": "Параметры тела",
+    "level": "Уровень",
+    "exp": "Опыт до след. уровня",
+    "maxStamina": "Макс. выносливость",
+    "weightLimit": "Макс. грузоподъемность",
+    "maxHp": "Макс. HP",
+    "maxMp": "Макс. FP/DP/MP"
+  },
+  "offsetColumns": {
+    "fitnessType": "Параметры тела",
+    "level": "Уровень",
+    "dataOffset": "Смещение данных",
+    "dataSize": "Размер данных"
+  },
+  "fitnessTypes": {
+    "0": "Тонус",
+    "1": "Сила",
+    "2": "Здоровье"
+  },
+  "meta": {
+    "count": "Уровней: {count} · параметров тела: {types}",
+    "offsetCount": "Записей смещения: {count} · параметров тела: {types}"
+  }
+}

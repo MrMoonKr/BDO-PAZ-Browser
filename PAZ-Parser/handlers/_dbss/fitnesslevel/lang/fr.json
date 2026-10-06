@@ -1,0 +1,26 @@
+{
+  "columns": {
+    "fitnessType": "Forme physique",
+    "level": "Niveau",
+    "exp": "EXP pour le prochain niveau",
+    "maxStamina": "Endurance max.",
+    "weightLimit": "Limite de poids",
+    "maxHp": "PV max.",
+    "maxMp": "PM/PF/PS max."
+  },
+  "offsetColumns": {
+    "fitnessType": "Forme physique",
+    "level": "Niveau",
+    "dataOffset": "Décalage des données",
+    "dataSize": "Taille des données"
+  },
+  "fitnessTypes": {
+    "0": "Souffle",
+    "1": "Force",
+    "2": "Santé"
+  },
+  "meta": {
+    "count": "{count} niveaux · {types} types de forme physique",
+    "offsetCount": "{count} entrées de décalage · {types} types de forme physique"
+  }
+}

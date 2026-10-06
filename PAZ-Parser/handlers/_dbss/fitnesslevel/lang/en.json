@@ -1,0 +1,26 @@
+{
+  "columns": {
+    "fitnessType": "Fitness",
+    "level": "Level",
+    "exp": "EXP to Next Level",
+    "maxStamina": "Max Stamina",
+    "weightLimit": "Weight Limit",
+    "maxHp": "Max HP",
+    "maxMp": "Max MP/WP/SP"
+  },
+  "offsetColumns": {
+    "fitnessType": "Fitness",
+    "level": "Level",
+    "dataOffset": "Data Offset",
+    "dataSize": "Data Size"
+  },
+  "fitnessTypes": {
+    "0": "Breath",
+    "1": "Strength",
+    "2": "Health"
+  },
+  "meta": {
+    "count": "{count} levels · {types} fitness types",
+    "offsetCount": "{count} offset records · {types} fitness types"
+  }
+}
