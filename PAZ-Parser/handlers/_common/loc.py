@@ -17,21 +17,44 @@ LOC_NULL = "<null>"
 _RECORD_HEADER = struct.Struct("<IIIHBB")
 # A u32 terminator, always 0, follows every text.
 _RECORD_TRAILER_SIZE = 4
+# The file starts with the exact size of the decompressed record stream.
+_FILE_HEADER = struct.Struct("<I")
+# LOC text compresses about 6x; a header claiming more than this is not
+# trusted as the buffer size (zlib still grows the buffer when it needs to).
+_MAX_COMPRESSION_RATIO = 32
+# Compressed bytes inflated per step while indexing, about 24 MB of records:
+# 1 MB pieces were 3% slower than one whole decompress, 4 MB about 2%, at the
+# same peak memory.
+_STREAM_CHUNK_BYTES = 4 * 1024 * 1024
+
+LocKey = tuple[int, int, int, int, int]
+LocIndex = dict[LocKey, str]
+LocPrefix = dict[tuple[int, int], list[str]]
 
 
 def decompress_loc(raw: bytes) -> bytes | None:
+    """The record stream of a LOC file, or None when it does not decompress.
+
+    zlib gets the output size from the header up front: without it, it grows
+    its buffer as it goes and peaks at over twice the output (516 MB for the
+    228 MB English stream, against 228 MB). The view avoids copying the input.
+    """
+    if len(raw) < _FILE_HEADER.size:
+        return None
+    (size,) = _FILE_HEADER.unpack_from(raw)
+    bufsize = max(1, min(size, len(raw) * _MAX_COMPRESSION_RATIO))
     try:
-        return zlib.decompress(raw[4:])
-    except Exception:
+        return zlib.decompress(memoryview(raw)[_FILE_HEADER.size :], bufsize=bufsize)
+    except zlib.error:
         return None
 
 
 # ── Module-level indices (populated by init_loc) ─────────────────────────────
 
 # (str_type, str_id1, str_id2, str_id3, str_id4) → text
-_LOC_INDEX: dict[tuple[int, int, int, int, int], str] | None = None
+_LOC_INDEX: LocIndex | None = None
 # (str_type, str_id1) -> text values in file order
-_LOC_PREFIX: dict[tuple[int, int], list[str]] | None = None
+_LOC_PREFIX: LocPrefix | None = None
 # str_type -> its keys and texts, built on the first `loc_type_entries()` call
 # for the `_LOC_INDEX` held in `_LOC_BY_TYPE_SOURCE`
 _LOC_BY_TYPE: dict[int, Mapping[tuple[int, int, int, int, int], str]] = {}
@@ -50,25 +73,50 @@ def init_loc(raw: bytes | None) -> None:
         _LOC_PREFIX = None
         return
 
-    data = decompress_loc(raw)
-    if data is None:
+    indexed = _index_stream(raw)
+    if indexed is None:
         return
 
-    _LOC_INDEX, _LOC_PREFIX = _index_texts(data)
+    _LOC_INDEX, _LOC_PREFIX = indexed
 
 
-def _index_texts(
-    data: bytes,
-) -> tuple[dict[tuple[int, int, int, int, int], str], dict[tuple[int, int], list[str]]]:
-    """The full-key index and the (str_type, str_id1) prefix lists of `data`.
+def _index_stream(raw: bytes) -> tuple[LocIndex, LocPrefix] | None:
+    """The key index and prefix lists of a LOC file, or None when it does not decompress.
 
-    Runs once per text, 1.4 million times on an English client, so the header
-    is one precompiled unpack (the loop condition already checks its bounds),
-    the decoder is called without the codec lookup `bytes.decode` does, and
-    a prefix list is only built for a new key.
+    The record stream is inflated a piece at a time and indexed as it
+    arrives, so the whole stream (228 MB in English) never sits in memory next
+    to the index built from it. A truncated zlib stream is refused, as
+    `decompress_loc()` refuses it.
     """
-    index: dict[tuple[int, int, int, int, int], str] = {}
-    prefix: dict[tuple[int, int], list[str]] = {}
+    if len(raw) < _FILE_HEADER.size:
+        return None
+    index: LocIndex = {}
+    prefix: LocPrefix = {}
+    decompressor = zlib.decompressobj()
+    compressed = memoryview(raw)[_FILE_HEADER.size :]
+    pending = b""
+    try:
+        for start in range(0, len(compressed), _STREAM_CHUNK_BYTES):
+            pending += decompressor.decompress(compressed[start : start + _STREAM_CHUNK_BYTES])
+            pending = pending[_index_records(pending, index, prefix) :]
+        pending += decompressor.flush()
+    except zlib.error:
+        return None
+    if not decompressor.eof:
+        return None
+    _index_records(pending, index, prefix)
+    return index, prefix
+
+
+def _index_records(data: bytes, index: LocIndex, prefix: LocPrefix) -> int:
+    """Add every whole record of `data` to `index` and `prefix`; the bytes used.
+
+    A record cut off at the end of `data` is left for the next piece. Runs
+    once per text, 1.4 million times on an English client, so the header is
+    one precompiled unpack (the loop condition already checks its bounds),
+    the decoder is called without the codec lookup `bytes.decode` does, and a
+    prefix list is only built for a new key.
+    """
     unpack_header = _RECORD_HEADER.unpack_from
     header_size = _RECORD_HEADER.size
     decode = codecs.utf_16_le_decode
@@ -92,7 +140,7 @@ def _index_texts(
         else:
             texts.append(text)
 
-    return index, prefix
+    return pos
 
 
 # ── Public API ────────────────────────────────────────────────────────────────

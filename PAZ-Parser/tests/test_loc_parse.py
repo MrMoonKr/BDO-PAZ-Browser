@@ -60,3 +60,28 @@ def test_invalid_utf16_is_replaced() -> None:
 
     assert loc.loc_lookup(6, 1) == "\ufffdb"
 
+
+
+def test_records_split_across_stream_pieces_are_read_whole(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(loc, "_STREAM_CHUNK_BYTES", 3)
+
+    loc.init_loc(loc_bytes(_ROWS))
+
+    assert loc.loc_lookup(24, 70000, 513, 255, 7) == "full key"
+    assert loc.loc_lookup_prefix(50, 114415) == ["Gloves", "Contains"]
+
+
+def test_a_truncated_zlib_stream_loads_no_text() -> None:
+    raw = loc_bytes(_ROWS)
+
+    loc.init_loc(raw[:-5])
+
+    assert not loc.is_loc_loaded()
+
+
+def test_decompress_loc_returns_the_record_stream() -> None:
+    raw = loc_bytes(_ROWS)
+
+    assert loc.decompress_loc(raw) == zlib.decompress(raw[4:])
+    assert loc.decompress_loc(raw[:3]) is None
+    assert loc.decompress_loc(raw[:4] + b"not zlib") is None
