@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import struct
 import sys
+from collections.abc import Sequence
 from pathlib import Path
 
 from .bdo_ice import BDO_ICE_KEY, IceCipher
@@ -29,6 +30,22 @@ def ice_decrypt_bytes(data: bytes, key: bytes = BDO_ICE_KEY) -> bytes:
     cipher = _CIPHER if key == BDO_ICE_KEY else IceCipher(key)
     padded = _pad8(data)
     return cipher.decrypt(padded)[: len(data)]
+
+
+def ice_decrypt_many(inputs: Sequence[bytes]) -> list[bytes]:
+    """Each input decrypted as `ice_decrypt_bytes` would, in one cipher call.
+
+    ICE has no chaining between blocks, so the padded inputs can be joined,
+    decrypted together and cut apart again. Worth it for many small inputs,
+    where numpy's per-call cost outweighs the decryption.
+    """
+    decrypted = _CIPHER.decrypt(b"".join(_pad8(data) for data in inputs))
+    outputs: list[bytes] = []
+    start = 0
+    for data in inputs:
+        outputs.append(decrypted[start : start + len(data)])
+        start += len(data) + -len(data) % 8
+    return outputs
 
 
 # ── BDO decompression ─────────────────────────────────────────────────────────

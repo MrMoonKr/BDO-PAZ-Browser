@@ -6,7 +6,7 @@ import struct
 import pytest
 
 from paz.bdo_ice import BDO_ICE_KEY, IceCipher
-from paz.bdo_payload_reader import bdo_decompress, ice_decrypt_bytes
+from paz.bdo_payload_reader import bdo_decompress, ice_decrypt_bytes, ice_decrypt_many
 
 # Two blocks, 00 01 .. 0F. The expected outputs were taken from the original
 # block-at-a-time port of kukdh1/PAZ-Unpacker, before the loop was rewritten.
@@ -56,6 +56,12 @@ def test_ice_decrypt_bytes_keeps_the_input_length() -> None:
     padded = data + bytes(3)
 
     assert ice_decrypt_bytes(data) == IceCipher(BDO_ICE_KEY).decrypt(padded)[:13]
+
+
+def test_ice_decrypt_many_matches_one_call_per_input() -> None:
+    inputs = [os.urandom(size) for size in (13, 0, 8, 4096, 1, 63)]
+
+    assert ice_decrypt_many(inputs) == [ice_decrypt_bytes(data) for data in inputs]
 
 
 # A hand-built short-mode stream: 8 literals, a back-reference that copies

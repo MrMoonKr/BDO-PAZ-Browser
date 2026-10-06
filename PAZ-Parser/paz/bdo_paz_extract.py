@@ -10,7 +10,7 @@ from typing import BinaryIO
 
 from .bdo_meta_reader import read_bdo_meta
 from bdo_models import MetaFile, PazEntry
-from .bdo_paz_reader import parse_paz_file
+from .bdo_paz_reader import parse_paz_files
 from .bdo_payload_reader import read_entry_payload
 
 
@@ -83,26 +83,10 @@ def find_single_meta_file(paz_root: Path) -> Path:
 
 
 def parse_meta_file(meta_path: Path) -> list[PazEntry]:
+    """Every entry of the archives the meta file lists, next to it."""
     paz_root: Path = meta_path.parent
     meta: MetaFile = read_bdo_meta(meta_path)
-
-    all_entries: list[PazEntry] = []
-
-    for paz_table in meta.paz_files:
-        paz_name: str = f"pad{paz_table.paz_file_id:05d}.paz"
-        paz_path: Path = paz_root / paz_name
-
-        if not paz_path.exists():
-            logging.warning("Referenced archive not found: %s", paz_path)
-            continue
-
-        paz_entries: list[PazEntry] = parse_paz_file(
-            paz_path=paz_path,
-            paz_table=paz_table,
-        )
-        all_entries.extend(paz_entries)
-
-    return all_entries
+    return parse_paz_files([paz_root / f"pad{table.paz_file_id:05d}.paz" for table in meta.paz_files])
 
 
 def trim_payload_padding(payload: bytes, entry: PazEntry) -> bytes:
