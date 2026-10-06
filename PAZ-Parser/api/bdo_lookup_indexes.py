@@ -37,6 +37,10 @@ from _dbss.itemenchant.parser import (
     build_item_grade_index,
     build_item_icon_index,
 )
+from _dbss.knowledgelearning.parser import (
+    build_knowledge_learning_character_index,
+    build_knowledge_learning_item_index,
+)
 from _dbss.quest.parser import build_quest_icon_index
 from _dbss.skill.parser import build_skill_buff_index
 from _dbss.teleport.parser import build_teleport_nearest_node_index
@@ -53,6 +57,8 @@ CHARACTEROBJECT = f"{_BINARY}/characterobject.dbss"
 CHARACTEROBJECT_OFFSET = f"{_BINARY}/characterobjectoffset.dbss"
 CHARACTERSTATIC = f"{_BINARY}/characterstatic.dbss"
 CHARACTERSTATIC_OFFSET = f"{_BINARY}/characterstaticoffset.dbss"
+KNOWLEDGELEARNING = f"{_BINARY}/knowledgelearning.dbss"
+KNOWLEDGELEARNING_OFFSET = f"{_BINARY}/knowledgelearningoffset.dbss"
 DETAIL_DIALOG = f"{_BINARY}/detail_dialog.dbss"
 DETAIL_DIALOG_OFFSET = f"{_BINARY}/detail_dialogoffset.dbss"
 SKILL = f"{_BINARY}/skill.dbss"
@@ -106,6 +112,16 @@ INDEX_SPECS: tuple[IndexSpec, ...] = (
         IndexKind.KNOWLEDGE_CHARACTERS,
         (CHARACTERSTATIC, CHARACTERSTATIC_OFFSET),
         build_knowledge_character_index,
+    ),
+    IndexSpec(
+        IndexKind.KNOWLEDGE_LEARNING_CHARACTERS,
+        (KNOWLEDGELEARNING, KNOWLEDGELEARNING_OFFSET),
+        build_knowledge_learning_character_index,
+    ),
+    IndexSpec(
+        IndexKind.KNOWLEDGE_LEARNING_ITEMS,
+        (KNOWLEDGELEARNING, KNOWLEDGELEARNING_OFFSET),
+        build_knowledge_learning_item_index,
     ),
     IndexSpec(
         IndexKind.CHARACTER_LEASES,

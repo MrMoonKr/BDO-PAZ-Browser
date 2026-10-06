@@ -18,6 +18,7 @@ table 1: item 8279 "Gurnard"               →  card 8579 "Gurnard"
 | File                           | Required | Role                                                        |
 | ------------------------------ | -------- | ----------------------------------------------------------- |
 | `knowledgelearningoffset.dbss` | Required | Provides source ID, byte offset and size for each record    |
+| `knowledgelearningcharacterkey.bss` | Optional | Table 0 grouped by card: each card with the characters that teach it ([doc](knowledgelearningcharacterkey_bss.md)) |
 
 All multi-byte values are little-endian.
 
@@ -101,12 +102,13 @@ The index `data_offset` points past the lead, at the record itself. Table 0 star
 ## Notes
 
 - Every `card_id` in both tables is a `mentalcard.dbss` card.
+- The app groups table 0 by card into the `KNOWLEDGE_LEARNING_CHARACTERS` lookup index and table 1 into `KNOWLEDGE_LEARNING_ITEMS`. The `mentalcard.dbss` Learned From and Learned From Items columns read them.
 - The source name equals the card name on 2,504 of 2,596 character rows and 2,003 of 2,088 item rows. The rest are close variants (`Pistachio Tree` teaches `Pistachio`, several Magic Crystals teach `Low Grade Crystal Fusion`).
 - Table 0 teaches 1,458 distinct cards, so several characters can teach one card (for example boss variants). Table 1 teaches 2,045 distinct cards.
 - `source_id` is unique within each table. Read it with the right LOC type: in table 0, `10004` is the character Feldspar, while item `10004` is `Raell Longsword`.
 - The earlier reading of this file skipped a 12-byte header and read rows as `offset, kind, idx_id`. That shifts every row by one field: `kind` was the record size (`13`) and `idx_id` was the next row's `source_id`. It also misreads table 1, whose rows start 4 bytes after table 0's last row.
 - [bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor) describes `knowledgelearning` as card-to-card learning prerequisites. Our files do not support that: `source_id` resolves as a character or item on every row, and only 272 of 2,596 character IDs are also card IDs.
-- `knowledgelearningcharacterkey.bss` (16.5 KB) sits next to this file in `gamecommondata/binary/` and is not decoded yet.
+- `knowledgelearningcharacterkey.bss` holds the same pairs as table 0, grouped by card in table 0 row order; see [its doc](knowledgelearningcharacterkey_bss.md). Table 1 has no such file.
 
 ---
 
@@ -115,7 +117,3 @@ The index `data_offset` points past the lead, at the record itself. Table 0 star
 ### Other Source Types
 
 Only `source_type` 0 and 1 occur, one per table. It is not known whether the client supports other sources (quests, regions) through a third table.
-
-### Relation To knowledgelearningcharacterkey.bss
-
-The name suggests a character-keyed lookup for table 0, but its layout and whether it duplicates or extends table 0 are not known.

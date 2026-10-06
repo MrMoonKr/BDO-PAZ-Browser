@@ -31,7 +31,12 @@ class IndexKind(Enum):
     QUEST_ICON = "quest_icon"
     CHARACTER_ICON = "character_icon"
     CHARACTER_ITEM = "character_item"
+    # Characters whose getknowledge() action script grants a card.
     KNOWLEDGE_CHARACTERS = "knowledge_characters"
+    # Characters that teach a card through knowledgelearning.dbss (monsters, nodes).
+    KNOWLEDGE_LEARNING_CHARACTERS = "knowledge_learning_characters"
+    # Items that teach a card through knowledgelearning.dbss.
+    KNOWLEDGE_LEARNING_ITEMS = "knowledge_learning_items"
     # Flat (item_id, cost, ...) pairs; read through _common/lease.py.
     CHARACTER_LEASES = "character_leases"
     SKILL_ICON = "skill_icon"

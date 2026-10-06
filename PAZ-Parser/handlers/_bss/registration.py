@@ -12,6 +12,7 @@ from .fairyfeedenchantfailcount.handler import (
 )
 from .fairyupgraderate.handler import FairyUpgradeRateBssHandler
 from .groupcameradata.handler import GroupCameraDataBssHandler
+from .knowledgelearningcharacterkey.handler import KnowledgeLearningCharacterKeyBssHandler
 from .mansionpartinfo.handler import MansionPartInfoBssHandler
 from .menu.handler import MenuBssHandler
 from .npcgiftetc.handler import NpcGiftEtcBssHandler
@@ -48,6 +49,10 @@ def register_bss_handlers() -> None:
     )
     register_handler("fairyupgraderate.bss", FairyUpgradeRateBssHandler())
     register_handler("groupcameradata.bss", GroupCameraDataBssHandler())
+    register_handler(
+        "knowledgelearningcharacterkey.bss",
+        KnowledgeLearningCharacterKeyBssHandler(),
+    )
     register_handler("mansionpartinfo.bss", MansionPartInfoBssHandler())
     register_handler("menu.bss", MenuBssHandler())
     register_handler("npcgiftetc.bss", NpcGiftEtcBssHandler())

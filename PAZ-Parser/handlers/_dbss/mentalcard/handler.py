@@ -7,6 +7,7 @@ from bdo_preview import PreviewHandler
 
 from _common.character import character_name
 from _common.html import Column, e, icon_cell, sort_keys, table, text_list_cell
+from _common.item_key import item_key_list_cell, item_key_text
 from _common.knowledge import LOC_KNOWLEDGE, knowledge_name, theme_name
 from _common.lang import handler_text, load_handler_strings
 from _common.loc import is_loc_loaded, loc_tagged
@@ -30,6 +31,9 @@ _LOC_DESCRIPTION = 1
 _LOC_ACQUISITION = 2
 _EMPTY = "-"
 _LIST_PREVIEW_ITEMS = 3
+# Characters whose action script grants the card, then the monsters, NPCs and
+# gathering nodes that teach it through knowledgelearning.dbss.
+_CHARACTER_INDEXES = (IndexKind.KNOWLEDGE_CHARACTERS, IndexKind.KNOWLEDGE_LEARNING_CHARACTERS)
 
 
 def _position_text(position: tuple[float, float, float]) -> str:
@@ -52,19 +56,35 @@ def _combo_fields(record: MentalCardRecord) -> dict:
     }
 
 
+def _granting_characters(card_id: int) -> list[int]:
+    """Every character that grants the card through either index, in ascending ID order."""
+    linked = (lookup(kind, card_id) for kind in _CHARACTER_INDEXES)
+    return sorted({character_id for ids in linked if isinstance(ids, tuple) for character_id in ids})
+
+
 def _learned_from(card_id: int) -> list[str]:
     """Distinct names of the characters that grant the card, in ID order.
 
-    Copies of one NPC share a name, so most cards reduce to a single name. A
-    character without a LOC name shows its ID. Empty when the index is not
-    loaded or no character grants the card.
+    Copies of one NPC or monster share a name, so most cards reduce to a
+    single name. A character without a LOC name shows its ID. Empty when
+    neither index is loaded or no character grants the card.
     """
-    characters = lookup(IndexKind.KNOWLEDGE_CHARACTERS, card_id)
-    if not isinstance(characters, tuple):
-        return []
-
-    names = (character_name(character_id) or str(character_id) for character_id in characters)
+    names = (character_name(character_id) or str(character_id) for character_id in _granting_characters(card_id))
     return list(dict.fromkeys(names))
+
+
+def _learned_from_items_fields(card_id: int) -> dict:
+    """Items that teach the card (knowledgelearning.dbss), in ascending ID order.
+
+    The IDs feed the icon cell, the names search and export. Both are empty
+    when the index is not loaded or no item teaches the card.
+    """
+    linked = lookup(IndexKind.KNOWLEDGE_LEARNING_ITEMS, card_id)
+    item_ids = list(linked) if isinstance(linked, tuple) else []
+    return {
+        "learned_from_item_ids": item_ids,
+        "learned_from_items": [item_key_text(item_id) for item_id in item_ids],
+    }
 
 
 def mental_card_offset_handler() -> OffsetTableHandler:
@@ -95,6 +115,7 @@ class MentalCardHandler(PreviewHandler):
             Column(cols["combo"], sort_key="combo_text"),
             Column(cols["obtain"], sort_key="obtain"),
             Column(cols["learnedFrom"]),
+            Column(cols["learnedFromItems"]),
             Column(cols["position"]),
         ]
 
@@ -140,6 +161,7 @@ class MentalCardHandler(PreviewHandler):
                     or record.acquisition_kr,
                 ),
                 "learned_from": _learned_from(record.card_id),
+                **_learned_from_items_fields(record.card_id),
                 "position": list(record.position),
                 "position_text": _position_text(record.position),
             }
@@ -172,6 +194,7 @@ class MentalCardHandler(PreviewHandler):
                 e(r["combo_text"] or _EMPTY),
                 pa_cell(r, "obtain"),
                 text_list_cell(r["learned_from"], _LIST_PREVIEW_ITEMS) or _EMPTY,
+                item_key_list_cell(r["learned_from_item_ids"], _LIST_PREVIEW_ITEMS) or _EMPTY,
                 e(r["position_text"] or _EMPTY),
             ]
             for r in slice_

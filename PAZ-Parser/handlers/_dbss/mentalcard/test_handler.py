@@ -23,8 +23,14 @@ from tests.framework import (
 )
 
 # Granbill grants card 304; Goyoung (47280) and a later copy (59998) both grant
-# card 2043, so the name is shown once.
-_KNOWLEDGE_CHARACTERS = {304: (43433,), 2043: (47280, 59998)}
+# card 2043, so the name is shown once. The Helm Tribe Chief (23035) grants
+# card 4678.
+_KNOWLEDGE_CHARACTERS = {304: (43433,), 2043: (47280, 59998), 4678: (23035,)}
+# knowledgelearning.dbss: the Rhyolite node teaches card 1643, which no action
+# script grants; card 4678 adds two Steel Nux, and the shared 23035 shows once.
+_KNOWLEDGE_LEARNING_CHARACTERS = {1643: (11982,), 4678: (23035, 23524, 25523)}
+# The Gurnard fish teaches the Gurnard card.
+_KNOWLEDGE_LEARNING_ITEMS = {8579: (8279,)}
 
 CASE = HandlerCase(
     handler_name="mentalcard.dbss",
@@ -34,9 +40,13 @@ CASE = HandlerCase(
     uses_loc=True,
     loc_fields=["Knowledge Name", "Category Name", "Description"],
     internal_path="gamecommondata/binary/mentalcard.dbss",
-    lookup_indexes={IndexKind.KNOWLEDGE_CHARACTERS: _KNOWLEDGE_CHARACTERS},
+    lookup_indexes={
+        IndexKind.KNOWLEDGE_CHARACTERS: _KNOWLEDGE_CHARACTERS,
+        IndexKind.KNOWLEDGE_LEARNING_CHARACTERS: _KNOWLEDGE_LEARNING_CHARACTERS,
+        IndexKind.KNOWLEDGE_LEARNING_ITEMS: _KNOWLEDGE_LEARNING_ITEMS,
+    },
     tests=[
-        SchemaTest(required_keys=["entry_id", "entry_name", "node_id", "node_name", "min_favor", "max_favor", "interest", "combo_text", "buff_type", "combo_value", "valid_turn", "apply_turn", "icon_path", "description", "obtain", "learned_from", "position", "position_text"]),
+        SchemaTest(required_keys=["entry_id", "entry_name", "node_id", "node_name", "min_favor", "max_favor", "interest", "combo_text", "buff_type", "combo_value", "valid_turn", "apply_turn", "icon_path", "description", "obtain", "learned_from", "learned_from_item_ids", "learned_from_items", "position", "position_text"]),
         DeclaredCountTest(declared=header_count()),
         # Recipe cards name their ingredients in yellow.
         PaFieldTest(field="description"),
@@ -74,6 +84,13 @@ CASE = HandlerCase(
             },
         ),
         TargetTest(col="entry_id", value=2043, expected={"learned_from": ["Goyoung"]}),
+        TargetTest(col="entry_id", value=1643, expected={"learned_from": ["Rhyolite"]}),
+        TargetTest(col="entry_id", value=4678, expected={"learned_from": ["Helm Tribe Chief", "Steel Nux"]}),
+        TargetTest(
+            col="entry_id",
+            value=8579,
+            expected={"learned_from": [], "learned_from_item_ids": [8279], "learned_from_items": ["Gurnard"]},
+        ),
         # Lost Lamb shows "None" as its next combo effect in game.
         TargetTest(col="entry_id", value=4024, expected={"combo_text": None, "buff_type": None}),
         TargetTest(

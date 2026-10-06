@@ -1,10 +1,15 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import replace
 from typing import Any
 
 import pytest
 
+from _dbss.knowledgelearning.parser import (
+    build_knowledge_learning_character_index,
+    build_knowledge_learning_item_index,
+)
 from tests.framework import (
     CaseInput,
     DeclaredCount,
@@ -91,3 +96,25 @@ def knowledgelearning_result(request: Any) -> HandlerResult:
 @pytest.mark.parametrize("spec", CASE.tests, ids=case_id)
 def test_knowledgelearning_dbss(spec: Any, knowledgelearning_result: HandlerResult) -> None:
     knowledgelearning_result.check(spec)
+
+
+@pytest.mark.parametrize(
+    ("build", "table"),
+    [(build_knowledge_learning_character_index, 0), (build_knowledge_learning_item_index, 1)],
+    ids=["characters", "items"],
+)
+def test_learning_index_groups_one_table_by_card(
+    build: Callable[[bytes, bytes], dict[int, tuple[int, ...]]],
+    table: int,
+    knowledgelearning_result: HandlerResult,
+) -> None:
+    """Each index is one table's rows grouped by card, the other table left out."""
+    source = knowledgelearning_result.source
+    index = build(source.data, source.file("knowledgelearningoffset.dbss"))
+
+    expected: dict[int, list[int]] = {}
+    for record in knowledgelearning_result.records:
+        if record["table"] == table:
+            expected.setdefault(record["card_id"], []).append(record["source_id"])
+
+    assert index == {card_id: tuple(sorted(ids)) for card_id, ids in expected.items()}

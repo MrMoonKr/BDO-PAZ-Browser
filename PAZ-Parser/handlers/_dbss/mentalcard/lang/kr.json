@@ -17,6 +17,7 @@
     "combo": "연계",
     "obtain": "획득",
     "learnedFrom": "획득처",
+    "learnedFromItems": "획득처 (아이템)",
     "position": "위치"
   },
   "meta": {

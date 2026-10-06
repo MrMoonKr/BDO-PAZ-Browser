@@ -1,0 +1,11 @@
+{
+  "columns": {
+    "knowledgeId": "ID de connaissance",
+    "knowledgeName": "Nom de la connaissance",
+    "characterCount": "Nombre",
+    "characters": "Personnages"
+  },
+  "meta": {
+    "count": "{count} cartes de connaissance · {character_total} personnages"
+  }
+}

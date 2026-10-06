@@ -78,3 +78,27 @@ def parse_knowledgelearning_records(data: bytes, offset_data: bytes) -> list[Kno
             raise ValueError(f"knowledgelearning record at 0x{row.offset:X} does not repeat its source ID")
         records.append(KnowledgeLearningRecord(row.table, source_id, source_type, card_id))
     return records
+
+
+def _sources_by_card(data: bytes, offset_data: bytes, source_type: int) -> dict[int, tuple[int, ...]]:
+    """Map each knowledge card to the sources of one type that teach it, in ascending ID order."""
+    sources: dict[int, list[int]] = {}
+    for record in parse_knowledgelearning_records(data, offset_data):
+        if record.source_type == source_type:
+            sources.setdefault(record.card_id, []).append(record.source_id)
+
+    return {card_id: tuple(sorted(ids)) for card_id, ids in sources.items()}
+
+
+def build_knowledge_learning_character_index(data: bytes, offset_data: bytes) -> dict[int, tuple[int, ...]]:
+    """Map each knowledge card to the characters that teach it, in ascending ID order.
+
+    Monsters, NPCs and gathering nodes. The same pairs are stored grouped by
+    card in `knowledgelearningcharacterkey.bss`.
+    """
+    return _sources_by_card(data, offset_data, SOURCE_CHARACTER)
+
+
+def build_knowledge_learning_item_index(data: bytes, offset_data: bytes) -> dict[int, tuple[int, ...]]:
+    """Map each knowledge card to the items that teach it, in ascending ID order."""
+    return _sources_by_card(data, offset_data, SOURCE_ITEM)

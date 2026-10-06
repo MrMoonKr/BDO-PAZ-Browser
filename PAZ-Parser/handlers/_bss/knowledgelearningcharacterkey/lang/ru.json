@@ -1,0 +1,11 @@
+{
+  "columns": {
+    "knowledgeId": "ID знания",
+    "knowledgeName": "Название знания",
+    "characterCount": "Количество",
+    "characters": "Персонажи"
+  },
+  "meta": {
+    "count": "Карточек знаний: {count} · персонажей: {character_total}"
+  }
+}

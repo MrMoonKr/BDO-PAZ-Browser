@@ -1114,6 +1114,8 @@ IDs (`LookupValue`).
 | `CHARACTER_ICON` | `characterobject.dbss`, `characterobjectoffset.dbss` | icon path |
 | `CHARACTER_ITEM` | `itemenchant.dbss`, `itemenchantoffset.dbss` | item ID      |
 | `KNOWLEDGE_CHARACTERS` | `characterstatic.dbss`, `characterstaticoffset.dbss` | character IDs (tuple) |
+| `KNOWLEDGE_LEARNING_CHARACTERS` | `knowledgelearning.dbss`, `knowledgelearningoffset.dbss` | character IDs (tuple) |
+| `KNOWLEDGE_LEARNING_ITEMS` | `knowledgelearning.dbss`, `knowledgelearningoffset.dbss` | item IDs (tuple) |
 | `CHARACTER_LEASES` | `detail_dialog.dbss`, `detail_dialogoffset.dbss` | flat `(item_id, cost, ...)` pairs |
 | `SKILL_ICON`     | `skilltype.dbss`, `skilltypeoffset.dbss`   | icon path      |
 | `SKILL_NAME_KR`  | `skilltype.dbss`, `skilltypeoffset.dbss`   | Korean name    |
@@ -1140,8 +1142,15 @@ it (`character_id` at `+0xAA` in
 or several items are left out. The `characterobject.dbss` Item column reads it.
 
 `KNOWLEDGE_CHARACTERS` maps a knowledge card to every character whose
-`getknowledge(<id>);` action script grants it, in ascending ID order. The
-`mentalcard.dbss` Learned From column reads it.
+`getknowledge(<id>);` action script grants it, in ascending ID order.
+`KNOWLEDGE_LEARNING_CHARACTERS` maps a card to the monsters, NPCs and
+gathering nodes that teach it through
+[knowledgelearning.dbss](file-formats/knowledgelearning_dbss.md) table 0, also
+in ascending ID order. The two overlap but neither covers the other, so the
+`mentalcard.dbss` Learned From column reads both and merges them.
+`KNOWLEDGE_LEARNING_ITEMS` maps a card to the items that teach it (table 1),
+in ascending ID order; the Learned From Items column shows them with
+`item_key_list_cell()`.
 
 `CHARACTER_LEASES` maps a character to every `buyItemByPoint(...)` lease
 option in its dialogs ([detail_dialog.dbss](file-formats/detail_dialog_dbss.md)),
