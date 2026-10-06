@@ -14,7 +14,7 @@ import struct
 
 from _bwp.waypoint.parser import is_waypoint_graph, neighbours, parse_waypoint_graph
 from _common.binary import u16, u32
-from _common.pabr_strings import TRAILER_SIZE, read_string_table, string_at, string_table_start
+from _common.pabr_strings import TRAILER_SIZE, check_rows_end, read_string_table, string_at, string_table_start
 
 
 _MAGIC = b"PABR"
@@ -87,8 +87,7 @@ def parse_exploration_records(data: bytes) -> list[dict]:
         })
 
     footer_count = u32(data, pos)
-    if pos + 4 + 6 * footer_count != string_table_start(data):
-        raise ValueError("exploration.bss records do not end where its string table starts")
+    check_rows_end(data, pos + 4 + 6 * footer_count, "exploration.bss records")
 
     return records
 

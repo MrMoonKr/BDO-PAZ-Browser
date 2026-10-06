@@ -10,9 +10,12 @@ index. `exploration.bss` and `npcsimply.bss` share this tail.
 from __future__ import annotations
 
 from _common.binary import u32
+from _common.pabr_offset import PABR_MAGIC
 
 
 TRAILER_SIZE = 8
+# ASCII PABR and a u32 row count.
+HEADER_SIZE = 8
 
 _ENTRY_HEADER_SIZE = 5
 
@@ -20,6 +23,45 @@ _ENTRY_HEADER_SIZE = 5
 def string_table_start(data: bytes) -> int:
     """Offset stored in the 8-byte trailer, where the rows end."""
     return u32(data, len(data) - TRAILER_SIZE)
+
+
+def check_pabr(data: bytes, file_name: str) -> None:
+    """Raise ValueError unless `data` holds the PABR header and the trailer."""
+    if len(data) < HEADER_SIZE + TRAILER_SIZE or data[:4] != PABR_MAGIC:
+        raise ValueError(f"{file_name} has invalid magic.")
+
+
+def check_rows_end(data: bytes, rows_end: int, what: str) -> None:
+    """Raise ValueError unless `what` ends where the string table starts.
+
+    A mismatch means the row layout has changed and every field is suspect.
+    """
+    table_start = string_table_start(data)
+    if rows_end != table_start:
+        raise ValueError(
+            f"{what} end at 0x{rows_end:X} but the string table starts at 0x{table_start:X}"
+        )
+
+
+def fixed_row_offsets(data: bytes, row_size: int, file_name: str) -> range:
+    """Start of every row of a PABR file with fixed-size rows.
+
+    Raises ValueError on a bad magic or when the rows do not fill the space
+    before the string table.
+    """
+    check_pabr(data, file_name)
+    rows_end = HEADER_SIZE + u32(data, 4) * row_size
+    check_rows_end(data, rows_end, f"{file_name} rows")
+    return range(HEADER_SIZE, rows_end, row_size)
+
+
+def checked_string_table_start(data: bytes, file_name: str) -> int:
+    """Where variable-size records stop. Raises ValueError on a bad magic or trailer."""
+    check_pabr(data, file_name)
+    end = string_table_start(data)
+    if not HEADER_SIZE <= end <= len(data) - TRAILER_SIZE:
+        raise ValueError(f"{file_name} string table offset 0x{end:X} is outside the file")
+    return end
 
 
 def read_string_table(data: bytes) -> list[str]:

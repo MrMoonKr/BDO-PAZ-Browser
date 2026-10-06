@@ -12,12 +12,9 @@ from __future__ import annotations
 import struct
 
 from _common.binary import u32
-from _common.pabr_strings import TRAILER_SIZE, read_string_table, string_at, string_table_start
+from _common.pabr_strings import fixed_row_offsets, read_string_table, string_at, string_table_start
 from _dbss.itemsubgroup.parser import subgroups_by_key
 
-
-_MAGIC = b"PABR"
-_HEADER_SIZE = 8
 
 # u16 production_key | u16 unknown_02 | u16 unknown_04 | u32 item_subgroup_key
 # | 80 zero bytes | u32 name_ref
@@ -32,20 +29,10 @@ def parse_plantexchangegroup_records(data: bytes) -> list[dict]:
     Raises ValueError on a bad magic, or when the rows do not end where the
     string table starts: then the row size has changed and every field is suspect.
     """
-    if len(data) < _HEADER_SIZE + TRAILER_SIZE or data[:4] != _MAGIC:
-        raise ValueError("plantexchangegroup.bss has invalid magic.")
-
-    count = u32(data, 4)
-    rows_end = _HEADER_SIZE + count * _RECORD_SIZE
-    if rows_end != string_table_start(data):
-        raise ValueError(
-            f"plantexchangegroup.bss rows end at 0x{rows_end:X} but its string "
-            f"table starts at 0x{string_table_start(data):X}"
-        )
-
+    offsets = fixed_row_offsets(data, _RECORD_SIZE, "plantexchangegroup.bss")
     strings = read_string_table(data)
     records: list[dict] = []
-    for offset in range(_HEADER_SIZE, rows_end, _RECORD_SIZE):
+    for offset in offsets:
         production_key, unknown_02, unknown_04, item_subgroup_key, name_ref = (
             _RECORD.unpack_from(data, offset)
         )

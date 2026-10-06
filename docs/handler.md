@@ -775,6 +775,14 @@ reader trims that zero padding, as extraction does. A trailer read from the end
 of the file, such as the PABR string table offset (`_common/pabr_strings.py`),
 is therefore safe.
 
+`_common/pabr_strings.py` also holds the checks every PABR parser needs, so a
+layout change fails loudly instead of yielding shifted fields:
+`fixed_row_offsets(data, row_size, file_name)` checks the magic and returns the
+start of every fixed-size row, raising when the rows do not end where the string
+table starts; `check_rows_end(data, rows_end, what)` does that last check for
+records walked by hand; `checked_string_table_start(data, file_name)` returns the
+bound for a variable-size walk; `check_pabr(data, file_name)` checks the magic only.
+
 Example:
 
 ```python

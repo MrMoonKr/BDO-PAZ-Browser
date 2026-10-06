@@ -14,7 +14,7 @@ from __future__ import annotations
 import struct
 
 from _common.binary import u32
-from _common.pabr_strings import TRAILER_SIZE, read_string_table, string_at, string_table_start
+from _common.pabr_strings import TRAILER_SIZE, check_rows_end, read_string_table, string_at, string_table_start
 
 
 _MAGIC = b"PABR"
@@ -128,9 +128,5 @@ def parse_employeestaticstatus_records(data: bytes) -> list[dict]:
         records.extend(_parse_row(data, row_at, strings) for row_at in range(pos, rows_end, _ROW_SIZE))
         pos = rows_end
 
-    if pos + _UNKNOWN_BLOCK_SIZE != string_table_start(data):
-        raise ValueError(
-            f"employeestaticstatus.bss rows end at 0x{pos:X} but its string table "
-            f"starts at 0x{string_table_start(data):X}"
-        )
+    check_rows_end(data, pos + _UNKNOWN_BLOCK_SIZE, "employeestaticstatus.bss rows")
     return records

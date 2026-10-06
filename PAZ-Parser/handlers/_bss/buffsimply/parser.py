@@ -13,11 +13,8 @@ import struct
 
 from _common.binary import u32
 from _common.buff import buff_icon_path
-from _common.pabr_strings import TRAILER_SIZE, read_string_table, string_at, string_table_start
+from _common.pabr_strings import fixed_row_offsets, read_string_table, string_at, string_table_start
 
-
-_MAGIC = b"PABR"
-_HEADER_SIZE = 8
 
 # u16 buff_id | u8 unknown_02 | 2x | u8 unknown_05 | u8 unknown_06
 # | u8 unknown_07 | x | u8 unknown_09 | u8 unknown_0a | u32 unknown_str_ref
@@ -30,16 +27,7 @@ assert _ROW.size == _ROW_SIZE
 
 def _row_offsets(data: bytes) -> range:
     """Start of every row. Raises ValueError when the rows do not fill the file."""
-    if len(data) < _HEADER_SIZE + TRAILER_SIZE or data[:4] != _MAGIC:
-        raise ValueError("buffsimply.bss has invalid magic.")
-
-    rows_end = _HEADER_SIZE + u32(data, 4) * _ROW_SIZE
-    if rows_end != string_table_start(data):
-        raise ValueError(
-            f"buffsimply.bss rows end at 0x{rows_end:X} but its string table "
-            f"starts at 0x{string_table_start(data):X}"
-        )
-    return range(_HEADER_SIZE, rows_end, _ROW_SIZE)
+    return fixed_row_offsets(data, _ROW_SIZE, "buffsimply.bss")
 
 
 def parse_buffsimply_records(data: bytes) -> list[dict]:

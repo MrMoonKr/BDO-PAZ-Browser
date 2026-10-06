@@ -13,11 +13,10 @@ from __future__ import annotations
 import struct
 
 from _common.binary import u32
-from _common.pabr_strings import TRAILER_SIZE, read_string_table, string_at, string_table_start
+from _common.pabr_strings import checked_string_table_start, read_string_table, string_at, string_table_start
 from _common.record_reader import RecordReader
 
 
-_MAGIC = b"PABR"
 _HEADER_SIZE = 8
 
 # Stored icon paths start at "Renewal/" or "New_UI_Common_forLua/", under ui_texture.
@@ -35,12 +34,7 @@ _AXES = 3
 
 def _rows_end(data: bytes) -> int:
     """Where the rows stop. Raises ValueError on a bad magic or trailer."""
-    if len(data) < _HEADER_SIZE + TRAILER_SIZE or data[:4] != _MAGIC:
-        raise ValueError("territoryinfo.bss has invalid magic.")
-    end = string_table_start(data)
-    if not _HEADER_SIZE <= end <= len(data) - TRAILER_SIZE:
-        raise ValueError(f"territoryinfo.bss string table offset 0x{end:X} is outside the file")
-    return end
+    return checked_string_table_start(data, "territoryinfo.bss")
 
 
 def _positions(coords: list[float]) -> list[list[float]]:

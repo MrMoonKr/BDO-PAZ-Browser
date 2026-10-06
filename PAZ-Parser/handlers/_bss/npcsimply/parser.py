@@ -13,11 +13,8 @@ import struct
 
 from _common.binary import u32
 from _common.knowledge_script import knowledge_id_of
-from _common.pabr_strings import TRAILER_SIZE, read_string_table, string_at, string_table_start
+from _common.pabr_strings import fixed_row_offsets, read_string_table, string_at, string_table_start
 
-
-_MAGIC = b"PABR"
-_HEADER_SIZE = 8
 
 # u16 character_id | u8 unknown_02 | u8 zero | u32 kind | u32 script_ref
 # | u32 lease_item_id | u16 lease_cost | u16 unknown_12 | u8 has_lease_condition
@@ -33,20 +30,10 @@ def parse_npcsimply_records(data: bytes) -> list[dict]:
     Raises ValueError on a bad magic, or when the rows do not end where the
     string table starts: then the row size has changed and every field is suspect.
     """
-    if len(data) < _HEADER_SIZE + TRAILER_SIZE or data[:4] != _MAGIC:
-        raise ValueError("npcsimply.bss has invalid magic.")
-
-    count = u32(data, 4)
-    rows_end = _HEADER_SIZE + count * _RECORD_SIZE
-    if rows_end != string_table_start(data):
-        raise ValueError(
-            f"npcsimply.bss rows end at 0x{rows_end:X} but its string table "
-            f"starts at 0x{string_table_start(data):X}"
-        )
-
+    offsets = fixed_row_offsets(data, _RECORD_SIZE, "npcsimply.bss")
     strings = read_string_table(data)
     records: list[dict] = []
-    for offset in range(_HEADER_SIZE, rows_end, _RECORD_SIZE):
+    for offset in offsets:
         (
             character_id, unknown_02, _zero, kind, script_ref,
             lease_item_id, lease_cost, unknown_12, has_lease_condition,

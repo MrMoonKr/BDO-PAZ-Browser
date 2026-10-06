@@ -11,11 +11,9 @@ Full layout in docs/file-formats/regiongroupinfo_bss.md.
 from __future__ import annotations
 
 from _common.binary import f32, u8, u16, u32
-from _common.pabr_strings import string_table_start
+from _common.pabr_strings import fixed_row_offsets, string_table_start
 
 
-_MAGIC = b"PABR"
-_HEADER_SIZE = 8
 ROW_SIZE = 51
 
 # Row field offsets.
@@ -33,22 +31,6 @@ _UNKNOWN_31 = 0x31
 
 _AXES = ("pos_x", "pos_y", "pos_z")
 _AXIS_SIZE = 4
-
-
-def _rows_end(data: bytes) -> int:
-    """Where the rows end; raises ValueError when the header and trailer disagree."""
-    if len(data) < _HEADER_SIZE or data[:4] != _MAGIC:
-        raise ValueError("regiongroupinfo.bss does not start with PABR magic")
-
-    count = u32(data, 4)
-    rows_end = _HEADER_SIZE + count * ROW_SIZE
-    table_start = string_table_start(data)
-    if rows_end != table_start:
-        raise ValueError(
-            f"{count:,} rows of {ROW_SIZE} bytes end at 0x{rows_end:X}, "
-            f"but the string table starts at 0x{table_start:X}"
-        )
-    return rows_end
 
 
 def _position(data: bytes, pos: int) -> dict[str, float | None]:
@@ -82,5 +64,4 @@ def parse_regiongroupinfo_records(data: bytes) -> list[dict]:
     Raises ValueError on a missing magic or a row count that does not end
     where the trailer says the string table starts.
     """
-    rows_end = _rows_end(data)
-    return [_parse_row(data, pos) for pos in range(_HEADER_SIZE, rows_end, ROW_SIZE)]
+    return [_parse_row(data, pos) for pos in fixed_row_offsets(data, ROW_SIZE, "regiongroupinfo.bss")]

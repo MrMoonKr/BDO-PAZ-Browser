@@ -17,11 +17,10 @@ import struct
 from typing import NamedTuple
 
 from _common.binary import u32
-from _common.pabr_strings import TRAILER_SIZE, read_string_table, string_at, string_table_start
+from _common.pabr_strings import check_pabr, fixed_row_offsets, read_string_table, string_at, string_table_start
 from _common.record_reader import RecordReader
 
 
-_MAGIC = b"PABR"
 _HEADER_SIZE = 8
 
 _U32 = struct.Struct("<I")
@@ -49,8 +48,7 @@ class TagColors(NamedTuple):
 
 def _row_count(data: bytes, name: str) -> int:
     """The PABR row count, after checking the magic."""
-    if len(data) < _HEADER_SIZE + TRAILER_SIZE or data[:4] != _MAGIC:
-        raise ValueError(f"{name} has invalid magic.")
+    check_pabr(data, name)
     return u32(data, 4)
 
 
@@ -134,15 +132,8 @@ def parse_territory_keys(data: bytes) -> dict[int, int]:
     Raises ValueError on a bad magic or when the rows do not end where the
     string table starts.
     """
-    count = _row_count(data, "dropuimaincategoryinfo.bss")
-    rows_end = _HEADER_SIZE + count * _MAIN_CATEGORY.size
-    if rows_end != string_table_start(data):
-        raise ValueError(
-            f"dropuimaincategoryinfo.bss rows end at 0x{rows_end:X} but its "
-            f"string table starts at 0x{string_table_start(data):X}"
-        )
     territories: dict[int, int] = {}
-    for offset in range(_HEADER_SIZE, rows_end, _MAIN_CATEGORY.size):
+    for offset in fixed_row_offsets(data, _MAIN_CATEGORY.size, "dropuimaincategoryinfo.bss"):
         key, territory_key, _icon_ref = _MAIN_CATEGORY.unpack_from(data, offset)
         territories[key] = territory_key
     return territories
@@ -154,15 +145,8 @@ def parse_tag_colors(data: bytes) -> dict[int, TagColors]:
     Raises ValueError on a bad magic or when the rows do not end where the
     string table starts.
     """
-    count = _row_count(data, "dropuitaginfo.bss")
-    rows_end = _HEADER_SIZE + count * _TAG.size
-    if rows_end != string_table_start(data):
-        raise ValueError(
-            f"dropuitaginfo.bss rows end at 0x{rows_end:X} but its string "
-            f"table starts at 0x{string_table_start(data):X}"
-        )
     colors: dict[int, TagColors] = {}
-    for offset in range(_HEADER_SIZE, rows_end, _TAG.size):
+    for offset in fixed_row_offsets(data, _TAG.size, "dropuitaginfo.bss"):
         key, *_refs, texture_color, font_color = _TAG.unpack_from(data, offset)
         colors[key] = TagColors(texture_color, font_color)
     return colors

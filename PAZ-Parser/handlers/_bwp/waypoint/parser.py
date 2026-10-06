@@ -21,7 +21,7 @@ import struct
 from dataclasses import dataclass
 
 from _common.binary import u32
-from _common.pabr_strings import TRAILER_SIZE, read_string_table, string_at, string_table_start
+from _common.pabr_strings import TRAILER_SIZE, check_rows_end, read_string_table, string_at, string_table_start
 
 
 _MAGIC = b"PABR"
@@ -101,11 +101,7 @@ def parse_waypoint_graph(data: bytes) -> WaypointGraph:
     group_rows, pos = _read_fixed(data, pos, data[pos], _GROUP, 1)
     routes, pos = _read_routes(data, pos, strings)
 
-    if pos != string_table_start(data):
-        raise ValueError(
-            f"waypoint graph sections end at 0x{pos:X} but its string table "
-            f"starts at 0x{string_table_start(data):X}"
-        )
+    check_rows_end(data, pos, "waypoint graph sections")
 
     return WaypointGraph(
         waypoints=waypoints,

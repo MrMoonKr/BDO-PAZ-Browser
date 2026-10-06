@@ -14,11 +14,8 @@ import struct
 
 from _common.binary import u32
 from _common.item_key import split_item_key
-from _common.pabr_strings import TRAILER_SIZE, read_string_table, string_at, string_table_start
+from _common.pabr_strings import fixed_row_offsets, read_string_table, string_at, string_table_start
 
-
-_MAGIC = b"PABR"
-_HEADER_SIZE = 8
 
 # Stored icon paths are relative to this folder, as in itemenchant.dbss.
 ICON_ROOT = "ui_texture/icon/"
@@ -32,16 +29,7 @@ assert _ROW.size == _ROW_SIZE
 
 def _row_offsets(data: bytes) -> range:
     """Start of every row. Raises ValueError when the rows do not fill the file."""
-    if len(data) < _HEADER_SIZE + TRAILER_SIZE or data[:4] != _MAGIC:
-        raise ValueError("specialenchantitem.bss has invalid magic.")
-
-    rows_end = _HEADER_SIZE + u32(data, 4) * _ROW_SIZE
-    if rows_end != string_table_start(data):
-        raise ValueError(
-            f"specialenchantitem.bss rows end at 0x{rows_end:X} but its string "
-            f"table starts at 0x{string_table_start(data):X}"
-        )
-    return range(_HEADER_SIZE, rows_end, _ROW_SIZE)
+    return fixed_row_offsets(data, _ROW_SIZE, "specialenchantitem.bss")
 
 
 def _icon_path(stored: str) -> str:
