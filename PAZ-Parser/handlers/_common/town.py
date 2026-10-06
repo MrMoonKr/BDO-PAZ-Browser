@@ -1,8 +1,8 @@
 """Town names, shared by the tables that link a town.
 
-LOC type 17 names the towns that hire workers and keep storage: the
-`plantworkerselect.bss` selection IDs, and the worker contracts and storage
-expansions of `buff.dbss`. `5` is Velia, `77` Calpheon City.
+LOC type 17 names every `regioninfo.bss` region, and towns are regions: the
+`plantworkerselect.bss` selection IDs and the worker contracts and storage
+expansions of `buff.dbss` use region keys. `5` is Velia, `77` Calpheon City.
 """
 
 from __future__ import annotations

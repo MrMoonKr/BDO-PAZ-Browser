@@ -1,0 +1,17 @@
+{
+  "columns": {
+    "regionKey": "Ключ региона",
+    "regionName": "Регион",
+    "type": "Тип",
+    "territory": "Территория",
+    "capital": "Столица",
+    "node": "Узел",
+    "regionGroup": "Группа регионов",
+    "nodeWarDay": "День битвы за узлы",
+    "desert": "Пустыня",
+    "guildWharfManager": "Смотритель пристани гильдии"
+  },
+  "meta": {
+    "count": "Регионов: {count}"
+  }
+}

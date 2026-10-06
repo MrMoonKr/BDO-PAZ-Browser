@@ -60,7 +60,7 @@ These are the pre-2026-09-27 fixture's 30 groups and 372 entries. The 2026-09-27
 
 | Offset  | Type | Field        | Notes                                                 |
 | ------- | ---- | ------------ | ----------------------------------------------------- |
-| `+0x00` | u16  | selection_id | Town/node LOC type `17` key; same value within group  |
+| `+0x00` | u16  | selection_id | Town region key (`regioninfo.bss`), LOC type `17`; same value within group |
 | `+0x02` | u16  | worker_id    | Worker ID; matches `plantworker.bss` and LOC type `6` |
 | `+0x04` | u32  | zero_a       | Always observed as `0`                                |
 | `+0x08` | u32  | hire_cost    | Hire price in silver; observed `1500`, `3500`, `10000`, `30000`, `90000` |

@@ -1,0 +1,13 @@
+{
+  "columns": {
+    "regionGroupKey": "Grupo de regiones",
+    "nodeKey": "Clave del nodo",
+    "nodeName": "Nombre del nodo",
+    "x": "X",
+    "y": "Y",
+    "z": "Z"
+  },
+  "meta": {
+    "count": "{count} grupos de regiones"
+  }
+}

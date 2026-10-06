@@ -68,7 +68,7 @@ are `str_id2 | str_id3 << 16`. Their `key0` is `str_type` and their `id` is
 | 13       | Skill rank texts, `str_id1` = skill number, `str_id2` = level; English of the `skill.dbss` `description`, see Type 13 below |
 | 15       | Emote/pose/placeable interaction names                                                     |
 | 16       | House/facility type names                                                                  |
-| 17       | Town/node names, `str_id1` = selection_id from `plantworkerselect.bss`; also the towns of the `buff.dbss` worker contracts and storage expansions |
+| 17       | Region names, `str_id1` = `region_key` from `regioninfo.bss`; the `plantworkerselect.bss` selection IDs and the towns of the `buff.dbss` worker contracts and storage expansions are region keys; see Type 17 below |
 | 18       | Quest and journal page text; two key domains share this type, see Type 18 sub-fields below |
 | 19       | Pet action labels, `str_id1` = `petaction.dbss` action_id                                  |
 | 20       | "You have learned about [x]." knowledge messages, keyed by `str_id1` + `str_id2`           |
@@ -223,16 +223,22 @@ Where type 10 `str_id4 = 1` also exists the two are usually equal; on guild
 skills type 10 holds a usage hint and type 13 the effect. See
 `skill_dbss.md`, Notes.
 
-### Type 17, town/node names (`plantworkerselect.bss`)
+### Type 17, region names (`regioninfo.bss`)
 
-Type 17 stores localized town and node names used as worker-selection locations.
+Type 17 names every region of [`regioninfo.bss`](regioninfo_bss.md): towns,
+hunting grounds, castles, arenas, caves and sea areas. Towns are regions, so
+the worker-selection towns of `plantworkerselect.bss` (all 31 selection IDs are
+region keys of type `MainTown` or `MinorTown`) and the towns of the `buff.dbss`
+worker contracts and storage expansions use the same keys. All 1594 region keys
+of client 3458 resolve; 64 of the 1658 type 17 IDs (750, 807 to 809, 821 ...)
+have no region.
 
-| Field     | Value                                       |
-| --------- | ------------------------------------------- |
-| `str_id1` | `selection_id` from `plantworkerselect.bss` |
-| `str_id2` | Observed `0`                                |
-| `str_id3` | Observed `0`                                |
-| `str_id4` | Observed `0`                                |
+| Field     | Value                                                                       |
+| --------- | --------------------------------------------------------------------------- |
+| `str_id1` | `region_key` from `regioninfo.bss` (= `selection_id` in `plantworkerselect.bss`) |
+| `str_id2` | Observed `0`                                                                |
+| `str_id3` | Observed `0`                                                                |
+| `str_id4` | Observed `0`                                                                |
 
 Observed English examples:
 

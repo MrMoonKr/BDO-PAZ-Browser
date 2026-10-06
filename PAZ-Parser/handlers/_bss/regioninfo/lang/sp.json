@@ -1,0 +1,17 @@
+{
+  "columns": {
+    "regionKey": "Clave de región",
+    "regionName": "Región",
+    "type": "Tipo",
+    "territory": "Territorio",
+    "capital": "Capital",
+    "node": "Nodo",
+    "regionGroup": "Grupo de regiones",
+    "nodeWarDay": "Día de Guerra de nodo",
+    "desert": "Desierto",
+    "guildWharfManager": "Maestre de la hermandad"
+  },
+  "meta": {
+    "count": "{count} regiones"
+  }
+}

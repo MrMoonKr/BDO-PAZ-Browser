@@ -1,0 +1,17 @@
+{
+  "columns": {
+    "regionKey": "Regionsschlüssel",
+    "regionName": "Region",
+    "type": "Typ",
+    "territory": "Territorium",
+    "capital": "Hauptstadt",
+    "node": "Posten",
+    "regionGroup": "Regionsgruppe",
+    "nodeWarDay": "Postenkriegstag",
+    "desert": "Wüste",
+    "guildWharfManager": "Hafenmeister der Gilde"
+  },
+  "meta": {
+    "count": "{count} Regionen"
+  }
+}

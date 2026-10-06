@@ -27,10 +27,13 @@ from .plantworkerselect.handler import PlantWorkerSelectBssHandler
 from .planttown.handler import PlantTownBssHandler
 from .questjournalvideoinfo.handler import QuestJournalVideoInfoBssHandler
 from .questlist.handler import EVENT_PERIOD_LISTS, QUEST_LIST_LOC_TYPES, QuestListBssHandler
+from .regiongroupinfo.handler import RegionGroupInfoBssHandler
+from .regioninfo.handler import RegionInfoBssHandler
 from .skillgroup.handler import SkillGroupBssHandler
 from .specialenchantitem.handler import SpecialEnchantItemBssHandler
 from .stringtable.handler import StringTableBssHandler
 from .submenu.handler import SubmenuBssHandler
+from .territoryinfo.handler import TerritoryInfoBssHandler
 from .titlecategory.handler import TitleCategoryBssHandler
 from .ui_skillgroup.handler import UiSkillGroupBssHandler
 from .zodiacsignindex.handler import ZodiacSignIndexHandler
@@ -74,10 +77,13 @@ def register_bss_handlers() -> None:
     # One layout for the four quest lists, each with its own LOC type.
     for name, loc_type in QUEST_LIST_LOC_TYPES.items():
         register_handler(name, QuestListBssHandler(loc_type, has_event_period=name in EVENT_PERIOD_LISTS))
+    register_handler("regiongroupinfo.bss", RegionGroupInfoBssHandler())
+    register_handler("regioninfo.bss", RegionInfoBssHandler())
     register_handler("skillgroup.bss", SkillGroupBssHandler())
     register_handler("specialenchantitem.bss", SpecialEnchantItemBssHandler())
     register_handler("stringtable.bss", StringTableBssHandler())
     register_handler("submenu.bss", SubmenuBssHandler())
+    register_handler("territoryinfo.bss", TerritoryInfoBssHandler())
     register_handler("titlecategory.bss", TitleCategoryBssHandler())
     # One layout for the three skill windows.
     for window in ("combat", "awakening", "succession"):

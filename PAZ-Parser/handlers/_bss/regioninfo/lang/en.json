@@ -1,0 +1,17 @@
+{
+  "columns": {
+    "regionKey": "Region Key",
+    "regionName": "Region",
+    "type": "Type",
+    "territory": "Territory",
+    "capital": "Capital",
+    "node": "Node",
+    "regionGroup": "Region Group",
+    "nodeWarDay": "Node War Day",
+    "desert": "Desert",
+    "guildWharfManager": "Guild Wharf Manager"
+  },
+  "meta": {
+    "count": "{count} regions"
+  }
+}

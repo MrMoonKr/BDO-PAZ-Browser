@@ -1,0 +1,13 @@
+{
+  "columns": {
+    "regionGroupKey": "Groupe de régions",
+    "nodeKey": "Clé du géopoint",
+    "nodeName": "Nom de géopoint",
+    "x": "X",
+    "y": "Y",
+    "z": "Z"
+  },
+  "meta": {
+    "count": "{count} groupes de régions"
+  }
+}

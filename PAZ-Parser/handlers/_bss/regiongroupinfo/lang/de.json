@@ -1,0 +1,13 @@
+{
+  "columns": {
+    "regionGroupKey": "Regionsgruppe",
+    "nodeKey": "Postenschlüssel",
+    "nodeName": "Postenname",
+    "x": "X",
+    "y": "Y",
+    "z": "Z"
+  },
+  "meta": {
+    "count": "{count} Regionsgruppen"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "columns": {
+    "key": "키",
+    "icon": "아이콘",
+    "territory": "영지",
+    "nation": "국가",
+    "autonomous": "자치령",
+    "crown": "왕관",
+    "armor": "갑옷",
+    "positions": "위치"
+  },
+  "meta": {
+    "count": "영지 {count}개"
+  }
+}

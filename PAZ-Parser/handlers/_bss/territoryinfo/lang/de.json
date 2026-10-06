@@ -1,0 +1,15 @@
+{
+  "columns": {
+    "key": "Schlüssel",
+    "icon": "Symbol",
+    "territory": "Territorium",
+    "nation": "Nation",
+    "autonomous": "Autonom",
+    "crown": "Krone",
+    "armor": "Rüstung",
+    "positions": "Positionen"
+  },
+  "meta": {
+    "count": "{count} Territorien"
+  }
+}

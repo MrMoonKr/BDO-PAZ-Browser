@@ -1,0 +1,15 @@
+{
+  "columns": {
+    "key": "Ключ",
+    "icon": "Значок",
+    "territory": "Территория",
+    "nation": "Государство",
+    "autonomous": "Автономия",
+    "crown": "Корона",
+    "armor": "Доспехи",
+    "positions": "Позиции"
+  },
+  "meta": {
+    "count": "Территорий: {count}"
+  }
+}

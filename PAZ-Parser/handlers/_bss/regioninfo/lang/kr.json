@@ -1,0 +1,17 @@
+{
+  "columns": {
+    "regionKey": "지역 키",
+    "regionName": "지역",
+    "type": "종류",
+    "territory": "영지",
+    "capital": "수도",
+    "node": "거점",
+    "regionGroup": "지역 그룹",
+    "nodeWarDay": "거점전 요일",
+    "desert": "사막",
+    "guildWharfManager": "길드 선착장 관리인"
+  },
+  "meta": {
+    "count": "지역 {count}개"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "columns": {
+    "regionGroupKey": "지역 그룹",
+    "nodeKey": "거점 키",
+    "nodeName": "거점명",
+    "x": "X",
+    "y": "Y",
+    "z": "Z"
+  },
+  "meta": {
+    "count": "지역 그룹 {count}개"
+  }
+}

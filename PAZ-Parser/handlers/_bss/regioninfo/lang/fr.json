@@ -1,0 +1,17 @@
+{
+  "columns": {
+    "regionKey": "Clé de région",
+    "regionName": "Région",
+    "type": "Type",
+    "territory": "Territoire",
+    "capital": "Capitale",
+    "node": "Géopoint",
+    "regionGroup": "Groupe de régions",
+    "nodeWarDay": "Jour de géoconflit",
+    "desert": "Désert",
+    "guildWharfManager": "Boute-à-port de guilde"
+  },
+  "meta": {
+    "count": "{count} régions"
+  }
+}
