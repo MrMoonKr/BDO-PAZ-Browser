@@ -1305,8 +1305,8 @@ Thumbnails are built one at a time, since each JS call runs on its own thread
 and a screen of large textures would otherwise starve the window thread, and
 each finished one is stored in `paz_browser_thumbnails.sqlite` next to the PAZ
 files (`paz/bdo_thumbnail_cache.py`), cleared when the meta version changes. A
-large texture therefore costs its read (about 5 s for a 14 MB file, mostly ICE
-decryption) once per client version, not once per session.
+large texture therefore costs its read (about 1 s for a 14 MB file, mostly
+decompression) once per client version, not once per session.
 
 Icons are looked up by **kind and entity ID** through `_common/icon_index.py`,
 never by hand-written template:

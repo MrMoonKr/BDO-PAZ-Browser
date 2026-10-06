@@ -4,24 +4,13 @@ import logging
 import struct
 from pathlib import Path
 
-from .bdo_ice import BDO_ICE_KEY, IceCipher
+from .bdo_payload_reader import ice_decrypt_bytes
 from bdo_models import PazEntry, PazTable
 
-# One cipher instance is shared, the key schedule is computed once at import.
-_CIPHER: IceCipher = IceCipher(BDO_ICE_KEY)
-
-
-def _pad8(data: bytes) -> bytes:
-    """Pad data to a multiple of 8 bytes (ICE block size)."""
-    rem = len(data) % 8
-    return data if rem == 0 else data + b"\x00" * (8 - rem)
-
-
-def _decrypt_path_block(encrypted: bytes) -> bytes:
-    """Decrypt the ICE-encrypted path block and return the plaintext."""
-    padded = _pad8(encrypted)
-    decrypted = _CIPHER.decrypt(padded)
-    return decrypted[: len(encrypted)]
+# Archive header: crc, file count, path block length.
+_HEADER = struct.Struct("<III")
+# One file table row: crc, folder string, file string, offset, sizes.
+_FILE_INFO = struct.Struct("<IIIIII")
 
 
 def _parse_string_table(data: bytes, length: int) -> list[str]:
@@ -48,11 +37,11 @@ def parse_paz_file(paz_path: Path, paz_table: PazTable) -> list[PazEntry]:  # no
     entries: list[PazEntry] = []
 
     with paz_path.open("rb") as file:
-        header_data: bytes = file.read(12)
-        if len(header_data) != 12:
+        header_data: bytes = file.read(_HEADER.size)
+        if len(header_data) != _HEADER.size:
             raise ValueError(f"Invalid PAZ header: {paz_path}")
 
-        crc, file_count, path_length = struct.unpack("<III", header_data)
+        crc, file_count, path_length = _HEADER.unpack(header_data)
 
         logging.debug(
             "PAZ header | file=%s crc=%08x file_count=%d path_length=%d",
@@ -62,7 +51,7 @@ def parse_paz_file(paz_path: Path, paz_table: PazTable) -> list[PazEntry]:  # no
             path_length,
         )
 
-        raw_infos_size: int = file_count * 24
+        raw_infos_size: int = file_count * _FILE_INFO.size
         raw_infos: bytes = file.read(raw_infos_size)
         if len(raw_infos) != raw_infos_size:
             raise ValueError(f"Invalid file table in: {paz_path}")
@@ -72,21 +61,17 @@ def parse_paz_file(paz_path: Path, paz_table: PazTable) -> list[PazEntry]:  # no
             raise ValueError(f"Invalid path block in: {paz_path}")
 
     # Decrypt and parse the path block.
-    path_block = _decrypt_path_block(path_block_encrypted)
+    path_block = ice_decrypt_bytes(path_block_encrypted)
     strings = _parse_string_table(path_block, path_length)
 
-    for index in range(file_count):
-        start: int = index * 24
-        chunk: bytes = raw_infos[start : start + 24]
-
-        (
-            _file_crc,
-            folder_id,
-            file_id,
-            offset,
-            compressed_size,
-            original_size,
-        ) = struct.unpack("<IIIIII", chunk)
+    for index, (
+        _file_crc,
+        folder_id,
+        file_id,
+        offset,
+        compressed_size,
+        original_size,
+    ) in enumerate(_FILE_INFO.iter_unpack(raw_infos)):
 
         # Reconstruct path: strings[folder_id] acts as the directory,
         # strings[file_id] acts as the filename.

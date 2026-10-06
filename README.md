@@ -95,10 +95,11 @@ See [docs/documented-formats.md](docs/documented-formats.md) for the full table.
 
 - Python 3.10+
 - [pywebview](https://pywebview.flowrl.com/), GUI shell
+- [numpy](https://numpy.org/), for ICE decryption
 - [Pillow](https://python-pillow.org/), optional, for DDS image preview
 
 ```
-pip install pywebview
+pip install pywebview numpy
 pip install pillow        # optional
 ```
 
@@ -182,7 +183,8 @@ The workload is one entry (`--entry`, default
 To keep numbers comparable, each run:
 
 - **Pins the process to one CPU** (`--cpu`, default 2) at high priority.
-  The decode loops are pure Python, so they use one core anyway. Pinning
+  The decode loops run on one core anyway (ICE through numpy, decompression
+  in pure Python). Pinning
   stops the OS moving the run between cores; on a hybrid Intel CPU an
   efficiency core runs this code about 1.8x slower, so the benchmark refuses
   one and lists the performance cores. The pin is read back after setting

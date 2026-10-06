@@ -34,6 +34,18 @@ def test_ice_round_trips(key: bytes) -> None:
     assert cipher.decrypt(cipher.encrypt(data)) == data
 
 
+def test_ice_decrypts_each_block_on_its_own() -> None:
+    data = os.urandom(64 * 1024)
+    cipher = IceCipher(BDO_ICE_KEY)
+    block_by_block = b"".join(cipher.decrypt(data[i : i + 8]) for i in range(0, len(data), 8))
+
+    assert cipher.decrypt(data) == block_by_block
+
+
+def test_ice_decrypts_empty_input() -> None:
+    assert IceCipher(BDO_ICE_KEY).decrypt(b"") == b""
+
+
 def test_ice_rejects_a_partial_block() -> None:
     with pytest.raises(ValueError, match="multiple of 8"):
         IceCipher(BDO_ICE_KEY).decrypt(bytes(7))
