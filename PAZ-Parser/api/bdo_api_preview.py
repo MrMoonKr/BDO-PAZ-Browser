@@ -96,6 +96,7 @@ class PreviewMixin(ApiState):
 
     def get_icon_data_url(self, icon_path: str) -> dict:
         self._mark_activity()
+        self._wait_for_folder_text()
         norm = _norm(icon_path).strip()
         if not norm:
             return {"error": ui_text("errors.iconPathEmpty")}
@@ -137,6 +138,7 @@ class PreviewMixin(ApiState):
         region on the sheet.
         """
         self._mark_activity()
+        self._wait_for_folder_text()
         norm = _norm(icon_path).strip()
         if not norm:
             return {"error": ui_text("errors.iconPathEmpty")}
@@ -377,6 +379,7 @@ class PreviewMixin(ApiState):
 
     def load_entry(self, internal_path: str) -> dict:
         self._mark_activity()
+        self._wait_for_folder_text()
         if internal_path.startswith(_DISK_VIRTUAL_PREFIX + "/"):
             return self._load_disk_entry(internal_path)
 
@@ -505,6 +508,7 @@ class PreviewMixin(ApiState):
         reopens with it.
         """
         self._mark_activity()
+        self._wait_for_folder_text()
         norm = _norm(path)
         if self._cached_path != norm or self._cached_handler is None:
             return {"error": ui_text("errors.pageNotCached")}
@@ -527,6 +531,7 @@ class PreviewMixin(ApiState):
 
     def export_file(self, path: str, tab: str) -> dict:
         self._mark_activity()
+        self._wait_for_folder_text()
         if self._window is None:
             return {"error": ui_text("errors.windowNotInitialized")}
 

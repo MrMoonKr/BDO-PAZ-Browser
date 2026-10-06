@@ -73,6 +73,21 @@ class ApiState:
         self._last_activity = 0.0
         self._busy_tasks = 0
         self._busy_lock = threading.Lock()
+        # A GUI folder load shows the tree before LOC and the lookup indexes
+        # are in; set while no load is between the two (`_load_entries`).
+        self._folder_text_ready = threading.Event()
+        self._folder_text_ready.set()
+        self._folder_load_lock = threading.Lock()
+
+    def _wait_for_folder_text(self) -> None:
+        """Block until the loaded folder's LOC and lookup indexes are in.
+
+        For the calls that render game text: run before them, a table would
+        show (and cache) its Korean text and miss its icons. A no-op except
+        for the second or two after a folder load shows the tree. pywebview
+        runs every call on its own thread, so the window stays responsive.
+        """
+        self._folder_text_ready.wait()
 
     def _mark_activity(self) -> None:
         self._last_activity = time.monotonic()

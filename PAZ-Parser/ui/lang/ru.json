@@ -111,6 +111,7 @@
     "loadedFromCache": "{count} записей загружено из кэша (версия игры {version})",
     "parsing": "Разбор файлов PAZ… прошло {elapsed} с (только первый запуск, результат будет кэширован)",
     "parsedAndCached": "{count} записей разобрано и кэшировано (версия игры {version})",
+    "loadingText": "Загрузка игровых текстов и индексов…",
     "error": "Ошибка: {message}",
     "indexFailed": "Не удалось построить индексы поиска, некоторые значки и ссылки отсутствуют: {message}",
     "extracting": "Извлечение… {done}/{total}, {extracted} ok  {skipped} пропущено  {failed} с ошибкой",

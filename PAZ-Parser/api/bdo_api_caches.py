@@ -198,6 +198,7 @@ class CacheMixin(ApiState):
         mode's background pass does not start again until the next launch,
         so deleting is not undone straight away.
         """
+        self._wait_for_folder_text()
         if self._paz_root is None:
             return {"ok": False, "error": ui_text("errors.noFolderLoaded")}
 

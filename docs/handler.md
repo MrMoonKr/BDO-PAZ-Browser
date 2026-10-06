@@ -1086,7 +1086,11 @@ Every index is one `IndexSpec(kind, sources, build)` in
 share a table reuse its payload; a spec with a missing source is skipped. Adding
 an index is one `IndexKind` member plus one spec.
 
-`Api._load_lookup_indexes()` installs every index at folder load. Results are
+`Api._load_lookup_indexes()` installs every index at folder load. The app
+shows the tree before LOC and the indexes are in, and the calls that run a
+handler (`load_entry`, `get_parsed_page`, export, content search, icons) wait
+for both (`_wait_for_folder_text()`), so a handler never runs without them.
+Results are
 cached by `paz/bdo_index_cache.py` in `paz_browser_indexes.cache` next to the
 PAZ files, keyed by `IndexKind.value` (renaming a value orphans its cached data
 until the rebuild) and invalidated on the PAZ meta version or when the code that

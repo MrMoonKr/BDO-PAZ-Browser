@@ -56,6 +56,7 @@ class SearchMixin(ApiState):
                 {"record_indices": [...]} for parsed tab.
         """
         self._mark_activity()
+        self._wait_for_folder_text()
         norm = _norm(path)
 
         if tab == "parsed":
@@ -108,6 +109,7 @@ class SearchMixin(ApiState):
         Scans only handled files when the handled-only setting is on.
         Fires app.onGlobalSearchDone(results) when complete.
         """
+        self._wait_for_folder_text()
         if not self._entries or not self._paz_root:
             return {"error": ui_text("errors.noFolderLoaded")}
 

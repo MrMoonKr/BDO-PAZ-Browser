@@ -160,6 +160,7 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
         handled_only: bool = False,
         records_cache: str = "",
     ) -> dict:
+        self._wait_for_folder_text()
         if language not in UI_LANGUAGE_CODES:
             return {"ok": False, "error": ui_text("errors.invalidLanguage", language=language)}
         if records_cache not in RECORDS_CACHE_MODES:
@@ -200,6 +201,13 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
         Without the file, or for Korean, no LOC is installed and the tables
         show their own text; the tree root then shows no LOC file either.
         """
+        self._install_loc(self._read_loc(language))
+
+    def _read_loc(self, language: str) -> bytes | None:
+        """The LOC file of `language`, now shown at the tree root, or None.
+
+        Reading is quick; building its text index (`_install_loc`) is not.
+        """
         path = loc_path(self._paz_root, language) if self._paz_root else None
         raw: bytes | None = None
         if path is not None and path.exists():
@@ -209,18 +217,29 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
                 # Not fatal: tables fall back to their own text.
                 logging.warning("Could not load LOC file %s", path, exc_info=True)
         self._disk_companions = {} if path is None or raw is None else {path.name: raw}
-        self._install_loc(raw)
+        return raw
 
     def _load_entries(self) -> None:
-        assert self._paz_root is not None
-        try:
-            msg = self.load_folder(self._paz_root, parse=self._parse_with_ticker, cache_records=True)
-            self._push_status(msg)
-            self._push_js("app.onFolderLoaded()")
+        """Load the folder for the GUI: the tree first, then the game text.
 
-        except Exception as ex:
-            self._push_status({"key": "status.error", "args": {"message": str(ex)}})
-            self._push_js(f"app.showError({json.dumps(str(ex))})")
+        The page gets the tree as soon as the entries are in. LOC and the
+        lookup indexes load after it, and the calls that render game text
+        wait for them (`_wait_for_folder_text`). One load runs at a time.
+        """
+        assert self._paz_root is not None
+        with self._folder_load_lock:
+            self._folder_text_ready.clear()
+            try:
+                msg, loc_raw = self._load_folder_entries(self._paz_root, self._parse_with_ticker, read_loc=True)
+                self._push_status({"key": "status.loadingText"})
+                self._push_js("app.onFolderLoaded()")
+                self._load_folder_text(msg, loc_raw, load_loc=True, load_indexes=True, cache_records=True)
+                self._push_status(msg)
+            except Exception as ex:
+                self._push_status({"key": "status.error", "args": {"message": str(ex)}})
+                self._push_js(f"app.showError({json.dumps(str(ex))})")
+            finally:
+                self._folder_text_ready.set()
 
     def load_folder(
         self,
@@ -239,6 +258,23 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
         records disk cache as the settings ask; the CLI and the benchmark
         leave it off and always parse. Raises when the folder cannot be read,
         and returns the status message to show.
+        """
+        msg, loc_raw = self._load_folder_entries(paz_root, parse, read_loc=load_loc)
+        self._load_folder_text(
+            msg, loc_raw, load_loc=load_loc, load_indexes=load_indexes, cache_records=cache_records
+        )
+        return msg
+
+    def _load_folder_entries(
+        self,
+        paz_root: Path,
+        parse: Callable[[Path], list[PazEntry]],
+        *,
+        read_loc: bool,
+    ) -> tuple[dict, bytes | None]:
+        """Everything the tree needs, plus the LOC file's bytes when `read_loc`.
+
+        Returns the status message and the LOC bytes, or None.
         """
         self._close_records_cache()
         self._paz_root = paz_root
@@ -269,14 +305,26 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
         self._tree_data = build_tree(entries)
         self._handled_view = None
         self._disk_companions = {}
+        loc_raw = self._read_loc(load_config().get("language", "en")) if read_loc else None
+        return msg, loc_raw
+
+    def _load_folder_text(
+        self,
+        msg: dict,
+        loc_raw: bytes | None,
+        *,
+        load_loc: bool,
+        load_indexes: bool,
+        cache_records: bool,
+    ) -> None:
+        """LOC, the lookup indexes and the records cache of the loaded folder."""
         if load_loc:
-            self._load_loc(load_config().get("language", "en"))
-        if load_indexes:
-            self._load_lookup_indexes(current_version)
+            self._install_loc(loc_raw)
+        if load_indexes and self._meta_version is not None:
+            self._load_lookup_indexes(self._meta_version)
         self._folder_status = msg
         if cache_records:
             self._open_records_cache()
-        return msg
 
     def _open_thumbnail_cache(self, paz_root: Path, meta_version: int) -> None:
         if self._thumbnail_cache is not None:

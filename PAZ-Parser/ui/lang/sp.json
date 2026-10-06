@@ -111,6 +111,7 @@
     "loadedFromCache": "{count} entradas cargadas desde la caché (versión del juego {version})",
     "parsing": "Analizando archivos PAZ… {elapsed}s transcurridos (solo la primera ejecución, el resultado se guardará en caché)",
     "parsedAndCached": "{count} entradas analizadas y guardadas en caché (versión del juego {version})",
+    "loadingText": "Cargando los textos del juego y los índices…",
     "error": "Error: {message}",
     "indexFailed": "No se pudieron crear los índices de búsqueda, faltan algunos iconos y enlaces: {message}",
     "extracting": "Extrayendo… {done}/{total}, {extracted} ok  {skipped} omitidos  {failed} fallidos",

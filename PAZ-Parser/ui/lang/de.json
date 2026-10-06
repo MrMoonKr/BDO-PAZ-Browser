@@ -111,6 +111,7 @@
     "loadedFromCache": "{count} Einträge aus dem Cache geladen (Spielversion {version})",
     "parsing": "PAZ-Dateien werden geparst… {elapsed}s verstrichen (nur beim ersten Lauf, Ergebnis wird zwischengespeichert)",
     "parsedAndCached": "{count} Einträge geparst und zwischengespeichert (Spielversion {version})",
+    "loadingText": "Spieltexte und Indizes werden geladen…",
     "error": "Fehler: {message}",
     "indexFailed": "Nachschlage-Indizes konnten nicht erstellt werden, einige Symbole und Verknüpfungen fehlen: {message}",
     "extracting": "Extrahiere… {done}/{total}, {extracted} ok  {skipped} übersprungen  {failed} fehlgeschlagen",

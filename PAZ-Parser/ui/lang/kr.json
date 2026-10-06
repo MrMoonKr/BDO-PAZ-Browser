@@ -111,6 +111,7 @@
     "loadedFromCache": "캐시에서 {count}개 항목을 불러왔습니다 (게임 버전 {version})",
     "parsing": "PAZ 파일 파싱 중… {elapsed}초 경과 (첫 실행만, 결과가 캐시됩니다)",
     "parsedAndCached": "{count}개 항목을 파싱하고 캐시했습니다 (게임 버전 {version})",
+    "loadingText": "게임 텍스트와 인덱스를 불러오는 중…",
     "error": "오류: {message}",
     "indexFailed": "조회 인덱스를 만들 수 없어 일부 아이콘과 링크가 없습니다: {message}",
     "extracting": "추출 중… {done}/{total}, {extracted} 성공  {skipped} 건너뜀  {failed} 실패",
