@@ -25,6 +25,9 @@ export const initMethods = {
     this._setupImageZoom();
     this._initTabSearch();
     this._initGlobalSearch();
+    this._setupAppUpdate();
+    // Not awaited: the check asks GitHub and must not hold up the folder load.
+    this.checkAppUpdate();
 
     const last = await window.pywebview.api.get_last_folder();
     if (last && last.path) {

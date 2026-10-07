@@ -11,10 +11,12 @@ from pathlib import Path
 import webview
 
 from app_dirs import data_dir, default_data_dir, is_same_folder, picked_data_dir
-from app_version import is_frozen
+from app_version import build_info, is_frozen
 from .bdo_api_caches import CacheMixin
+from .bdo_api_updates import UpdateMixin
 from .bdo_config import (
     RECORDS_CACHE_MODES,
+    check_app_updates_setting,
     dismissed_loc_warnings,
     handled_only_setting,
     load_config,
@@ -74,7 +76,7 @@ def _data_folder(text: str) -> str | None:
     return str(path)
 
 
-class Api(PreviewMixin, SearchMixin, CacheMixin):
+class Api(PreviewMixin, SearchMixin, CacheMixin, UpdateMixin):
     """Backend the UI calls through pywebview; the CLI loads folders through it too."""
 
     @property
@@ -151,6 +153,9 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
             "cache_bytes": self._cache_size(),
             "languages": [{"code": language.code, "name": language.name} for language in UI_LANGUAGES],
             "missing_loc": self._missing_loc_files(),
+            "check_app_updates": check_app_updates_setting(cfg),
+            # None from source: the settings hide the update check then.
+            "app_version": info.version if (info := build_info()) is not None else None,
         }
 
     def _missing_loc_files(self) -> dict[str, str]:
@@ -189,6 +194,7 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
         handled_only: bool = False,
         records_cache: str = "",
         data_folder: str = "",
+        check_app_updates: bool = True,
     ) -> dict:
         self._wait_for_folder_text()
         if language not in UI_LANGUAGE_CODES:
@@ -216,6 +222,7 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
             "show_pa_tags": show_pa_tags is True,
             "handled_only": handled_only is True,
             "records_cache": records_cache,
+            "check_app_updates": check_app_updates is not False,
         })
         set_show_pa_tags(show_pa_tags is True)
         self._handled_only = handled_only is True

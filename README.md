@@ -21,6 +21,7 @@ A Python tool for browsing, extracting, and previewing files from Black Desert O
 - **Plugin system**: add handlers for new binary formats by dropping a file into `handlers/`
 - **Caching**: the PAZ index is parsed once and cached; later launches read it from the cache. Every cache lives outside the game folder, in the `cache` folder of the data folder with one subfolder per PAZ folder, so a test client keeps its own. Caches an older version left next to the PAZ files move over on the next start
 - **Data folder**: settings (`paz_config.json`) and caches live in `%LOCALAPPDATA%\BDO-PAZ-Browser` when running from source, and in `data\` next to the exe in the Windows build, so the unzipped folder holds everything (an exe folder that can't be written, such as one in Program Files, falls back to `%LOCALAPPDATA%`). The **Data Folder** setting picks another folder: the settings are copied there (replacing any already in it, the old copy stays), the caches in the old folder are deleted, and the loaded client's PAZ index is saved again in the new one. A picked folder that is gone, such as an unplugged drive, is replaced by the default until it is back. Settings an older version kept next to the code move over on the next start. The settings file carries a `config_version`: a newer app updates older settings on load, settings it can't read are renamed to `paz_config.backup.json` and the app starts with defaults, and an older app reads newer settings as they are and keeps their keys
+- **App updates** (Windows exe): on start the app asks GitHub for a newer release (the **Check for updates on start** setting, on by default) and shows a banner. Its popup lists the release notes, with **Update** and **Open on GitHub**. **Update** downloads the release zip, checks its SHA-256, closes the app and swaps the new version in: `data` moves along, and when the new `bdo-paz-cli.exe --handlers` fails, the old version is put back. Nothing updates without a click. From source, update with `git pull`
 - **Parsed table cache**: parsed tables are kept on disk, so a big table reopens in a fraction of its parse time (`detail_dialog.dbss` 1.3 s to 0.25 s, `itemenchant.dbss` with its default sort 2.1 s to 0.5 s). The **Parsed Table Cache** setting picks Off, Cache tables when opened (default) or Cache all tables in the background, which parses every table A to Z while the app is idle; the status bar shows the table it is on, how far the pass is, and when it waits for you. A table stays cached across a patch that leaves it, its companions and the LOC text or lookup indexes it reads unchanged. **Delete all caches** in the settings removes the parsed table, icon thumbnail and lookup index caches; the PAZ index cache stays, since rebuilding it takes over a minute. In the background mode, the pass then waits for the next start instead of filling the cache again right away
 
 ## Contributing Format Coverage
@@ -227,6 +228,10 @@ stops after the checked folder. The handlers are copied in as plain files
 under `_internal/handlers`, without their tests. Adding or changing handlers
 needs the source version: the exe has no handler reload (Ctrl+R).
 
+To try the update flow without a GitHub release, set `BDO_PAZ_RELEASES_URL` to a
+JSON file in the shape of GitHub's releases API whose asset URLs point at a
+newer build's zip and `.sha256`; `file://` URLs work.
+
 ## Usage
 
 ### GUI
@@ -259,6 +264,11 @@ python browser.py --render buffsimply.bss --page 2 > page.html
 
 # Every registered handler key; needs no PAZ folder
 python browser.py --handlers
+
+# Windows exe: this version and the newest release, then install it (or a downloaded release zip)
+bdo-paz-cli.exe --check-app-update
+bdo-paz-cli.exe --update-app
+bdo-paz-cli.exe --update-app BDO-PAZ-Browser-v2026.10.12-windows.zip
 
 # Lookup indexes: every kind with its size, all entries of one kind, or one ID
 python browser.py --index
@@ -316,7 +326,12 @@ PAZ-Parser/
 │   ├── formats.py          # --formats, --handlers
 │   ├── records.py          # --records (record_filter.py, record_output.py)
 │   ├── render.py           # --render
-│   └── index.py            # --index
+│   ├── index.py            # --index
+│   └── update.py           # --check-app-update, --update-app
+│
+├── updates/                # App updates for the Windows exe
+│   ├── releases.py         # The newest release from the GitHub releases API
+│   └── install.py          # Download, SHA-256 check, unpack, the swap helper
 │
 ├── bench/                  # benchmark.py commands (see Benchmarking)
 │   ├── cli.py              # run, compare, profile
@@ -341,6 +356,7 @@ PAZ-Parser/
 │   ├── bdo_records_prefill.py# Background pass that caches every table
 │   ├── bdo_recent_tables.py# Which handlers keep their parsed tables in memory
 │   ├── bdo_api_search.py   # File content search, single-file and cross-file (SearchMixin)
+│   ├── bdo_api_updates.py  # The update banner check and one-click install (UpdateMixin)
 │   └── config_migrations.py# paz_config.json versions and the steps between them
 │
 ├── paz/                    # PAZ archive reading and caching

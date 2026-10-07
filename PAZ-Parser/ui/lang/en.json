@@ -146,6 +146,8 @@
     "showPaTagsHint": "Show the <PAColor> tags of game text next to its colours",
     "handledOnly": "Show only handled tables",
     "handledOnlyHint": "Limit the file tree and searches to files with a parsed table view",
+    "checkAppUpdates": "Check for updates on start",
+    "checkAppUpdatesHint": "Ask GitHub for a newer release when the app starts. Updating always takes a click.",
     "recordsCache": "Parsed Table Cache",
     "recordsCacheHint": "Keep parsed tables on disk so they reopen without parsing again",
     "recordsCacheOff": "Off",
@@ -182,6 +184,8 @@
     "searchDone": "Search complete, {matches} file(s) matched out of {total} scanned",
     "pluginsReloaded": "Plugins reloaded.",
     "reloadSourceOnly": "Handler reload is only available when running from source.",
+    "updateDownloading": "Downloading v{version}: {mb} MB",
+    "updateInstalling": "Installing v{version}, the app restarts…",
     "found": "Found {cap}files matching \"{query}\"",
     "copiedRow": "Copied selected row.",
     "searchError": "Search error: {message}",
@@ -231,5 +235,17 @@
   "locWarning": {
     "missing": "You don't have {file} for {language}, so only the app's UI is in {language}. Game text in the tables stays Korean.",
     "dismiss": "Dismiss"
+  },
+  "appUpdate": {
+    "available": "Version {version} is available",
+    "dismiss": "Dismiss",
+    "title": "Update to v{version}",
+    "current": "You have v{version}.",
+    "close": "Close",
+    "openOnGitHub": "Open on GitHub",
+    "install": "Update",
+    "failed": "Update failed: {message}",
+    "nothingToInstall": "No update to install.",
+    "otherInstances": "Close the other BDO PAZ Browser windows and commands first."
   }
 }

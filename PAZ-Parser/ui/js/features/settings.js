@@ -26,6 +26,8 @@ export const settingsMethods = {
     document.getElementById("settings-table-row-height").value = s.table_row_height ?? 27;
     document.getElementById("settings-show-pa-tags").checked = s.show_pa_tags === true;
     document.getElementById("settings-handled-only").checked = s.handled_only === true;
+    document.getElementById("settings-check-app-updates-row").hidden = !s.app_version;
+    document.getElementById("settings-check-app-updates").checked = s.check_app_updates !== false;
     document.getElementById("settings-records-cache").value = s.records_cache ?? "open";
     const dataFolder = document.getElementById("settings-data-folder");
     dataFolder.value = s.data_folder ?? "";
@@ -89,6 +91,7 @@ export const settingsMethods = {
     const tableRowHeight = Number(document.getElementById("settings-table-row-height").value);
     const showPaTags = document.getElementById("settings-show-pa-tags").checked;
     const handledOnly = document.getElementById("settings-handled-only").checked;
+    const checkAppUpdates = document.getElementById("settings-check-app-updates").checked;
     const recordsCache = document.getElementById("settings-records-cache").value;
     const dataFolder = document.getElementById("settings-data-folder").value.trim();
     if (this._isSavingSettings) return;
@@ -99,7 +102,7 @@ export const settingsMethods = {
     let result;
     try {
       result = await window.pywebview.api.save_settings(
-        pazPath, language, tableRowHeight, showPaTags, handledOnly, recordsCache, dataFolder,
+        pazPath, language, tableRowHeight, showPaTags, handledOnly, recordsCache, dataFolder, checkAppUpdates,
       );
     } finally {
       this._showSettingsSaving(false);

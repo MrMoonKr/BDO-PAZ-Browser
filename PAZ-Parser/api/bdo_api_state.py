@@ -15,6 +15,8 @@ from bdo_preview import PreviewHandler
 from paz.bdo_thumbnail_cache import ThumbnailCache
 from table_sort import TableSort
 
+from updates.releases import Release
+
 from .bdo_recent_tables import RecentTables
 from .bdo_records_prefill import RecordsPrefill
 from .bdo_records_store import DataDigests, RecordStore
@@ -31,6 +33,8 @@ class ApiState:
         self._profile = profile
         self._server = server
         self._window: webview.Window | None = None
+        # The newer release the last update check found (`UpdateMixin`).
+        self._app_update: Release | None = None
         self._paz_root: Path | None = None
         # The loaded folder's cache folder (`app_dirs.client_cache_dir`).
         self._cache_dir: Path | None = None

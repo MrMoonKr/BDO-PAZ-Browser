@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+import threading
 from collections.abc import Callable
 from pathlib import Path
 
@@ -23,6 +24,7 @@ from cli.formats import run_formats, run_handlers
 from cli.index import run_index
 from cli.records import run_records
 from cli.render import run_render
+from cli.update import run_check_app_update, run_update_app
 from cli.stdio import close_stdout_quietly, configure_logging, is_closed_pipe, use_utf8_stdio
 
 # Options that only mean something with one command, checked in _check_options.
@@ -39,7 +41,7 @@ def main() -> None:
 
     command = _command(args)
     if command is None:
-        _launch_gui(profile=args.profile)
+        _launch_gui(profile=args.profile, after_update=args.after_update)
         return
 
     use_utf8_stdio()
@@ -72,6 +74,11 @@ def _build_parser() -> argparse.ArgumentParser:
         "--index", metavar="KIND", nargs="?", const="",
         help="Print a lookup index, e.g. character_item; without KIND, list every kind",
     )
+    commands.add_argument("--check-app-update", action="store_true", help="Print this version and the newest release")
+    commands.add_argument(
+        "--update-app", metavar="ZIP", nargs="?", const="",
+        help="Windows exe: install the newest release, or a downloaded release zip, after this command exits",
+    )
 
     parser.add_argument("--output", metavar="DIR", help="Output directory for --file (default: current working directory)")
     parser.add_argument(
@@ -92,6 +99,8 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--page", metavar="N", type=int, default=1, help="--render: page number, from 1 (default: 1)")
     parser.add_argument("--id", metavar="N", help="--index: one ID, decimal or 0x hex")
     parser.add_argument("--profile", action="store_true", help="Enable backend timing and browser-side JS profiling for the GUI")
+    # Passed by the update helper (updates/install.py) when it restarts the GUI.
+    parser.add_argument("--after-update", action="store_true", help=argparse.SUPPRESS)
     return parser
 
 
@@ -117,6 +126,10 @@ def _command(args: argparse.Namespace) -> Callable[[argparse.Namespace], int] | 
         return run_render
     if args.index is not None:
         return run_index
+    if args.check_app_update:
+        return run_check_app_update
+    if args.update_app is not None:
+        return run_update_app
     return None
 
 
@@ -170,7 +183,21 @@ def _apply_window_icon(window) -> None:
         pass
 
 
-def _launch_gui(profile: bool = False) -> None:
+# How long the window stays on top after an update restart.
+_AFTER_UPDATE_ON_TOP_SECONDS = 1.5
+
+
+def _bring_to_front(window: webview.Window) -> None:
+    """Raise the window above the others for a moment.
+
+    The update helper starts the new version from a hidden console, and
+    Windows keeps a window started that way behind the one in front.
+    """
+    window.on_top = True
+    threading.Timer(_AFTER_UPDATE_ON_TOP_SECONDS, setattr, (window, "on_top", False)).start()
+
+
+def _launch_gui(profile: bool = False, after_update: bool = False) -> None:
     from bdo_server import LocalServer
 
     _set_app_user_model_id()
@@ -194,6 +221,8 @@ def _launch_gui(profile: bool = False) -> None:
     if window is not None:
         api.set_window(window)
         window.events.shown += lambda: _apply_window_icon(window)
+        if after_update:
+            window.events.shown += lambda: _bring_to_front(window)
     try:
         webview.start(debug=profile)
     finally:
