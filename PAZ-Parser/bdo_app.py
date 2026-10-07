@@ -7,6 +7,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
+from bdo_preview import BUNDLED_HANDLERS_DIR, load_plugins, use_handlers_dir
+
+# The core imports `_common` from the handlers folder, so the folder goes on
+# the path before the imports below.
+use_handlers_dir(BUNDLED_HANDLERS_DIR)
+
 import webview
 
 from api.bdo_api import Api
@@ -29,6 +35,7 @@ def main() -> None:
     args = parser.parse_args()
     _check_options(parser, args)
     adopt_legacy_config(LEGACY_CONFIG_FILE)
+    load_plugins(BUNDLED_HANDLERS_DIR)
 
     command = _command(args)
     if command is None:

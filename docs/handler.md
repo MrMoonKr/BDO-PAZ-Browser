@@ -4,7 +4,11 @@ This guide explains how custom preview handlers should be structured, loaded, an
 
 ## Loader Rules
 
-The browser loads handlers from the `handlers/` folder at startup.
+The browser loads handlers from the `handlers/` folder at startup. Importing
+`bdo_preview` registers nothing: each entry point calls
+`load_plugins(BUNDLED_HANDLERS_DIR)` (`bdo_app.main()`, `bench.cli.main()` and
+`pytest_sessionstart()` in `conftest.py`), so the Windows exe can pass an
+updated handler pack instead.
 
 Only files matching these rules are auto-loaded:
 
@@ -1587,6 +1591,29 @@ from _texture.some_internal_file import ...
 
 If something is shared across formats, move it to `_common/`.
 
+### Handler API
+
+Handlers will ship apart from the Windows exe as handler packs, so handler code
+may import only what every exe bundles. `handler_api.py` lists it:
+
+| List | Holds |
+|------|-------|
+| `CORE_MODULES` | `bdo_models`, `bdo_preview`, `record_fields`, `table_sort`, `ui_text` |
+| `STDLIB_MODULES` | the standard library modules handlers use today (`struct`, `dataclasses`, `re`, ...) |
+| `CORE_CALLED_COMMON` | the `_common` modules the core imports: `data_deps`, `html`, `loc`, `lookup_builders`, `lookup_index`, `pa_text` |
+
+`tests/test_handler_imports.py` fails when handler code (anything under
+`handlers/` but `test_*.py`) imports a module outside the first two lists, or
+when the core imports a `_common` module outside the third. Test modules may
+import anything, since packs ship without them.
+
+`HANDLER_API` in the same file is the version of that contract; an exe loads
+only a pack with the same number. Bump it only on a breaking change: a removed
+or renamed function, or a changed signature or return shape, in a
+`CORE_MODULES` module or a `CORE_CALLED_COMMON` module. Adding a module to an
+allowlist is a bump too, since an older exe lacks it. Adding a function or a
+handler is not.
+
 ## Required `__init__.py`
 
 Every package folder should contain `__init__.py`.
@@ -1606,20 +1633,12 @@ This keeps imports predictable when handlers are loaded dynamically.
 
 ## Loader Requirement
 
-The plugin loader should add `handlers/` to `sys.path` before importing plugins.
-
-```python
-handlers_path = str(handlers_dir.resolve())
-
-if handlers_path not in sys.path:
-    sys.path.insert(0, handlers_path)
-```
-
-Without this, imports like this may fail:
-
-```python
-from _dbss.registration import register_dbss_handlers
-```
+The handlers folder has to be on `sys.path` before anything imports from it:
+plugins import `_dbss.registration` and the like, and the core imports
+`_common` (see Handler API). `use_handlers_dir()` in `bdo_preview.py` puts it
+first on the path, and the entry points call it before importing the core:
+`bdo_app.py` at the top, `benchmark.py` before `bench.cli`, and `conftest.py`
+for the tests. `load_plugins()` calls it as well.
 
 ## Naming Conventions
 

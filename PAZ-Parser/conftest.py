@@ -22,13 +22,6 @@ for path in (PAZ_PARSER_DIR, HANDLERS_DIR):
         sys.path.insert(0, path_str)
 
 
-@pytest.fixture(scope="session", autouse=True)
-def load_handlers():
-    import bdo_preview
-
-    return bdo_preview
-
-
 def pytest_collection_finish(session: pytest.Session) -> None:
     # --clean keeps the output to failures and the pass/total line.
     reporter = None
@@ -103,6 +96,11 @@ def pytest_configure(config: pytest.Config) -> None:
 
 
 def pytest_sessionstart(session: pytest.Session) -> None:
+    # Before collection: pytest_collection_finish() already runs handlers.
+    import bdo_preview
+
+    bdo_preview.load_plugins(bdo_preview.BUNDLED_HANDLERS_DIR)
+
     config = session.config
     if config.getoption("--frozen-fixtures"):
         return

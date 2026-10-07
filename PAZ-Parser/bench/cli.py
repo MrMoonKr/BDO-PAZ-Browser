@@ -7,6 +7,7 @@ from collections.abc import Callable, Sequence
 from datetime import datetime, timezone
 from pathlib import Path
 
+from bdo_preview import BUNDLED_HANDLERS_DIR, load_plugins
 from cli.errors import CliError
 from cli.stdio import configure_logging, error, progress, use_utf8_stdio
 
@@ -44,6 +45,7 @@ _PROGRESS_EVERY = 10
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    load_plugins(BUNDLED_HANDLERS_DIR)
     use_utf8_stdio()
     configure_logging()
     try:

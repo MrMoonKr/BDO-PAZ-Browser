@@ -685,7 +685,7 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
         import bdo_preview
         # The old handler instances leave the registry; let go of what they parsed.
         self._recent_tables.clear()
-        bdo_preview.reload_plugins(Path(__file__).parent.parent / "handlers")
+        bdo_preview.reload_plugins(bdo_preview.BUNDLED_HANDLERS_DIR)
         self._handled_view = None
         self._reload_loc(load_config().get("language", "en"))
         self._refresh_records_cache()
