@@ -11,8 +11,6 @@ NPC: Crio (40012)  →  item: 7023 (Haystack)  →  amity: 30
 Confession response: "감사합니다! 정말 좋아해요."
 ```
 
----
-
 ## Companion Files
 
 | File                     | Required | Role                                                   |
@@ -22,8 +20,6 @@ Confession response: "감사합니다! 정말 좋아해요."
 | `npcgiftetc.bss`         | Optional | Small PABR config block with global gift-system values; see [npcgiftetc_bss.md](npcgiftetc_bss.md) |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -45,8 +41,6 @@ All multi-byte values are little-endian.
 | `+0x08` | u16  | padding     | Observed: 0                                                           |
 
 `record_start = data_offset - 2`
-
----
 
 ### npcgift.dbss
 
@@ -74,13 +68,9 @@ Observed `gift_count` values: in the pre-2026-09-27 fixture 23 records have 5 ro
 | `+0x04` | u32  | amity_a | Amity gained by giving this item                                   |
 | `+0x08` | u32  | amity_b | Duplicate Amity value; equal to `amity_a` on every observed row (119 pre-2026-09-27, 117 in the 2026-09-27 client) |
 
----
-
 ### npcgiftdataoffset.dbss
 
 Same 4-byte header and 10-byte offset record layout as `npcgiftoffset.dbss`, but offsets point into `npcgiftdata.dbss`.
-
----
 
 ### npcgiftdata.dbss
 
@@ -103,13 +93,9 @@ Same 4-byte header and 10-byte offset record layout as `npcgiftoffset.dbss`, but
 
 The companion `data_size` equals `12 + text_len * 2 + 4`, excluding the leading `npc_id`. English localized equivalents are in LOC type 54 keyed by the same `npc_id`.
 
----
-
 ### npcgiftetc.bss
 
 Small PABR config block (32 bytes) with global gift-system values. See [npcgiftetc_bss.md](npcgiftetc_bss.md) for the standalone layout.
-
----
 
 ## Suggested UI Layout
 
@@ -138,16 +124,12 @@ that gap needs an item ID to icon name mapping that is not yet decoded.
 | NPC Name      | text | LOC str_type=6, str_id1=npc_id                                         |
 | Dialogue      | text | English LOC str_type=54 when available; Korean inline text as fallback |
 
----
-
 ## Notes
 
 - `npcgift.dbss` and `npcgiftdata.dbss` share the same 24 NPC IDs and offset record order, but the main records are not stored in ID-sorted order.
 - `item_id` is ambiguous across LOC types; use str_type=0 for item display names, not str_type=34 knowledge names.
 - Example: NPC 40012 (Crio) accepts item 7023, which resolves via str_type=0 to "Haystack" and via str_type=34 to "Omelet". Use str_type=0 for gift item names.
 - `npc_id` resolves via LOC str_type=32, str_id4=29 for the "Give Gift" interaction label.
-
----
 
 ## Open Questions
 

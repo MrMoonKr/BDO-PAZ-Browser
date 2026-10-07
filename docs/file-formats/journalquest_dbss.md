@@ -18,8 +18,6 @@ Journal 8 / Book 1, Olvia Academy Journal / Emma Bartali's Journal
   pages: 13 packed quest IDs (chain 2326, quests 1..13)
 ```
 
----
-
 ## Companion Files
 
 | File                         | Required | Role                                                                        |
@@ -29,8 +27,6 @@ Journal 8 / Book 1, Olvia Academy Journal / Emma Bartali's Journal
 | `languagedata_en.loc`        | Optional | English journal/book text via LOC type=63; page quest text via LOC type=18  |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -48,8 +44,6 @@ All multi-byte values are little-endian.
 | books        | book_count × Book   | Variable-length book records (see Record Structure)                |
 
 The value previously documented as header `unknown_1` (`15` at `+0x04`) is the `book_count` of the first group (journal 1 has 15 books). The 4-byte header, the `book_count` words and the indexed records tile the file exactly, with no gaps or overlaps (verified on the `49,206`-byte file after the 2026-09-27 update with 13 groups and 119 records, the `46,620`-byte file before it with 12 and 112, and the `46,476`-byte fixture). Groups are stored physically in offset-file order; inside group 6 the offset-file order of books differs from their physical order (see [journalquestoffset.dbss](journalquestoffset_dbss.md)).
-
----
 
 ## Record Structure
 
@@ -80,8 +74,6 @@ Every page is a single packed quest ID `(quest_id << 16) | quest_chain_id`, the 
 
 Current file totals (after the 2026-09-27 update): 119 books, 901 pages, 901 distinct page quest IDs, all present in `allquestlist.bss`; one quest chain per book, 117 books start at `quest_id = 1`, and 51 books have no unlock text. Before the update: 112 books, 827 pages, all with a LOC type 18 `id4=0` title.
 
----
-
 ## Journal Group Table
 
 Current client data (`files/journalquest.dbss`), offset-file order:
@@ -103,8 +95,6 @@ Current client data (`files/journalquest.dbss`), offset-file order:
 |          13 |     7 |    74 | Inner Edania (added 2026-09-27)        |             7 |                      7 |
 
 The older fixture (`PAZ-Parser/tests/fixtures/journalquest.dbss`, 815 pages) has the same books, except journal 8 was a one-page placeholder (chain 896) instead of the 13-page Olvia Academy Journal.
-
----
 
 ## Localization
 
@@ -130,8 +120,6 @@ Page text is LOC `str_type=18` keyed by the page's packed quest ID, like any que
 | `str_id2`  | `page_quest_id >> 16`              | Quest ID within the chain; no off-by-one      |
 | `str_id4`  | `0` = title, `1` = story text      | See [quest.dbss](quest_dbss.md) for `2`/`3`   |
 
----
-
 ## Suggested UI Layout
 
 | Column              | Type | Notes                                                                 |
@@ -148,8 +136,6 @@ Page text is LOC `str_type=18` keyed by the page's packed quest ID, like any que
 | Bookshelf Scene     | text | `bookshelf_scene`                                                     |
 | Book Model          | text | `book_model`                                                          |
 
----
-
 ## Notes
 
 - All records are located through `journalquestoffset.dbss`; the book records are self-describing (length-prefixed strings, counted page list), so the file can also be walked sequentially using the per-group `book_count` words.
@@ -160,8 +146,6 @@ Page text is LOC `str_type=18` keyed by the page's packed quest ID, like any que
 - The journals themselves are sorted by `journal_key` too: the main bookshelf fills columns of four, 1 to 4, 5 to 8 and 9 to 12, although the offset file lists journal 10 after 12. In my game (2026-09-28) the slot for journal 10 (Outer Edania) is empty and journal 13 (Inner Edania) does not show, on a family that has not started the Edania questline, so a journal probably stays off the shelf until its story starts.
 - `is_record_book` marks a record book: every page completes passively from what the player has already done, and the book reads as a story, with no Goal line, no reward and no claim button. Every page quest of a record book (448 pages, client 3458) has only a passive `action_script` check: `collectknowledge(...)` (318, Donghae and Hwanghae), `alreadyclearquest(...)` (118, the Edania journals) or `checkLevelUp(1)` (12, Event Logs book 8, objective "접속하기", log in). Other books are mostly real tasks (`meet` 134, `killmonster` 114, `gatheritem`, `exchangeitem` and others), with a few passive pages mixed in. Checked in game (2026-09-28): Event Logs book 8 reads as a long story ("An Adventurer's Story (1/4)") with no Goal line or reward, while book 2 shows "Goal: Find the note Reubens hid", "Upon Completion: Black Stone" and "This adventure log must be completed in order"; a Storybook - Donghae book has no Goal line or claim button either, and a page not earned yet shows as "???" ("Untold stories are waiting to be discovered. Embark on quests to uncover the hidden tales."). The flag does not pick the cover or the spine: book 8 has the same red cover as book 2, and Storybook - Donghae looks like Storybook - Morning Bosses (not a record book) on the shelf. bdo-data-extractor leaves the byte unnamed.
 - Each page quest has a `quest.dbss` record whose `quest_category` is `11`; that value occurs on no other quest. Page records hold the journal's permanent Family-stat rewards (see [quest.dbss](quest_dbss.md)).
-
----
 
 ## Open Questions
 

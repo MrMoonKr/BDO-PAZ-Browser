@@ -14,8 +14,6 @@ key=17 -> region 1382 Velandir                     (500000, 800000, 3.0)
 
 The file is small (21 rows in client 3458) and has no strings. The client Lua never mentions it or a blizzard, so the layout below is my own reading of the file.
 
----
-
 ## Companion Files
 
 | File                  | Required | Role                                                  |
@@ -23,8 +21,6 @@ The file is small (21 rows in client 3458) and has no strings. The client Lua ne
 | `languagedata_en.loc` | Optional | Region names (LOC type 17, keyed by `region_key`)     |
 
 All multi-byte values are little-endian unless noted otherwise.
-
----
 
 ## File Layout
 
@@ -38,8 +34,6 @@ All multi-byte values are little-endian unless noted otherwise.
 | EOF-4   | u32     | zero_trailer       | Always `0`                                               |
 
 The file is `8 + 26 × 21 + 12 = 566` bytes. The parser rejects a file whose rows do not end exactly at `string_table_start`.
-
----
 
 ## Record Structure
 
@@ -66,8 +60,6 @@ The file is `8 + 26 × 21 + 12 = 566` bytes. The parser rejects a file whose row
 | `50000`    | `120000`   | `1.0`      | Bronte's Bolt (1123, 1143, 1160)                                             |
 | `500000`   | `800000`   | `3.0`      | 1382 Velandir                                                                |
 
----
-
 ## Suggested UI Layout
 
 | Column     | Type | Notes                                         |
@@ -78,15 +70,11 @@ The file is `8 + 26 × 21 + 12 = 566` bytes. The parser rejects a file whose row
 
 The `unknown_*` fields stay on the record for search and CSV but out of the table.
 
----
-
 ## Notes
 
 - A region name can appear on several rows: LOC gives the same name to several region keys (1126, 1146, 1163 and 1175 are all Mountain of Eternal Winter).
 - The two zero u32 values at `+0x12` and `+0x16` are kept as `unknown_12` and `unknown_16` because a zero field cannot be told apart from an unused one.
 - `edaniaregioninfo.bss` is the other small region-variant table. It is not the same layout (9-byte rows keyed by an Edania region value, no region key), so the two files have separate parsers.
-
----
 
 ## Open Questions
 

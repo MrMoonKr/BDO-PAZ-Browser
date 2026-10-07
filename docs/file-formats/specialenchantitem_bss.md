@@ -18,8 +18,6 @@ item_key 0x0A0B66C1 (item 747201, level 10)
   name_ref -> the Korean name; LOC type 79 gives "DEC: Sovereign Longsword"
 ```
 
----
-
 ## Companion Files
 
 | File                  | Required | Role                                                                  |
@@ -28,8 +26,6 @@ item_key 0x0A0B66C1 (item 747201, level 10)
 | `languagedata_en.loc` | Optional | English names, LOC type 79, `str_id1` = item ID, `str_id2` = level    |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -47,8 +43,6 @@ The shared PABR string table layout of `buffsimply.bss`, `npcsimply.bss` and
 
 The rows follow `itemenchantoffset.dbss` key order exactly, which is neither
 ascending nor descending (the first row is item 736815 at level 20).
-
----
 
 ## Record Structure
 
@@ -97,8 +91,6 @@ the same table but never share an entry: 500 are icon paths, the other 2,753
 names. Unlike `buffsimply.bss` there is no `"0"` or empty entry. Repeated
 values are stored once, so levels that keep an icon point at the same entry.
 
----
-
 ## Suggested UI Layout
 
 | Column   | Type | Notes                                                                                  |
@@ -110,8 +102,6 @@ values are stored once, so levels that keep an icon point at the same entry.
 | Name     | text | LOC type 79 (`str_id1` = item ID, `str_id2` = level), falling back to the Korean `name_ref` text |
 
 `unknown_11` and `unknown_12` stay on the record but out of the table.
-
----
 
 ## Notes
 
@@ -136,7 +126,7 @@ values are stored once, so levels that keep an icon point at the same entry.
   by its packed item key with `str_id2` 0; they repeat the item ID rows.
 - All 500 icon paths exist on client 3458 once resolved under
   `ui_texture/icon/` and lowercased, as for `itemenchant.dbss`.
-- The 551 items fall into three shapes on client 3458:
+- The 551 items fall into four shapes on client 3458:
 
   | Rows per item | Items | `enchant_level` | `display_level`             | `unknown_11`, `unknown_12` | Example                        |
   | ------------- | ----- | --------------- | --------------------------- | -------------------------- | ------------------------------ |
@@ -148,8 +138,6 @@ values are stored once, so levels that keep an icon point at the same entry.
   An item with rows here has a row for every level from 0 to its
   `itemenchant.dbss` maximum, except the 292 single-row items, which list only
   level 20.
-
----
 
 ## Open Questions
 

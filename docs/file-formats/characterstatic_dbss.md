@@ -18,8 +18,6 @@ class_type: 4                  -> LOC type 21 "Ranger"
 
 Field names `npcKind` and `classType` follow the notes of [bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor); this doc writes them as `npc_kind` and `class_type`.
 
----
-
 ## Companion Files
 
 | File                    | Required | Role                                                   |
@@ -37,8 +35,6 @@ Related but not required:
 
 All multi-byte integer values observed in the DBSS payload are little-endian.
 
----
-
 ## File Layout
 
 | Offset  | Type | Field         | Notes                                      |
@@ -47,8 +43,6 @@ All multi-byte integer values observed in the DBSS payload are little-endian.
 | `+0x04` | ...  | record_stream | Repeated inline ID + variable-length payload chunks |
 
 The stream is not fixed-width. Use `characterstaticoffset.dbss` to slice records.
-
----
 
 ## Record Structure
 
@@ -127,8 +121,6 @@ Offsets are relative to the end of the payload (`data_offset + payload_size`).
 
 Observed `payload_size` ranges from `456` to `1033` bytes (older fixture: `478` to `1055`).
 
----
-
 ## Script Values
 
 `action_script` holds the interaction action:
@@ -141,8 +133,6 @@ Observed `payload_size` ranges from `456` to `1033` bytes (older fixture: `478` 
 The app groups these links into the `KNOWLEDGE_CHARACTERS` lookup index (`build_knowledge_character_index`), which the `mentalcard.dbss` Learned From column reads together with the `knowledgelearning.dbss` links. The `getknowledge` argument is a knowledge `entry_id`: 5,680 of the 5,684 arguments exist in `mentalcard.dbss` and 5,683 have a LOC `str_type=34` name, which matches the NPC name (e.g. `47791` "Ehren" -> `15936` "Ehren").
 
 `condition_script` is empty on 24,015 rows. The other 403 hold semicolon-separated condition expressions, 98 of them alongside a `getknowledge` action. Most common calls: `progressQuest` (239, plus `ProgressQuest`/`progressquest` spellings), `CheckRideCharacter` (188), `getOceanTendency` (38), `getIntimacy` (28), `getLifelevel` (27), `clearQuest` (17). Example: `!CheckRideCharacter(29820);...;getIntimacy(47098)>-2500;`.
-
----
 
 ## `characterstaticoffset.dbss`
 
@@ -173,8 +163,6 @@ Provides lookup rows for `characterstatic.dbss`.
 
 Rows sorted by `data_offset` cover the whole main file from `+0x04` through EOF when the two inline ID bytes before each payload are included.
 
----
-
 ## `playercharacterstatic.bss`
 
 `PABR` membership list of player-like character IDs: the live classes plus reserved, test, mercenary and alternate-mode characters. It is not an active-class list by itself.
@@ -189,8 +177,6 @@ Rows sorted by `data_offset` cover the whole main file from `+0x04` through EOF 
 | varies  | u32     | zero          | `0` |
 
 Every member has a `characterstatic.dbss` record with `class_type` other than `101`, and no other record does. The members are `1`-`47`, `201`-`214`, the mercenaries `521`, `523`-`528` and `536`, and the unnamed `39831`-`39867`, whose `class_type` values run `0`-`36`.
-
----
 
 ## Suggested UI Layout
 
@@ -207,8 +193,6 @@ Every member has a `characterstatic.dbss` record with `class_type` other than `1
 | Model        | text | `model_path` |
 | Payload Size | num  | Useful for debugging variable layouts |
 
----
-
 ## Notes
 
 - Observed files contain `24418` records (older fixture: `24017`; 2026-09-27 client: `24551`).
@@ -220,13 +204,11 @@ Every member has a `characterstatic.dbss` record with `class_type` other than `1
 - An earlier version of this doc read the script as a null-terminated UTF-16BE string at `+0x10` followed by 8 zero bytes. That misread is one byte off the real `action_len` + UTF-16LE layout; it decodes ASCII scripts correctly only while `condition_script` is empty, and it is the source of the "306 control-like strings" the old doc listed.
 - `tag`, the inline `character_id` at `p+1` and `class_type` validate on both the current client and the older test fixture (96 players there).
 
----
-
 ## Open Questions
 
 ### Numeric Attribute Semantics
 
-The block after `npc_kind` clearly contains many stable fields and constants, but its sub-structure is not confirmed. Additional cross-references, a client symbol name list, or in-game examples are needed before naming fields beyond raw offsets.
+The block after `npc_kind` contains many stable fields and constants, but its sub-structure is not confirmed. Additional cross-references, a client symbol name list, or in-game examples are needed before naming fields beyond raw offsets.
 
 ### What do the `npc_kind` values and high bits mean?
 

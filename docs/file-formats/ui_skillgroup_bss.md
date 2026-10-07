@@ -17,8 +17,6 @@ combat, class 0 (Warrior), 8 x 106 cells
   tabs: Main Skills, Secondary Skills, Passives, Ascension Skill
 ```
 
----
-
 ## Companion Files
 
 | File                  | Required | Role                                                              |
@@ -28,8 +26,6 @@ combat, class 0 (Warrior), 8 x 106 cells
 | `languagedata_en.loc` | Optional | Class names (type `21`) and tab names (type `37`, `GAME` sheet)   |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -52,8 +48,6 @@ shared counted string table and 8-byte trailer (see
 
 `ui_skillgroup_succession.bss` has `class_count` `0`, no tabs, the class
 table and an empty string table.
-
----
 
 ## Record Structure
 
@@ -159,8 +153,8 @@ order of the tab entries. Checked 2026-09-29:
   Dragonblood (`2`), Hexeblood (`1`), Selected Skills (`3`), so the window
   sorts by `subgroup`. The two blood tabs are separate skill groups: both
   have Tip of the Scale, Spiteful Soul, Sundering Roar, Crackling Flame,
-  Savage Decree, Storm Piercer and Tectonic Slam, Hexeblood adds Extinction,
-  Flow: Concealed Claw, Flow: Obliterate and Storm Maul, Dragonblood adds
+  Savage Decree, Storm Piercer and Tectonic Slam; Hexeblood adds Extinction,
+  Flow: Concealed Claw, Flow: Obliterate and Storm Maul; Dragonblood adds
   Flow: Cloud's Strife, Aerial Burst and Doombringer.
 
 The window no longer draws the tree: each section is a list of skill cards
@@ -198,8 +192,6 @@ and the section did not show on my Wizard, so it most likely appears only
 while one of the items is equipped. Taebaek's Belt: see the GrumpyG guide
 (grumpygreen.cricket/taebaeks-belt).
 
----
-
 ## Suggested UI Layout
 
 One row per skill cell, across all classes. The default order follows the
@@ -217,8 +209,6 @@ cell index.
 | Icon        | icon | `IconKind.SKILL` icon of the group's first rank (from `skilltype.dbss`) |
 | Skill       | text | LOC type `10` name of the group's first rank                        |
 
----
-
 ## Notes
 
 - The grid and cell layout comes from bdo-data-extractor, which keeps the
@@ -229,8 +219,6 @@ cell index.
   example Scholar: strings `0`, `3`, `1` for subgroups `0`, `1`, `2`) shows
   the order. The game sorts the sections by `subgroup` (Drakania, see Tabs).
 
----
-
 ## Open Questions
 
 ### What is `unknown_class_table`?
@@ -239,4 +227,3 @@ cell index.
 non-zero, at the same indexes in both windows, and the values are close
 between the windows (Warrior `596` and `563`, class `1` `10057` and `10045`).
 They are not byte offsets of the class grids.
-

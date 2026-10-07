@@ -17,8 +17,6 @@ buff_id 48830
   description  Hunting Mastery +70      (LOC str_type=5, str_id1=48830)
 ```
 
----
-
 ## Companion Files
 
 | File                  | Required | Role                                              |
@@ -34,8 +32,6 @@ not needed to read this file.
 
 All multi-byte values are little-endian.
 
----
-
 ## File Layout
 
 | Offset  | Type | Field   | Notes                                              |
@@ -48,8 +44,6 @@ begins, and the last ends at EOF.
 
 Observed records: 44,609 in the pre-2026-09-27 test fixture, 44,645 in the
 2026-09-27 client. The row counts elsewhere in this doc are from the fixture.
-
----
 
 ## Record Structure
 
@@ -119,8 +113,6 @@ Offsets are relative to the end of the description string. Mostly zero.
 | `+0x19` | u8   | is_exclusive | `1` in 2,069 rows on client 3458, never with category `0`; applying the buff ends the other buffs of its category, see Stacking |
 | `+0x1A` | u8   | unknown_1a  | `6` in 18,895 rows, else `0` or `1`          |
 
----
-
 ## `buffoffset.dbss`
 
 `PABR` index into `buff.dbss`, the same layout as `characterstaticoffset.dbss`
@@ -149,8 +141,6 @@ it.
 | `+0x00` | u32  | `0`    |                                               |
 | `+0x04` | u32  | varies | End offset of the index rows (`446098`)       |
 | `+0x08` | u32  | `0`    |                                               |
-
----
 
 ## Enum Values
 
@@ -315,7 +305,7 @@ The second table above was checked three ways:
 
 The batch of 2026-10-03 was checked the same three ways:
 
-- **98**, mount and ship stats, on bdocodex: Light Iron Horseshoe (52902)
+- **98** mount and ship stats, on bdocodex: Light Iron Horseshoe (52902)
   reads `Movement Speed +2%` at +0 (buff 53512, `20000`), Kaia Fishing Boat
   Prow (49310) `Movement Speed +4%` with an `Acceleration +3%` set effect,
   Epheria: Old Wind Sail (49757) `Turn +0.5%` (52648, `5000`) and Krogdalo's
@@ -326,13 +316,13 @@ The batch of 2026-10-03 was checked the same three ways:
   (Mount) +2%`, so it does not read like the player's type 9, and the 11 texts
   then match up to that suffix.
   The Korean names give the kinds too (가속도, 속도, 회전력, 제동).
-- **187**, flat AP and DP: 256 of the 296 one-line texts contain the
+- **187** flat AP and DP: 256 of the 296 one-line texts contain the
   rendered amounts (`Morning Earth: AP -60 for 3600 sec`); the rest are
   prose (`Sun Buff +5`), `UNKNOWN`, or stale (41778 reads `DP -200`, stores
   `-30`). `param_3` follows the Korean name on all 252 attribute buffs (아침
   해 / 달 / 땅, "morning sun / moon / earth"); the Morning Light bosses
   (Duoksini, Bulgasal, Imoogi) store `2`.
-- **53**, Discovery Radius, on bdocodex: Chenga - Sherekhan Tome of Wisdom
+- **53** Discovery Radius, on bdocodex: Chenga - Sherekhan Tome of Wisdom
   (12808) reads `+150m` (53476, `15000`), Magic Crystal of Infinity - Vision
   `+15m` (`1500`), the Magic Crystal of Enchantment - Vision and its Ancient
   version `+10m` (`1000`). `1999` reads `+20m` in its text and `+19.99m` in
@@ -345,14 +335,14 @@ The batch of 2026-10-03 was checked the same three ways:
   sites (Altar of Gaming) and reads `Discovery Radius +15m` now, on the same
   type 53 buff, and the type 53 texts that never got updated still say
   `Increase Vision Range.`
-- **52**, Fall Damage: 19 of 22 one-line texts match; the others are prose
+- **52** Fall Damage: 19 of 22 one-line texts match; the others are prose
   (`You won't take fall damage.`) and a placeholder `1`.
 - **59** Jump Height and **91** Durability Reduction Resistance, from the
   functional costume tooltips (`Jump Height +80`, `Durability Reduction
   Resistance +10%`): all 19 one-line type 59 texts match, and 8 of 10 type 91
   (the misses read `Gear Durability Reduction Resistance`, and `+10%` on a
   buff that stores `999999`).
-- **14**, crowd control: the kinds come from the Korean names (`[액션제한]
+- **14** crowd control: the kinds come from the Korean names (`[액션제한]
   넉다운`, "action limit: knockdown"): `1` Knockback, `2` Knockdown, `4` Stun,
   `6` Stiffness, `7` Bound, `12` Floating, `13` Air Smash, `14` Down Smash,
   `22` Freezing, and `15`, `17`, `20`, `23`, `24` the same that ignore the
@@ -363,13 +353,13 @@ The batch of 2026-10-03 was checked the same three ways:
   guard crush and knockback, `19` (groggy) has two buffs; all three stay
   unlabelled. Keeper Marg's stiffness (850, `6`, `1350`) reads `Stiffness for
   1.35 sec`.
-- **24** and **60**, one-off EXP: the amount equals the number in all 47 item
+- **24** and **60** one-off EXP: the amount equals the number in all 47 item
   names that carry one (`Guild EXP (200,000)`, `60 Contribution EXP`; one
   `5 Contribution EXP` item stores `1`). The [Event] Delicious Jeon, Sikhye and
   Braised Short Ribs descriptions (1000347 to 1000349) read `Contribution EXP
   +1,000`, the rendered text exactly, for a stored `1000`. The Skill EXP item
   reads only `Skill EXP` in game; its buff 47499 stores `27500000`.
-- **48**, set effect points: a set piece applies a type 48 buff that adds
+- **48** set effect points: a set piece applies a type 48 buff that adds
   `param_2` points to the set skill of `param_1`, and each level of that skill
   holds one tier of set effects. Combined Magic Crystal - Gervish (15662)
   applies 57863 (`56050`, `1`); skill 56050 level 1 is Weight Limit +75 LT,
@@ -378,7 +368,7 @@ The batch of 2026-10-03 was checked the same three ways:
   lines. Korean names state the points (`세트 효과 2포인트`, "set effect 2
   points", stores `2`). 84 of the 123 skills have a LOC type 10 name; the
   rest show the skill number.
-- **97**, packages: the duration equals the one in all 267 item names that
+- **97** packages: the duration equals the one in all 267 item names that
   state one (`Value Pack (30 Days)` stores `43200`). A Value Pack applies three
   of them, kinds `1` (the pack), `4` (`Unlimited Customization`) and `5`
   (`Unlimited Use of Merv's Palette`), the last two worded as on its tooltip;
@@ -392,7 +382,7 @@ The batch of 2026-10-03 was checked the same three ways:
   buffs with a buff ID in `param_3`, `22` is shared by Premium Value Pack Plus
   (`param_3` `1`) and Blessing of Cron Stones (`2`, which grants Cron Stone
   x300 via a daily Challenge), and `23` to `25` are guild skills.
-- **111**, from the costume tooltips (`Cooking Time -2 sec`) and LOC: 30 of
+- **111**: from the costume tooltips (`Cooking Time -2 sec`) and LOC, 30 of
   32 one-line texts match (`Alchemy Time -5 sec` on Eileen's Cheer, 48808,
   `250000`; `Cooking Time -0.3 sec` on `15000`). The misses are 48868, which
   reads `+5%` while its Korean name and value say `+10%`, and one prose text.
@@ -405,7 +395,7 @@ The batch of 2026-10-03 was checked the same three ways:
 The batch of 2026-10-04 was checked the same way, mostly against item names
 and bdocodex tooltips, since most of these buffs have no text:
 
-- **103**, worker contracts: `param_1` is the worker (LOC type 6) and
+- **103** worker contracts: `param_1` is the worker (LOC type 6) and
   `param_2` the town (LOC type 17); every one of the 535 buffs has both names.
   Item 64639 reads `Usage effect: Employment Contract: Goblin Worker` and
   `Affiliation: Calpheon City` on bdocodex, and its buff 64039 stores `7552`
@@ -413,7 +403,7 @@ and bdocodex tooltips, since most of these buffs have no text:
   the column's name, equals an item name on 393 of 533 buffs; the rest differ
   in wording (`Worker for QA: Time` against the LOC name `QA Worker: Time`,
   `Artisan Demibeast Worker` against `Demibeast Artisan Worker`).
-- **16**, remove buffs: `param_1` is a buff `group`. 50 of the 54 names that
+- **16** remove buffs: `param_1` is a buff `group`. 50 of the 54 names that
   say `Group 44679 제거` ("remove group 44679") store that number (the four
   misses are one Enslar run shifted by one), 18 English texts read `Remove
   Group 44812`, and 331 of the 355 values are a group in this file; the others
@@ -423,7 +413,7 @@ and bdocodex tooltips, since most of these buffs have no text:
   and 19117 group 2300 (the `Marg's Rage` headline 19113). The bleed, poison
   and burn cures (`출혈 해제`, 51265 to 51267) store `param_2` `15`; groups
   2061 to 2063 hold over 200 levels each, so it is not a level cap.
-- **72**, storage expansions: 163 of 176 coupons name what the column writes
+- **72** storage expansions: 163 of 176 coupons name what the column writes
   (`Trent Stable +1 Expansion Coupon` stores town `126`, kind `1`, `1` slot).
   The misses are Byeot County and Moodle Village, which LOC type 17 calls
   `Nopsae's Byeot County` and `Nampo's Moodle Village`, one wharf filed under
@@ -431,7 +421,7 @@ and bdocodex tooltips, since most of these buffs have no text:
   Town `0` is every town (`모든 지역`, 19 buffs). `param_3` `1` marks the
   `- 30일` and `- 기간` ("period") variants, which have no item and no
   duration.
-- **71**, inventory slots: every item name matches (`Inventory +8 Expansion`
+- **71** inventory slots: every item name matches (`Inventory +8 Expansion`
   stores `8`); `param_2` `1` is the time-limited variant as in type 72.
 - **76**: the amount equals the one in 29 of the 31 item names that state
   one (`Guild Karma (1,500)`, `Reduce Karma -30,000`); the misses are test
@@ -439,7 +429,7 @@ and bdocodex tooltips, since most of these buffs have no text:
   (970072) reads `Naval Fame +100,000` on bdocodex and stores 100000.
   Hans' Contract (65838) reads `Raises Naval Fame by 2,500` on bdocodex,
   which its buff stores, while its Korean name says `+5000`.
-- **17**, learn skill: the Secret Books apply it with the skill in `param_1`
+- **17** learn skill: the Secret Books apply it with the skill in `param_1`
   (`Wizard/Witch Secret Book - Lightning Chain`, buff 58322, skill 827
   `Lightning Chain I`); 130 of 175 item names contain the skill name, the
   rest are renamed skills (`[Secret Book] Pilgrim's Steps V` teaches
@@ -451,7 +441,7 @@ and bdocodex tooltips, since most of these buffs have no text:
   with the text `Get one piece of Cooking knowledge.` 125 of 186 parchment
   names (`Bookshelf with Knowledge on Officers of the Western Camp`, theme
   104 `Western Camp Officer`) contain the theme name; the rest reword it.
-- **73**, trade refresh: under `param_1` `1`, `param_2` is a trade manager
+- **73** trade refresh: under `param_1` `1`, `param_2` is a trade manager
   (LOC type 6 `Bahar`, secondary label `<Trade Manager>`), named in Korean
   by town (`무역 Refresh : 벨리아`, "trade refresh: Velia"). Under `0`, a
   territory: the seven Trade Pass items 63001 to 63007 read `Restocks the
@@ -460,14 +450,14 @@ and bdocodex tooltips, since most of these buffs have no text:
   and Southeastern Calpheon. The Korean names give Balenos, Northern and
   Southern Serendia, Calpheon, Mediah and the same two Calpheon halves, so
   `2` to `4` disagree and stay unlabelled.
-- **68**, stat limits: the Breakthrough Crystals 15642 to 15648 apply
+- **68** stat limits: the Breakthrough Crystals 15642 to 15648 apply
   59001 to 59007 (kinds `0` to `6`, `1` step) and read `Attack Speed Limit
   +1`, `Casting Speed Limit +1`, `Luck Limit +1` and `Gathering Limit +1` on
   bdocodex; the Movement Speed and Critical Hit crystals leave out "Limit",
   and the buff texts read `Costume - Attack Speed Limit Increased`. The
   `+2` buffs (59977 to 59983) belong to a QA earring.
-- **19**, **47**, **51**, **62**, **100**, **134**, **196** and **200**, from
-  their items, which I checked in game: Endless Ocean Draught (890074) lists
+- **19**, **47**, **51**, **62**, **100**, **134**, **196** and **200**: from
+  their items, which I checked in game. Endless Ocean Draught (890074) lists
   `Sailor EXP +15%` (48934, `150000`), [Event] Giddy-up Ghost Horsie!
   (830271) `Mount Skill EXP +15%` and `Horse Capture Rate +15%` (47528 and
   47529), the Oceanbound Otter Fishing Rod (59455) `Prize Catch Fish Rate
@@ -496,7 +486,7 @@ and bdocodex tooltips, since most of these buffs have no text:
   one transaction", `-1` on Rich Merchant's Ring; the 5% is not stored),
   **179** the Elvia weapon blessings (`param_1` `153` Valtarra, `154`
   Okiara, `155` Narc) and **184** Satiated (no parameters).
-- **186**, the Black Shrine (Boss Blitz) aura orbs: Sun Orb (66664) stores
+- **186**: the Black Shrine (Boss Blitz) aura orbs. Sun Orb (66664) stores
   `param_3` `0` but reads `Moon's Aura Fixed Stat +1` on bdocodex, and Moon
   Orb (66665, `1`) reads `Sun's Aura`. The icons settle it: the Sun Orb is
   red, the Moon Orb blue and the Earth Orb green, the colours of the fixed
@@ -517,7 +507,7 @@ and bdocodex tooltips, since most of these buffs have no text:
   kind `2` (Health, `건강`) has no English text but follows type 89. Type 107
   `param_2` `2` to `7` read only `Gathering Luck increases.` and stay
   unlabelled.
-- **126**, fish grades: fish are white, green, blue, yellow and red (prize
+- **126** fish grades: fish are white, green, blue, yellow and red (prize
   fish), and the fish item descriptions name the middle three on a line of
   their own: the 104 that say `- Common Fish` are all green, the 46 `-
   High-quality Fish` all blue and the 86 `- Rare Fish` all yellow. The skills that apply the buffs name the kind in
@@ -825,8 +815,6 @@ The other values each hold one item family, all exclusive: GM's Blessing
 holiday feasts (28 to 32), Token of Desert Trading (20), test and
 development items (233 to 250, 252). 248 to 251 are not exclusive.
 
----
-
 ## Suggested UI Layout
 
 | Column      | Type | Notes                                                               |
@@ -844,8 +832,6 @@ development items (233 to 250, 252). 248 to 251 are not exclusive.
 | Param 1     | num  | `param_1`, then what it means for the effect type where confirmed: `3 (Kamasylvian Monsters)`, `25000 (2.5%)`, `10 (Monster AP)`, `250 (every 10 sec)`. Labels over 24 characters (character and quest names) are cut, in full on hover. Sorts by the raw value |
 | Param 2     | num  | `param_2`, labelled the same way                                    |
 | Param 3     | num  | `param_3`, labelled the same way                                    |
-
----
 
 ## Notes
 
@@ -954,8 +940,6 @@ development items (233 to 250, 252). 248 to 251 are not exclusive.
   component buff carries the tick; the rest are drift such as 65209 ("every
   3 sec", `2000`) and 18056 ("every 1 sec", `3000`).
 
----
-
 ## Open Questions
 
 ### What does `unknown_str` hold?
@@ -984,4 +968,3 @@ bdo-data-extractor splits `+0x00` into `i16 Category`, `u8 CategoryLevel` and
 `u8 Level`. The two bytes are zero in every record here, the i16 counts up
 on staged buffs such as boss stages, and it ranks the buffs of one `group`
 (see Notes), so it is kept as `buff_level` until the client names it.
-

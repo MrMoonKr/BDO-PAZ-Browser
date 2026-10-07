@@ -12,8 +12,6 @@ Example (pool `PEDU_47759_1`, three lines):
 3: {AudioVoice(NPC_VCE_47759_1_3_Jamalko)}여기에서도 황실에 납품해 주신다니,\n황실을 대신해 감사드립니다.
 ```
 
----
-
 ## Companion Files
 
 | File                    | Required | Role                                         |
@@ -22,8 +20,6 @@ Example (pool `PEDU_47759_1`, three lines):
 | `languagedata_*.loc`    | Optional | The lines in the user's language, LOC type `36` |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -47,8 +43,6 @@ The key is a u32 unique per pool with no visible structure (`0x24E52C6C` for `PE
 
 As in `detail_dialog.dbss`, the first record starts at `8`, every record starts 4 bytes after the previous one ends, and the last ends at end of file.
 
----
-
 ## Record Structure
 
 ### Pool Record (variable, `size` bytes from `offset`)
@@ -70,8 +64,6 @@ As in `detail_dialog.dbss`, the first record starts at `8`, every record starts 
 
 All 1,043 records of client 3458 walk with this layout and end exactly at their index size.
 
----
-
 ## Suggested UI Layout
 
 | Column | Type | Notes |
@@ -80,8 +72,6 @@ All 1,043 records of client 3458 walk with this layout and end exactly at their 
 | Lines  | num  | `line_count` |
 | Text   | list | LOC type `36` of each line, fallback to `text`, with the `{...}` tags removed; first few then a count |
 | Voice  | list | The `AudioVoice(...)` argument of each line that has one |
-
----
 
 ## Notes
 

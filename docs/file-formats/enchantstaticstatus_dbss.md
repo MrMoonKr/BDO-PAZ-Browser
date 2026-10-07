@@ -20,8 +20,6 @@ level 8   Black Stone x1                     90%       fail -5 durability   perf
 level 16  Concentrated Magical Black Stone x1  11.7647%  fail -10 durability  AP 86 ~ 90, accuracy 168
 ```
 
----
-
 ## Companion Files
 
 | File                              | Required | Role                                                  |
@@ -30,8 +28,6 @@ level 16  Concentrated Magical Black Stone x1  11.7647%  fail -10 durability  AP
 | `languagedata_en.loc`             | Optional | Names of the material and aid items (`str_type=0`)    |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -42,8 +38,6 @@ All multi-byte values are little-endian.
 
 The first block starts at byte `4` and the last ends at end of file
 (23,775,679 bytes on client 3458), with no gaps. Blocks are not in key order.
-
----
 
 ## `enchantstaticstatusoffset.dbss`
 
@@ -74,8 +68,6 @@ one, none miss (client 3458). 3,729 of the 4,811 keys are used by an item;
 | Sicil's Necklace         | 11625   | 8017        |
 | Kharazad Necklace        | 11697   | 12336       |
 | Tuvala Helmet            | 695105  | 6130        |
-
----
 
 ## Block Structure
 
@@ -166,8 +158,6 @@ block `n + 1`. So level 0 is the base item and pays nothing.
   15 Essence of Dawn (`820979`) for I to IX and a Dawn Black Stone (`820984`)
   for X.
 
----
-
 ## Suggested UI Layout
 
 | Column                  | Type | Notes |
@@ -191,8 +181,6 @@ block `n + 1`. So level 0 is the base item and pays nothing.
 
 Rows are sorted by enchant key, then level. The offset table shows the key
 split into Enchant Key and Level, then Data Offset and Data Size.
-
----
 
 ## Notes
 
@@ -232,8 +220,6 @@ split into Enchant Key and Level, then Data Offset and Data Size.
   - It calls the dice strings accuracy dice. The dice are the AP roll (Kzarka
     Gauntlet PRI `1D5+85`, AP 86 to 90); the f32 after each one is the
     accuracy.
-
----
 
 ## Open Questions
 

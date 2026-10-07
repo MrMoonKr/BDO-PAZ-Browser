@@ -12,8 +12,6 @@ Strength  Lv 30   EXP 10,000   Weight Limit +40 LT
 Health    Lv 30   EXP 5,000    Max HP +290, Max MP/WP/SP +200
 ```
 
----
-
 ## Companion Files
 
 | File                      | Required | Role                                                   |
@@ -21,8 +19,6 @@ Health    Lv 30   EXP 5,000    Max HP +290, Max MP/WP/SP +200
 | `fitnessleveloffset.dbss` | Required | `(fitness type, level) -> (offset, size)` of every row |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -39,8 +35,6 @@ All multi-byte values are little-endian.
 | `+0x04` | row[]     | rows        | `level_count` rows of 29 bytes       |
 
 The blocks fill the file exactly: 4 + 3 x (4 + 51 x 29) = 4,453 bytes on client 3458.
-
----
 
 ## Record Structure
 
@@ -60,8 +54,6 @@ Every row carries all four stat floats; only the ones of its own fitness type ar
 
 A row's totals are the bonus at that row's own level, confirmed in game on 2026-10-06: the tooltips at Breath Lv.37, Strength Lv.31 and Health Lv.33 read `Max Stamina +570`, `Weight Limit +42 LT` and `Max HP +320`, the values of rows 37, 31 and 33.
 
----
-
 ## Enum Values
 
 ### Fitness Type
@@ -73,8 +65,6 @@ A row's totals are the bonus at that row's own level, confirmed in game on 2026-
 | 2   | Health   | `max_hp`, `max_mp`                  |
 
 The order matches the client's `_ENUM_FITNESS` in `panel_characterinfo_basic_all.luac` (`BREATH`, `POWER`, then Health), whose hover handlers pass `0`, `1` and `2` for the Breath, Strength and Health texts. The stat per type matches the client's tooltip strings `Breath: Max Stamina +`, `Strength: Weight Limit +` and `Health: Max HP +{hpIncrease}, Max {mpTypeName} +{mpIncrease}`.
-
----
 
 ## fitnessleveloffset.dbss
 
@@ -99,8 +89,6 @@ The block index is the fitness type; the file stores no type field. 3 x (4 + 51 
 
 The first Breath row sits at `0x08`, after the type count and Breath's level count; each later block starts 4 bytes past the previous block's last row, skipping that block's level count. The parser reads the main file through these rows and checks that each row's `fitness_type` and `level` match the offset row's block and key.
 
----
-
 ## Suggested UI Layout
 
 ### fitnesslevel.dbss
@@ -124,16 +112,12 @@ The first Breath row sits at `0x08`, after the type count and Breath's level cou
 | Data Offset | num  | `data_offset`, as hex          |
 | Data Size   | num  | `data_size`                    |
 
----
-
 ## Notes
 
 - `fitnessmaxlevel.bss` (28 bytes) is a related file: `PABR`, three u32 values of `50`, then the 12 bytes `0, 16, 0`. The three 50s look like the maximum level per fitness type, which matches the 51 rows (levels 0 to 50) per block here and the client's `[Trial] Breath Lv. 50` items, but it has no handler yet.
 - The client reads a fitness level and its EXP through `getFitnessLevel`, `getCurrFitnessExperiencePoint` and `getDemandFItnessExperiencePoint` (`panel_characterinfo_basic_all_3.luac`); the bonus shown in the tooltip comes from `ToClient_GetFitnessLevelStatus(type)`.
 - The four stat floats are cumulative totals, not per-level increments: every column only rises with the level (Breath 25, 50, 75 up to 800; Strength 2 LT up to 80 LT; Health HP 10 up to 490 and MP/WP/SP 10 up to 300).
 - Breath and Strength have the same EXP from level 41 up and Strength needs less than Breath on levels 1 to 40.
-
----
 
 ## Open Questions
 

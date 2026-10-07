@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Defines the **skill roll table** used when a fairy's skills are changed. Each record is one fairy grade and holds a weight for every skill in [fairyequipskill.bss](fairyequipskill_bss.md), expressed in parts-per-million. A weight of `0` means that grade cannot roll that skill.
+Defines the skill roll table used when a fairy's skills are changed. Each record is one fairy grade and holds a weight for every skill in [fairyequipskill.bss](fairyequipskill_bss.md), expressed in parts-per-million. A weight of `0` means that grade cannot roll that skill.
 
 This is the data behind the "% chance to obtain the new skill" the game shows on the Change Skill window.
 
@@ -14,8 +14,6 @@ Faint   (501) → Morning Star:       weight 250000 = 25.0%
 Faint   (501) → Tingling Breath II: weight 0      = cannot roll
 ```
 
----
-
 ## Companion Files
 
 | File                               | Required | Role                                                  |
@@ -24,8 +22,6 @@ Faint   (501) → Tingling Breath II: weight 0      = cannot roll
 | `fairyequipskill.bss`              | Optional | Resolves a weight's `equip_skill_id` to a skill name  |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -46,8 +42,6 @@ All multi-byte values are little-endian.
 
 The first 2 bytes of each record are the file key prefix. The offset companion points to `record_start + 2`, so use `record_start = data_offset - 2` to read the full u32-aligned record.
 
----
-
 ## Acquire Type IDs, Fairy Grades
 
 The four keys are the four fairy grades, ascending:
@@ -61,44 +55,42 @@ The four keys are the four fairy grades, ascending:
 
 Every record's weights sum to exactly `1,000,000`, so each column below is a complete probability distribution.
 
----
-
 ## Roll Chances
 
-`—` means the grade cannot roll that skill.
+`-` means the grade cannot roll that skill.
 
 | equip_skill_id | Skill                  | Faint  | Glimmering | Brilliant | Radiant |
 | -------------- | ---------------------- | ------ | ---------- | --------- | ------- |
 | 0              | Tingling Breath I      | 15.0%  | 7.0%       | 5.0%      | 1.0%    |
-| 1              | Tingling Breath II     | —      | 7.0%       | 5.0%      | 2.0%    |
-| 2              | Tingling Breath III    | —      | —          | 5.0%      | 3.0%    |
-| 3              | Tingling Breath IV     | —      | —          | —         | 3.0%    |
-| 4              | Tingling Breath V      | —      | —          | —         | 3.0%    |
+| 1              | Tingling Breath II     | -      | 7.0%       | 5.0%      | 2.0%    |
+| 2              | Tingling Breath III    | -      | -          | 5.0%      | 3.0%    |
+| 3              | Tingling Breath IV     | -      | -          | -         | 3.0%    |
+| 4              | Tingling Breath V      | -      | -          | -         | 3.0%    |
 | 5              | Feathery Steps I       | 15.0%  | 7.0%       | 5.0%      | 1.0%    |
-| 6              | Feathery Steps II      | —      | 7.0%       | 5.0%      | 2.0%    |
-| 7              | Feathery Steps III     | —      | —          | 5.0%      | 3.0%    |
-| 8              | Feathery Steps IV      | —      | —          | —         | 4.0%    |
-| 9              | Feathery Steps V       | —      | —          | —         | 5.0%    |
+| 6              | Feathery Steps II      | -      | 7.0%       | 5.0%      | 2.0%    |
+| 7              | Feathery Steps III     | -      | -          | 5.0%      | 3.0%    |
+| 8              | Feathery Steps IV      | -      | -          | -         | 4.0%    |
+| 9              | Feathery Steps V       | -      | -          | -         | 5.0%    |
 | 10             | Fairy's Tear I         | 15.0%  | 7.0%       | 5.0%      | 2.0%    |
-| 11             | Fairy's Tear II        | —      | 7.0%       | 5.0%      | 3.0%    |
-| 12             | Fairy's Tear III       | —      | —          | 5.0%      | 4.0%    |
-| 13             | Fairy's Tear IV        | —      | —          | —         | 5.0%    |
+| 11             | Fairy's Tear II        | -      | 7.0%       | 5.0%      | 3.0%    |
+| 12             | Fairy's Tear III       | -      | -          | 5.0%      | 4.0%    |
+| 13             | Fairy's Tear IV        | -      | -          | -         | 5.0%    |
 | 14             | Inexhaustible Well I   | 15.0%  | 7.0%       | 5.0%      | 1.0%    |
-| 15             | Inexhaustible Well II  | —      | 7.0%       | 5.0%      | 2.0%    |
-| 16             | Inexhaustible Well III | —      | 7.0%       | 5.0%      | 3.0%    |
-| 17             | Inexhaustible Well IV  | —      | —          | 5.0%      | 3.0%    |
-| 18             | Inexhaustible Well V   | —      | —          | —         | 4.0%    |
+| 15             | Inexhaustible Well II  | -      | 7.0%       | 5.0%      | 2.0%    |
+| 16             | Inexhaustible Well III | -      | 7.0%       | 5.0%      | 3.0%    |
+| 17             | Inexhaustible Well IV  | -      | -          | 5.0%      | 3.0%    |
+| 18             | Inexhaustible Well V   | -      | -          | -         | 4.0%    |
 | 19             | Morning Star           | 25.0%  | 15.0%      | 10.0%     | 3.0%    |
 | 24             | Miraculous Cheer I     | 15.0%  | 8.0%       | 5.0%      | 3.0%    |
-| 25             | Miraculous Cheer II    | —      | 7.0%       | 5.0%      | 4.0%    |
-| 26             | Miraculous Cheer III   | —      | 7.0%       | 5.0%      | 5.0%    |
-| 27             | Miraculous Cheer IV    | —      | —          | 10.0%     | 6.0%    |
-| 28             | Miraculous Cheer V     | —      | —          | —         | 10.0%   |
-| 30             | Continuous Care I      | —      | —          | —         | 1.0%    |
-| 31             | Continuous Care II     | —      | —          | —         | 2.0%    |
-| 32             | Continuous Care III    | —      | —          | —         | 3.0%    |
-| 33             | Continuous Care IV     | —      | —          | —         | 4.0%    |
-| 34             | Continuous Care V      | —      | —          | —         | 5.0%    |
+| 25             | Miraculous Cheer II    | -      | 7.0%       | 5.0%      | 4.0%    |
+| 26             | Miraculous Cheer III   | -      | 7.0%       | 5.0%      | 5.0%    |
+| 27             | Miraculous Cheer IV    | -      | -          | 10.0%     | 6.0%    |
+| 28             | Miraculous Cheer V     | -      | -          | -         | 10.0%   |
+| 30             | Continuous Care I      | -      | -          | -         | 1.0%    |
+| 31             | Continuous Care II     | -      | -          | -         | 2.0%    |
+| 32             | Continuous Care III    | -      | -          | -         | 3.0%    |
+| 33             | Continuous Care IV     | -      | -          | -         | 4.0%    |
+| 34             | Continuous Care V      | -      | -          | -         | 5.0%    |
 | **Total**      |                        | 100.0% | 100.0%     | 100.0%    | 100.0%  |
 
 ### Never-rolled skills
@@ -112,8 +104,6 @@ Five catalog entries carry a weight of `0` in every grade and are therefore unre
 | 22             | Miraculous Cheer 8 Seconds  | Legacy naming                           |
 | 23             | Miraculous Cheer 7 Seconds  | Legacy naming                           |
 | 29             | Gift                        | Every fairy starts with it; never rolled |
-
----
 
 ## `fairyequipskillaquireoffset.dbss`
 
@@ -134,8 +124,6 @@ Five catalog entries carry a weight of `0` in every grade and are therefore unre
 
 Rows are ordered descending by key and ascending by `data_offset`.
 
----
-
 ## Lookup Recipe
 
 ```python
@@ -143,8 +131,6 @@ def roll_chance(record, equip_skill_id):
     weight = record["weights"][equip_skill_id]
     return weight / record["total_weight"]  # total is 1,000,000 for fairies
 ```
-
----
 
 ## Suggested UI Layout
 
@@ -158,19 +144,15 @@ def roll_chance(record, equip_skill_id):
 
 Show one row per `(acquire_type_id, equip_skill_id)` and omit zero weights, since a zero means the skill is not rollable at all.
 
----
-
 ## Notes
 
-- Weights are **probabilities, not costs**. Earlier revisions of this document described the record as an acquisition cost table with `cost_a`/`cost_b`/`cost_c` triples and a `reserved` field; that reading was wrong. The values are parts-per-million and the "reserved" u32 is simply `weights[0]`.
+- Weights are probabilities, not costs. Earlier revisions of this document described the record as an acquisition cost table with `cost_a`/`cost_b`/`cost_c` triples and a `reserved` field; that reading was wrong. The values are parts-per-million and the "reserved" u32 is simply `weights[0]`.
 - The record is a flat 43-element array, not 14 sub-entries of 3 values. The apparent triples were an artifact of grouping a dense array into 12-byte rows.
 - Three independent checks confirm the reading: every grade sums to exactly `1,000,000`; the non-zero index set per grade matches the published per-tier skill availability exactly; and the highest rank reachable per grade (I / III / IV / V) matches the published rank caps.
 - 43 weight slots cover `equip_skill_id` `0`–`42`, while the fairy catalog only defines `0`–`34`. Slots `35`–`42` are zero in every record, spare capacity shared with the pet table, which uses the same 176-byte record.
 - Only Radiant can roll rank IV and V skills, which the weight table encodes directly rather than through a separate cap field.
 - Morning Star is weighted far above any other skill at low grades (25% for Faint) and drops to 3% at Radiant.
 - Observed: 4 records and 67 non-zero weights (6 + 13 + 18 + 30) in the pre-2026-09-27 fixture and in the 2026-09-27 client; both files are byte-identical between the two.
-
----
 
 ## Open Questions
 

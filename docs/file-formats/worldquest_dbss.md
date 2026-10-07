@@ -11,15 +11,11 @@ count: 0
 records: none
 ```
 
----
-
 ## Companion Files
 
 No required companion files were observed. The archive contains no `worldquestoffset.dbss` companion.
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -33,13 +29,9 @@ All multi-byte values are little-endian.
 
 No record stream is present in the observed file because `count` is `0` and file length is exactly `4` bytes.
 
----
-
 ## Record Structure
 
 No record structure can be inferred from the observed sample because there are no records.
-
----
 
 ## Suggested UI Layout
 
@@ -48,16 +40,12 @@ No record structure can be inferred from the observed sample because there are n
 | Count  | num  | Header `count`; observed `0`       |
 | Status | text | Display `No world quest records`   |
 
----
-
 ## Notes
 
 - Observed decompressed size is `4` bytes, in the pre-2026-09-27 fixture and in the 2026-09-27 client.
 - Raw bytes are `00 00 00 00`, interpreted as u32 `count = 0`.
 - `python browser.py --list *worldquest*` found only `gamecommondata/binary/worldquest.dbss`.
 - `python browser.py --list *world*quest*` found world-map quest UI assets and `worldquest.dbss`, but no same-stem DBSS/BSS/PAC companion.
-
----
 
 ## Open Questions
 

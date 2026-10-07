@@ -12,8 +12,6 @@ max_level: 50
 level_exp[1..5]: 2055, 2260, 2599, 2989, 3437
 ```
 
----
-
 ## Companion Files
 
 | File                 | Required | Role                                                     |
@@ -21,8 +19,6 @@ level_exp[1..5]: 2055, 2260, 2599, 2989, 3437
 | `petexpoffset.dbss`  | Required | `exp_table_id -> (data_offset, data_size)` lookup index |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -56,8 +52,6 @@ Offsets are relative to `data_offset` from `petexpoffset.dbss`.
 
 Unused `level_exp` slots after `max_level` are zero-filled. Data size is always 406 bytes (`2 + 4 + 50 * 8`) even when `max_level` is less than 50.
 
----
-
 ## Observed Records
 
 | EXP Table ID | Max Level | First EXP Values                       | Last Populated EXP Values |
@@ -73,8 +67,6 @@ Unused `level_exp` slots after `max_level` are zero-filled. Data size is always 
 | 1            | 10        | 120, 180, 260, 340, 420               | 700, 800, 1200            |
 
 Together the nine tables hold 160 level thresholds. Both files are byte-identical in the pre-2026-09-27 fixture and the 2026-09-27 client.
-
----
 
 ## petexpoffset.dbss
 
@@ -98,8 +90,6 @@ Offset records are ordered by descending key: 9, 8, 7, 6, 5, 4, 3, 2, 1.
 
 The rows are the same `[u16 id][u32 offset][u32 size]` rows as a PABR offset table, but the file has no `PABR` magic and no 12-byte trailer (94 bytes = 4 + 9 x 10). The parser reads it with `parse_bare_offset_rows` from `_common/pabr_offset.py`.
 
----
-
 ## Suggested UI Layout
 
 | Column       | Type | Notes                                                    |
@@ -109,18 +99,14 @@ The rows are the same `[u16 id][u32 offset][u32 size]` rows as a PABR offset tab
 | Level        | num  | 1-based index into `level_exp`; render as expandable row |
 | Required EXP | num  | u64 threshold for the level                              |
 
----
-
 ## Notes
 
 - `pet.dbss` contains a `max_level` field with observed values 10, 20, 30, and 50; those values match the `max_level` values in `petexp.dbss`.
 - Records are fixed-capacity, not variable length. `petexpoffset.dbss` still stores offsets and sizes, following the same keyed-index pattern as other DBSS companions.
 - The first bytes after the main count (`09 00`) are the first record key prefix, so the apparent 6-byte header should be treated as u32 count plus record 0 prefix.
 
----
-
 ## Open Questions
 
 ### Pet Record Join Key
 
-The exact field in `pet.dbss` that selects `exp_table_id` is not confirmed. `pet.dbss` clearly exposes `max_level`, but many pets with `max_level=10` could map to any of EXP table IDs 1-6. A game-reference UI or another pet config field is needed to confirm the join rule.
+The exact field in `pet.dbss` that selects `exp_table_id` is not confirmed. `pet.dbss` exposes `max_level`, but many pets with `max_level=10` could map to any of EXP table IDs 1-6. A game-reference UI or another pet config field is needed to confirm the join rule.

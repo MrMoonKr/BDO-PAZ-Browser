@@ -10,8 +10,6 @@ Example:
 group 0 (key 51, "[Throne of Edana] [Weekly] For the Throne") -> quest 9108 / 1 -> [Weekly] For the Throne: Aetherion
 ```
 
----
-
 ## File Layout
 
 Same layout as [`newquest.bss`](newquest_bss.md), the layout reference: an 8-byte `PABR` header with a group count; per group a 10-byte header, 17-byte quest reference rows and a 13-byte trailer; a string table; an 8-byte file trailer. One handler reads all four quest lists. Values seen on client 3458:
@@ -44,8 +42,6 @@ LOC type `42` holds the English text of this list, keyed by the group's `group_k
 
 On client 3458 all 48 groups have a name (type 42 has 54, keys 1 to 54, so some belong to groups no longer in the file) and all 806 rows have a condition line. Condition lines carry `<PAColor>` tags (all but 1); group names do not. The string table holds the Korean source of both, which the handler shows where LOC has no row.
 
----
-
 ## Suggested UI Layout
 
 | Column       | Type | Notes                                                            |
@@ -62,14 +58,10 @@ On client 3458 all 48 groups have a name (type 42 has 54, keys 1 to 54, so some 
 
 `group` (the index in file order), `unknown_00`, `unknown_06`, the string table indexes and the Korean `group_name_kr` / `condition_kr` stay on the record for search and export but are not shown. The event period is blank in this list, so it has no Event Start or Event End column.
 
----
-
 ## Notes
 
 - Decompressed size is `200,069` bytes on client 3458.
 - One quest sits in two groups, with a condition line under each key: quest 4500 / 131 is in key 3 (`[Contribution] [Lv. 52] Mediah`) and key 45 (`Monster Zone Info`).
-
----
 
 ## Open Questions
 

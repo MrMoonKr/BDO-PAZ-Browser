@@ -12,8 +12,6 @@ interest_groups: Vendors of Serendia, Serendia Log II, Plants
 interest: 11–37, favor: 10–35
 ```
 
----
-
 ## Companion Files
 
 | File                        | Required | Role                                    |
@@ -21,8 +19,6 @@ interest: 11–37, favor: 10–35
 | `npcpersonalityoffset.dbss` | Required | ID-keyed index (same count, own order)  |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -56,8 +52,6 @@ Each group is a u16 knowledge group ID (matches `node_id` in `mentalcard.dbss`) 
 
 The same numbers appear on the BDO wiki next to each NPC's interest groups, but the game does not show them: the conversation window lists only the topics you can use, with no per-group count or maximum (I checked in game, 2026-09-27). It is not the number of topics offered either: with Oliviero (`6` for Serendia Adventure Log II) the topic list showed 7 cards of that group. What the number controls is open. Observed values: 0, 1, 2, 4, 5, 6, 7, 8, 10. All three fields in a record typically share the same value (1121 of 1182 records).
 
----
-
 ## Enum Values
 
 ### personality_type Codes
@@ -80,8 +74,6 @@ The same numbers appear on the BDO wiki next to each NPC's interest groups, but 
 | 12    | 1201      | 1202      | Goblin        |
 
 Confirmed by cross-referencing `amity-npcs.json` horoscope fields against `personality_id` values. Majors 1 and 9 have only variant 1.
-
----
 
 ## npcpersonalityoffset.dbss
 
@@ -106,8 +98,6 @@ An index file with one entry per personality record.
 
 Every offset row points at a record that repeats its `personality_id`, and every record is indexed exactly once, but the rows are not in main-file order: only the first 53 step by the 34-byte stride, the rest are ordered differently (pre-2026-09-27 fixture and 2026-09-27 client alike). An earlier version of this doc called it a sequential index in main-file order.
 
----
-
 ## Suggested UI Layout
 
 | Column            | Type | Notes                                            |
@@ -123,11 +113,9 @@ Every offset row points at a record that repeats its `personality_id`, and every
 | Fav Max           | num  | Favor range upper bound                          |
 | Horoscope         | text | Zodiac sign resolved from the personality type   |
 
----
-
 ## Notes
 
-- All 1182 `personality_id` values are unique, it is a true record key.
+- All 1182 `personality_id` values are unique; it is a true record key.
 - `personality_id_dup` at `+0x0E` is always identical to `personality_id` at `+0x00`; appears to be alignment padding or a redundant lookup key.
 - The `variant` in `personality_type` (1 or 2) is not exposed in `amity-npcs.json`; its in-game meaning is unknown. Distribution is roughly even (584 variant-1, 598 variant-2).
 - The groups and `unknown_*` numbers match the BDO wiki for Amerigo (41013): Vendors of Serendia, Serendia Adventure Log II and Plants (Serendia), `4` each.

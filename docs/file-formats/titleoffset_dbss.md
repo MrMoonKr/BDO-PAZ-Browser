@@ -10,8 +10,6 @@ Example:
 title_id: 44  →  offset: 0x1A3C, size: 0x98
 ```
 
----
-
 ## File Layout
 
 All multi-byte values are little-endian.
@@ -31,8 +29,6 @@ All multi-byte values are little-endian.
 | `+0x08` | u32  | size     | Byte count of the record block in `title.dbss` |
 
 To read a title record: seek to `offset` in `title.dbss` and read `size` bytes.
-
----
 
 ## Notes
 

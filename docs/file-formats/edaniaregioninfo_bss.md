@@ -13,8 +13,6 @@ edania_region=9  -> Event Horizon      (680877, no matching region)
 edania_region=10 -> none (_Count)      (100d10)
 ```
 
----
-
 ## Companion Files
 
 | File                  | Required | Role                                                                               |
@@ -23,8 +21,6 @@ edania_region=10 -> none (_Count)      (100d10)
 | `languagedata_en.loc` | Optional | Castle name text (LOC type 37, keyed by that hash)                                 |
 
 All multi-byte values are little-endian unless noted otherwise.
-
----
 
 ## File Layout
 
@@ -38,8 +34,6 @@ All multi-byte values are little-endian unless noted otherwise.
 | EOF-4   | u32     | zero_trailer       | Always `0`                                              |
 
 The file is `8 + 9 × 11 + 12 = 119` bytes. The parser rejects a file whose rows do not end exactly at `string_table_start`.
-
----
 
 ## Record Structure
 
@@ -73,8 +67,6 @@ The file is `8 + 9 × 11 + 12 = 119` bytes. The parser rejects a file whose rows
 
 Orbita and Tenebraum swap key numbers 3 and 4. The file confirms the values of the first five: their `unknown_00` matches the `regioninfo.bss` `unknown_02` of exactly one region each, and that region is the castle of the same name (1581 Aetherion Castle, 1621 Nymphamaré Castle, 1571 Orbita Castle, 1611 Tenebraum Castle, 1596 Zephyros Castle).
 
----
-
 ## Suggested UI Layout
 
 | Column        | Type | Notes                                                                                     |
@@ -84,15 +76,11 @@ Orbita and Tenebraum swap key numbers 3 and 4. The file confirms the values of t
 
 The `unknown_*` fields stay on the record for search and CSV but out of the table.
 
----
-
 ## Notes
 
 - The client reads a player's Edania region with `ToClient_GetEdaniaRegion(userNo)` and picks the faction icon on the name tag and in chat from it (`Combine_Etc_EdaniaIcon_Jordain_Normal` for Aetherion ... `Combine_Etc_EdaniaIcon_Hadum_Normal` for Voidekaia). `_Count` is the "no Edania region" answer.
 - `regioninfo.bss` has regions named after the second-group castles too (Aphrodon Temple, Hermesia Outer and Inner Castle, Magaia Temple, Aresion Temple), but none of them has the colour stored here, so only the first five rows link to a region.
 - `blizzardregioninfo.bss` is the other small region-variant table. It does not share this layout (26-byte rows keyed by a region key), so the two files have separate parsers.
-
----
 
 ## Open Questions
 

@@ -12,8 +12,6 @@ worker 7502 -> Giant Worker, next 7551, move 200, stamina 25, luck 50000
 worker 7504 -> Goblin Worker, next 7552, move 350, stamina 8, luck 50000
 ```
 
----
-
 ## Companion Files
 
 | File                  | Required | Role                                                        |
@@ -21,8 +19,6 @@ worker 7504 -> Goblin Worker, next 7552, move 350, stamina 8, luck 50000
 | `languagedata_en.loc` | Optional | Provides worker display names via LOC type `6`, `str_id4=0` |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -52,8 +48,6 @@ Each icon entry has one leading zero byte before the length:
 | `+0x00` | u8         | zero  | Observed `0`                         |
 | `+0x01` | u32        | size  | Byte count including trailing NUL    |
 | `+0x05` | char[size] | path  | UTF-8/ASCII DDS path, NUL-terminated |
-
----
 
 ## Record Structure
 
@@ -97,8 +91,6 @@ name = LOC type 6, str_id1=worker_id, str_id4=0
 icon_path = icon_paths[icon_index]
 ```
 
----
-
 ## Reference Rows
 
 | Slot | Worker ID | Name           | Next Tier | Move | Stamina | Luck  | Icon Index | Base Work Speed |
@@ -106,8 +98,6 @@ icon_path = icon_paths[icon_index]
 | 0    | `8047`    | Dokkebi Worker | `8048`    | 350  | 8       | 50000 | 0          | 60000000        |
 | 100  | `7502`    | Giant Worker   | `7551`    | 200  | 25      | 50000 | 10         | 30000000        |
 | 105  | `7504`    | Goblin Worker  | `7552`    | 350  | 8       | 50000 | 2          | 60000000        |
-
----
 
 ## Suggested UI Layout
 
@@ -123,8 +113,6 @@ icon_path = icon_paths[icon_index]
 | Work Speed | num  | `base_work_speed / 1000000`, two decimals |
 
 The three scaled stats are shown as the game's worker window shows them; the record keeps the raw integers for sorting and export. A base Giant Worker reads 2.00 move speed, 5.00 luck and 30.00 work speed, and an Artisan Goblin Worker 115.00 work speed before any level-ups. The name is colored by grade (see Grade Class and the color table in [plantworkerselect](plantworkerselect_bss.md), Suggested UI Layout); `worker_grade` is on the record.
-
----
 
 ## Notes
 

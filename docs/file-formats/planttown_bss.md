@@ -13,8 +13,6 @@ row 25 -> node 1301 -> Valencia City
 row 42 -> node 1    -> Velia
 ```
 
----
-
 ## Companion Files
 
 | File                  | Required | Role                                           |
@@ -22,8 +20,6 @@ row 42 -> node 1    -> Velia
 | `languagedata_en.loc` | Optional | Resolves `node_id` display names via type `29` |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -54,8 +50,6 @@ Follows the last row.
 | `+0x04` | u32  | end_of_rows | `548`    | Byte offset immediately after rows; `8 + count * 12` |
 | `+0x08` | u32  | reserved_b  | `0`      | Observed zero                                        |
 
----
-
 ## Record Structure
 
 ### Plant Town Row (12 bytes, repeated `count` times)
@@ -76,8 +70,6 @@ Derived field:
 node_name = LOC type 29, str_id1=node_id, str_id4=0
 ```
 
----
-
 ## Reference Rows
 
 | Row | Node ID | Node Name              | unknown_04 | unknown_06 | unknown_08 | unknown_0a |
@@ -93,16 +85,12 @@ node_name = LOC type 29, str_id1=node_id, str_id4=0
 
 Row numbers are from the pre-2026-09-27 fixture. The 2026-09-27 client inserts Angavu Outpost (`2057`) as row 0, so every row above moves down by one.
 
----
-
 ## Suggested UI Layout
 
 | Column    | Type | Notes                                            |
 | --------- | ---- | ------------------------------------------------ |
 | Node ID   | num  | `node_id`, right-aligned                         |
 | Node Name | text | Prefer LOC type `29`; fall back to raw `node_id` |
-
----
 
 ## Notes
 

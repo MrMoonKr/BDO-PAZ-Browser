@@ -14,8 +14,6 @@ favor 1 to 8, interest 45, combo "After 4 turns, Favor will increase by 6 for 1 
 icon UI_Artwork/IC_015879.dds
 ```
 
----
-
 ## Companion Files
 
 | File                    | Required | Role                                                 |
@@ -23,8 +21,6 @@ icon UI_Artwork/IC_015879.dds
 | `mentalcardoffset.dbss` | Required | Provides card ID, byte offset and size for each card |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -66,8 +62,6 @@ Rows tile `mentalcard.dbss` exactly: the first record starts at `4`, each next r
 
 Strings are `i64` UTF-16 code-unit counts followed by that many UTF-16LE units, except the icon path, which is an `i64` byte count followed by ASCII.
 
----
-
 ## Record Structure
 
 ### Card Header (33 bytes)
@@ -108,8 +102,6 @@ The combo fields build the tooltip's "Next combo effect" line: "After `{apply_tu
 
 Every one of the 12,502 records parses with this layout and ends exactly at its index `size`. The same layout holds for the older test fixture (12,087 records) and for the 12,604 records after the 2026-09-27 update, which still tile the file from byte `4` to its end.
 
----
-
 ## Confirmed Examples
 
 Client 3458:
@@ -137,8 +129,6 @@ Combo text checked in game (Ornella on 2026-09-27, the rest through Oliviero on 
 
 Stored as no combo and shown as "None": `4024` Lost Lamb, `6066` Heidel Church Belfry, `6079` Cannonball Master, `6086` Mine Imps Gone Berserk, `6087` Bloodstained Letter, `6093` Risk Factors Everywhere, `6095` Broken Cannon, `6096` Ornella's taste, `6105` Orcs and Spirits.
 
----
-
 ## Suggested UI Layout
 
 | Column          | Type | Notes                                                    |
@@ -157,8 +147,6 @@ Stored as no combo and shown as "None": `4024` Lost Lamb, `6066` Heidel Church B
 | Learned From Items | list | Items in `lookup(IndexKind.KNOWLEDGE_LEARNING_ITEMS, card_id)`, in ID order, with icon and grade colour, first three then a count; unsortable |
 | Position        | text | `x, y, z` rounded; dash when all zero                    |
 
----
-
 ## Notes
 
 - `card_id` → LOC `str_type=34`, `str_id1=card_id`; `str_id4` selects name (0), description (1) and acquisition text (2). 12,485 of 12,502 cards have an English name.
@@ -175,8 +163,6 @@ Stored as no combo and shown as "None": `4024` Lost Lamb, `6066` Heidel Church B
 - The stored Attributes equal what the game shows. On 2026-09-27 I compared readings through Oliviero (`41091`) with the pre-update fixture and found gaps of up to 2 interest and a few favor, but those readings equal client 3458 exactly (for example Lost Lamb `23` / `33`-`37`, stored `21` / `34`-`36` before the update), and so do all 19 cards read on 2026-09-28. The update rerolls many cards: Shiel (`11`) is `14` / `34`-`38` in client 3458, `10` / `33`-`38` before it and `11` / `31`-`39` in the 2024 guide above, so older readings (the guide, the tracker dataset below) differ because they come from older patches. Oliviero's own Interest Level stayed at 30 to 31 over several conversations (stored `30`-`34`), and his Favor stayed at `31` (stored `31`-`35`).
 - The tooltip is built by `PaGlobal_MentalGame_All:updateTooltipContext` in `luacscript/x64/widget/dialogue/panel_mentalgame_all_1.luac` (Lua 5.1 bytecode, decompiled with unluac). Attributes come from the live conversation card, not from this record: Interest Level is `card:getHit()`, Favor is `card:getMinDD()` ~ `card:getMaxDD()`. The Interaction Effect is `getHit() / npc:getCurrentDV() * 100` (clamped to 0-100) and `getMinDD() - npc:getCurrentPV()` / `getMaxDD() - npc:getCurrentPV()` (clamped at 0), so the NPC's interest is `CurrentDV` and its favor `CurrentPV`. The static record (`card:getStaticStatus()`, this file) is only used for the card key and the combo text: `getBuffType()`, `getApplyTurn()` (shown plus one, "after N turns"), `getValidTurn()` and `getVariedValue()`. The live values equal the stored `interest`, `min_favor` and `max_favor` on every card checked (see the previous note).
 - Stored favor and interest in the pre-update fixture are close to, but mostly not equal to, the readings in an amity tracker dataset from an older patch. Against 62 cards, 2 match exactly, 55 are within 5 on every value, and seven differ by 6 to 44, for example `6161` Slum in the City (interest `59` stored, `15` seen) and `4333` Calpheon Giant Bee (`28` / `24`-`30` stored, `2` / `40`-`47` seen). The dataset does not say which NPC each reading came from. No NPC in the current `npcpersonality.dbss` has card `4333`'s theme (`10321`, Creatures of Northern Calpheon) as an interest group.
-
----
 
 ## Open Questions
 

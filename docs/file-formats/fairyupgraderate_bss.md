@@ -15,11 +15,9 @@ step 2 (Brilliant -> Radiant): Sweet Honey Wine          0.2500% per item, 400 f
                                Ornette's Dark Honey Wine 4.0000% per item,  25 for 100%
 ```
 
----
-
 ## Companion Files
 
-The format is self-contained, there is no `fairyupgraderateoffset.dbss`.
+The format is self-contained; there is no `fairyupgraderateoffset.dbss`.
 
 | File                    | Required | Role                                                         |
 | ----------------------- | -------- | ------------------------------------------------------------ |
@@ -28,16 +26,14 @@ The format is self-contained, there is no `fairyupgraderateoffset.dbss`.
 
 All multi-byte values are little-endian.
 
----
-
 ## File Layout
 
 | Offset  | Type  | Field   | Notes                                         |
 | ------- | ----- | ------- | --------------------------------------------- |
 | `+0x00` | u8[4] | magic   | `PABR` (ASCII)                                |
 | `+0x04` | u32   | count   | Number of records; observed 3                 |
-| `+0x08` | —     | records | `count` variable-length records, back to back |
-| end-12  | —     | trailer | 12-byte file trailer                          |
+| `+0x08` | -     | records | `count` variable-length records, back to back |
+| end-12  | -     | trailer | 12-byte file trailer                          |
 
 Observed file size is 143 bytes: 8-byte header, 3 × 41-byte records, 12-byte trailer.
 
@@ -50,16 +46,16 @@ One record per grade transition, in ascending grade order.
 | `+0x00` | u8   | unknown_00       | 0        | Zero in all three records                    |
 | `+0x01` | u32  | success_cap_ppm  | 1000000  | 100% success, and the cap on accumulated rate |
 | `+0x05` | u32  | entry_count      | 2        | Number of item entries that follow           |
-| `+0x09` | —    | entries          |          | `entry_count` × 16-byte entries              |
+| `+0x09` | -    | entries          |          | `entry_count` × 16-byte entries              |
 
-Records carry no explicit key, the upgrade step is the record index.
+Records carry no explicit key; the upgrade step is the record index.
 
 Earlier versions of this doc called `unknown_00` `unknown_lead`.
 
 ### Entry (16 bytes, repeated `entry_count` times)
 
 One entry per item type that can be used for this Sprouting step. Only one item
-type may be used per attempt, the entries are alternatives, not a combined pool.
+type may be used per attempt; the entries are alternatives, not a combined pool.
 
 | Offset  | Type | Field         | Notes                                                              |
 | ------- | ---- | ------------- | ------------------------------------------------------------------ |
@@ -85,8 +81,6 @@ Follows the last record, the same trailer shape used by
 `end_of_records` is authoritative for where the record stream stops; parse
 records until that offset rather than assuming a fixed record size.
 
----
-
 ## Item IDs
 
 | item_id | English name              |
@@ -103,8 +97,6 @@ a `.dds` icon, but those sit in per-category folders that differ per item
 (`03_etc/09_petitem/` for 54030, `09_cash/` for 18448) and are not derivable from
 the ID. Item 18448 has no unprefixed PNG, only a `web_`-prefixed one; the preview
 icon resolver falls back to that sibling, so the canonical path is still correct.
-
----
 
 ## Decoded Table
 
@@ -125,8 +117,6 @@ order and the meaning of `items_for_max`.
 Ornette's Dark Honey Wine is worth exactly 15× Sweet Honey Wine at the first two
 steps and 16× at the last.
 
----
-
 ## Suggested UI Layout
 
 | Column        | Type | Notes                                                    |
@@ -140,8 +130,6 @@ steps and 16× at the last.
 | Rate (ppm)    | num  | Raw `rate_ppm`                                           |
 | Items for Max | num  | Raw `items_for_max`                                      |
 
----
-
 ## Notes
 
 - Sprouting may only be attempted once per fairy unless a rebirth is used, and a
@@ -152,7 +140,7 @@ steps and 16× at the last.
   caps are not stored in this file.
 - A failed Sprout consumes the fairy's single attempt permanently; the only way
   back is a cash-shop Rebirth. That makes `items_for_max` the practically
-  relevant column, players push to the 100% cost rather than gamble on
+  relevant column: players push to the 100% cost rather than gamble on
   `rate_ppm`, because there is no second roll to fall back on.
 - `success_cap_ppm` is `1,000,000` in every record, the same parts-per-million
   convention already confirmed for `fairyequipskillaquire.dbss` and
@@ -174,8 +162,6 @@ steps and 16× at the last.
   confirmed, so a link to Sprouting is not established.
 - Observed: 3 records and 6 entries in the pre-2026-09-27 fixture and in the
   2026-09-27 client; the file is byte-identical between the two.
-
----
 
 ## Open Questions
 

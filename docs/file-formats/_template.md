@@ -10,8 +10,6 @@ Example:
 Short example of the in-game meaning, UI display, or decoded output.
 ```
 
----
-
 ## Companion Files
 
 List every file that must be read alongside this one. Omit this section if the
@@ -24,8 +22,6 @@ format is fully self-contained.
 
 All multi-byte values are little-endian unless noted otherwise.
 
----
-
 ## File Layout
 
 Top-level structure of the file (compression, magic bytes, header).
@@ -34,8 +30,6 @@ Top-level structure of the file (compression, magic bytes, header).
 | ------- | ---- | ----- | ----------------- |
 | `+0x00` | u32  | count | Number of records |
 | `+0x04` | ...  | data  | Record stream     |
-
----
 
 ## Record Structure
 
@@ -56,8 +50,6 @@ Repeat this sub-section once per logical record type. Use H3 headings.
 
 Include observed value ranges or invariants inline as Notes cells.
 
----
-
 ## Enum Values
 
 Document enumerations inline here or inside the section where they first appear.
@@ -67,8 +59,6 @@ Document enumerations inline here or inside the section where they first appear.
 | 0   | Name |
 | 1   | Name |
 
----
-
 ## Suggested UI Layout
 
 | Column | Type | Notes                            |
@@ -76,15 +66,11 @@ Document enumerations inline here or inside the section where they first appear.
 | ID     | num  | Primary key                      |
 | Name   | text | LOC lookup fallback to raw value |
 
----
-
 ## Notes
 
 - Bullet-point facts that don't fit neatly into a table.
 - Cross-references to other confirmed behaviors.
 - Disproven hypotheses worth recording so they aren't re-investigated.
-
----
 
 ## Open Questions
 

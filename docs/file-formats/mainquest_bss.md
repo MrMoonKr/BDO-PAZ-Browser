@@ -11,8 +11,6 @@ group 0 (key 104, "[Special Growth] Taking My Own Path") -> quest 40022 / 1 -> [
 quest 40022 / 2 -> offered after clearquest(40022,1);
 ```
 
----
-
 ## File Layout
 
 Same layout as [`newquest.bss`](newquest_bss.md), the layout reference: an 8-byte `PABR` header with a group count; per group a 10-byte header, 17-byte quest reference rows and a 13-byte trailer; a string table; an 8-byte file trailer. One handler reads all four quest lists. Values seen on client 3458:
@@ -45,8 +43,6 @@ LOC type `43` holds the English text of this list, keyed by the group's `group_k
 
 On client 3458 all 120 groups have a name (type 43 has 170, keys 1 to 171, so some belong to groups no longer in the file) and all 3,268 rows have a condition line. Condition lines carry `<PAColor>` tags (all but 6); group names do not. The string table holds the Korean source of both, which the handler shows where LOC has no row.
 
----
-
 ## Suggested UI Layout
 
 | Column       | Type | Notes                                                            |
@@ -63,15 +59,11 @@ On client 3458 all 120 groups have a name (type 43 has 170, keys 1 to 171, so so
 
 `group` (the index in file order), `unknown_00`, `unknown_06`, the string table indexes and the Korean `group_name_kr` / `condition_kr` stay on the record for search and export but are not shown. The event period is blank in this list, so it has no Event Start or Event End column.
 
----
-
 ## Notes
 
 - Decompressed size is `447,790` bytes on client 3458.
 - No quest appears twice; every group key is unique.
 - Earlier versions of this doc read the later group header as 22 bytes starting one byte later, so each row took its leading `unknown_00` from the byte before it; the row values were the same. They named the first header's `group_key` `unknown_00` and the later header's `group_key` `unknown_0c`.
-
----
 
 ## Open Questions
 

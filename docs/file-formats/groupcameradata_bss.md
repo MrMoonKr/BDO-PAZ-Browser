@@ -16,8 +16,6 @@ scene 65, SymbolIcon_Valenos.dds
   quote        "저... 모험가님 ..." -> "\"Adventurer... if it's alright with you, ...\""
 ```
 
----
-
 ## Companion Files
 
 | File                  | Required | Role                                                                   |
@@ -25,8 +23,6 @@ scene 65, SymbolIcon_Valenos.dds
 | `languagedata_en.loc` | Optional | LOC type 97, `str_id1` = `scene_id`, `str_id4` 0 / 1 / 2 = title / description / quote |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -43,8 +39,6 @@ The shared PABR string table layout of `buffsimply.bss` and
 | EOF - 4          | u32     | zero         | Always 0                                                         |
 
 Rows are not sorted by ID (the first three are 65, 66 and 2).
-
----
 
 ## Record Structure
 
@@ -66,8 +60,6 @@ share its entries: 43 to 47, 197 and 198, and 253 to 256 share their title,
 recap and quote, 248 and 249 their title and quote, and 257 to 260 their
 title. The four icons are stored once each.
 
----
-
 ## Suggested UI Layout
 
 | Column      | Type | Notes                                                                        |
@@ -77,8 +69,6 @@ title. The four icons are stored once each.
 | Title       | text | LOC type 97 `str_id4` 0, falling back to the Korean title                     |
 | Description | text | LOC type 97 `str_id4` 1, falling back to the Korean recap; line breaks collapsed and cut to a preview |
 | Quote       | text | LOC type 97 `str_id4` 2, falling back to the Korean quote                     |
-
----
 
 ## Notes
 

@@ -14,8 +14,6 @@ region_group_key=202 -> node 1301 Valencia City
 
 The region group key is the value the client reads with `getRegionGroupKey()` on a region (`panel_lobby_characterselect_all_2.luac`, where it picks the login queue of the character's region). bdo-data-extractor ([iDevelopThings/bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor), `FORMATS.md`, section 11) documents only the `regionGroupKey` join on the `regioninfo.bss` side; the layout below is my own reading of this file.
 
----
-
 ## Companion Files
 
 | File                  | Required | Role                                                  |
@@ -23,8 +21,6 @@ The region group key is the value the client reads with `getRegionGroupKey()` on
 | `languagedata_en.loc` | Optional | Node names (LOC type 29, keyed by `node_key`)         |
 
 All multi-byte values are little-endian unless noted otherwise.
-
----
 
 ## File Layout
 
@@ -38,8 +34,6 @@ All multi-byte values are little-endian unless noted otherwise.
 | EOF-4   | u32     | zero_trailer       | Always `0`                                                     |
 
 The file is `8 + 51 × 250 + 12 = 12770` bytes. The parser rejects a file whose rows do not end exactly at `string_table_start`.
-
----
 
 ## Record Structure
 
@@ -66,8 +60,6 @@ The file is `8 + 51 × 250 + 12 = 12770` bytes. The parser rejects a file whose 
 
 The parser stores `node_key` as `None` when it is `0`, and `pos_x`, `pos_y`, `pos_z` as `None` when all three are `0`.
 
----
-
 ## Suggested UI Layout
 
 | Column       | Type | Notes                                                                      |
@@ -81,8 +73,6 @@ The parser stores `node_key` as `None` when it is `0`, and `pos_x`, `pos_y`, `po
 
 The `unknown_*` fields stay on the record for search and CSV but out of the table.
 
----
-
 ## Notes
 
 - Joining `regioninfo.bss` on `regionGroupKey` (record head `+104`) uses every one of the 250 keys and no other: no region points at a missing group and no group is unused.
@@ -91,8 +81,6 @@ The `unknown_*` fields stay on the record for search and CSV but out of the tabl
 - `position` is near the node but is not the node's position from `mapdata_realexplore2.bwp`: the distance is usually 5,000 to 50,000 units (Velia: group `7542, -6548, 72626`, node `13800, -6715, 76996`). Groups 160 to 176 and 194 to 198 share one position (`-127640, 8789, -446513`) although their nodes lie far apart, and groups 215 to 220 share another.
 - The file has no strings of its own and the client has no LOC type for region group names, so a group is shown by its node.
 - The client Lua uses the group key in only three places: the login queue (`getRegionGroupKey`, `getTicketCountByRegion`), the NPC navigator filter (`regionGroup`) and a worker `RegionWork` result (`regionGroupInfo`). None of them reads a field of this file by name.
-
----
 
 ## Open Questions
 

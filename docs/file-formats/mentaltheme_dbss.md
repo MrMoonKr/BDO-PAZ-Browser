@@ -11,8 +11,6 @@ theme_id: 10319 -> parent: 10030 -> "Refugee Camp"
 entries: 4327, 4325, 4324, ... -> knowledge entries in that group
 ```
 
----
-
 ## Companion Files
 
 | File                     | Required | Role                                                  |
@@ -22,8 +20,6 @@ entries: 4327, 4325, 4324, ... -> knowledge entries in that group
 | `languagedata_en.loc`    | Optional | Provides localized English names for themes/entries   |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -52,8 +48,6 @@ All multi-byte values are little-endian.
 Each payload is preceded by a 2-byte `theme_id` lead in the main stream. The offset file points two bytes later, to a payload that begins with the same `theme_id` again.
 
 `name_len` is an `i64` code-unit count, the same string prefix used by `mentalcard.dbss`. The field was earlier read as a u16 followed by six reserved zero bytes; bytes `+0x04..+0x09` are zero on all 931 records, so both reads give the same length. The `i64` reading matches the notes of [bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor), which call `theme_id` and `parent_id` `themeKey` and `parentTheme`.
-
----
 
 ## Record Structure
 
@@ -99,8 +93,6 @@ The entries are stored in the order the Knowledge window lists them. Checked in 
 | `+0x04`                | u16[] | child_ids   | Child theme IDs in binary/UI order               |
 | `+0x04 + child_count*2` | u32   | terminator  | Always observed as `0`                           |
 
----
-
 ## Confirmed Examples
 
 Sample records confirmed from `mentaltheme.dbss`, `mentalthemeoffset.dbss`, `mentalcard.dbss`, and LOC lookups:
@@ -112,8 +104,6 @@ Sample records confirmed from `mentaltheme.dbss`, `mentalthemeoffset.dbss`, `men
 | `10319`  | Refugee Camp          | `10030` | `+1 at 5 entries` | `+2 at 13 entries` | `14`     |
 | `10318`  | Quarry                | `10030` | `+1 at 6 entries` | `+2 at 15 entries` | `15`     |
 | `15000`  | Fish Species          | `10001` | `+2 at 3 entries` | `+2 at 13 entries` | `3`      |
-
----
 
 ## Suggested UI Layout
 
@@ -128,8 +118,6 @@ Sample records confirmed from `mentaltheme.dbss`, `mentalthemeoffset.dbss`, `men
 | Entries         | num  | `entry_count`                                             |
 | Children Groups | num  | `child_count`                                             |
 
----
-
 ## Notes
 
 - `mentaltheme.dbss` and `mentalthemeoffset.dbss` both start with the same count: `939` after the 2026-09-27 client update, `931` before it, `902` in the test fixture.
@@ -140,8 +128,6 @@ Sample records confirmed from `mentaltheme.dbss`, `mentalthemeoffset.dbss`, `men
 - `mentalthemeoffset.dbss` uses 10-byte rows, unlike the 12-byte offset records used by `mentalcardoffset.dbss` and `knowledgelearningoffset.dbss`.
 - `child_ids` are stored in binary/UI order.
 - The DBSS files should be treated as the source of truth for this format.
-
----
 
 ## Open Questions
 

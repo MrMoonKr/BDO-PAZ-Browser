@@ -16,8 +16,6 @@ quest 8700 / 11 ([Storybook] Tale of the Mudang Wraith)
   artwork_ref -> Icon/Quest/MorningLand_Boss_03_02_Full.dds
 ```
 
----
-
 ## Companion Files
 
 | File                  | Required | Role                                                                 |
@@ -25,8 +23,6 @@ quest 8700 / 11 ([Storybook] Tale of the Mudang Wraith)
 | `languagedata_en.loc` | Optional | Quest titles, LOC type 18 keyed by (`quest_chain_id`, `quest_id`)    |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -45,8 +41,6 @@ The shared PABR string table layout of `buffsimply.bss` and
 The rows are grouped by quest chain but in no sorted order: chains 8700 to
 8714 come first, then 8542 to 8554, and sub IDs run up in some chains and down
 in others.
-
----
 
 ## Record Structure
 
@@ -68,8 +62,6 @@ an artwork entry. Two videos are used by two quests each
 `MorningLandPT2_Sub_8541_1_01` by 8554/2 and 8554/3); every artwork path is
 used once.
 
----
-
 ## Suggested UI Layout
 
 | Column  | Type | Notes                                                                     |
@@ -81,8 +73,6 @@ used once.
 | Video   | text | `ui_movie/pc/<video>.bk2`, lowercased                                     |
 
 `unknown_0c` stays on the record but out of the table.
-
----
 
 ## Notes
 
@@ -105,8 +95,6 @@ used once.
   subtitle variants; the voice banks are `sound2022/windows/<language>/bink_<name>.bnk`.
   All 80 artwork files exist.
 - All 80 quests have a LOC type 18 title, all `[Storybook] ...`.
-
----
 
 ## Open Questions
 

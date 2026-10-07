@@ -13,8 +13,6 @@ character 40017 Igor Bartali  -> represents Velia (node 1)
 character 24646 Cradle - Sol Magia -> Shop, Repair
 ```
 
----
-
 ## Companion Files
 
 | File                           | Required | Role                                                              |
@@ -23,8 +21,6 @@ character 24646 Cradle - Sol Magia -> Shop, Repair
 | `languagedata_en.loc`          | Optional | NPC names (type `6`), button text (type `32`), node names (type `29`) |
 
 All multi-byte values are little-endian. A string is a u64 length in UTF-16 code units followed by UTF-16LE text with no terminator.
-
----
 
 ## File Layout
 
@@ -61,8 +57,6 @@ PABR index with 10-byte rows.
 | `+0x00` | u32  | reserved_a  | `0`      |                             |
 | `+0x04` | u32  | end_of_rows | `21,468` | `8 + count * 10`            |
 | `+0x08` | u32  | reserved_b  | `0`      |                             |
-
----
 
 ## Record Structure
 
@@ -176,8 +170,6 @@ A list is a u32 count followed by that many items. The slot keys are the parser'
 
 The `<Null>` text is a placeholder: `season_special_gift` stores it as `name` in 2,139 records, and LOC type `32` index `34` holds `<Null>` for 138 of them. It is not a button.
 
----
-
 ## Suggested UI Layout
 
 | Column        | Type | Notes                                                                                   |
@@ -189,8 +181,6 @@ The `<Null>` text is a placeholder: `season_special_gift` stores it as `name` in
 | Town          | text | `town_node_keys` the same way                                                           |
 
 Conditions and the `unknown_*` fields stay out of the table.
-
----
 
 ## Notes
 

@@ -12,8 +12,6 @@ name: 소서러, 여정의 시작
 quests: 66558, 132094, 197630
 ```
 
----
-
 ## Companion Files
 
 | File          | Required | Role                                             |
@@ -21,8 +19,6 @@ quests: 66558, 132094, 197630
 | `quest.dbss`  | Optional | Provides full quest records for listed quest IDs |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -35,8 +31,6 @@ All multi-byte values are little-endian.
 ### Record Stream
 
 Records start immediately after the header at `+0x04`. Records are variable length because each group name and child quest list can have different sizes.
-
----
 
 ## Record Structure
 
@@ -66,8 +60,6 @@ The corresponding `quest.dbss` `quest_id` is the same 4 bytes interpreted as a l
 quest_id = (quest_no << 16) | group_id
 ```
 
----
-
 ## Observed Records
 
 Pre-2026-09-27 fixture:
@@ -80,8 +72,6 @@ Pre-2026-09-27 fixture:
 | `0x0000AE`  | `503`    | `소서러의 기술`          | `4`         | `66039`, `131575`, `197111`, `262647` |
 | `0x0000DE`  | `3100`   | `칼페온의 레이트 가문`   | `4`         | `68636`, `134172`, `199708`, `265244` |
 
----
-
 ## Suggested UI Layout
 
 | Column      | Type | Notes                                                       |
@@ -91,8 +81,6 @@ Pre-2026-09-27 fixture:
 | Quests      | num  | Number of linked child quests                               |
 | Quest Titles | text | LOC titles for the child quests, falling back to their IDs |
 
----
-
 ## Notes
 
 - Observed decompressed size is `6,038` bytes in the pre-2026-09-27 fixture and `5,918` in the 2026-09-27 client.
@@ -101,8 +89,6 @@ Pre-2026-09-27 fixture:
 - Child links are stored as `(group_id, quest_no)` pairs, not as standalone `u32` fields, but the byte representation is identical to the derived `quest_id`.
 - `quest_count` ranges from `0` to `21` in both files. Two groups are empty in the fixture and nine in the 2026-09-27 client, which emptied group `1022` (Sorceress, Beginning of the Journey) among others.
 - `name_len` ranges from `3` to `15` UTF-16 code units.
-
----
 
 ## Open Questions
 

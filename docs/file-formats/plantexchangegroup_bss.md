@@ -12,8 +12,6 @@ zone 1539 (Teff) -> production_key=1539 "포할람 농장 - 테프" -> item subg
 
 The row size and the join fields match [iDevelopThings/bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor) (`FORMATS.md`, "Worker-production item tables"), which leaves the `+0x5A` tail unmapped; it is the label's string table index.
 
----
-
 ## Companion Files
 
 | File                   | Required | Role                                                              |
@@ -25,8 +23,6 @@ The row size and the join fields match [iDevelopThings/bdo-data-extractor](https
 Each zone's parent node comes from the `NODE_PARENT` lookup index (see `docs/handler.md`), built from `exploration.bss` and the worldmap links, so the preview opens no worldmap companion. The subgroup key is resolved through [`itemsubgroup.dbss`](itemsubgroup_dbss.md); the preview reads those items from the `PRODUCTION_ITEMS` lookup index (see `docs/handler.md`) instead of opening the 13 MB table as a companion.
 
 All multi-byte values are little-endian unless noted otherwise.
-
----
 
 ## File Layout
 
@@ -42,8 +38,6 @@ PABR block with fixed 94-byte rows followed by the same counted string table and
 | EOF - 4            | u32     | zero         | Always `0`                                            |
 
 Rows are not sorted by key; the file opens with key 1775 and ends with keys 1, 31, 23, 22, 21.
-
----
 
 ## Record Structure
 
@@ -87,8 +81,6 @@ zone -> NODE_PARENT (its one link in mapdata_realexplore2.bwp) -> LOC type 29 "P
 
 Every one of the 439 zones is an `exploration.bss` sub-node with exactly one worldmap link (see [`*.bwp`](waypoint_bwp.md)), so `NODE_PARENT` holds all of them and the preview names a zone with `node_with_parent_name()` from `_common/node.py`. A key gets a name only when every zone using it gives the same one; on client 3458 that is 365 of the 403 keys. The rest keep the Korean label: keys no zone uses (1931 and seven more), and keys shared by zones under different nodes, where the Korean label names a region instead (1231 칼페온 채집, Calpheon gathering, over Karanda Ridge and Longleaf Tree Sentry Post). The `exploration.bss` manager family was used before the links and named 324: it has no main node for some families (Godu Village, 1880) and the wrong one for Specialties 1563 (Areha Palm Forest instead of Arehaza, key 992 아레하자 마을 - 특산품). Investment banks read "Altinova - Gulabi Investment Bank" where the Korean label is only the bank name (928 굴라비 자산 관리소). The English halves follow the worldmap names, not the Korean wording: 1545 "가비냐 대분화구 - 티타늄" (titanium) becomes "Gavinya Great Crater - Mining", and 1203 "칼페온 파프리카 재배" (Calpheon paprika farming) becomes "Northern Wheat Plantation - Paprika Farming".
 
----
-
 ## Suggested UI Layout
 
 | Column             | Type | Notes                                                                 |
@@ -98,13 +90,9 @@ Every one of the 439 zones is an `exploration.bss` sub-node with exactly one wor
 | Item Subgroup      | num  | `item_subgroup_key`                                                   |
 | Items              | text | Icon and LOC type 0 name of each of the subgroup's items in its grade colour (`ITEM_GRADE`); a dash when the subgroup is missing |
 
----
-
 ## Notes
 
 - All 439 `plantzone.dbss` zones on the 2026-09-27 client resolve to a row. 8 keys are not used by any zone: 1503, 1675, 1676, 1931, 2015, 2021, 2036, 2037.
 - `production_key` equals the zone's `record_id` for 157 of the 439 zones; the two are separate key spaces, and several zones share one key (1521 and 1934 are used by four zones each).
 - LOC type 29 at `str_id1=production_key` gives a node name only by coincidence, when the key equals a node key; use the zone's `record_id` for the node name. That name is the sub-node, the work-type half of the label ("Lumbering", "Teff"); see English Names for the node half.
 - bdo-data-extractor calls `+0x06` the "normal-output subgroup". No second subgroup key (for example luck drops) was found in `unknown_0a`, which is zero on every row.
-</content>
-</invoke>

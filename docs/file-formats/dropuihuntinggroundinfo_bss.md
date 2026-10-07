@@ -22,8 +22,6 @@ hunting ground 117, region tab 13 (Inner Edania), categories 3 (Marni's Realm), 
 `worldmapmonster.dbss` points at these keys from its hunting zone markers (see
 [`worldmapmonster_dbss.md`](worldmapmonster_dbss.md) Notes).
 
----
-
 ## Companion Files
 
 | File                          | Required | Role                                                                      |
@@ -37,8 +35,6 @@ hunting ground 117, region tab 13 (Inner Edania), categories 3 (Marni's Realm), 
 0).
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -57,8 +53,6 @@ table and 8-byte trailer as [`npcsimply.bss`](npcsimply_bss.md#string-pool)
 
 Rows are sorted by key, which runs from 0 to 119 with gaps (2, 4, 7, 8, 14,
 15, 16 and 49 are missing).
-
----
 
 ## Record Structure
 
@@ -189,8 +183,6 @@ Some colours are shared: `0xFF63B6E6` on `#NoItemCollectGauge`,
 Tags 1 to 5, 17 and 36 are on no hunting ground on client 3458; LOC type 117
 names all 45 plus a key 46 with the same `#DivineAuthority` text as 45.
 
----
-
 ## Suggested UI Layout
 
 | Column      | Type | Notes                                                                       |
@@ -213,8 +205,6 @@ names all 45 plus a key 46 with the same `#DivineAuthority` text as 45.
 | Species     | text | `tribe_type` as `{value} {label}` (`1 Demihumans`); the label from LOC type 37, falling back to the enum name (`1 NonHuman`) |
 
 The position and region keys stay on the record but out of the table.
-
----
 
 ## Notes
 

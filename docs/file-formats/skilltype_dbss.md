@@ -13,8 +13,6 @@ skill 62380  칼페온 - 낚시 경험치 획득량 +20%  (LOC 10: "Calpheon - F
   icon New_Icon/04_PC_Skill/07_Guild_Skill/00062366.dds
 ```
 
----
-
 ## Companion Files
 
 | File                   | Required | Role                                                             |
@@ -22,11 +20,9 @@ skill 62380  칼페온 - 낚시 경험치 획득량 +20%  (LOC 10: "Calpheon - F
 | `skilltypeoffset.dbss` | Required | `skill_key → (offset, size)` index into this file                |
 | `languagedata_en.loc`  | Optional | English names, LOC type `10`, `str_id1 = skill_no`               |
 
-The skill key is the one shared by the whole skill cluster, see
+The skill key is the one shared by the whole skill cluster; see
 [`skill.dbss` Skill Keys](skill_dbss.md#skill-keys). All multi-byte values are
 little-endian.
-
----
 
 ## File Layout
 
@@ -50,8 +46,6 @@ are a `u64` count followed by UTF-16LE units (text) or ASCII bytes (paths).
 
 Every key is level `1`. 30,342 of the 30,352 keys are also in `skill.dbss`;
 the 82 `skill.dbss` keys above level 1 have no record here.
-
----
 
 ## Record Structure
 
@@ -102,8 +96,6 @@ client's PAZ files on client 3458; the other 78 point at missing files
 `Real_ETC/Scroll/Icon_ETC_Scroll_00000000.png`; what they are for is not
 known.
 
----
-
 ## Suggested UI Layout
 
 Opens sorted by `skill_key` (Skill No); the index order is arbitrary.
@@ -115,20 +107,16 @@ Opens sorted by `skill_key` (Skill No); the index order is arbitrary.
 | Name     | text | LOC type `10`, `str_id1 = skill_no`, `str_id4 = 0`; else `name`        |
 | Kind     | text | `kind` as Other / Active / Passive                                     |
 
----
-
 ## Notes
 
 - The first keys (`0xDEAD0001`, `0xDEAC0001`) look like sentinels but are
-  real skills, see [`skill.dbss` Skill Keys](skill_dbss.md#skill-keys).
+  real skills; see [`skill.dbss` Skill Keys](skill_dbss.md#skill-keys).
 - The record layout of the first four fields and the `kind` meaning come from
   bdo-data-extractor; the counts, the icon rule and the `group_name` reading
   were checked against client 3458.
 - LOC type `10` covers 28,343 of its 29,398 IDs with a skill number from this
   table or `skill.dbss`; 2,009 skill numbers have no type `10` row and 1,055
   type `10` IDs have no skill.
-
----
 
 ## Open Questions
 

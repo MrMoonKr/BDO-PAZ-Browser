@@ -14,19 +14,15 @@ equip_skill_id: 20  →  type=6  loc=49121  "Miraculous Cheer 10 Seconds" / "Aut
 equip_skill_id: 34  →  type=8  loc=49181  "Continuous Care V"  / "Auto-use from 30 selected items."
 ```
 
----
-
 ## Companion Files
 
-None, `fairyequipskill.bss` is a standalone catalog with no offset index.
+None. `fairyequipskill.bss` is a standalone catalog with no offset index.
 
 | File                  | Required | Role                                             |
 | --------------------- | -------- | ------------------------------------------------ |
 | `languagedata_en.loc` | Optional | Skill names (`id4=0`) and descriptions (`id4=1`) |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -45,7 +41,7 @@ Total file size: 3636 bytes = 4 (magic) + 420 (catalog) + 3200 (reserved block) 
 | ------- | ------ | ----- | -------------- |
 | `+0x00` | char×4 | magic | `PABR` (ASCII) |
 
-Records begin immediately at `+0x04`. There is **no record count field**, the catalog is terminated by the first record whose `equip_skill_id` is `200`.
+Records begin immediately at `+0x04`. There is **no** record count field; the catalog is terminated by the first record whose `equip_skill_id` is `200`.
 
 ### Skill Record (12 bytes, ×35, offset `0x004`)
 
@@ -54,7 +50,7 @@ Records begin immediately at `+0x04`. There is **no record count field**, the ca
 | `+0x00` | u32  | equip_skill_id | Sequential record key, `0`–`34`; `200` marks the end   |
 | `+0x04` | u32  | skill_type     | Skill group, `1`–`8` (see Skill Types)                 |
 | `+0x08` | u8   | unknown_08     | Always `1` in all 35 observed records                  |
-| `+0x09` | u8   | —              | Always `0`; padding                                    |
+| `+0x09` | u8   | -              | Always `0`; padding                                    |
 | `+0x0A` | u16  | loc_id         | Localization key → skill name/description, icon number |
 
 Earlier versions of this doc called `unknown_08` `tier`.
@@ -63,19 +59,17 @@ Earlier versions of this doc called `unknown_08` `tier`.
 
 Two hundred unused catalog slots. Every record is `[u32 200][u32 0][u32 0][u32 0]`, where `200` is the null-entry sentinel. Skip these when parsing.
 
-Note the stride here is **16 bytes**, not the 12 used by live records, matching the wider Section 2 record shape in `petequipskill.bss`, whose extended catalog is fully populated. In `fairyequipskill.bss` that extended section is entirely null.
+The stride here is 16 bytes, not the 12 used by live records; it matches the wider Section 2 record shape in `petequipskill.bss`, whose extended catalog is fully populated. In `fairyequipskill.bss` that extended section is entirely null.
 
 ### Trailer (12 bytes, offset `0xE28`)
 
 | Offset  | Type | Field    | Notes                              |
 | ------- | ---- | -------- | ---------------------------------- |
-| `+0x00` | u32  | —        | Always `0`                         |
+| `+0x00` | u32  | -        | Always `0`                         |
 | `+0x04` | u32  | data_end | `0x0E28` (3624) = `file_size - 12` |
-| `+0x08` | u32  | —        | Always `0`                         |
+| `+0x08` | u32  | -        | Always `0`                         |
 
 `petequipskill.bss` carries the identical trailer (`data_end = 0x0EB0 = file_size - 12`), so this is a shared PABR convention rather than a fairy-specific field.
-
----
 
 ## Skill Types
 
@@ -130,8 +124,6 @@ Note the stride here is **16 bytes**, not the 12 used by live records, matching 
 | 33             | 8          | 49180  | Continuous Care IV          | Auto-use from 20 selected items.                                                       |
 | 34             | 8          | 49181  | Continuous Care V           | Auto-use from 30 selected items.                                                       |
 
----
-
 ## Lookup Recipe
 
 ```python
@@ -149,8 +141,6 @@ def parse_fairy_equip_skills(data):
 
 Resolve display text with `loc-tool.py --type 10 --id <loc_id>`: `id4=0` is the skill name, `id4=1` is the effect description.
 
----
-
 ## Suggested UI Layout
 
 | Column         | Type | Notes                                                        |
@@ -164,24 +154,20 @@ Resolve display text with `loc-tool.py --type 10 --id <loc_id>`: `id4=0` is the 
 
 `unknown_08` and the padding byte stay on the record for search and export but are not shown.
 
----
-
 ## Notes
 
-- No offset companion file, the file is small enough to scan linearly.
+- No offset companion file; the file is small enough to scan linearly.
 - The catalog has no count field; parsing stops at the first `equip_skill_id == 200`, the same null sentinel `petequipskill.bss` uses.
 - `skill_type` numbering is fairy-local and does **not** match `petequipskill.bss` type numbering.
-- The `I`–`V` suffix in a skill's name is the **rolled skill level**, assigned randomly when a fairy learns the skill. Each full group is therefore a five-rung ladder of the same effect; Fairy's Tear stops at `IV`, and Morning Star and Gift carry no suffix at all. This is separate from the record's `unknown_08` byte, which is always `1`.
+- The `I`–`V` suffix in a skill's name is the rolled skill level, assigned randomly when a fairy learns the skill. Each full group is therefore a five-rung ladder of the same effect; Fairy's Tear stops at `IV`, and Morning Star and Gift carry no suffix at all. This is separate from the record's `unknown_08` byte, which is always `1`.
 - Gift (`equip_skill_id 29`, Luck +1) is the skill every fairy starts with, which is consistent with it being the one type-7 entry and the only record whose icon is missing.
-- Skill type 3 (Fairy's Tear) is the one group whose `loc_id`s run **descending** as `equip_skill_id` ascends (49114 → 49111), because tier I has the longest cooldown. Do not assume `loc_id` order tracks record order.
+- Skill type 3 (Fairy's Tear) is the one group whose `loc_id`s run descending as `equip_skill_id` ascends (49114 → 49111), because tier I has the longest cooldown. Do not assume `loc_id` order tracks record order.
 - Skill type 6 (Miraculous Cheer) holds 9 entries: four legacy "`N` Seconds" names (49121–49124) followed by the current `I`–`V` naming (49125–49129). Both sets are live records, not placeholders.
-- Icons live in the **pet** icon folder (`02_pet`) despite being fairy assets, prefixed `equipskill_fairy_`.
+- Icons live in the pet icon folder (`02_pet`) despite being fairy assets, prefixed `equipskill_fairy_`.
 - 34 of the 35 `loc_id`s have a matching icon; `49130` (`Gift`, type 7) has no `equipskill_fairy_00049130.dds` in the archive, so the UI must tolerate a missing icon.
 - `unknown_08` is `1` in every record, so it carries no information in the current data; `petequipskill.bss` has the same byte at the same position.
 - Observed rows: 35 in the pre-2026-09-27 fixture and 35 in the 2026-09-27 client; the file is byte-identical between the two.
 - The file in `files/` was verified byte-identical to a fresh extraction from the PAZ archive, so this spec reflects current game data.
-
----
 
 ## Open Questions
 
@@ -197,7 +183,7 @@ The acquisition cost tables are keyed by `acquire_type_id` `501`–`504`, which 
 
 ### Which skills a fairy of a given grade can roll
 
-Resolved. A fairy learns one random skill from this catalog every 10 levels, and each learned skill rolls a random rank of `1`–`5`, the `I`–`V` ladders below. The per-grade odds live in [fairyequipskillaquire.dbss](fairyequipskillaquire_dbss.md), whose four records are the four fairy grades and whose weights are indexed by this file's `equip_skill_id`. Only Radiant carries non-zero weights for rank IV and V.
+Resolved. A fairy learns one random skill from this catalog every 10 levels, and each learned skill rolls a random rank of `1`–`5`, the `I`–`V` ladders above. The per-grade odds live in [fairyequipskillaquire.dbss](fairyequipskillaquire_dbss.md), whose four records are the four fairy grades and whose weights are indexed by this file's `equip_skill_id`. Only Radiant carries non-zero weights for rank IV and V.
 
 That table also explains two oddities here: `equip_skill_id 29` (Gift) has weight `0` in every grade because every fairy starts with it, and the four legacy `Miraculous Cheer` "`N` Seconds" entries (`20`–`23`) are likewise `0` everywhere, confirming they are dead records.
 

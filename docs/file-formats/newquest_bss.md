@@ -15,8 +15,6 @@ quest 11101 / 11 -> offered while checkperiodbyGmt(0, 2019/9/4-00:00, 2019/9/25-
                     ruled out by clearQuest(11101,9);<or>clearQuest(11101,10);<or>...
 ```
 
----
-
 ## File Layout
 
 All multi-byte values are little-endian unless noted otherwise.
@@ -124,8 +122,6 @@ Halloween`) and 62 (`[Event] Black Desert 2020 Halloween`). Condition lines carr
 tags; group names do not. The Korean names and condition lines in the
 string table are the source of both, and the handler shows them where LOC has no row.
 
----
-
 ## Reference Rows
 
 Client 3458:
@@ -134,8 +130,6 @@ Client 3458:
 | ----: | --: | --------: | -------------: | -------: | --------------: | -------------: | -------------: | ----------------- |
 | 0     | 0   | `1`       | `11059`        | `9`      | `1`        | `2`        | `2`        | `[Event] Love for Pets` |
 | 0     | 1   | `1`       | `11059`        | `10`     | `1`        | `2`        | `2`        | `[Event] Savory Good Feed` |
-
----
 
 ## Suggested UI Layout
 
@@ -155,16 +149,12 @@ Client 3458:
 
 `group` (the index in file order), `unknown_00`, `unknown_06`, the string table indexes and the Korean `group_name_kr` / `condition_kr` stay on the record for search and export but are not shown. The other three lists show the same columns without Event Start and Event End.
 
----
-
 ## Notes
 
 - Decompressed size is `820,905` bytes on client 3458 (`816,761` with 224 groups and 1,255 rows before 2026-09-27).
 - 27 quests sit in two groups (29 before 2026-09-27); each copy has its own condition line in LOC.
 - The string table indexes shift whenever a string is added earlier in the file, so `condition_index` / `script_1_index` / `script_2_index` are not stable across patches: quest `77129` had `condition_index = 899` before 2026-09-27 and `896` after.
 - Earlier versions of this doc and the handler read a 10-byte first group header and a 23-byte later one: the previous group's trailer followed by the next group's header. The rows were the same. They called the row's `unknown_00` `flags`, called `condition_index` / `script_1_index` / `script_2_index` `sequence_a` / `sequence_b` / `sequence_c` and later `unknown_05` / `unknown_09` / `unknown_0d`, and named the header fields `header_flag`, `unknown_a` to `unknown_d`, `group_key_a` and `group_key_b`.
-
----
 
 ## Open Questions
 

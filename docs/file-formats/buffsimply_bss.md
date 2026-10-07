@@ -16,8 +16,6 @@ buff_id 48830
   is_shown 1
 ```
 
----
-
 ## Companion Files
 
 | File                  | Required | Role                                                        |
@@ -26,8 +24,6 @@ buff_id 48830
 | `languagedata_en.loc` | Optional | English descriptions, LOC type 5 keyed by `buff_id`         |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -45,8 +41,6 @@ The shared PABR string table layout of `npcsimply.bss` and
 
 The rows follow `buffoffset.dbss` order exactly, which is neither ascending nor
 descending by ID (the first row is buff 48879).
-
----
 
 ## Record Structure
 
@@ -82,8 +76,6 @@ and `icon_ref` index the same table and share only the empty string: index 0
 is `"0"`, index 1 is `""`, and every other entry is either an `unknown_str`
 value or an icon path.
 
----
-
 ## Suggested UI Layout
 
 | Column      | Type | Notes                                                                        |
@@ -95,8 +87,6 @@ value or an icon path.
 
 The `unknown_*` fields and `unknown_str_ref` stay on the record but out of the
 table.
-
----
 
 ## Notes
 
@@ -131,8 +121,6 @@ table.
 - [iDevelopThings/bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor)
   mentions the file only as a 30-byte PABR projection over the buff keys with
   an icon string-table reference; it gives no row layout.
-
----
 
 ## Open Questions
 

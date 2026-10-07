@@ -11,8 +11,6 @@ category_id: 1
 icon_path: new_ui_common_forlua/window/ingamecashshop/cashshopmenu/CashShopMenu_02.dds
 ```
 
----
-
 ## Companion Files
 
 | File                      | Required | Role                                                 |
@@ -20,8 +18,6 @@ icon_path: new_ui_common_forlua/window/ingamecashshop/cashshopmenu/CashShopMenu_
 | `maincategoryoffset.dbss` | Required | `category_id -> (record_offset, record_size)` lookup |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -31,8 +27,6 @@ All multi-byte values are little-endian.
 | ------- | ---- | ------- | --------------------------------------- |
 | `+0x00` | u32  | count   | Number of category records; observed 15 |
 | `+0x04` | row  | records | 102-byte records                        |
-
----
 
 ## Record Structure
 
@@ -54,8 +48,6 @@ Offsets are relative to `record_offset` from `maincategoryoffset.dbss`.
 
 The observed record size is 102 bytes: `0x16 + icon_path_len + 5` for the current data.
 
----
-
 ## Observed Records
 
 | Category ID | unknown_02 | unknown_06 | unknown_0A | Enabled | Icon Path                                                                     |
@@ -75,8 +67,6 @@ The observed record size is 102 bytes: `0x16 + icon_path_len + 5` for the curren
 | 13          | 13         | 6          | 0          | 1       | `new_ui_common_forlua/window/ingamecashshop/cashshopmenu/CashShopMenu_17.dds` |
 | 14          | 14         | 0          | 0          | 0       | `new_ui_common_forlua/window/ingamecashshop/cashshopmenu/CashShopMenu_18.dds` |
 | 15          | 5          | 6          | 15         | 0       | `new_ui_common_forlua/window/ingamecashshop/cashshopmenu/CashShopMenu_19.dds` |
-
----
 
 ## maincategoryoffset.dbss
 
@@ -99,8 +89,6 @@ Provides keyed lookup into `maincategory.dbss` and supplies the record count.
 
 Rows are stored in descending category ID order: 15 down to 1.
 
----
-
 ## Suggested UI Layout
 
 | Column      | Type | Notes                                                                       |
@@ -110,15 +98,11 @@ Rows are stored in descending category ID order: 15 down to 1.
 | Enabled     | bool | From `enabled_flag`                                                         |
 | Sort / Link | text | Show `unknown_02`, `unknown_06`, `unknown_0A` until semantics are confirmed |
 
----
-
 ## Notes
 
 - `maincategoryoffset.dbss` is required because it gives the authoritative category IDs and record sizes.
 - Records are currently fixed-size because all observed `icon_path` values are 75 ASCII bytes, but the string is length-prefixed and should be parsed as variable-length.
 - Category IDs 14 and 15 are present but have `enabled_flag = 0`.
-
----
 
 ## Open Questions
 

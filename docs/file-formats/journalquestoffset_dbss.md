@@ -4,8 +4,6 @@
 
 Index file for `journalquest.dbss`. Maps each `(journal_key, book_key)` pair to a `(byte_offset, byte_size)` location within the main file. Field names follow [bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor), re-verified against our files.
 
----
-
 ## Companion Files
 
 | File                  | Required | Role                                          |
@@ -13,8 +11,6 @@ Index file for `journalquest.dbss`. Maps each `(journal_key, book_key)` pair to 
 | `journalquest.dbss`   | Required | Contains the actual book records              |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -54,8 +50,6 @@ for i in range(group_count):
 | `+0x04` | u32  | byte_offset   | Absolute byte offset of the record in `journalquest.dbss` |
 | `+0x08` | u32  | byte_size     | Exact byte size of the record                           |
 
----
-
 ## Notes
 
 - File size is `4 + 8 × group_count + 12 × total_books`: `4 + 96 + 1,344 = 1,444` bytes for 12 groups and 112 books. The earlier reading of "120-byte physical chunks" was a coincidence (`1,440 = 12 × 120`); there is no chunking.
@@ -63,8 +57,6 @@ for i in range(group_count):
 - `byte_offset` values are absolute offsets into `journalquest.dbss`. Every `byte_size` is exact: each record ends precisely on its `reserved_end` word, and the indexed records plus the 4-byte header and one 4-byte `book_count` per group tile the data file with no gaps (112 of 112 records, current file and fixture).
 - Within a group, index order equals physical order except in journal 6, where books 2 and 10 are swapped physically.
 - The current file and the older fixture are both `1,444` bytes with the same keys; only offsets and sizes differ.
-
----
 
 ## Display Order
 

@@ -14,8 +14,6 @@ key 0x00019C58 -> internal name "Martina", 46 options, one of them:
   action:    buyItemByPoint(58010,0,1,5,3)   ([CP] Small Fence for 3 CP)
 ```
 
----
-
 ## Companion Files
 
 | File                       | Required | Role                                                  |
@@ -24,8 +22,6 @@ key 0x00019C58 -> internal name "Martina", 46 options, one of them:
 | `languagedata_*.loc`       | Optional | The dialog text in the user's language (type `39`, see Localization) and character names (type `6`) |
 
 All multi-byte values are little-endian. [base_dialog.dbss](base_dialog_dbss.md) holds the same 59,776 keys in the same order with a short base record each (display name and short lines).
-
----
 
 ## File Layout
 
@@ -56,8 +52,6 @@ All multi-byte values are little-endian. [base_dialog.dbss](base_dialog_dbss.md)
 The records tile the file: every record starts 4 bytes after the previous one ends (the repeated key), the first at `8`, and the last ends at end of file.
 
 Strings are a `u64` count followed by that many units: UTF-16LE for text and scripts, single-byte ASCII for the two internal names. There is no terminator.
-
----
 
 ## Record Structure
 
@@ -108,8 +102,6 @@ Every one of the 59,776 records in client 3458 walks with this layout and ends e
 | 2 | u64 + utf16 | text | Korean |
 | 3 | u16         | text_id | LOC text ID of the text, see Localization |
 
----
-
 ## Localization
 
 The Korean strings are localized in LOC type `39`, keyed by the record's `key`, a `text_id` and a field (`str_id1 = key`, `str_id2 = text_id`, `str_id3 = 0`, `str_id4 = field`):
@@ -124,13 +116,9 @@ The Korean strings are localized in LOC type `39`, keyed by the record's `key`, 
 
 For Martina Finto (`0x00019C58`), field `0` of text ID `689` reads "It's so lonely here, all by myself... David doesn't...", and option text ID `42` field `2` reads `[Rent] Small Fence`. The function names of field `1` (`shop`, `repair`, `extract`, `weakenItem`, `talk`, `exchange`) name what `unknown_line_kind` picks; only kind `2` = `shop` is tied down so far.
 
----
-
 ## Lease Options
 
 A lease is an option whose `action` is `buyItemByPoint(item, 0, 1, 5, cost)`: the item key, `0`, `1`, `5` and the contribution point cost. Client 3458 has 184 lease options on 63 characters, all with `unknown_option_kind` `0` and titled `[대여] <item>` ("[Lease]"). `npcsimply.bss` repeats the first lease option of 58 of these characters (`lease_item_id`, `lease_cost`, `has_lease_condition`); the file lists all of them, such as the 84 Nesser gear leases of Sahazad Nesser (`45006`), the 25 Kaia weapons of Kanobas (`42152`) and the Small Fence of Wale (`40605`), who has no lease in `npcsimply.bss`. See `npcsimply_bss.md` for the cost check in game.
-
----
 
 ## Suggested UI Layout
 
@@ -146,8 +134,6 @@ One row per record:
 | Option Titles  | list | LOC type `39` field `2` of each option, fallback to `title`; first few then a count |
 | Leases         | list | For each lease option: LOC `str_type=0` name of the item (in its grade colour) and the cost, e.g. `[CP] Small Fence (3 CP)` |
 
----
-
 ## Notes
 
 - The key's low 16 bits are a character ID: 49,252 of the 59,776 records resolve to a LOC type `6` name, and 10,153 of the other 10,524 are shared social dialogs (`Social_Low_Front_01` and similar), many on low IDs such as `817` to `864`. The high 16 bits number the dialogs of one character from `0` up; the main NPC dialog is usually index `1` (`0x00019C58` Martina Finto, `0x00019C51` Igor Bartali). 3,788 of 4,569 characters have one record.
@@ -155,8 +141,6 @@ One row per record:
 - A greeting can be the tag `{GetRandomText(<name>)}`, which picks a line from the pool of that name in [dialogtext.dbss](dialogtext_dbss.md), e.g. `{GetRandomText(PEDU_47759_1)}`.
 - `unknown_option_kind` follows the kind of option by the title prefixes and actions: `1` knowledge (지식, `pushknowledge`), `3` cutscenes and videos (회상, 이야기, `showCutScene`, `showVideo`), `4` and `5` exchanges (교환, `ExchangeItem...`), `6` time-limited quests (시간 제한, `resettimeattackquest`), `7` sequences (`playsequence`) and `99` options with an empty action. `0` (21,252) and `2` (4,185) mix quest turn-ins, returns and leases. It may pick the option's icon or button style, which the game would show, but that is not checked.
 - The whole file walks in about 0.5 s after decompression. The `CHARACTER_LEASES` lookup index (see `docs/handler.md`) collects every lease option per character from it for the `npcsimply.bss` Leases column.
-
----
 
 ## Open Questions
 

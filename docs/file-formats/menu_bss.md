@@ -16,8 +16,6 @@ category 2, hotkey F1
   18 entries in submenu.bss
 ```
 
----
-
 ## Companion Files
 
 | File                  | Required | Role                                                                     |
@@ -26,8 +24,6 @@ category 2, hotkey F1
 | `languagedata_en.loc` | Optional | Title text, LOC type 37 (`str_id1` = key hash, `str_id2` = sheet)        |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -42,8 +38,6 @@ The shared PABR string table layout of `buffsimply.bss` and
 | `8 + count * 40` | table   | string_table | u32 count, then `count` x (u8 is_wide, u32 byte length, payload) |
 | EOF - 8          | u32     | table_start  | Offset of the string table, where the rows end                   |
 | EOF - 4          | u32     | zero         | Always 0                                                         |
-
----
 
 ## Record Structure
 
@@ -68,8 +62,6 @@ The shared PABR string table layout of `buffsimply.bss` and
 `Combine/Icon/Combine_Title_Icon_00.dds` and `_01.dds`, the twelve hotkeys,
 `GAME` and the twelve title keys.
 
----
-
 ## Suggested UI Layout
 
 | Column  | Type | Notes                                                                        |
@@ -79,8 +71,6 @@ The shared PABR string table layout of `buffsimply.bss` and
 | Title   | text | LOC type 37 of the title key (see [stringtable.bss](stringtable_bss.md)), else the key |
 | Hotkey  | text | `hotkey_ref`                                                                 |
 | Entries | num  | `submenu_count`                                                              |
-
----
 
 ## Notes
 

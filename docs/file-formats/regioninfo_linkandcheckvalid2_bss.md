@@ -13,8 +13,6 @@ region_key=181  -> Lema Island: Lema Island
 region_key=1    -> (no list)
 ```
 
----
-
 ## Companion Files
 
 | File                  | Required | Role                                                  |
@@ -22,8 +20,6 @@ region_key=1    -> (no list)
 | `languagedata_en.loc` | Optional | Region names (LOC type 17, `str_id1 = region_key`)    |
 
 All multi-byte values are little-endian unless noted otherwise.
-
----
 
 ## File Layout
 
@@ -35,8 +31,6 @@ All multi-byte values are little-endian unless noted otherwise.
 | varies  | pool    | string_table       | Shared `pabr_strings` layout; always empty here (`u32 count = 0`) |
 | EOF-8   | u32     | string_table_start | Absolute file offset of `string_table.count`; the record walk ends exactly there |
 | EOF-4   | u32     | zero_trailer       | Observed `0` |
-
----
 
 ## Record Structure
 
@@ -51,8 +45,6 @@ All multi-byte values are little-endian unless noted otherwise.
 
 The records are not sorted by key. The file starts with regions 513, 1025, 1 (all `1 mod 512`), then 514, 1026, 2 and so on, which looks like a hash map written out in iteration order. The handler keeps file order.
 
----
-
 ## Suggested UI Layout
 
 | Column         | Type | Notes |
@@ -62,8 +54,6 @@ The records are not sorted by key. The file starts with regions 513, 1025, 1 (al
 | Links          | num  | Length of `linked_region_keys` |
 | Linked Regions | text | LOC type 17 name of each linked key (the key when LOC has none); first six, the rest behind a hover count; not sortable |
 
----
-
 ## Notes
 
 - **The lists form groups.** Every list holds its own region, and the links are mutual: when A lists B, B lists A. There are 12 distinct lists in client 3458. 27 regions share Velia's 41-key list (the mainland towns from Velia to Muzgar and Velandir, plus town sub-regions such as Ossuary, Velia Beach and the three Calpheon trade zones); the seven Land of the Morning Light towns share one list; Valencia City and Ancado Inner Harbor list each other; Lema Island, Iliya Island, Arehaza and Oquilla's Eye list only themselves.
@@ -71,8 +61,7 @@ The records are not sorted by key. The file starts with regions 513, 1025, 1 (al
 - The record walk was checked against client 3458: all 1594 records end exactly at `string_table_start`, and every list equals `regioninfo.bss` `unknown_d2_keys`, which [`regioninfo_bss.md`](regioninfo_bss.md) describes (the extractor there calls it a warehouse group). The handler tests assert that equality, the mutual links and the self entry, so a patch that breaks any of them shows up.
 - The file name says "link and check valid" and ends in `2`; no `regioninfo_linkandcheckvalid.bss` without the suffix exists in client 3458.
 
----
-- **The lists form rings around Edania.** Grouping the 58 regions by their list gives nine lists (client 3458); each list is shared by every region that owns it:
+- **The lists form rings around Edania.** Grouping the 58 regions by their list gives the 12 lists (client 3458), in nine rows here since the four one-region lists only hold their own region; each list is shared by every region that owns it:
 
   | Size | Owned by | Compared with Velia's list |
   | ---- | -------- | -------------------------- |

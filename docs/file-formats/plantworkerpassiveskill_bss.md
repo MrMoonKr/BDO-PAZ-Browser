@@ -12,8 +12,6 @@ Example rows:
 1012 -> 타고난 일꾼, /New_UI_Common_forLua/Skill/WorkerSkill/1012_N.dds, 작업속도 +2, 기본 이동속도의 7% 증가
 ```
 
----
-
 ## Companion Files
 
 No companion file is required to parse the file. Names and descriptions are stored inline as UTF-16LE Korean fallback strings. For user-facing display, `languagedata_en.loc` is optional and should be preferred when a matching LOC type `22` row exists.
@@ -23,8 +21,6 @@ No companion file is required to parse the file. Names and descriptions are stor
 | `languagedata_en.loc` | Optional | Provides localized skill names and descriptions via LOC type `22` |
 
 All multi-byte values are little-endian unless noted otherwise.
-
----
 
 ## File Layout
 
@@ -39,8 +35,6 @@ All multi-byte values are little-endian unless noted otherwise.
 | EOF-4   | u32   | zero_trailer       | Observed `0`                                            |
 
 The fixed/extended skill-record block begins at `0x08` and the string table starts at `0xFD8` in the observed file. Skill records reference string table entries by zero-based index.
-
----
 
 ## Record Structure
 
@@ -82,8 +76,6 @@ inline_description = string_table[description_index]
 display_name = LOC type 22, str_id1=skill_id, str_id4=0; fallback inline_name
 display_description = LOC type 22, str_id1=skill_id, str_id4=1; fallback inline_description
 ```
-
----
 
 ## Effect Types
 
@@ -175,8 +167,6 @@ Extra-work effects. `effect_target` identifies the production category and `effe
 
 The string table is a flat pool, not grouped records. Skill records choose any string indices; several records reuse icon/name/description entries.
 
----
-
 ## Reference Rows
 
 | Skill ID | Name | Icon | Description | Weight | Effect Values |
@@ -187,8 +177,6 @@ The string table is a flat pool, not grouped records. Skill records choose any s
 | `1923` | Adv. Siege Weapon Production | `1923.dds` | Extra Work (+3) Done for Siege Weapons | `2500` | `3`, `0` |
 | `1203` | Thrifty C | `1203.dds` | 5% Chance to Return 10% of 1 Crafting Material | `1000` | `100000`, `100000` |
 | `1012` | Adept Worker | `1012_N.dds` | Work Speed +2, Movement Speed +7% | `1050` | `70000`, `0`; extra `2000000`, `1` |
-
----
 
 ## Suggested UI Layout
 
@@ -205,8 +193,6 @@ The string table is a flat pool, not grouped records. Skill records choose any s
 | Effect B    | num  | For refunds the share refunded (`effect_value_a`, `1000000` is `100%`); a dash for every other type. Sorts by `effect_b_sort_value`: `effect_value_a` for refunds, `None` for the dashes |
 
 The shown values are scaled from the raw fields, which stay on the record unchanged for export. Each column sorts by the raw number its cell shows, so a dash sorts last (see "Store none as None" in `docs/handler.md`). The stat names follow the `0`/`1`/`2` codes, which match every description. The category names are not stored anywhere found so far: they are the wording the skills' own English descriptions use for each target value (each value has exactly one wording), so a value not seen yet shows as its number. The targets are not keys of another table found so far: the workshop types in `houseinforeceipe.dbss` number the same work differently (jewelry `8`, tool `9`, refinery `10`, costume `18`), and its processing sub-types `30` to `34` come in a different order than the packing targets `9001` to `9006`.
-
----
 
 ## Notes
 

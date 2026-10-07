@@ -12,8 +12,6 @@ group 578  skill_keys 0, 1759/1, 1760/1, 1761/1, 1762/1
            "Grave Digging I" to "Grave Digging IV"
 ```
 
----
-
 ## Companion Files
 
 | File                  | Required | Role                                                          |
@@ -22,8 +20,6 @@ group 578  skill_keys 0, 1759/1, 1760/1, 1761/1, 1762/1
 | `languagedata_en.loc` | Optional | Rank names, LOC type `10`, `str_id1 = skill_key >> 16`        |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -34,8 +30,6 @@ to the end of the file.
 | ------- | ------- | ----------- | ---------------------------------------- |
 | `+0x00` | u32     | group_count | `3514` on client 3458                    |
 | `+0x04` | group[] | groups      | Variable-size groups, see below          |
-
----
 
 ## Record Structure
 
@@ -50,8 +44,6 @@ to the end of the file.
 2,271 groups have a single rank (`rank_count` 2); the longest chains have 20
 ranks. Every rank key is a `skill.dbss` key.
 
----
-
 ## Suggested UI Layout
 
 | Column   | Type | Notes                                                                 |
@@ -61,8 +53,6 @@ ranks. Every rank key is a `skill.dbss` key.
 | Name     | text | LOC type `10` name of the first rank                                  |
 | Ranks    | num  | `rank_count - 1`                                                      |
 | Skills   | list | Rank keys as `skill_no` and LOC type `10` name; not sortable (Ranks sorts by count) |
-
----
 
 ## Notes
 

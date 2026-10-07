@@ -13,8 +13,6 @@ key 0x00019C58 -> name "마티나 핀토" (Martina Finto), 3 lines:
   "진작에 언니 말을 듣는 건데.. "
 ```
 
----
-
 ## Companion Files
 
 | File                     | Required | Role                                               |
@@ -23,8 +21,6 @@ key 0x00019C58 -> name "마티나 핀토" (Martina Finto), 3 lines:
 | `languagedata_*.loc`     | Optional | The name and lines in the user's language (type `38`), character names (type `6`) |
 
 All multi-byte values are little-endian. The keys are the same 59,776 keys as `detail_dialog.dbss`, in the same order (`dialog_index << 16 | character_id`, see [detail_dialog.dbss](detail_dialog_dbss.md)).
-
----
 
 ## File Layout
 
@@ -41,8 +37,6 @@ The same layout as `detail_dialogoffset.dbss`: `PABR`, a u32 count, 12-byte rows
 
 Unlike `detail_dialog.dbss`, records are not preceded by a copy of their key: they tile the file from byte `4` to its end with no gap.
 
----
-
 ## Record Structure
 
 ### Base Record (variable, `size` bytes from `offset`)
@@ -57,8 +51,6 @@ Unlike `detail_dialog.dbss`, records are not preceded by a copy of their key: th
 
 Every record of client 3458 walks with this layout and ends exactly at its index size.
 
----
-
 ## Suggested UI Layout
 
 | Column       | Type | Notes |
@@ -67,8 +59,6 @@ Every record of client 3458 walks with this layout and ends exactly at its index
 | Dialog       | num  | `key >> 16` |
 | Character    | text | LOC type `38` field `0`, then LOC type `6` for the character ID, then `name_kr` |
 | Bubble Lines | list | LOC type `38` field `1`, `2`, ... for each line, fallback to the Korean line; first few then a count |
-
----
 
 ## Notes
 

@@ -15,8 +15,6 @@ employee_key 20, level 1:  exp_to_next_level 1300  growth 6: 1D2, 7: 1D2, 8: 1D1
 employee_key 20, level 10: exp_to_next_level 1000  (top level: no growth)
 ```
 
----
-
 ## Companion Files
 
 The format is self-contained: no offset table, the dice text lives in the
@@ -27,8 +25,6 @@ file's own string table.
 | `employeestaticstatus.bss` | Optional | Same 230 `(level, employee_key)` keys; its rows link `employee_key` to the sailor's character key |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -51,8 +47,6 @@ this does not hold, since every field would then be suspect.
 
 Rows run level by level (all level 1 rows, then level 2, ...); inside a level
 the `employee_key` order is 23 down to 8, then 1 up to 7.
-
----
 
 ## Record Structure
 
@@ -93,8 +87,6 @@ in the game binary, so the link is that every growing type is one the
 level 6 checks in the Notes, where base plus these dice gives the window's
 value stat by stat.
 
----
-
 ## EXP Curves
 
 Every sailor follows one of four curves on client 3458 (level 1 to 9, then the
@@ -108,8 +100,6 @@ level 10 placeholder):
 | 1300        | 1300, 1950, 2925, 5850, 11700, 23400, 70200, 210600, 631800           | 3, 5, 6, 8, 9, 12, 14, 15, 16, 18, 20     |
 
 Each curve steps x1.5, x1.5, x2, x2, x2, x3, x3, x3 from level 1.
-
----
 
 ## Suggested UI Layout
 
@@ -125,8 +115,6 @@ level the handler sets `exp_to_next_level` to `None`, so it sorts last, and
 keeps the stored value in `exp_raw`. It also keeps `growth_refs`,
 `growth_dice` (19 entries, empty where unused), `is_max_level` and the
 `unknown_*` fields on the record but out of the table.
-
----
 
 ## Notes
 
@@ -159,8 +147,6 @@ keeps the stored value in `exp_raw`. It also keeps `growth_refs`,
   `1D2+2, 1D2+2, 1D3+2, 1D2+3, 1D2+3` (1.7 to 2.3) reads 5.0%, and
   Treasure-Seeking (`7`) Awareness 4.0% plus `1, 1, 1D2+1, 1D2, 1D2` (0.6
   to 0.9) reads 4.7%.
-
----
 
 ## Open Questions
 

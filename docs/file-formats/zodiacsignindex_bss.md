@@ -11,8 +11,6 @@ slot 0 -> zodiac_id 1 -> Hammer
 slot 11 -> zodiac_id 12 -> Goblin
 ```
 
----
-
 ## Companion Files
 
 | File                  | Required | Role                                   |
@@ -21,8 +19,6 @@ slot 11 -> zodiac_id 12 -> Goblin
 | `languagedata_en.loc` | Optional | English names for display              |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -49,8 +45,6 @@ Follows the last entry.
 | `+0x04` | u32  | end_of_entries | Byte offset immediately after entries; observed `0x14` |
 | `+0x08` | u32  | reserved_b     | Always 0                                               |
 
----
-
 ## Reference Table
 
 | Slot | Zodiac ID | English Name  |
@@ -68,16 +62,12 @@ Follows the last entry.
 | 10   | 11        | Sealing Stone |
 | 11   | 12        | Goblin        |
 
----
-
 ## Suggested UI Layout
 
 | Column    | Type | Notes                                               |
 | --------- | ---- | --------------------------------------------------- |
 | Zodiac ID | num  | `zodiac_id`                                         |
 | Name      | text | LOC `str_type=7`, `str_id1=zodiac_id`, `str_id4=0`; the Korean `constellation_name` from `zodiacsign.dbss` without LOC |
-
----
 
 ## Notes
 

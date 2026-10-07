@@ -11,8 +11,6 @@ card 4174 "Demibeast Bandit Warrior"  ←  characters 24444, 20170 (both "Demibe
 card 7364 "Wild Herb"                 ←  31 gathering nodes, 10263 "Wild Herb" first
 ```
 
----
-
 ## Companion Files
 
 | File                     | Required | Role                                                              |
@@ -22,8 +20,6 @@ card 7364 "Wild Herb"                 ←  31 gathering nodes, 10263 "Wild Herb"
 
 All multi-byte values are little-endian.
 
----
-
 ## File Layout
 
 Plain binary: no `PABR` magic, no index file and no trailer. The file ends exactly after the last entry.
@@ -32,8 +28,6 @@ Plain binary: no `PABR` magic, no index file and no trailer. The file ends exact
 | ------- | ---- | ------- | --------------------------------------------------- |
 | `+0x00` | u32  | count   | Number of cards; `1458` on client 3458              |
 | `+0x04` | ...  | entries | `count` variable-length entries, back to back       |
-
----
 
 ## Record Structure
 
@@ -45,8 +39,6 @@ Plain binary: no `PABR` magic, no index file and no trailer. The file ends exact
 | `+0x04` | u32                        | card_id         | Knowledge card; LOC `str_type=34`, key of `mentalcard.dbss` |
 | `+0x08` | u16 × `character_count`    | character_ids   | Character IDs; LOC `str_type=6`, keys of `characterstatic.dbss` |
 
----
-
 ## Confirmed Examples
 
 | card_id | Card name (LOC)          | character_ids                     | Character names (LOC)                |
@@ -56,8 +48,6 @@ Plain binary: no `PABR` magic, no index file and no trailer. The file ends exact
 | `4750`  | Lightning Trumpeter      | `20733`                           | Lightning Trumpeter                  |
 | `7364`  | Wild Herb                | `10263`, `10273`, ... (31 IDs)    | Wild Herb                            |
 
----
-
 ## Suggested UI Layout
 
 | Column         | Type | Notes                                                                        |
@@ -66,8 +56,6 @@ Plain binary: no `PABR` magic, no index file and no trailer. The file ends exact
 | Knowledge Name | text | LOC type 34 name; dash without one                                           |
 | Count          | num  | `character_count`                                                            |
 | Characters     | list | `10263 Wild Herb`: ID and LOC type 6 name, in stored order, first three then a count; unsortable |
-
----
 
 ## Notes
 

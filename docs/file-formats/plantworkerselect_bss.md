@@ -13,8 +13,6 @@ Grana -> Papu Worker, 3500
 Bukpo -> Dokkebi Worker, 3500
 ```
 
----
-
 ## Companion Files
 
 | File                  | Required | Role                                                |
@@ -24,8 +22,6 @@ Bukpo -> Dokkebi Worker, 3500
 
 All multi-byte values are little-endian unless noted otherwise.
 
----
-
 ## File Layout
 
 | Offset  | Type | Field        | Notes                              |
@@ -34,8 +30,6 @@ All multi-byte values are little-endian unless noted otherwise.
 | `+0x04` | ...  | group_stream | `group_count` groups packed in row |
 
 The file is fully consumed by `4 + sum(4 + entry_count * 0x10)`.
-
----
 
 ## Record Structure
 
@@ -73,8 +67,6 @@ selection_name = LOC type 17, str_id1=selection_id, str_id4=0
 worker_name = LOC type 6, str_id1=worker_id, str_id4=0
 ```
 
----
-
 ## Selection IDs
 
 | Selection ID | Name                   | Entry Count |
@@ -111,8 +103,6 @@ worker_name = LOC type 6, str_id1=worker_id, str_id4=0
 | `1553`       | Hakinza Sanctuary      | 13          |
 | `1733`       | Angavu Outpost         | 13; 2026-09-27 client only |
 
----
-
 ## Reference Rows
 
 | Group | Selection ID | Selection Name | Worker ID | Worker Name    | Hire Cost |
@@ -125,8 +115,6 @@ worker_name = LOC type 6, str_id1=worker_id, str_id4=0
 | 21    | `1444`       | Bukpo          | `8047`    | Dokkebi Worker | `3500`     |
 
 Group numbers are from the pre-2026-09-27 fixture; in the 2026-09-27 client every group after `0` moves down by one.
-
----
 
 ## Suggested UI Layout
 
@@ -150,8 +138,6 @@ The worker name is shown in its in-game grade color, from the `plantworker.bss` 
 | Named        | yellow | `#f6c232` |
 
 Green is taken from an in-game screenshot of a base Goblin Worker.
-
----
 
 ## Notes
 

@@ -12,8 +12,6 @@ sailor 23 level 1 -> character 59228 "Pacuna" <Always Happy>, Employee_59228.dds
 first mate 24     -> character 62167 "Cleia" <First Mate>, ability 17: 100000 (-10% Parley for bartering)
 ```
 
----
-
 ## Companion Files
 
 | File                  | Required | Role                                                                 |
@@ -22,8 +20,6 @@ first mate 24     -> character 62167 "Cleia" <First Mate>, ability 17: 100000 (-
 | `stringtable.bss`     | Optional | Key hashes of the First Mate skill texts (`LUA_CAPTAIN_SAILOR_PRESET_SKILL_DESC_*`, LOC type `37`) |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -39,8 +35,6 @@ All multi-byte values are little-endian.
 | trailer           | 8                          | u32 string table offset, u32 `0`                              |
 
 The string table is the same tail as in `npcsimply.bss` and `exploration.bss`: `u32 count`, then per entry `u8 is_wide`, `u32 byte_length` and the text (UTF-16LE when wide). All 29 observed entries are wide icon paths such as `Icon/New_Icon/11_Employee/Employee_59228.dds`. The parser checks that the two lists plus the 64-byte block end exactly where the trailer says the string table starts.
-
----
 
 ## Record Structure
 
@@ -101,8 +95,6 @@ The same Lua shows each ship stat as `value x 0.0001` with one decimal and a `%`
 
 `job` is `0` on all 230 rows of the first list and `1` on all 6 rows of the second. The second list holds exactly the characters whose LOC title is `<First Mate>` (`62167` to `62169`; `62170` to `62172` have no LOC name yet), and the Lua compares `getJob()` with `__eEmployeeJob_ViceCaptain` to mark First Mates. The labels follow the client's `PANEL_SAILORMANAGER_VICECAPTAIN` ("First Mate").
 
----
-
 ## Reference Rows
 
 | Sailor ID | Level | Character ID | Name            | Title            | Role       | Icon                  |
@@ -114,8 +106,6 @@ The same Lua shows each ship stat as `value x 0.0001` with one decimal and a `%`
 | `25`      | 1     | `62168`      | Tranan Underfoe | `<First Mate>`   | First Mate | `Employee_62168.dds`  |
 
 Sailors `1` to `20` share the LOC name "Sailor"; their title is the sailor type the Sailor Preset filter lists (`LUA_SAILOR_PRESET_CATEGORY_FILTER_01` "Ambitious" and on).
-
----
 
 ## Suggested UI Layout
 
@@ -137,8 +127,6 @@ Sailors `1` to `20` share the LOC name "Sailor"; their title is the sailor type 
 
 The labels are the client's `PANEL_SAILORMANAGER_*` strings in each language (`_SPEED`, `_ACCELATION`, `_CORNERING`, `_BRAKING`, `_PATIENCE`, `_FOCUS`, `_POWER`, `_SIGHT`, `_LOYALTY`, `_CONSUMPTION`, `_COST`, `_BODYWEIGHT`). Each stat is also a record field of the same name (`endurance` to `vision`, raw). `abilities` keeps every non-zero pair as text for export, `other_abilities` the pairs without a stat column (today the First Mate types `17` and `18`), and `unknown_74` stays in the record but out of the table. The stat labels also name the growth columns of `employeeexp.bss`, so both tables share one set of client strings.
 
----
-
 ## Notes
 
 - Observed decompressed size is `33,465` bytes (client 3458).
@@ -152,8 +140,6 @@ The labels are the client's `PANEL_SAILORMANAGER_*` strings in each language (`_
   - Level 6 Confident (`9`) and Treasure-Seeking (`7`) sailors: Condition 110, Appetite 100, Cabin Cost 5, Weight 300 LT, as their level 6 rows read. Their ship stats are the level 1 base plus the `employeeexp.bss` growth rolls (see that doc), so the ability values here are base values.
   - Quick Sailor (`5`) at level 1: Condition 80, Appetite 100, Cabin Cost 10, Weight 250 LT, Endurance 0.2%, Wits 1.5%, Awareness 0.2%, Strength 0.2%, Patience 0.0%, Focus 0.2%, Force 2.0%, Vision 6.0%. Its row: `6: 2000, 7: 15000, 8: 2000, 9: 2000, 14: 2000, 15: 20000, 16: 60000`, which names `14` to `16`.
 - The ship stats, Weight, Cabin Cost and Appetite also match the sailor table in GrumpyG's [BDO Sailors Guide](https://grumpygreen.cricket/bdo-sailors-guide/), which lists each plain sailor by title. All 20 match on Speed, Acceleration, Turn, Brake, Weight and Cabin Cost; Appetite matches on 19; the guide gives Treasure-Seeking (`7`) 110, but the game shows 100, as this file does. The guide's titles map to keys as: Ambitious `1`, Diligent `2`, Innocent `3`, Enamored `4`, Quick `5`, Calculating `6`, Treasure-Seeking `7`, Realistic `8`, Confident `9`, Tenacious `10`, Honest `11`, Tough `12`, Strong `13`, Experienced `14`, Curious `15`, Dreaming of a Full Haul `16`, Powerful `17`, Born-in-the-Sea `18`, Smart `19`, Quick-Witted `20`.
-
----
 
 ## Open Questions
 

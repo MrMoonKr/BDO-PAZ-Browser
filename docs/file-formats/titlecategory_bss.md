@@ -11,8 +11,6 @@ category 0 (World)  -> title_id 211, 212, 213, ...
 category 1 (Combat) -> title_id 1, 2, 3, ...
 ```
 
----
-
 ## File Layout
 
 All multi-byte values are little-endian.
@@ -43,8 +41,6 @@ The list's position is its `category_id`, starting at `0`.
 
 The number of listed titles follows from the header and trailer alone: `(end_of_entries - 8) / 4 - category_count`.
 
----
-
 ## Enum Values
 
 ### Category IDs
@@ -56,8 +52,6 @@ The number of listed titles follows from the header and trailer alone: `(end_of_
 | 2   | Life Skill |
 | 3   | Fishing    |
 
----
-
 ## Notes
 
 - Observed lists (World, Combat, Life Skill, Fishing): `1,243`, `853`, `195`, `757` titles (`3,048` in all, `12,228` bytes) in the pre-2026-09-27 fixture; `1,316`, `900`, `197`, `759` (`3,172`, `12,724` bytes) in the 2026-09-27 client.
@@ -65,8 +59,6 @@ The number of listed titles follows from the header and trailer alone: `(end_of_
 - Only the Combat list is sorted by title ID; the others start at `211` (World), `597` (Life Skill) and `218` (Fishing) and are not sorted.
 - `title.dbss` carries the category inline, so `titlecategory.bss` is not needed for category display.
 - Earlier versions of this doc, and of the handler, read the file as headerless 8-byte `(title_id, category_id)` pairs. That reading made the `PABR` magic the first title ID and paired unrelated title IDs after it.
-
----
 
 ## Suggested UI Layout
 

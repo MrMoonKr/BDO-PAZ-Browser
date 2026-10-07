@@ -17,8 +17,6 @@ manor 3842 (Shimhyangje), part 0
               (the building with its walls highlighted)
 ```
 
----
-
 ## Companion Files
 
 | File                  | Required | Role                                                  |
@@ -26,8 +24,6 @@ manor 3842 (Shimhyangje), part 0
 | `languagedata_en.loc` | Optional | Manor names, LOC type 6 keyed by `character_id`       |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -44,8 +40,6 @@ The shared PABR string table layout of `buffsimply.bss` and
 | EOF - 4          | u32     | zero         | Always 0                                                         |
 
 Rows are sorted by `character_id`, then `part_index`.
-
----
 
 ## Record Structure
 
@@ -64,8 +58,6 @@ Rows are sorted by `character_id`, then `part_index`.
 10 strings on client 3458: the nine icon paths and, at index 1, an empty
 string that every `unknown_str_ref` points at.
 
----
-
 ## Suggested UI Layout
 
 | Column       | Type | Notes                                                          |
@@ -76,8 +68,6 @@ string that every `unknown_str_ref` points at.
 | Icon         | text | `icon_ref`, lowercased under `ui_texture/`                     |
 
 `unknown_02` and `unknown_str` stay on the record but out of the table.
-
----
 
 ## Notes
 
@@ -97,8 +87,6 @@ string that every `unknown_str_ref` points at.
   `IconKind.MANOR_PART`) by `manor_part_key()`, `part_index << 16 |
   character_id`. They are blueprints of a part, so they never replace the
   manor's own `characterstatic.dbss` icon.
-
----
 
 ## Open Questions
 

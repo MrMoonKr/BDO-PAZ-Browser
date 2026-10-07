@@ -11,8 +11,6 @@ table 0: character 21207 "Valencian Lion"  →  card 4893 "Valencian Lion"
 table 1: item 8279 "Gurnard"               →  card 8579 "Gurnard"
 ```
 
----
-
 ## Companion Files
 
 | File                           | Required | Role                                                        |
@@ -21,8 +19,6 @@ table 1: item 8279 "Gurnard"               →  card 8579 "Gurnard"
 | `knowledgelearningcharacterkey.bss` | Optional | Table 0 grouped by card: each card with the characters that teach it ([doc](knowledgelearningcharacterkey_bss.md)) |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -61,8 +57,6 @@ The two tables follow each other. Each table is:
 
 The index `data_offset` points past the lead, at the record itself. Table 0 starts at `0` and its records end at `44136` (`43065` in the pre-2026-09-27 fixture); table 1 starts there with its own count.
 
----
-
 ## Record Structure
 
 ### Learning Record (13 bytes)
@@ -74,8 +68,6 @@ The index `data_offset` points past the lead, at the record itself. Table 0 star
 | `+0x08` | u8   | reserved    | Always `0`                                                             |
 | `+0x09` | u32  | card_id     | Knowledge card taught; LOC `str_type=34`, key of `mentalcard.dbss`     |
 
----
-
 ## Enum Values
 
 ### `source_type`
@@ -84,8 +76,6 @@ The index `data_offset` points past the lead, at the record itself. Table 0 star
 | ----- | --------- | ----- | --------------------------------------------------------------- |
 | 0     | Character | 2,596 | All 2,596 `source_id` values have an LOC `str_type=6` name      |
 | 1     | Item      | 2,088 | All 2,088 `source_id` values have an LOC `str_type=0` name      |
-
----
 
 ## Confirmed Examples
 
@@ -97,8 +87,6 @@ The index `data_offset` points past the lead, at the record itself. Table 0 star
 | 1     | `8279`    | Gurnard (str_type=0)    | `8579`  | Gurnard                  |
 | 1     | `9728`    | Blue Whale Molar        | `7765`  | Blue Whale Tooth         |
 
----
-
 ## Notes
 
 - Every `card_id` in both tables is a `mentalcard.dbss` card.
@@ -109,8 +97,6 @@ The index `data_offset` points past the lead, at the record itself. Table 0 star
 - The earlier reading of this file skipped a 12-byte header and read rows as `offset, kind, idx_id`. That shifts every row by one field: `kind` was the record size (`13`) and `idx_id` was the next row's `source_id`. It also misreads table 1, whose rows start 4 bytes after table 0's last row.
 - [bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor) describes `knowledgelearning` as card-to-card learning prerequisites. Our files do not support that: `source_id` resolves as a character or item on every row, and only 272 of 2,596 character IDs are also card IDs.
 - `knowledgelearningcharacterkey.bss` holds the same pairs as table 0, grouped by card in table 0 row order; see [its doc](knowledgelearningcharacterkey_bss.md). Table 1 has no such file.
-
----
 
 ## Open Questions
 

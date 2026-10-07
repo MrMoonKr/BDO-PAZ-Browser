@@ -14,8 +14,6 @@ region_key=290 -> Longleaf Tree Sentry Post (Hunting, Calpheon, node war on Tues
 
 The layout follows [iDevelopThings/bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor) (`FORMATS.md`, section 11). I walked it against the client 3458 file: every record tiles exactly up to the string table and every span it calls reserved is zero in all 1594 records. One tail field is split wrongly there (see Region Tail). Field meanings marked confirmed below were checked against LOC, the client's Lua enums and the linked tables; the extractor's other names stay `unknown_*` here.
 
----
-
 ## Companion Files
 
 | File                  | Required | Role                                                                                       |
@@ -23,8 +21,6 @@ The layout follows [iDevelopThings/bdo-data-extractor](https://github.com/iDevel
 | `languagedata_en.loc` | Optional | Region names (type 17), territory names (type 12), node names (type 29), NPC names (type 6) |
 
 All multi-byte values are little-endian unless noted otherwise.
-
----
 
 ## File Layout
 
@@ -38,8 +34,6 @@ All multi-byte values are little-endian unless noted otherwise.
 | EOF-4   | u32     | zero_trailer       | Observed `0`                                                   |
 
 A record is a 210-byte head, two counted lists and a 171-byte tail, so its size is `389 + 2 * key_count + 12 * vector_count`. The walk ends exactly at `string_table_start`; the parser raises an error when it does not.
-
----
 
 ## Record Structure
 
@@ -126,7 +120,7 @@ Offsets are relative to the start of the tail. The parser keeps every field that
 
 I walked the extractor's tail list (`unknownTail1` to `unknownTail162`, 46 values once its arrays are counted out) against client 3458. Its reserved spans at tail `+0x00`, `+0x50`, `+0x8A` (7 bytes), `+0x92` (8 bytes) and `+0xA6` (3 bytes) are zero in every record, and five of its fields are too (`+0x16`, `+0x31`, `+0x41`, `+0x87`, `+0x9E`), so they are listed as reserved here. One split is wrong: the extractor reads `+0x4D` as a u16, a u8 (`unknownTail79`, which looks like a tier 1 to 4 or 15) and a reserved byte, but the four bytes are one u32 (`70000`, `140000`, `220000`, `280000`, `1000000`); the "tier" byte is just its third byte.
 
-`FLT_MAX` and `0x7FFFFFFF` act as "no value" in several fields below. They are set on every region except a group of 67: the 63 node war regions (`node_war_day` 0 to 6) and the territory capitals Velia, Heidel, Altinova and Valencia City. I call this group the siege regions below.
+`FLT_MAX` and `0x7FFFFFFF` mean "no value" in several fields below. They are set on every region except a group of 67: the 63 node war regions (`node_war_day` 0 to 6) and the territory capitals Velia, Heidel, Altinova and Valencia City. I call this group the siege regions below.
 
 | Offset  | Type      | Field                   | Notes |
 | ------- | --------- | ----------------------- | ----- |
@@ -171,8 +165,6 @@ I walked the extractor's tail list (`unknownTail1` to `unknownTail162`, 46 value
 | `+0xA6` | u8[3]     | reserved                | Always `0` |
 | `+0xA9` | u16       | guild_wharf_manager_key | NPC character key; set on 20 regions and every NPC is titled `<Guild Wharf Manager>` in LOC (Robert in Velia, Sebastian in Port Epheria, Elro in Oquilla's Eye) |
 
----
-
 ## Enum Values
 
 ### `region_type` (`CppEnums.RegionType`)
@@ -195,8 +187,6 @@ Names from `global_define_cpp_enum.luac`, without the `eRegionType_` prefix. The
 
 `0` Sunday, `1` Monday, `2` Tuesday, `3` Wednesday, `4` Thursday, `5` Friday, `6` Saturday, `7` none. Client 3458 has 6 regions on each day from Sunday to Thursday, 33 on Friday (most of them Margoria islands) and none on Saturday, the conquest war day.
 
----
-
 ## Suggested UI Layout
 
 | Column              | Type | Notes |
@@ -218,8 +208,6 @@ Names from `global_define_cpp_enum.luac`, without the `eRegionType_` prefix. The
 | Evasion Limit       | num  | `siege_evasion_limit` |
 | DR Rate Limit       | num  | `siege_dr_rate_limit` as a percentage |
 | Resistance Limit    | num  | `siege_resistance_limits` as one percentage when all four match |
-
----
 
 ## Notes
 
@@ -246,8 +234,6 @@ Names from `global_define_cpp_enum.luac`, without the `eRegionType_` prefix. The
 - `unknown_tail_9a` and `unknown_tail_a2` hold silver-sized amounts on the siege regions (node war regions `15.6M` to `46.9M`, capitals up to `273.4M`), always a fixed step apart; they may be the node war participation fee or reward, but nothing in the client names them.
 - Related files out of scope here: `regionclientdata.xml` and its per-service variants (`regionclientdata_<code>_.xml`) place NPCs and monsters per region and key them by `<RegionInfo Key=...>`, the same region key.
 - [`regioninfo_linkandcheckvalid2.bss`](regioninfo_linkandcheckvalid2_bss.md) stores `unknown_d2_keys` again, one record per region; its lists equal this file's in every record of client 3458, and the links are mutual (when A lists B, B lists A).
-
----
 
 ## Open Questions
 

@@ -4,10 +4,10 @@
 
 The Pearl Shop product catalog. One variable-length block per cash product,
 keyed by product ID through a required offset companion. Each block carries
-Korean display text, an **inline icon path**, and the item ID the product grants.
+Korean display text, an inline icon path, and the item ID the product grants.
 
-The stored icon is the **Pearl Shop tile for the product, not the item's own
-icon**. 16,620 of the 28,689 products (57.9%) share a tile with another product,
+The stored icon is the Pearl Shop tile for the product, **not** the item's own
+icon. 16,620 of the 28,689 products (57.9%) share a tile with another product,
 so a whole seasonal collection points at one promotional image and 480 unrelated
 products all use `loyalties.dds`. For an item icon, follow the linked item ID
 into [itemenchant.dbss](itemenchant_dbss.md) instead.
@@ -23,8 +23,6 @@ product 117722 -> Icon/New_Icon/09_Cash/03_Product/00105099.dds
                -> item 340916 ([Guardian] Shell Belle Outfit Set)
 ```
 
----
-
 ## Companion Files
 
 | File                     | Required | Role                                           |
@@ -34,14 +32,12 @@ product 117722 -> Icon/New_Icon/09_Cash/03_Product/00105099.dds
 
 All multi-byte values are little-endian.
 
----
-
 ## File Layout
 
 | Offset  | Type | Field  | Notes                                      |
 | ------- | ---- | ------ | ------------------------------------------ |
 | `+0x00` | u32  | count  | Block count; see below                      |
-| `+0x04` | —    | blocks | Variable-length blocks, contiguous          |
+| `+0x04` | -    | blocks | Variable-length blocks, contiguous          |
 
 The first block starts at byte `4` and the last ends exactly at end of file
 (29,500,854 bytes observed), so the block stream is gap-free.
@@ -50,17 +46,15 @@ Observed blocks: 28,689 in the pre-2026-09-27 test fixture, 28,945 in the
 2026-09-27 client (29,769,307 bytes, also gap-free). The other counts in this
 doc are from the fixture.
 
----
-
 ## `cashproductoffset.dbss`
 
-Unlike most offset companions this file has **no `PABR` magic and no trailer**, a 4-byte count followed by rows, ending exactly at `4 + count × 12`
+Unlike most offset companions this file has no `PABR` magic and no trailer: a 4-byte count followed by rows, ending exactly at `4 + count × 12`
 (344,272 bytes observed).
 
 | Offset  | Type | Field | Notes                            |
 | ------- | ---- | ----- | -------------------------------- |
 | `+0x00` | u32  | count | Number of rows; equals the `cashproduct.dbss` count |
-| `+0x04` | —    | rows  | `count` × 12-byte rows           |
+| `+0x04` | -    | rows  | `count` × 12-byte rows           |
 
 ### Row (12 bytes)
 
@@ -73,8 +67,6 @@ Unlike most offset companions this file has **no `PABR` magic and no trailer**, 
 Rows are contiguous: `data_offset + data_size` equals the next row's
 `data_offset`.
 
----
-
 ## Block Structure
 
 | Offset  | Type   | Field          | Notes                                      |
@@ -83,7 +75,7 @@ Rows are contiguous: `data_offset + data_size` equals the next row's
 | `+0x04` | u32    | name_length    | Character count of the name that follows   |
 | `+0x08` | u32    | zero           | Always 0                                   |
 | `+0x0C` | char16 | name           | UTF-16LE Korean product name               |
-| varies  | —      | strings/fields | Further strings and undecoded numeric data |
+| varies  | -      | strings/fields | Further strings and undecoded numeric data |
 
 ### Length-prefixed string
 
@@ -93,7 +85,7 @@ Both text encodings share one 8-byte prefix:
 | ------- | ---- | ------ | ------------------------------------------------- |
 | `+0x00` | u32  | length | UTF-16 strings count **characters**, ASCII **bytes** |
 | `+0x04` | u32  | zero   | Always 0 in observed data                         |
-| `+0x08` | —    | text   | UTF-16LE or ASCII; not null-terminated            |
+| `+0x08` | -    | text   | UTF-16LE or ASCII; not null-terminated            |
 
 Strings sit at no fixed offset, so a parser scans for the
 `(length, 0, text)` shape rather than seeking a constant. A block holds one to
@@ -103,7 +95,7 @@ carrying `<PAColor…>` tags, and the ASCII icon path.
 ### Icon path and linked item
 
 The icon path is the block's only ASCII string, and a `u32` item ID follows
-**16 bytes after the end of that string**:
+16 bytes after the end of that string:
 
 | Element    | Position                          | Observed                    |
 | ---------- | --------------------------------- | --------------------------- |
@@ -118,10 +110,8 @@ Icon/New_Icon/09_Cash/03_Product/00105099.dds
   -> ui_texture/icon/new_icon/09_cash/03_product/00105099.dds
 ```
 
-Note this differs from [itemenchant.dbss](itemenchant_dbss.md), whose paths
+This differs from [itemenchant.dbss](itemenchant_dbss.md), whose paths
 start at `New_Icon/` and take the prefix `ui_texture/icon/`.
-
----
 
 ## Icon Coverage
 
@@ -131,8 +121,6 @@ start at `New_Icon/` and take the prefix `ui_texture/icon/`.
 | Icon paths resolving to a real PAZ file      | 28,613 (99.7%)   |
 | Length prefix matching the string length     | 1,435 / 1,435    |
 | Blocks with an item ID 16 bytes after the icon | 96.8%          |
-
----
 
 ## Suggested UI Layout
 
@@ -147,8 +135,6 @@ start at `New_Icon/` and take the prefix `ui_texture/icon/`.
 
 `product_icon_path` is parsed but not shown: the tile is marketing art for the
 offer rather than an item icon.
-
----
 
 ## Notes
 
@@ -167,8 +153,6 @@ offer rather than an item icon.
   then u32-keyed rows (`parse_bare_u32_offset_rows()`).
 - 17 `gamecommondata` tables store inline icon paths. This file is second by
   volume with 14,750 unique paths, behind `itemenchant.dbss` with 21,768.
-
----
 
 ## Open Questions
 

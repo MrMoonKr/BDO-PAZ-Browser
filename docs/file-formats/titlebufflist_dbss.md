@@ -12,8 +12,6 @@ Acquire x60: Luck +2
 Acquire x70: Luck +2 / Max Energy +1
 ```
 
----
-
 ## Companion Files
 
 | File                       | Required | Role                               |
@@ -22,8 +20,6 @@ Acquire x70: Luck +2 / Max Energy +1
 | `stringtable.bss`          | Optional | Key hash of the tooltip text in LOC, see Localised Text |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -41,8 +37,6 @@ All multi-byte values are little-endian.
 Observed entry IDs are zero-based and align with `internal_id` inside each block.
 
 Observed entries: 18 in the pre-2026-09-27 test fixture and in the 2026-09-27 client.
-
----
 
 ## Record Structure
 
@@ -63,7 +57,7 @@ Checked on all 18 blocks of client 3458: each one ends exactly after `reserved`.
 
 #### internal_id / Display Level
 
-The offset file's `entry_id` and block `internal_id` represent the same row. Display level is usually `internal_id + 1`:
+The offset file's `entry_id` and block `internal_id` identify the same row. Display level is usually `internal_id + 1`:
 
 | Display Level | internal_id |
 | ------------- | ----------- |
@@ -78,8 +72,6 @@ The offset file's `entry_id` and block `internal_id` represent the same row. Dis
 | 0           | 50              | Acquire x50 titles |
 | 1           | 60              | Acquire x60 titles |
 | 2           | 70              | Acquire x70 titles |
-
----
 
 ## Embedded Korean Text
 
@@ -103,8 +95,6 @@ Effect values use PA color markup:
 
 These tags color the bonus numbers in the Title Effects tooltip, not individual title name colors.
 
----
-
 ## Localised Text
 
 The tooltip in the user's language is one multiline UI string, `GAME` sheet key `LUA_CHARACTERINFO_TITLE_TOOLTIP_DESC` (key hash `3723587620`, LOC `str_type=37`, `str_id1=3723587620`, `str_id2=1`). `stringtable.bss` gives the hash and keeps the same Korean text; `RESOURCE` key `PANEL_CHARACTERINFO_TITLE_TOOLTIP_DESC` holds a copy. Each line is one tier, in `internal_id` order (18 lines, 18 tiers):
@@ -117,8 +107,6 @@ Acquire x70: Luck <PAColor0xff00baff>+2<PAOldColor> / Max Energy <PAColor0xff00b
 
 Pick the line by `internal_id`, not by matching the `Acquire x50:` prefix, since other languages word the prefix differently.
 
----
-
 ## Suggested UI Layout
 
 | Column          | Source                                                    |
@@ -126,8 +114,6 @@ Pick the line by `internal_id`, not by matching the `Acquire x50:` prefix, since
 | Level           | `internal_id + 1`                                         |
 | Required Titles | `required_titles`                                         |
 | Text            | Line `internal_id` of the LOC tooltip, values in their game colours; `label_kr` + `effect_kr` without LOC or `stringtable.bss`, or when the line count differs from the tier count |
-
----
 
 ## Reference Data
 
@@ -153,8 +139,6 @@ Pick the line by `internal_id`, not by matching the `Acquire x50:` prefix, since
 | 1,000           | Luck +3 / Max Energy +7 / EXP +12% / Max Stamina +150 |
 | 1,500           | Luck +3 / Max Energy +8 / EXP +12% / Max Stamina +150 |
 | 2,000           | Luck +3 / Max Energy +8 / EXP +12% / Max Stamina +200 |
-
----
 
 ## Open Questions
 

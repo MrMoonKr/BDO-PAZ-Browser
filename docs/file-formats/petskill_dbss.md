@@ -12,8 +12,6 @@ level 1 raw_value_a: 3,584,000
 level 10 raw_value_a: 1,280,000
 ```
 
----
-
 ## Companion Files
 
 | File                   | Required | Role                                                |
@@ -21,8 +19,6 @@ level 10 raw_value_a: 1,280,000
 | `petskilloffset.dbss`  | Required | `pet_skill_id -> (data_offset, data_size)` lookup   |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -33,8 +29,6 @@ All multi-byte values are little-endian.
 | `+0x00` | u32  | count | Number of records; observed 49 |
 
 Records begin immediately at `+0x04`. Each record is stored as a 2-byte key prefix followed by the data payload addressed by `petskilloffset.dbss`.
-
----
 
 ## Record Structure
 
@@ -63,15 +57,13 @@ Rows start at payload offset `+0x02 + row_index * 17`. Offsets below are relativ
 | ------- | ---- | ------------ | --------------------------------------------------------------------------------------- |
 | `+0x00` | u8   | unknown_00   | Observed 1–11. Same value in all rows for a record; shared by several records           |
 | `+0x01` | u8   | row_level    | Row 0 uses 1; rows 1–10 use 1–10                                                        |
-| `+0x02` | u16  | —            | Always 0                                                                                |
+| `+0x02` | u16  | -            | Always 0                                                                                |
 | `+0x04` | u32  | raw_value_a  | Primary effect value. Row 0 is always 2560; rows 1–10 vary by `pet_skill_id`            |
 | `+0x08` | u32  | raw_value_b  | Secondary effect value. Row 0 is always 2560; rows 1–10 are 0 or a skill-specific value |
 | `+0x0C` | u32  | unknown_0c   | Row 0 = 256; rows 1–9 = `(row_level + 1) * 256`; row 10 is 0 or 256                     |
-| `+0x10` | u8   | —            | Always 0                                                                                |
+| `+0x10` | u8   | -            | Always 0                                                                                |
 
 Earlier versions of this doc called `unknown_00` `skill_group`, `unknown_0c` `row_marker` and the payload's `unknown_bd` `extra_marker`.
-
----
 
 ## petskilloffset.dbss
 
@@ -88,11 +80,9 @@ Earlier versions of this doc called `unknown_00` `skill_group`, `unknown_0c` `ro
 | `+0x00` | u16  | pet_skill_id| Matches `pet_skill_id` in the main record                                   |
 | `+0x02` | u32  | data_offset | Absolute byte offset in `petskill.dbss` to the payload, after key prefix    |
 | `+0x06` | u16  | data_size   | 189 or 190 bytes                                                            |
-| `+0x08` | u16  | —           | Always 0                                                                    |
+| `+0x08` | u16  | -           | Always 0                                                                    |
 
 `record_start = data_offset - 2` gives the position of the 2-byte key prefix.
-
----
 
 ## Observed Values
 
@@ -110,8 +100,6 @@ Earlier versions of this doc called `unknown_00` `skill_group`, `unknown_0c` `ro
 
 The parser yields ten level rows per record: 490 rows for the 49 records. Both files are byte-identical in the pre-2026-09-27 fixture and the 2026-09-27 client.
 
----
-
 ## Suggested UI Layout
 
 | Column        | Type | Notes                                               |
@@ -123,8 +111,6 @@ The parser yields ten level rows per record: 490 rows for the 49 records. Both f
 
 For compact browsing, show one expandable row per `pet_skill_id`, with the ten level rows nested beneath it.
 
----
-
 ## Notes
 
 - File size is 9380 bytes: 4-byte count plus 49 wrapper records.
@@ -133,8 +119,6 @@ For compact browsing, show one expandable row per `pet_skill_id`, with the ten l
 - Offset rows are sorted descending for high IDs first, not ascending by key.
 - `raw_value_a` and `raw_value_b` are named as raw values because the display scale is not confirmed. Some values are multiples of 256, 256,000, or 25,600,000.
 - This file is distinct from `petequipskill.bss`, which stores localized equip-skill catalog entries.
-
----
 
 ## Open Questions
 

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Defines the **skill roll table** for pet equip skills, keyed by `acquire_type_id` from [pet.dbss](pet_dbss.md). Each record holds a weight for every skill in [petequipskill.bss](petequipskill_bss.md), and a weight of `0` means that acquire type cannot roll that skill.
+Defines the skill roll table for pet equip skills, keyed by `acquire_type_id` from [pet.dbss](pet_dbss.md). Each record holds a weight for every skill in [petequipskill.bss](petequipskill_bss.md), and a weight of `0` means that acquire type cannot roll that skill.
 
 Each acquire type is a themed pool: some favour life skills, others combat and gathering. 21 records cover 5 key groups (`0`–`4`, `101`–`104`, `201`–`204`, `301`–`304`, `401`–`404`), of which key `0` is an empty placeholder.
 
@@ -14,8 +14,6 @@ acquire_type_id 401 → Combat EXP +5%:     weight 120000 of 700000 = 17.1%
 acquire_type_id 401 → Cooking EXP +5%:    weight  10000 of 700000 =  1.4%
 ```
 
----
-
 ## Companion Files
 
 | File                             | Required | Role                                                 |
@@ -24,8 +22,6 @@ acquire_type_id 401 → Cooking EXP +5%:    weight  10000 of 700000 =  1.4%
 | `petequipskill.bss`              | Optional | Resolves a weight's `equip_skill_id` to a skill name |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -46,8 +42,6 @@ All multi-byte values are little-endian.
 
 The first 2 bytes of each record are the file key prefix. The offset companion points to `record_start + 2`, so use `record_start = data_offset - 2` to read the full u32-aligned record.
 
----
-
 ## Acquire Type IDs
 
 Keys decompose as `group × 100 + tier`, except the low keys `0`–`4` which have group `0`.
@@ -61,11 +55,9 @@ Keys decompose as `group × 100 + tier`, except the low keys `0`–`4` which hav
 | `301`–`304` | Byte-identical to `201`–`204`                        |
 | `401`–`404` | Broad, near-even pool across most skills             |
 
----
-
 ## Rollable Skills
 
-Only 14 of the catalog's 43 Section 1 entries carry a non-zero weight in any record, and the same 14 appear in every populated record. Each is the **middle** entry of its three-entry skill type group, the `+5%` tier, or the sole entry where the group has only one.
+Only 14 of the catalog's 43 Section 1 entries carry a non-zero weight in any record, and the same 14 appear in every populated record. Each is the middle entry of its three-entry skill type group, the `+5%` tier, or the sole entry where the group has only one.
 
 | equip_skill_id | skill_type | Skill               |
 | -------------- | ---------- | ------------------- |
@@ -85,8 +77,6 @@ Only 14 of the catalog's 43 Section 1 entries carry a non-zero weight in any rec
 | 36             | 15         | Farming EXP +5%     |
 
 Skill types 7, 16, 17, 18, 19 and 20 (Death Penalty Resist, Life EXP, Weight Limit, Durability Resistance, Skill EXP, Knowledge Gain) have no weight in any record and are never rolled here.
-
----
 
 ## Roll Chances
 
@@ -127,8 +117,6 @@ Unlike the fairy table, pet weights are **not** normalised to `1,000,000`:
 
 Because `3` and `4` exceed `1,000,000`, these cannot be parts-per-million probabilities the way the fairy weights are. Treat them as relative weights and normalise by the record total.
 
----
-
 ## `petequipskillaquireoffset.dbss`
 
 ### Header (4 bytes)
@@ -146,8 +134,6 @@ Because `3` and `4` exceed `1,000,000`, these cannot be parts-per-million probab
 | `+0x06` | u16  | data_size   | Always `174` (`176 - 2-byte key prefix`)                     |
 | `+0x08` | u16  | padding     | Always `0`                                                   |
 
----
-
 ## Suggested UI Layout
 
 | Column          | Type | Notes                                               |
@@ -160,29 +146,25 @@ Because `3` and `4` exceed `1,000,000`, these cannot be parts-per-million probab
 
 Show one row per `(acquire_type_id, equip_skill_id)` and omit zero weights, since a zero means the skill is not rollable.
 
----
-
 ## Notes
 
-- Weights are **roll weights, not costs**. Earlier revisions of this document described the record as a cost table with `cost_a`/`cost_b`/`cost_c` triples and a `reserved` field; that reading was wrong. The record is a flat 43-element weight array and the "reserved" u32 is simply `weights[0]`.
+- Weights are roll weights, not costs. Earlier revisions of this document described the record as a cost table with `cost_a`/`cost_b`/`cost_c` triples and a `reserved` field; that reading was wrong. The record is a flat 43-element weight array and the "reserved" u32 is `weights[0]`.
 - The layout is shared with [fairyequipskillaquire.dbss](fairyequipskillaquire_dbss.md), where the same structure is confirmed against published per-grade skill availability and every record sums to exactly `1,000,000`.
 - Weights index Section 1 of `petequipskill.bss` (`equip_skill_id` `0`–`42`), which is exactly the 43 available slots. The extended Section 2 catalog is not addressable here.
 - `301`–`304` are byte-identical to `201`–`204`, and `401`–`404` are identical to each other. Several other keys pair up (`1`=`2`, `3`=`4`, `103`=`104`).
 - Only the `+5%` mid-tier of each skill group is rollable; the `+7%` and duplicate `+5%` entries never appear.
 - Observed: 21 records and 280 non-zero weights (20 populated records × 14 skills) in the pre-2026-09-27 fixture and in the 2026-09-27 client; both files are byte-identical between the two.
 
----
-
 ## Open Questions
 
 ### Weight normalisation
 
-Fairy records sum to exactly `1,000,000`, but pet totals range from `700,000` to `1,010,000`. Whether the shortfall represents a chance of no skill being granted, whether the client simply normalises by the record total, or whether `3`/`4` exceeding a million is a data error, is unconfirmed.
+Fairy records sum to exactly `1,000,000`, but pet totals range from `700,000` to `1,010,000`. Whether the shortfall is a chance of no skill being granted, whether the client normalises by the record total, or whether `3`/`4` exceeding a million is a data error, is unconfirmed.
 
 ### Acquire type grouping
 
-The `group × 100 + tier` split fits the key values, and the pools are clearly themed by skill category, but which pet species or grade maps to which group has not been traced through `pet.dbss`. The exact duplication of `201`–`204` by `301`–`304` suggests one group is a reserved or legacy copy.
+The `group × 100 + tier` split fits the key values, and the pools are themed by skill category, but which pet species or grade maps to which group has not been traced through `pet.dbss`. The exact duplication of `201`–`204` by `301`–`304` suggests one group is a reserved or legacy copy.
 
 ### Sub-entry semantic mapping
 
-Resolved. The former "14 sub-entries with `cost_a`/`cost_b`/`cost_c`" structure does not exist; the apparent triples were an artifact of grouping a dense 43-element array into 12-byte rows, and the 14 "active" sub-entries were simply the 14 rollable skills. This entry is retained so the disproven reading is not re-derived.
+Resolved. The former "14 sub-entries with `cost_a`/`cost_b`/`cost_c`" structure does not exist; the apparent triples were an artifact of grouping a dense 43-element array into 12-byte rows, and the 14 "active" sub-entries were the 14 rollable skills. This entry is retained so the disproven reading is not re-derived.

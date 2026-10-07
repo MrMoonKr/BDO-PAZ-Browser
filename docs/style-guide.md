@@ -2,8 +2,6 @@
 
 A reference for the color palette, typography, spacing, and UI patterns used across this project.
 
----
-
 ## Color Palette
 
 ### Backgrounds
@@ -48,9 +46,7 @@ A reference for the color palette, typography, spacing, and UI patterns used acr
 | Success / complete    | `#2dbe6c`  | `#1a3d2a`  | `#2dbe6c` |
 | Warning / orange      | `#e09050`  | `#2a1a10`  | `#e09050` |
 | Error / danger (soft) | `#e74c3c`  | `#2a1010`  | `#7a2020` |
-| Error / danger (bold) | `#ff6b6b`  | —          | `#e74c3c` |
-
----
+| Error / danger (bold) | `#ff6b6b`  | -          | `#e74c3c` |
 
 ## Typography
 
@@ -76,8 +72,6 @@ font-family: monospace;
 | Tags / badges              | `12px` |
 | Fine print / footnotes     | `11px` |
 
----
-
 ## Spacing
 
 The project uses a loose 4px base grid.
@@ -95,8 +89,6 @@ The project uses a loose 4px base grid.
 | Small button padding     | `3px 12px`                |
 | Button padding           | `6px 14px`                |
 
----
-
 ## Borders & Radius
 
 | Element                    | Radius        |
@@ -110,8 +102,6 @@ The project uses a loose 4px base grid.
 Standard border color: `1px solid #444` (default), `#333` (panel edges), `#555` (interactive borders).
 
 Focus border: `#666`.
-
----
 
 ## Components
 
@@ -150,8 +140,6 @@ background: #33d977;
 border-color: #33d977;
 ```
 
----
-
 ### Inputs & Selects
 
 ```css
@@ -169,8 +157,6 @@ border-color: #666;
 ```
 
 Checkbox / radio accent color: `#2dbe6c`
-
----
 
 ### Panels / Sidebars
 
@@ -193,8 +179,6 @@ Section divider:
 ```css
 border-bottom: 1px solid #2a2a2a;
 ```
-
----
 
 ### Tags / Badges
 
@@ -233,8 +217,6 @@ color: #e09050;
 border-color: #e09050;
 ```
 
----
-
 ### Floating / Overlay Panels
 
 ```css
@@ -255,8 +237,6 @@ font-family: monospace;
 font-size: 12px;
 ```
 
----
-
 ### Scrollbars
 
 ```css
@@ -276,8 +256,6 @@ font-size: 12px;
 }
 ```
 
----
-
 ### Selected Row (tree / list)
 
 ```css
@@ -287,12 +265,10 @@ box-shadow:
 background: #252525;
 ```
 
----
-
 ## Design Principles
 
 - **Dark-first.** All UI is dark mode only; no light mode variant (cuz I like not to flashbang my self).
 - **Flat surfaces.** No gradients or drop shadows on static UI elements. Shadows only on floating/overlay panels.
-- **Green as the single primary accent.** `#2dbe6c` drives all interactive affordances (checkboxes, active states, progress).
-- **Muted by default, bright on interaction.** Resting text is `#aaa`–`#ccc`; active/selected states elevate to `#fff` or the accent color.
+- **Green as the single primary accent.** `#2dbe6c` colors all interactive elements (checkboxes, active states, progress).
+- **Muted by default, bright on interaction.** Resting text is `#aaa`–`#ccc`; active/selected states switch to `#fff` or the accent color.
 - **Consistent border hierarchy.** `#333` for outer panel walls → `#444` for inputs/cards → `#2a2a2a` for in-panel row separators.

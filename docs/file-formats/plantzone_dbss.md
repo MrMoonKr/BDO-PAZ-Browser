@@ -11,8 +11,6 @@ record_id=1539 -> Teff, production key 1539 -> item subgroup 40189 -> Teff
 
 The production-key reading and the worker-species field boundaries follow [iDevelopThings/bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor) (`FORMATS.md`, "Worker-production item tables"), checked against the current client files below.
 
----
-
 ## Companion Files
 
 | File                   | Required | Role                                                   |
@@ -20,8 +18,6 @@ The production-key reading and the worker-species field boundaries follow [iDeve
 | `plantzoneoffset.dbss` | Required | Maps `record_id` to byte offset and payload byte count |
 
 All multi-byte values are little-endian unless noted otherwise.
-
----
 
 ## File Layout
 
@@ -31,8 +27,6 @@ All multi-byte values are little-endian unless noted otherwise.
 | `+0x04` | ...  | record_stream | Variable-length records, packed back-to-back |
 
 `(file_size - 4) / record_count` is not integral, so records must be sliced with `plantzoneoffset.dbss`.
-
----
 
 ## Record Structure
 
@@ -120,8 +114,6 @@ Both tables are documented in [plantexchangegroup_bss.md](plantexchangegroup_bss
 
 Example: zone 2050 (Lumbering) -> production key 1928 -> subgroup 42356 -> Elder Tree Timber, Bloody Tree Knot, Elder Tree Sap. On the 2026-09-27 client 403 of the 439 zones resolve to items; the other 36 reference subgroup keys that are absent from `itemsubgroupoffset.dbss` (358 of 394 in the older fixture, the same 36 unresolved).
 
----
-
 ## `plantzoneoffset.dbss`
 
 Provides the byte ranges for records in `plantzone.dbss`.
@@ -142,8 +134,6 @@ Provides the byte ranges for records in `plantzone.dbss`.
 
 Offset rows are not sorted by `data_offset`, but sorted rows cover every byte from `plantzone.dbss +0x04` through EOF with no gaps or overlaps. The parser reads `record_id` and `zero` as one u32 (`parse_bare_u32_offset_rows()`).
 
----
-
 ## Suggested UI Layout
 
 | Column         | Type | Notes                                               |
@@ -155,8 +145,6 @@ Offset rows are not sorted by `data_offset`, but sorted rows cover every byte fr
 
 The table meta line counts the zones that resolve to items (403 of 439 on client 3458). The preview needs no `plantexchangegroup.bss` or `itemsubgroup.dbss` companion: `production_item_fields()` in `_common/production_items.py` gives the item keys and names, the same helper the `plantexchangegroup.bss` Items column uses, and `item_key_list_cell()` in `_common/item_key.py` draws both columns.
 
----
-
 ## Notes
 
 - `plantzone.dbss` and `plantzoneoffset.dbss` both report `394` records.
@@ -165,8 +153,6 @@ The table meta line counts the zones that resolve to items (403 of 439 on client
 - Every `record_id` is an `exploration.bss` sub-node (`is_sub_node=1`) of a production kind; only three production sub-nodes have no plant zone (1564 Specialties and the disabled `UnKnown` records 1831 and 1839).
 - The reference project reports 425 plant zones with 389 resolving to items; the current client file has 394 zones with 358 resolving, and the same 36 unresolved.
 - Worker output quantities and luck bonus drops are not identified in these tables.
-
----
 
 ## Open Questions
 

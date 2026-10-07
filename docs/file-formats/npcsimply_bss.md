@@ -11,8 +11,6 @@ character_id: 47727 -> "Jackson"  -> kind: 3 (ShopMerchant) -> name: 잭슨  -> 
 character_id: 47647 -> "Neoksam"  -> kind: 25 (ItemMarket)  -> role: <거래소장> -> script: getknowledge(2387);
 ```
 
----
-
 ## File Layout
 
 Top-level PABR block with a fixed-width record table followed by an inline string pool.
@@ -26,8 +24,6 @@ Top-level PABR block with a fixed-width record table followed by an inline strin
 | EOF - 8 | trailer  | trailer     | Offset of the string pool, see below       |
 
 All multi-byte values are little-endian unless noted otherwise.
-
----
 
 ## Record Structure
 
@@ -114,8 +110,6 @@ Observed pool contents: 2636 UTF-8 strings and 2110 UTF-16LE strings. The pool i
 
 This is the same `[string table][u32 rows_end][u32 0]` tail that `playercharacterstatic.bss` and `characterstaticoffset.dbss` carry after their rows.
 
----
-
 ## Suggested UI Layout
 
 | Column       | Type | Notes                                                     |
@@ -128,8 +122,6 @@ This is the same `[string table][u32 rows_end][u32 0]` tail that `playercharacte
 | Leases       | list | Every lease of the character: the `CHARACTER_LEASES` index (all lease options in `detail_dialog.dbss`), as LOC `str_type=0` item name (in its grade colour) and cost, e.g. `[CP] Container (10 CP)`; the lease stored here keeps its own cost, and is the only one without the index; sorts by count |
 | Script       | text | Raw script string for debugging/export                    |
 
----
-
 ## Notes
 
 - The record table size is exactly `count * 33` bytes; fixed records end at `0x12065` (`0x12086` in the 2026-09-27 client), and the string pool parses exactly up to the 8-byte trailer.
@@ -140,8 +132,6 @@ This is the same `[string table][u32 rows_end][u32 0]` tail that `playercharacte
 - The lease itself is an NPC dialog option in `detail_dialog.dbss` (records keyed `1 << 16 | character_id`). Each option stores a condition script, a title such as `[대여] 작은 울타리` ("[Lease] Small Fence"), the dialog text and the action `buyItemByPoint(item, 0, 1, 5, cost)`. `lease_item_id` and `lease_cost` repeat the item and cost of the NPC's first lease option: the item matches on all 58 rows and the cost on 57. Merio (`43501`) is the exception, `2` here and `1` in his dialog; in game his Matchlock lease costs 2 (checked 2026-09-28), the same as the other Matchlock NPCs, so the charged cost follows `lease_cost` and the dialog's `1` is stale. NPCs with several lease options keep only the first here (Kanobas `23004` of his 25 Kaia weapons, Basquean Ljurik the Container and not the Excellent Adventurer's Seal `45603` at 100 CP), and Wale (`40605`) has a Small Fence lease in his dialog but no lease item here.
 - `has_lease_condition` is `1` exactly when that option has a condition script, on all 58 lease rows (client 3458). The Containers, Flutes and Matchlocks check that you do not own one yet (`!getitemcount(3001,0)>0;`), the Kaia and Nesser gear add a level, quest and class check, and the fences of Martina Finto (`40024`) and Mercianne Moretti (`41085`) are quest-gated: Martina's reads `!iscontentsgroupopen(0,4017);<or>iscontentsgroupopen(0,4017);!clearquest(21125,64);<or>iscontentsgroupopen(0,4017);clearquest(21125,64);clearquest(21125,74);`, which item databases show as "Not finished quest: Tracking Giath, or finished Tracking Giath and Sands of Time". The fence NPCs with `0` (Zaaira `40002` and the others) have an empty condition.
 - Every character has a LOC type `6` name in client 3458. Older clients missed 39 (`47623`, `47753`, `47772` to `47807` and `61267`); the handler shows the Korean `name_ref` for such a row.
-
----
 
 ## Open Questions
 

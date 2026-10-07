@@ -17,8 +17,6 @@ marker 36, WorldmapMonster_36.dds
   name    바실리스크 소굴                -> "Basilisk Den"
 ```
 
----
-
 ## Companion Files
 
 | File                         | Required | Role                                                                 |
@@ -27,8 +25,6 @@ marker 36, WorldmapMonster_36.dds
 | `languagedata_en.loc`        | Optional | LOC type 40, `str_id1` = key, `str_id4` 0 / 1 / 2 = name / line 1 / line 2 |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -53,8 +49,6 @@ with the 20 keys from 10001 to 10020, both counting down.
 
 The offset of a row points past that preceding copy, at the record's own key.
 
----
-
 ## Record Structure
 
 ### Marker Record (variable size)
@@ -77,8 +71,6 @@ for the wide ones, ASCII for the icon path (`RecordReader`).
 | 11    | u8          | unknown_flag | Always `1`                                                            |
 | 12    | u8          | reserved     | Always `0`                                                            |
 
----
-
 ## Suggested UI Layout
 
 | Column    | Type | Notes                                                                              |
@@ -95,8 +87,6 @@ The position, `unknown_str`, `unknown_ref`, `unknown_kind` and `unknown_flag`
 stay on the record but out of the table. The Hunting Ground column reads
 `unknown_ref` only on hunting zones: the Black Shrine markers store `0` to `9`
 there, which would otherwise name hunting grounds 0 to 9 (Mansha Forest, ...).
-
----
 
 ## Notes
 
@@ -143,8 +133,6 @@ there, which would otherwise name hunting grounds 0 to 9 (Mansha Forest, ...).
 - The app indexes the marker illustrations by key
   (`IndexKind.WORLDMAP_MARKER_ICON`, read through `IconKind.WORLDMAP_MARKER`);
   the 16 Abyssal Wells store none and are left out.
-
----
 
 ## Open Questions
 

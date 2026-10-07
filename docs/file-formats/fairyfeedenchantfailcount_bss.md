@@ -15,16 +15,12 @@ record 0: 1: 19 -> (0, 200), 1: 20 -> (0, 300)
 record 6: 7: 0  -> (300, 350)
 ```
 
----
-
 ## Companion Files
 
-The format is self-contained, there is no `fairyfeedenchantfailcountoffset.dbss`,
+The format is self-contained: there is no `fairyfeedenchantfailcountoffset.dbss`,
 and no companion is needed to parse it.
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -32,8 +28,8 @@ All multi-byte values are little-endian.
 | ------- | ----- | ------- | --------------------------------------------- |
 | `+0x00` | u8[4] | magic   | `PABR` (ASCII)                                |
 | `+0x04` | u32   | count   | Number of records; observed 7 (see Notes)     |
-| `+0x08` | —     | records | `count` variable-length records, back to back |
-| end-12  | —     | trailer | 12-byte file trailer                          |
+| `+0x08` | -     | records | `count` variable-length records, back to back |
+| end-12  | -     | trailer | 12-byte file trailer                          |
 
 Observed file size is 147 bytes: 8-byte header, 127 bytes of records, 12-byte
 trailer.
@@ -43,7 +39,7 @@ trailer.
 | Offset  | Type | Field       | Observed | Notes                              |
 | ------- | ---- | ----------- | -------- | ---------------------------------- |
 | `+0x00` | u32  | entry_count | 1 or 2   | Number of entries that follow      |
-| `+0x04` | —    | entries     |          | `entry_count` × 11-byte entries    |
+| `+0x04` | -    | entries     |          | `entry_count` × 11-byte entries    |
 
 Records have no key of their own. Every entry in a record repeats the same
 `unknown_00`, and that value equals the record index plus one across all seven
@@ -61,7 +57,7 @@ records.
 Earlier versions of this doc called `unknown_00` `group_id`, `unknown_02`
 `sub_key`, `unknown_03` `value_a` and `unknown_07` `value_b`.
 
-The 11-byte entry is unaligned, `unknown_03` starts at an odd offset, so a parser
+The 11-byte entry is unaligned: `unknown_03` starts at an odd offset, so a parser
 must read the two u32 fields at `+0x03` and `+0x07` rather than assume 4-byte
 alignment.
 
@@ -75,8 +71,6 @@ and [zodiacsignindex.bss](zodiacsignindex_bss.md).
 | `+0x00` | u32  | reserved_a     | 0        | Always zero                           |
 | `+0x04` | u32  | end_of_records | 135      | Byte offset just past the last record |
 | `+0x08` | u32  | reserved_b     | 0        | Always zero                           |
-
----
 
 ## Decoded Table
 
@@ -98,8 +92,6 @@ The table splits cleanly in two. Records 0–1 carry two entries each, told apar
 by `unknown_02` 19 and 20, with `unknown_03` zero. Records 2–6 carry one entry
 with `unknown_02` zero and a non-zero `unknown_03`.
 
----
-
 ## Suggested UI Layout
 
 | Column | Type | Notes                                   |
@@ -108,8 +100,6 @@ with `unknown_02` zero and a non-zero `unknown_03`.
 
 The four `unknown_*` entry fields stay on each row for search and export but
 are not shown.
-
----
 
 ## Notes
 
@@ -131,8 +121,6 @@ are not shown.
   the Laila's Petal exchange describes no failure-count mechanic and lists no
   value of 100, 200, 300, or 350 on any of those paths. Player-facing
   documentation is therefore unlikely to resolve this file.
-
----
 
 ## Open Questions
 

@@ -33,8 +33,6 @@ handlers/
 
 Folders and files starting with `_` are treated as private implementation details.
 
----
-
 ## Recommended Folder Structure
 
 Use one public entry file per format, and keep implementation code in private folders.
@@ -84,8 +82,6 @@ handlers/
 └── _common/
 ```
 
----
-
 ## Public Entry File
 
 A public entry file should stay small.
@@ -101,8 +97,6 @@ register_dbss_handlers()
 ```
 
 The entry file exists so the plugin loader can discover the handler package.
-
----
 
 ## Registration File
 
@@ -128,8 +122,6 @@ def register_dbss_handlers() -> None:
 Offset companions register a factory call instead of a class (see
 [Offset Tables](#offset-tables)).
 
----
-
 ## Registration Keys
 
 Handlers can be registered by exact filename or by extension.
@@ -154,8 +146,6 @@ The **Show only handled tables** setting keeps a file in the tree when
 same order, built-in text and image views aside. A new handler shows up there
 with no second list to update. An extension key such as `.dbss` would count
 every file of that extension as handled, so register known formats by name.
-
----
 
 ## Handler Template
 
@@ -370,8 +360,6 @@ about 0.5 s on the 19,599-quest fixture, on top of the 0.35 s walk that builds
 the index on open. The default sort on `packed_quest_id` reads the IDs straight
 from the index instead, so opening the table parses only the first page.
 
----
-
 ## Unit Tests
 
 Every parsed handler should have a handler-local pytest file named `test_handler.py`.
@@ -561,7 +549,7 @@ Run all unit tests with:
 python -m pytest -v -s
 ```
 
-Pytest expands each spec into a separate test item and parses each handler once:
+Pytest expands each spec into a separate test item and parses each handler once.
 
 Use `case_id` from `tests.framework` for `pytest.mark.parametrize(..., ids=case_id)`
 so test output names stay readable instead of pytest's default `spec0`, `spec1`, `spec2`.
@@ -587,8 +575,6 @@ PAZ-Parser/handlers/_dbss/title/test_handler.py::test_title_dbss[TitleId = 3] PA
 
 `pytest --clean` leaves out the per-handler blocks and prints only failed tests
 and a pass/total line; run without it to see them.
-
----
 
 ## Checking a Handler from the Command Line
 
@@ -702,14 +688,12 @@ all tables" pass also stores each table's opening sort: the saved one, else
 
 ### When to Override `render_data_page`
 
-Override `render_data_page()` only when the format supports **parsing a single page
-without reading all records first**, for example a format with a stored offset table
+Override `render_data_page()` only when the format supports parsing a single page
+without reading all records first, for example a format with a stored offset table
 that lets you seek directly to each record.
 
 If `get_records()` is fast (small file, trivial parse), the base implementation is
 sufficient: it calls `get_records()` once, caches the result, and slices it per page.
-
----
 
 ## Streamed Preview Handlers
 
@@ -745,8 +729,6 @@ Rules:
 - `render_stream()` returns only the preview shell HTML.
 - Do not base64-encode the payload inside the handler.
 - The stream endpoint supports browser `Range` requests, but the current backend still decodes the full entry before slicing the response.
-
----
 
 ## Companion Files
 
@@ -803,8 +785,6 @@ For example:
 ```python
 companions.get("languagedata_en.loc")
 ```
-
----
 
 ## HTML Output Rules
 
@@ -917,8 +897,6 @@ bytes for `title.dbss`.
 
 The CLI `--records` table and JSON keep display-only fields, to show the tags.
 
----
-
 ## Raw Hex Preview
 
 Handlers should only render their parsed preview.
@@ -931,8 +909,6 @@ The main preview UI is responsible for switching between:
 Do not manually include raw hex tabs inside individual handlers.
 
 This keeps all handlers consistent.
-
----
 
 ## Shared Helpers
 
@@ -1067,8 +1043,6 @@ def buff_offset_handler() -> OffsetTableHandler:
   "N offset records" header with a `(records, lang) -> str` function
   (`journalquestoffset.dbss` counts its groups). The shared header text is in
   `_common/lang/`.
-
----
 
 ## Lookup Indexes
 
@@ -1298,11 +1272,9 @@ over every node (`build_teleport_nearest_node_index()` in
 `_dbss/teleport/parser.py`). `teleport_point_place()` turns it into `Marni's
 Lab (12 m)` for the `buff.dbss` Effect text of type 23.
 
----
-
 ## Icons
 
-`icon_cell(path)` renders an icon cell. The path is not fetched at parse time,
+`icon_cell(path)` renders an icon cell. The path is not fetched at parse time;
 the UI lazily resolves it against the PAZ entry map when the cell scrolls into
 view, so a handler only has to emit a correct path string.
 
@@ -1335,7 +1307,7 @@ cache folder (`paz/bdo_thumbnail_cache.py`), cleared when the meta version chang
 large texture therefore costs its read (about 1 s for a 14 MB file, mostly
 decompression) once per client version, not once per session.
 
-Icons are looked up by **kind and entity ID** through `_common/icon_index.py`,
+Icons are looked up by kind and entity ID through `_common/icon_index.py`,
 never by hand-written template:
 
 ```python
@@ -1346,11 +1318,11 @@ row["icon_path"] = icon_path(IconKind.ITEM, item_id)
 
 `icon_path()` tries two sources in order:
 
-1. **The lookup index for that kind**, named by `ICON_INDEXES`
+1. **The lookup index for that kind**: named by `ICON_INDEXES`
    (`IconKind.ITEM` reads `IndexKind.ITEM_ICON`, and so on). For items it is
    built from the level-0 records of `itemenchant.dbss`, which store each item's
    icon path inline.
-2. **Derivation from the ID**, when that kind declares one and the index has no
+2. **Derivation from the ID**: when that kind declares one and the index has no
    entry. `IconKind.ITEM` derives into the flat `product_icon_png` folder.
 
 Kinds are an `Enum` so a typo is a failure at import rather than a silently
@@ -1406,7 +1378,7 @@ still loading. Thumbnails are unchanged: the popup reads the file itself.
 
 ### Fixing an icon by hand
 
-`icon_path()` checks three tiers in order: **override, index, derivation.**
+`icon_path()` checks three tiers in order: override, index, derivation.
 
 Overrides live in `_common/icon_overrides.json`, keyed by `IconKind.value` then
 entity ID. They are repo data, not PAZ data, so they survive every index rebuild
@@ -1482,8 +1454,6 @@ Handlers that read an icon path stored in their own records, such as `pet.dbss`,
 `cashproduct.dbss`, `buff.dbss`, `buffsimply.bss` and `specialenchantitem.bss`, keep using that path directly. It is already authoritative,
 and for `itemenchant`, `quest`, `buffsimply` and `specialenchantitem` the index is built from it, so routing those
 through `icon_path()` would be circular.
-
----
 
 ## Localization
 
@@ -1586,8 +1556,6 @@ Rules:
 - Do not put translated labels directly in `render_records_page()`, because the HTML layer
   should be format-agnostic.
 
----
-
 ## Import Rules
 
 From a root handler:
@@ -1611,8 +1579,6 @@ from _texture.some_internal_file import ...
 
 If something is shared across formats, move it to `_common/`.
 
----
-
 ## Required `__init__.py`
 
 Every package folder should contain `__init__.py`.
@@ -1630,8 +1596,6 @@ _dbss/
 
 This keeps imports predictable when handlers are loaded dynamically.
 
----
-
 ## Loader Requirement
 
 The plugin loader should add `handlers/` to `sys.path` before importing plugins.
@@ -1648,8 +1612,6 @@ Without this, imports like this may fail:
 ```python
 from _dbss.registration import register_dbss_handlers
 ```
-
----
 
 ## Naming Conventions
 
@@ -1679,8 +1641,6 @@ class Handler(PreviewHandler):
     ...
 ```
 
----
-
 ## Error Handling
 
 Return a visible error fragment for expected missing data.
@@ -1692,8 +1652,6 @@ return '<div class="error">titleoffset.dbss companion not found.</div>'
 Do not raise for normal missing companion files.
 
 Raise only for actual programming errors.
-
----
 
 ## Checklist for a New Handler
 
@@ -1714,8 +1672,6 @@ Raise only for actual programming errors.
 15. Move reusable logic to `_common/` when another format needs it.
 
 > **Tip:** Press **Ctrl+R** in the GUI to reload all handlers without restarting the app. Changes to any file under `handlers/`, including private packages like `_dbss/`, take effect immediately. If a file is open on the Parsed tab, the preview re-renders automatically.
-
----
 
 ## Minimal New Format Example
 

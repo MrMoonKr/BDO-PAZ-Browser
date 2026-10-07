@@ -13,11 +13,9 @@ str_type: 54, str_id1: 40012          →  "Thank you! I really like this."
 str_type: 71, str_id1: 47, str_id3: 12 →  "Guile"
 ```
 
----
-
 ## File Layout
 
-The file is **zlib-compressed**:
+The file is zlib-compressed:
 
 | Offset | Type | Description                     |
 | ------ | ---- | ------------------------------- |
@@ -629,11 +627,11 @@ Group `26` (`"Dim Magic"`) has rows at both `2` and `6`.
   provides the English localized gift/confession response dialogue.
 - The file is located on disk at `<paz_root_parent>/ads/languagedata_en.loc`
   (one level above the PAZ folder) and is pre-loaded by the browser as a companion for all handlers.
-- To get a loc file you dont have go here:
-  http://nez-o-dn.playblackdesert.com/UploadData/ads_files copy the number and replace x here:
+- To get a loc file you don't have, copy the number from
+  http://nez-o-dn.playblackdesert.com/UploadData/ads_files and replace x with it here:
   http://nez-o-dn.playblackdesert.com/UploadData/ads/languagedata_ru/x/languagedata_ru.loc
 
-  and also the ru if you need another one.
+  For another language, replace the ru as well.
 
 ## Open Questions
 

@@ -11,8 +11,6 @@ character 47659 Alper
   -> ItemRepairer, ImportantNpc, Stable, Intimacy, Mating, Grocery
 ```
 
----
-
 ## Companion Files
 
 | File                            | Required | Role                                           |
@@ -20,8 +18,6 @@ character 47659 Alper
 | `characterspawntypeoffset.dbss` | Optional | Maps `character_id` to the record offset; the main file can be walked without it |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -37,8 +33,6 @@ All multi-byte values are little-endian.
 | ------- | ------ | ------------ | ------------------------------------------------------------ |
 | `+0x00` | u16    | character_id | Unique; equals the offset-table key                          |
 | `+0x02` | u8[46] | roles        | One byte per `SpawnType` value, each `0` or `1`; see below   |
-
----
 
 ## Enum Values
 
@@ -101,8 +95,6 @@ Checked in game: Wacky Toshi (`ChangeMarniStone`) exchanges Marni stones, and Mi
 
 The roles fit the NPCs they are set on: stable keepers carry `Stable` and `Mating`, arms dealers `ItemRepairer` and `Weapon`, node managers `Explorer`, and the Magnus entrance wells `AbyssOneEnterPosGuide`.
 
----
-
 ## characterspawntypeoffset.dbss
 
 A parallel lookup index with one entry per main-file record.
@@ -130,8 +122,6 @@ A parallel lookup index with one entry per main-file record.
 | `+0x04` | u32  | varies | Byte offset of end-of-records in this file |
 | `+0x08` | u32  | 0      |                                            |
 
----
-
 ## Suggested UI Layout
 
 | Column       | Type | Notes                                                        |
@@ -139,8 +129,6 @@ A parallel lookup index with one entry per main-file record.
 | Character ID | num  | `character_id`, right-aligned                                |
 | Name         | text | LOC `str_type=6`, `str_id1=character_id`; shown only when LOC is loaded |
 | One per role | num  | a green ✓ when set, else a red ✗; header is the handler's `roleLabels` name (see Notes), else the English Navi label, else the `SpawnType` name; the name and value are in the tooltip; only roles set on some row are shown |
-
----
 
 ## Notes
 

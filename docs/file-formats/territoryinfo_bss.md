@@ -16,8 +16,6 @@ territory 0  발레노스 자치령 -> "Balenos"   nation 칼페온 공화국 ->
   crown 23381 Silver Mane Horse Crown, armor 23386 Silver Mane's Armor
 ```
 
----
-
 ## Companion Files
 
 | File                  | Required | Role                                                                                     |
@@ -26,8 +24,6 @@ territory 0  발레노스 자치령 -> "Balenos"   nation 칼페온 공화국 ->
 | `languagedata_en.loc` | Optional | LOC type 0 names of the crown and armor items                                            |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -45,8 +41,6 @@ The shared PABR string table layout (`_common/pabr_strings.py`).
 A row is `88 + 4 * list_count` bytes. The rows tile `[0x08, table_start)`
 exactly (12 rows of 88 bytes and 2 of 92 on client 3458), so a parser walks
 them in order and fails when they do not end at `table_start`.
-
----
 
 ## Record Structure
 
@@ -92,8 +86,6 @@ territory realms) both refs point at one entry. The Great Ocean (territory 5) st
 `New_UI_Common_forLua/Widget/WorldMap/territory/`; every other icon is under
 `Renewal/ETC/WordMap/`. Paths keep mixed case, so the handler lowercases them.
 
----
-
 ## Suggested UI Layout
 
 | Column     | Type | Notes                                                                    |
@@ -109,8 +101,6 @@ territory realms) both refs point at one entry. The Great Ocean (territory 5) st
 
 `unknown_*` fields, `nation_hash` and the large icon stay out of the table.
 
----
-
 ## Notes
 
 - iDevelopThings' [bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor)
@@ -122,8 +112,6 @@ territory realms) both refs point at one entry. The Great Ocean (territory 5) st
 - The `territory_key` of `dropuimaincategoryinfo.bss` (see
   [dropuihuntinggroundinfo](dropuihuntinggroundinfo_bss.md)) is the same LOC
   type 12 key.
-
----
 
 ## Open Questions
 

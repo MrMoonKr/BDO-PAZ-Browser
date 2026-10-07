@@ -12,8 +12,6 @@ employee_name_id: 34 -> name: 필그레이브
 LOC type=71 id1=47 id3=12 -> Guile
 ```
 
----
-
 ## Companion Files
 
 | File                      | Required | Role                                                 |
@@ -24,8 +22,6 @@ LOC type=71 id1=47 id3=12 -> Guile
 Other extracted `employee*` files may reference the same employee ID/name namespace. `employeespawnposition.dbss` keys (1 to 5, 41 to 50) fall in this table's ID range but are spawn position keys, not name IDs (see [employeespawnposition](employeespawnposition_dbss.md)); larger employee files need separate reverse-engineering before their foreign-key fields can be confirmed.
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -42,8 +38,6 @@ The first record starts immediately at `+0x04`. Records are variable length and 
 | Offset  | Type               | Field   | Notes                     |
 | ------- | ------------------ | ------- | ------------------------- |
 | `+0x04` | Name Record[count] | records | Variable-length name rows |
-
----
 
 ## Record Structure
 
@@ -79,16 +73,12 @@ Required offset index for `employeename.dbss`.
 
 To read a name record: seek to `offset` in `employeename.dbss`, read `size` bytes, and parse the Name Record structure above.
 
----
-
 ## Suggested UI Layout
 
 | Column            | Type | Notes                                          |
 | ----------------- | ---- | ---------------------------------------------- |
 | Employee Name ID  | num  | `employee_name_id`                             |
 | Name              | text | LOC name, falling back to the inline Korean    |
-
----
 
 ## Notes
 
@@ -97,8 +87,6 @@ To read a name record: seek to `offset` in `employeename.dbss`, read `size` byte
 - Every observed `unknown_08` and trailing `terminator` is zero. Earlier versions of this doc called `unknown_08` `unknown_0`.
 - English LOC matches were confirmed for sampled IDs: `47` -> Guile, `34` -> Pilgrave, `15` -> Neil Moss, `1` -> Philav, `60` -> Tails.
 - Earlier versions of this doc read the `employeespawnposition.dbss` keys `1`-`5` and `41`-`50` as IDs from this table. They are spawn position keys that `employeespawninfo.dbss` lists per sailor character; the overlap is by value only.
-
----
 
 ## Open Questions
 

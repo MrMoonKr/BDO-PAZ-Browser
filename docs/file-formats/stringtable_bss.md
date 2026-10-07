@@ -12,8 +12,6 @@ GAME  0x4D282741  LUA_WIDGET_TOWNNPCNAVI_NPCTYPETEXT_6  "창고"
       -> LOC type 37, str_id1=0x4D282741, str_id2=1  "Storage"
 ```
 
----
-
 ## Companion Files
 
 | File                  | Required | Role                                                       |
@@ -21,8 +19,6 @@ GAME  0x4D282741  LUA_WIDGET_TOWNNPCNAVI_NPCTYPETEXT_6  "창고"
 | `languagedata_en.loc` | Optional | Translated text, type `37` keyed by the row hash and sheet |
 
 All multi-byte values are little-endian unless noted otherwise.
-
----
 
 ## File Layout
 
@@ -38,8 +34,6 @@ string in the table is UTF-16LE (`is_wide=1`).
 | varies  | table   | string_table       | Counted string table; `95,195` strings on client 3458        |
 | EOF - 8 | u32     | string_table_start | Where the last sheet ends (`0xC6DD8` on client 3458)         |
 | EOF - 4 | u32     | zero               | Always `0`                                                   |
-
----
 
 ## Record Structure
 
@@ -65,8 +59,6 @@ is stored once, in the order the sheets first use it (sheet name, then key
 and value of each row), and later uses point back. No key repeats within a
 sheet; 6,553 values reuse an earlier text such as `"확인"`.
 
----
-
 ## Sheets
 
 The sheet order is fixed on client 3458. `loc str_id2` is the LOC type `37`
@@ -86,8 +78,6 @@ The sheet order is fixed on client 3458. `loc str_id2` is the LOC type `37`
 This settles which LOC type `37` `str_id2` is which sheet (the old
 "Type 37 sheet names" question in
 [`languagedata_loc.md`](languagedata_loc.md)).
-
----
 
 ## LOC Join
 
@@ -131,8 +121,6 @@ The client reads these through `PAGetString(Defines.StringSheet_GAME, key)`,
 so a script's `StringSheet_<name>` picks the sheet and with it the LOC
 `str_id2`.
 
----
-
 ## Suggested UI Layout
 
 One table over all sheets, one row per string row, in `key_hash` order (the
@@ -144,8 +132,6 @@ file does not sort its rows).
 | Sheet  | text | Sheet name from `name_ref`                                                     |
 | Key    | text | `key_ref`                                                                      |
 | Text   | text | LOC type `37` with the sheet's `str_id2` (`str_id3` 0, then 1), else the Korean `value_ref`; in its game colours |
-
----
 
 ## Notes
 
@@ -164,8 +150,6 @@ file does not sort its rows).
   FNV-1a, Jenkins `hashlittle` (seed 0 and `0x7C`), Murmur3 (seed 0), djb2,
   sdbm, ELF and the Java string hash. Nothing needs the function, since every
   key is stored with its hash.
-
----
 
 ## Open Questions
 

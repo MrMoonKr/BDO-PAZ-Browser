@@ -16,8 +16,6 @@ Korean: 돌멘게 공예가
 Requirement: Kill Stoneback Crabs
 ```
 
----
-
 ## Companion Files
 
 - `titleoffset.dbss` - required. Provides `title_id -> (offset, size)` block

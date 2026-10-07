@@ -15,8 +15,6 @@ character 2101  kind 5 -> Velia 4
                           model 02_balenos/velia/balenos_velia_str_house_05.pam
 ```
 
----
-
 ## Companion Files
 
 | File                         | Required | Role                                                  |
@@ -25,8 +23,6 @@ character 2101  kind 5 -> Velia 4
 | `languagedata_en.loc`        | Optional | Object names via type `6`                             |
 
 All multi-byte values are little-endian. Strings are a u64 byte length followed by ASCII (or UTF-16-LE, where noted) text with no terminator; the high u32 of the length is always `0`.
-
----
 
 ## File Layout
 
@@ -63,8 +59,6 @@ PABR index with a 10-byte row, because the key is a u16.
 | `+0x00` | u32  | reserved_a  | `0`      | Observed zero                            |
 | `+0x04` | u32  | end_of_rows | `51,238` | Byte offset after rows; `8 + count * 10` |
 | `+0x08` | u32  | reserved_b  | `0`      | Observed zero                            |
-
----
 
 ## Record Structure
 
@@ -153,8 +147,6 @@ item 58011 [Event] Fence      -> places 2053, icon 06_housing/00058003.dds
 character 2053 icon           -> ui_texture/icon/new_icon/03_etc/06_housing/00058003.dds
 ```
 
----
-
 ## Object Kinds
 
 Grouped by model folder; the kind numbers are observed, not named by the client.
@@ -171,8 +163,6 @@ Grouped by model folder; the kind numbers are observed, not named by the client.
 | `10` to `15`, `17` to `19`, `22` to `26`, `29`, `35` | 1 to 23 each | One guild tower or siege structure type each |
 | `4`, `6`, `7`, `20`, `21`, `27`, `28`, `34`, `36`, `37` | 4 to 16 each | Citadel sets, mines, barricade doors, mixed siege objects, mansion bases |
 
----
-
 ## Suggested UI Layout
 
 | Column       | Type | Notes                                                      |
@@ -186,8 +176,6 @@ Grouped by model folder; the kind numbers are observed, not named by the client.
 | Model        | text | `model_path`                                               |
 
 The handler parses only the record prefix. The inline Korean house names are not used as a name fallback, because reaching them means walking the hull geometry (see [Open Questions](#open-questions)).
-
----
 
 ## Notes
 

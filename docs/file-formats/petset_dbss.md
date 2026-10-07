@@ -11,8 +11,6 @@ Example:
 count: 0
 ```
 
----
-
 ## Companion Files
 
 | File                | Required | Role                                                     |
@@ -20,8 +18,6 @@ count: 0
 | `petsetoffset.dbss` | Optional | Empty offset companion; currently mirrors zero row count |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -33,8 +29,6 @@ All multi-byte values are little-endian.
 
 No record stream follows when `count = 0`.
 
----
-
 ## `petsetoffset.dbss`
 
 ### Header (4 bytes)
@@ -45,14 +39,10 @@ No record stream follows when `count = 0`.
 
 No offset records follow when `count = 0`.
 
----
-
 ## Suggested UI Layout
 
 No table columns are needed while the file remains empty. A parsed preview may show
 an empty-state message with the zero count.
-
----
 
 ## Notes
 

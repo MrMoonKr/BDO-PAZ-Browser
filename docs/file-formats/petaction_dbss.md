@@ -12,8 +12,6 @@ name_kr:   기쁨 (LOC type 19: Joy)
 icon_path: New_Icon/08_Servant_Skill/02_Pet/Action_0_Like.dds
 ```
 
----
-
 ## Companion Files
 
 | File                   | Required | Role                                               |
@@ -23,8 +21,6 @@ icon_path: New_Icon/08_Servant_Skill/02_Pet/Action_0_Like.dds
 
 All multi-byte values are little-endian.
 
----
-
 ## File Layout
 
 `petaction.dbss` has no standalone header or record count. Records start at byte `0x0000`; use `petactionoffset.dbss` to enumerate them.
@@ -32,8 +28,6 @@ All multi-byte values are little-endian.
 | Offset  | Type | Field   | Notes                                         |
 | ------- | ---- | ------- | --------------------------------------------- |
 | `+0x00` | row  | records | Variable-size record stream; observed 10 rows |
-
----
 
 ## Record Structure
 
@@ -52,8 +46,6 @@ Records are variable size because both strings are. Observed records are 146-154
 Both strings use the u64 length prefix read by `read_prefixed_at` in `_common/prefixed_string.py`.
 
 Earlier versions of this doc read the `name_kr` length as a u32 `action_group` (2, or 4 for action 7) and the name's UTF-16 code units as one or two `icon_hash` values (`0xC068AE30` is `기쁨` read as a u32). That is why action 7, whose name `웅크리기` has four characters, looked like an "extended hash record".
-
----
 
 ## Observed Records
 
@@ -74,8 +66,6 @@ Earlier versions of this doc read the `name_kr` length as a u32 `action_group` (
 
 The file is byte-identical in the pre-2026-09-27 fixture and the 2026-09-27 client.
 
----
-
 ## petactionoffset.dbss
 
 Provides keyed lookup into `petaction.dbss` and supplies the record count.
@@ -94,8 +84,6 @@ Provides keyed lookup into `petaction.dbss` and supplies the record count.
 | `+0x04` | u32  | record_offset | Absolute byte offset in `petaction.dbss` |
 | `+0x08` | u32  | record_size   | Size of the record in bytes              |
 
----
-
 ## Suggested UI Layout
 
 | Column      | Type | Notes                             |
@@ -104,16 +92,12 @@ Provides keyed lookup into `petaction.dbss` and supplies the record count.
 | Icon        | Icon | Rendered from `icon_path`         |
 | Action Name | text | LOC type 19 name; without LOC the Korean `name_kr`, then the icon filename suffix |
 
----
-
 ## Notes
 
 - `petaction.dbss` itself starts with action ID 0, not a count. Always use `petactionoffset.dbss` to enumerate records.
 - Both strings are UTF-16-LE and are not null-terminated. A fixed 12-byte zero trailer follows the icon path.
 - The `magic` value `0xDEBA1DCD` appears in every record.
 - Action names resolve through `languagedata_en.loc` with `str_type=19` and `str_id1=action_id`. The icon filename suffix is an asset name and does not always match the UI label.
-
----
 
 ## Open Questions
 

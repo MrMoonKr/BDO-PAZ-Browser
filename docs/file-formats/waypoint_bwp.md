@@ -10,15 +10,11 @@ mapdata_realexplore2.bwp
   waypoint 1880 hidden_field_goduvillage_2  links 1857 (field(goduvillage), Godu Village)
 ```
 
----
-
 ## Companion Files
 
 None. The string table at the end holds the names.
 
 All multi-byte values are little-endian unless noted otherwise.
-
----
 
 ## File Layout
 
@@ -40,8 +36,6 @@ Sections follow each other with no padding.
 | EOF - 4            | u32        | zero               | Always `0`                                                   |
 
 866 of the files are empty: `waypoint_count`, `link_count`, `group_count` and `route_count` are all `0`.
-
----
 
 ## Record Structure
 
@@ -84,8 +78,6 @@ Links are directed. `mapdata_realexplore2.bwp` stores each one both ways (1,249 
 | `+0x0C` | u32[] | waypoint_keys | Waypoint keys in route order, `point_count` of them |
 | end     | u32   | unknown       | `0` on all 899 routes                           |
 
----
-
 ## Enum Values
 
 ### Property Values
@@ -100,8 +92,6 @@ Named after the XML `Property` attribute; they read as bit flags, with `all` set
 | `0x10` | ground | 287,278               |
 | `0x40` | water  | 7,023                 |
 | `0xFF` | all    | 9,327                 |
-
----
 
 ## Suggested UI Layout
 
@@ -118,8 +108,6 @@ One row per waypoint.
 | Sub Waypoint | text | `is_sub_waypoint` as Yes/No                              |
 | Links        | text | Keys linked in either direction, ascending               |
 
----
-
 ## Notes
 
 - Checked against the XML exports: in `mapdata_realexplore2`, every waypoint (key, name, position, property, both flags) and all 2,498 links match in file order; all 899 routes of `mapdata_realnpc_route` match (key, name, waypoint keys). The two one-waypoint graphs `mapdata_realexplore2___town(hausher)` and `mapdata_realexplore2___blazing_battlefield` each hold one group and match too.
@@ -129,8 +117,6 @@ One row per waypoint.
 - Every route ends in a u32 that is `0` on all 899 routes. The XML `Route` element has nothing besides `Key`, `Name` and `RouteWaypointList` that could map to it, so it stays `unknown`.
 - The largest graphs are `mapdata_realexplore.bwp` (196,367 waypoints), `mapdata_realnpc.bwp` (18,550), `mapdata_realnpc_route.bwp` (9,383) and `mapdata_realmonster_patrol.bwp` (7,607).
 - 12 `mapdata_instancedungeon*.bwp` templates (13, 46, 281 or 728 bytes) start with a small count (`00`, `01`, `04` or `0B 00 00 00`) instead of `PABR`. Their XML is empty too, so they are left unread: the preview shows an empty table that says so. A test records each one's size and fails when one grows or turns into a PABR graph, the signal to look at its layout again.
-
----
 
 ## Open Questions
 

@@ -15,8 +15,6 @@ skill 1761 "Grave Digging III"
   rank chain  1759 I -> 1760 II -> 1761 III -> 1762 IV
 ```
 
----
-
 ## Companion Files
 
 | File                     | Required | Role                                                  |
@@ -24,11 +22,9 @@ skill 1761 "Grave Digging III"
 | `skillsimplyoffset.dbss` | Required | `skill_key → (offset, size)` index into this file     |
 | `languagedata_en.loc`    | Optional | Skill names (type `10`) and class names (type `21`)   |
 
-The skill key is the one shared by the whole skill cluster, see
+The skill key is the one shared by the whole skill cluster; see
 [`skill.dbss` Skill Keys](skill_dbss.md#skill-keys). All multi-byte values are
 little-endian.
-
----
 
 ## File Layout
 
@@ -47,8 +43,6 @@ Unlike `skilloffset.dbss` this index has no magic and no trailer: a u32 count
 | `+0x04` | u32      | count   | Number of records; `30424`, the `skill.dbss` key set exactly    |
 | `+0x08` | ...      | records | Back to back, no repeated key between them                      |
 | end     | 12 bytes | trailer | Empty string table: `u32 0`, `u32` end of the records, `u32 0`  |
-
----
 
 ## Record Structure
 
@@ -248,8 +242,6 @@ while an Elvia weapon buff is active: the buff comes from orbs that drop in
 Elvia, lasts 10 minutes, and enables the class's Elvia skill. Every other
 record ends in `0xCA`, so the byte is not a plain end marker.
 
----
-
 ## Suggested UI Layout
 
 Opens sorted by `skill_key` (Skill No, then Level); the index order is
@@ -272,8 +264,6 @@ arbitrary.
 | Previous Rank    | text | `previous_rank_no` as skill name                                   |
 | Exclusive Skills | list | `exclusive_skill_nos` as skill names                               |
 
----
-
 ## Notes
 
 - `0x6016CFF7` also sits in the `skilltype.dbss` configuration of 18,744
@@ -290,8 +280,6 @@ arbitrary.
   from "Fireball IV" or "Lightning V". The tooltip's "Effect Details" lines
   are LOC type `46`, keyed by 32-bit IDs that appear in none of the skill
   tables; the class action chart (`.paac`) is the likely source.
-
----
 
 ## Open Questions
 

@@ -13,8 +13,6 @@ node_key=65 -> Wale Farm (Normal, contribution 1, manager family 40605 Wale)
 
 Field names for several head fields and the `ExplorationNodeType` mapping follow [iDevelopThings/bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor) (`FORMATS.md`, section 12), checked against the bytes of the current client file below.
 
----
-
 ## Companion Files
 
 | File                  | Required | Role                                                                  |
@@ -22,8 +20,6 @@ Field names for several head fields and the `ExplorationNodeType` mapping follow
 | `languagedata_en.loc` | Optional | Resolves node names/descriptions (type 29) and NPC names (type 6)     |
 
 All multi-byte values are little-endian unless noted otherwise.
-
----
 
 ## File Layout
 
@@ -38,8 +34,6 @@ All multi-byte values are little-endian unless noted otherwise.
 | EOF-4   | u32     | zero_trailer       | Observed `0`                                                       |
 
 Walking the records with this layout ends at `157283`, the footer ends at `157953` (equal to `string_table_start`) and the string table ends exactly at `EOF-8`, so the file tiles with no gaps.
-
----
 
 ## Record Structure
 
@@ -146,8 +140,6 @@ Some nodes appear twice (Castle Ruins 324 with index 21 and 153, Bloody Monaster
 
 Two main nodes have `contribution > 0` but no family: Duvencrune 1651 (1 CP, the live city is 1649) and `UnKnown` 1706 (3 CP).
 
----
-
 ## Suggested UI Layout
 
 | Column         | Type | Notes                                        |
@@ -165,8 +157,6 @@ Two main nodes have `contribution > 0` but no family: Duvencrune 1651 (1 CP, the
 | Connections    | num  | Number of worldmap links in `mapdata_realexplore2.bwp` |
 | Connected Nodes | text | Linked node names as in Node Name, first six then `... (+N)`; LOC type 29 or the bare key for a waypoint with no record here |
 
----
-
 ## Notes
 
 - Cross-checked against an independent node dataset (849 nodes, keyed by the same `node_key`): `contribution` matches the node's CP cost on all 849, `is_sub_node` matches on 847, and every node that dataset marks as a city has `node_kind` `1` or `2`. The exceptions are Mining site 156 and Fish Drying Yard 2 (1044), which the file flags as sub-nodes, and Oquilla's Eye 1727, which is kind `City` there but not a city in the dataset.
@@ -178,8 +168,6 @@ Two main nodes have `contribution > 0` but no family: Duvencrune 1651 (1 CP, the
 - The node links are not in this file; they are in [`mapdata_realexplore2.bwp`](waypoint_bwp.md), keyed by the same node keys. There each plant zone has exactly one link, its parent node, which is not always the `manager_family_id` main node: Specialties 1563 links to Arehaza (1380), its family's main node is Areha Palm Forest (1379).
 - On client 3458, 1,076 of the 1,080 nodes have links. The four without are Tiamat Sea (2114), Oceanus Sea (2113), Red Battlefield (1378) and Pit of the Undying (1745). Five links go to waypoints with no record here, for example Runn Gateway Intersection (1313) to 1320 and 1323 (`field(shakatu_area)`, `field(atumach)`); they have no LOC type 29 name either. The links match the in-game worldmap for the nodes I checked: Velia links to Bartali, Finto and Loggia Farms, Forest of Plunder, Coastal Cave, the two investment banks, Luivano Island and Velia Beach; Western Guard Camp to Western Gateway, Bandit's Den Byway, Imp Cave and Toscani Farm.
 - The record anchor used by older tooling (`node_key` repeated at `+0x06`) still finds the correct 1003 offsets, but the exact layout above makes the scan unnecessary.
-
----
 
 ## Open Questions
 

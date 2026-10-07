@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Defines one record per pet type/tier combination, covering icon path, species, tier, equip-skill slots, and several numeric parameters. Each record represents a specific pet at a specific tier (e.g. "Dog variant #40 at Tier 4"). Companion `petoffset.dbss` enables O(1) lookup by pet ID.
+Defines one record per pet type/tier combination, covering icon path, species, tier, equip-skill slots, and several numeric parameters. Each record is a specific pet at a specific tier (e.g. "Dog variant #40 at Tier 4"). Companion `petoffset.dbss` enables O(1) lookup by pet ID.
 
 Example:
 
@@ -12,8 +12,6 @@ equip_skill_slots: 4   unknown_12: 4
 icon: New_UI_Common_forLua\Window\Stable\Pet\GoldStar_Pet_0004.dds
 ```
 
----
-
 ## Companion Files
 
 | File             | Required | Role                                                     |
@@ -22,8 +20,6 @@ icon: New_UI_Common_forLua\Window\Stable\Pet\GoldStar_Pet_0004.dds
 | `petgrade.dbss`  | Optional | `(species, variant) → grade` per pet type                |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -47,32 +43,30 @@ Each record is stored as `[u16 key_prefix][data_bytes]`. The `key_prefix` (2 byt
 | `+0x00` | u16  | pet_id            | Unique record key; equal to the preceding 2-byte file prefix                            |
 | `+0x02` | u8   | variant           | Sub-variant within the species (1–57 observed)                                          |
 | `+0x03` | u8   | species           | Pet family/model code                                                                   |
-| `+0x04` | u8   | —                 | Always 0; reserved                                                                      |
+| `+0x04` | u8   | -                 | Always 0; reserved                                                                      |
 | `+0x05` | u8   | tier              | Tier (0 = lowest, 4 = highest for regular pets)                                         |
-| `+0x06` | u8   | —                 | Always 1; reserved                                                                      |
+| `+0x06` | u8   | -                 | Always 1; reserved                                                                      |
 | `+0x07` | u8   | max_level         | Usually 10; Airiss variants have 20, 30, or 50                                          |
-| `+0x08` | u32  | —                 | Always `0x90000000`; purpose unknown                                                    |
-| `+0x0C` | u8   | —                 | Always 1; reserved                                                                      |
-| `+0x0D` | u16  | —                 | Always 0; reserved                                                                      |
+| `+0x08` | u32  | -                 | Always `0x90000000`; purpose unknown                                                    |
+| `+0x0C` | u8   | -                 | Always 1; reserved                                                                      |
+| `+0x0D` | u16  | -                 | Always 0; reserved                                                                      |
 | `+0x0F` | u8   | equip_skill_slots | Number of equip skill slots; = `tier + 1` for regular pets (max 4); Airiss have up to 9 |
 | `+0x10` | u16  | unknown_10        | `0` or `256` (355 records, mostly species 1); not padding                               |
 | `+0x12` | u8   | unknown_12        | 97 distinct values; not reliably equal to the icon filename number                      |
-| `+0x13` | u8   | —                 | Always 0; reserved                                                                      |
+| `+0x13` | u8   | -                 | Always 0; reserved                                                                      |
 | `+0x14` | u32  | unknown_14        | 0 for many species, non-zero for others; about 140 distinct values                      |
 | `+0x18` | u32  | icon_path_len     | Byte length of the icon path string (no null terminator)                                |
-| `+0x1C` | u32  | —                 | Always 0; reserved                                                                      |
+| `+0x1C` | u32  | -                 | Always 0; reserved                                                                      |
 
 Earlier versions of this doc called `unknown_14` `type_param`, and first labeled `unknown_12` `dds_variant`. In the footer below, `unknown_00` was six `const_*` fields (`constants` in the parser), `unknown_2a` was `upgrade_table` and `unknown_53` was `tier_score` (`grade_score` in the parser). The parser called `unknown_10` `reserved_10`.
 
 #### Icon Path (variable, `icon_path_len` bytes)
 
-Stored immediately after the fixed header. **Not null-terminated.** Length is given by `icon_path_len`.
+Stored immediately after the fixed header, in ASCII. **Not** null-terminated. Length is given by `icon_path_len`.
 
 ```text
 New_UI_Common_forLua\Window\Stable\Pet\GoldStar_Pet_0004.dds
 ```
-
-The icon path is ASCII-encoded with no null terminator; its byte length is given by `icon_path_len`.
 
 #### Fixed Footer (94 bytes, immediately after the icon path)
 
@@ -81,24 +75,22 @@ The icon path is ASCII-encoded with no null terminator; its byte length is given
 | `+0x00` | u32 × 9  | unknown_00      | Always 30000, 0, 15000, 0, 30000, 0, 500000, 1000000, 2       |
 | `+0x24` | u16      | acquire_type_id | Key into `petequipskillaquire.dbss`; 0 = none; varies by tier |
 | `+0x26` | u16      | equip_skill_id  | Pet equip-skill identifier; varies by pet type and tier       |
-| `+0x28` | u16      | —               | Always 0; padding                                             |
+| `+0x28` | u16      | -               | Always 0; padding                                             |
 | `+0x2A` | u32 × 10 | unknown_2a      | Usually ten times 1,000,000; see Open Questions               |
-| `+0x52` | u8       | —               | Always 0                                                      |
+| `+0x52` | u8       | -               | Always 0                                                      |
 | `+0x53` | u8       | unknown_53      | Mostly 11, 16 or 17, loosely by tier; see Open Questions      |
-| `+0x54` | u8       | —               | Always 0                                                      |
-| `+0x55` | u8       | —               | Always 26; purpose unknown                                    |
-| `+0x56` | u8       | —               | Always 0                                                      |
-| `+0x57` | u8       | —               | Always 1; purpose unknown                                     |
-| `+0x58` | u8       | —               | Always 1; purpose unknown                                     |
-| `+0x59` | u8 × 5   | —               | Always 0; padding                                             |
+| `+0x54` | u8       | -               | Always 0                                                      |
+| `+0x55` | u8       | -               | Always 26; purpose unknown                                    |
+| `+0x56` | u8       | -               | Always 0                                                      |
+| `+0x57` | u8       | -               | Always 1; purpose unknown                                     |
+| `+0x58` | u8       | -               | Always 1; purpose unknown                                     |
+| `+0x59` | u8 × 5   | -               | Always 0; padding                                             |
 
 > Footer offsets are relative to the byte immediately following the icon path.
 
----
-
 ## petoffset.dbss
 
-Provides O(1) lookup of any pet record by `pet_id`. Records are **not** stored in file order, use the offset to locate any record.
+Provides O(1) lookup of any pet record by `pet_id`. Records are **not** stored in file order; use the offset to locate any record.
 
 ### Header (4 bytes)
 
@@ -113,13 +105,11 @@ Provides O(1) lookup of any pet record by `pet_id`. Records are **not** stored i
 | `+0x00` | u16  | pet_id      | Matches `pet_id` in the main record                                             |
 | `+0x02` | u32  | data_offset | Absolute byte offset in `pet.dbss` to the **data** (past the 2-byte key prefix) |
 | `+0x06` | u16  | data_size   | Size of data in bytes (excluding the 2-byte key prefix)                         |
-| `+0x08` | u16  | —           | Always 0; padding                                                               |
+| `+0x08` | u16  | -           | Always 0; padding                                                               |
 
 `record_start = data_offset - 2` gives the position of the 2-byte key prefix in the file.  
 `total_record_size = data_size + 2`.  
 The parser reads `data_size` and the padding as one u32 (`parse_bare_offset_rows()`).
-
----
 
 ## Suggested UI Layout
 
@@ -138,8 +128,6 @@ The parser reads `data_size` and the padding as one u32 (`parse_bare_offset_rows
 
 Rows are sorted by `pet_id` ascending for stable browsing.
 
----
-
 ## Notes
 
 - Total file size = 4 + Σ(2 + `data_size`) over all records: 332,420 bytes for the 1,782 records before the 2026-09-27 client update, 376,078 bytes for 2,009 records after it.
@@ -152,8 +140,6 @@ Rows are sorted by `pet_id` ascending for stable browsing.
 - The footer's `unknown_00` block (30000, 15000, 30000, 500000, 1000000, 2 and three zeros) is identical in every record.
 - `acquire_type_id` values 301–304 appear for regular pets and correspond to tiers 0–4 (tier 0 → 301, tier 4 → 304); lower values (1, 2, 3, 4) and mid-range values (101–104, 201–204, 401–404, 501–504) appear for specific sub-groups. 501–504 (21 pets, in both the pre-2026-09-27 and the 2026-09-27 files) have no row in `petequipskillaquire.dbss`.
 - 21 records have no `petgrade.dbss` row for their `(species, variant)` and show no grade.
-
----
 
 ## Open Questions
 

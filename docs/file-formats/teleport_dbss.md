@@ -15,8 +15,6 @@ section 0, key 277   x -1460010  y -6936  z 1419360
   worldmap node Flower-sunken Swamp lies within 1 m
 ```
 
----
-
 ## Companion Files
 
 | File                   | Required | Role                                                        |
@@ -26,8 +24,6 @@ section 0, key 277   x -1460010  y -6936  z 1419360
 | `buff.dbss`            | Optional | The type 23 buffs that teleport to each point, through the `TELEPORT_BUFFS` lookup index |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -72,8 +68,6 @@ It walks exactly to its last byte on client 3458 (11,206 bytes).
 return stones on the empty sections 3 and 4, whose destination is resolved
 elsewhere. 22 of the 621 records are used by no buff.
 
----
-
 ## `teleportoffset.dbss`
 
 The same sections as `teleport.dbss`, in the same order, each a counted list
@@ -103,8 +97,6 @@ Read as a key, the section 0 rows point 14.5 km (median) away from the places
 the buff texts name, against 73 m through the inline keys, so readers look
 records up by the inline `key` and do not need this file.
 
----
-
 ## Suggested UI Layout
 
 | Column        | Type | Notes                                                 |
@@ -115,8 +107,6 @@ records up by the inline `key` and do not need this file.
 | Nearest Node  | text | Closest worldmap node by X / Z (LOC type 29 name)     |
 | Distance      | num  | Metres to that node; large on points inside instances |
 | Used By       | text | The buffs that teleport here, each as the item that applies it, else its English text, else its Korean name; with icons, item names in their grade colour, buff IDs on hover |
-
----
 
 ## Notes
 
@@ -131,8 +121,6 @@ records up by the inline `key` and do not need this file.
   5 m of a teleport point.
 - `magnuseasyteleport.bss` (1.1 KB, PABR) holds the Abyss One Magnus teleport
   map; not read here.
-
----
 
 ## Open Questions
 

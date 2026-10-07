@@ -14,8 +14,6 @@ item 761880  skill_key_1 = 0xBA430001  (itemenchant.dbss +0xCC)
        buff_ids 48723, 48724, 48725, 48726, 48727, 48728  (buff.dbss)
 ```
 
----
-
 ## Companion Files
 
 | File                  | Required | Role                                                            |
@@ -26,8 +24,6 @@ item 761880  skill_key_1 = 0xBA430001  (itemenchant.dbss +0xCC)
 | `languagedata_en.loc` | Optional | Skill names and descriptions, LOC type `10`, `str_id1 = skill_no`; each rank's own text, LOC type `13`, `str_id1 = skill_no`, `str_id2 = level` |
 
 All multi-byte values are little-endian.
-
----
 
 ## Skill Keys
 
@@ -45,8 +41,6 @@ not levels, and [`skillgroup.bss`](skillgroup_bss.md) lists them.
 The first key in the index, `0xDEAD0001`, is skill `57005` level 1,
 "[Event] Energy of Happiness". It looks like a sentinel but is an ordinary
 skill; `0xDEAC0001` next to it is skill `57004`, "Grim Reaper's Fury".
-
----
 
 ## File Layout
 
@@ -81,8 +75,6 @@ The records tile the file: each starts 4 bytes after the previous one ends
 
 Strings are a `u64` count followed by that many units: UTF-16LE for text and
 scripts, single-byte ASCII for `name`. There is no terminator.
-
----
 
 ## Record Structure
 
@@ -163,8 +155,6 @@ rank `i` listing rank `i + 1`.
 the Core enhances ("Core: Soul Shower" -> "Soul Shower III"). In 154 of the
 155 cases that base skill lists the Core in its `next_skill_keys`.
 
----
-
 ## Suggested UI Layout
 
 Opens sorted by `skill_key` (Skill No, then Level); the index order is arbitrary
@@ -184,8 +174,6 @@ and starts with event skills.
 | Next Skills | list | `next_skill_keys` as skill names, in their game colours (Prime skills orange) |
 | Base Skill  | text | `base_skill_keys` as skill name, in its game colours                  |
 | Script      | text | `script`                                                              |
-
----
 
 ## Notes
 
@@ -233,8 +221,6 @@ and starts with event skills.
 - `skillsimply.dbss` has exactly the same 30,424 keys and holds the learning
   rules (class, level, skill points, prerequisites), see
   [`skillsimply.dbss`](skillsimply_dbss.md).
-
----
 
 ## Open Questions
 

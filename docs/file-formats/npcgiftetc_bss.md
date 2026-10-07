@@ -10,8 +10,6 @@ Example:
 PABR config: unknown_04 / 06 / 08 / 0c / 18 = 5 / 5 / 1000 / 50000000 / 20
 ```
 
----
-
 ## File Layout
 
 All multi-byte values are little-endian.
@@ -30,8 +28,6 @@ The file is exactly 32 bytes in the observed client data. Unlike DBSS records, i
 | `+0x18` | u32     | unknown_18 | 20         | Global gift-system value               |
 | `+0x1C` | u32     | reserved2  | 0          | Observed zero                          |
 
----
-
 ## Suggested UI Layout
 
 | Column | Type | Notes                                      |
@@ -40,16 +36,12 @@ The file is exactly 32 bytes in the observed client data. Unlike DBSS records, i
 | Value  | num  | Raw decoded integer value                  |
 | Notes  | text | Observed role or unresolved status         |
 
----
-
 ## Notes
 
 - `npcgiftetc.bss` is self-contained; no offset companion has been observed.
 - The block uses the same `PABR` magic seen in several compact BSS lookup/config files, but this file contains scalar config values rather than a repeated table.
 - Current evidence only confirms field boundaries and raw values. Field names remain neutral because no local code, LOC text, or companion record confirms gameplay semantics. Earlier versions of this doc called `unknown_04`, `unknown_06`, `unknown_08`, `unknown_0c` and `unknown_18` `config_a` to `config_e`.
 - The file is byte-identical in the pre-2026-09-27 fixture and the 2026-09-27 client.
-
----
 
 ## Open Questions
 

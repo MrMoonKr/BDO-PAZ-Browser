@@ -12,8 +12,6 @@ Traits: Brave, Conservative, Hot-Blooded.
 Stars: 5 positions, icon: Customize_Zodiac_M_Hammer.dds
 ```
 
----
-
 ## Companion Files
 
 | File                         | Required | Role                                                 |
@@ -25,8 +23,6 @@ Stars: 5 positions, icon: Customize_Zodiac_M_Hammer.dds
 | `languagedata_en.loc`        | Optional | English names and trait text (str_type=7)            |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -43,25 +39,25 @@ All multi-byte values are little-endian.
 | `+0x00` | u8         | zodiac_id      | 1–12; always equal to the record's sequential index            |
 | `+0x01` | u32        | float_count    | Number of constellation star positions (slots); range 4–8      |
 | `+0x05` | f32×3 × n  | star_positions | `float_count` triples (x, y, 1.0); third element is always 1.0 |
-| —       | u32        | pairs_count    | Number of star-connection pairs; usually equals `float_count`  |
-| —       | u16        | padding        | Always 0                                                       |
-| —       | u16×2 × n  | star_pairs     | `pairs_count` pairs of (u16 a, u16 b); star connectivity data  |
-| —       | _variable_ | text_block     | Korean text block (see below)                                  |
-| —       | u32        | icon_small_len | Char count of `icon_small` string                              |
-| —       | u32        | icon_small_pad | Always 0                                                       |
-| —       | char16 × n | icon_small     | Path to small icon DDS                                         |
-| —       | u32        | icon_large_len | Char count of `icon_large` string                              |
-| —       | u32        | icon_large_pad | Always 0                                                       |
-| —       | char16 × n | icon_large     | Path to large icon DDS                                         |
-| —       | u8         | zodiac_id_tail | Duplicate of `zodiac_id`                                       |
-| —       | u8         | zodiac_id_dup2 | Duplicate of `zodiac_id` again                                 |
-| —       | u8         | pad0           | Always 0                                                       |
-| —       | u16        | next_zodiac_id | ID of the next zodiac in cycle (12 → 1)                        |
-| —       | u8         | const1         | Always 1                                                       |
-| —       | u8         | const0a        | Always 0                                                       |
-| —       | u8         | const1b        | Always 1                                                       |
-| —       | u8         | const0b        | Always 0                                                       |
-| —       | u32        | reserved       | Always 0                                                       |
+| -       | u32        | pairs_count    | Number of star-connection pairs; usually equals `float_count`  |
+| -       | u16        | padding        | Always 0                                                       |
+| -       | u16×2 × n  | star_pairs     | `pairs_count` pairs of (u16 a, u16 b); star connectivity data  |
+| -       | _variable_ | text_block     | Korean text block (see below)                                  |
+| -       | u32        | icon_small_len | Char count of `icon_small` string                              |
+| -       | u32        | icon_small_pad | Always 0                                                       |
+| -       | char16 × n | icon_small     | Path to small icon DDS                                         |
+| -       | u32        | icon_large_len | Char count of `icon_large` string                              |
+| -       | u32        | icon_large_pad | Always 0                                                       |
+| -       | char16 × n | icon_large     | Path to large icon DDS                                         |
+| -       | u8         | zodiac_id_tail | Duplicate of `zodiac_id`                                       |
+| -       | u8         | zodiac_id_dup2 | Duplicate of `zodiac_id` again                                 |
+| -       | u8         | pad0           | Always 0                                                       |
+| -       | u16        | next_zodiac_id | ID of the next zodiac in cycle (12 → 1)                        |
+| -       | u8         | const1         | Always 1                                                       |
+| -       | u8         | const0a        | Always 0                                                       |
+| -       | u8         | const1b        | Always 1                                                       |
+| -       | u8         | const0b        | Always 0                                                       |
+| -       | u32        | reserved       | Always 0                                                       |
 
 #### text_block Layout
 
@@ -70,8 +66,8 @@ All multi-byte values are little-endian.
 | `+0x00`    | u32        | reserved_a         | Always 0                                                        |
 | `+0x04`    | u16        | reserved_b         | Always 0                                                        |
 | `+0x06`    | char16 × n | constellation_name | Korean name ending in 자리; scan for `U+C790 U+B9AC` (= "자리") |
-| —          | u64        | trait_text_len     | Char count of trait text                                        |
-| —          | char16 × n | trait_text         | Korean personality traits                                       |
+| -          | u64        | trait_text_len     | Char count of trait text                                        |
+| -          | char16 × n | trait_text         | Korean personality traits                                       |
 
 `constellation_name` has no explicit length prefix; locate by scanning for the UTF-16LE byte sequence `90 C7 AC B9` (= "자리"). Everything from sub-offset `+0x06` up to and including those bytes is the name.
 
@@ -84,8 +80,6 @@ u32 char_count   (number of UTF-16 code units)
 u32 padding = 0
 char16[char_count]  (UTF-16 LE, no null terminator)
 ```
-
----
 
 ## Reference Tables
 
@@ -132,8 +126,6 @@ Names and trait descriptions in the user's language are in the LOC file under `s
 | 0       | Sign name         |
 | 1       | Trait description |
 
----
-
 ## zodiacsignoffset.dbss
 
 Index file, one entry per zodiac record, stored in the same order as the main file.
@@ -154,8 +146,6 @@ Index file, one entry per zodiac record, stored in the same order as the main fi
 
 `record_start = data_offset - 1`
 
----
-
 ## zodiacsignorder.dbss
 
 Maps each personality type (2 variants × 12 signs = 24 records) to a slot-trigger drawing order for the zodiac constellation animation. Records are **not** stored sequentially; use the offset file to locate them.
@@ -175,14 +165,12 @@ Maps each personality type (2 variants × 12 signs = 24 records) to a slot-trigg
 | `+0x04` | u32                       | reserved_a           | Always 0                                            |
 | `+0x08` | u32                       | reserved_b           | 0 for variant 1; variant 2 may have non-zero values |
 | `+0x0C` | u16 × (trigger_count − 1) | step_indices         | 0-indexed slot indices for steps 1 onward           |
-| —       | u8                        | zodiac_id            | Which zodiac sign (1–12)                            |
-| —       | u16                       | personality_type_dup | Duplicate of `personality_type` at `+0x00`          |
+| -       | u8                        | zodiac_id            | Which zodiac sign (1–12)                            |
+| -       | u16                       | personality_type_dup | Duplicate of `personality_type` at `+0x00`          |
 
 `trigger_order` (as used in-game) = `[0] + list(step_indices)`. The first trigger is always slot 0.
 
 `slots` = `zodiacsign.float_count` for that `zodiac_id`.
-
----
 
 ## zodiacsignorderoffset.dbss
 
@@ -197,8 +185,6 @@ Maps each personality type (2 variants × 12 signs = 24 records) to a slot-trigg
 
 `record_start = data_offset - 2`
 
----
-
 ## Suggested UI Layout
 
 | Column        | Type | Notes                                             |
@@ -209,12 +195,10 @@ Maps each personality type (2 variants × 12 signs = 24 records) to a slot-trigg
 | Pairs         | num  | Number of connecting line pairs                   |
 | Traits        | text | LOC `str_id4=1` trait text; the inline Korean `trait_text` without LOC |
 
----
-
 ## Notes
 
 - `star_positions` (x, y) pairs are 2D coordinates on the zodiac constellation display (range roughly ±250). The third float of each triple is always 1.0 and can be ignored.
 - `personality_type` in `npcpersonality.dbss` cross-references `zodiac_id` via `major = personality_type // 100`.
 - `zodiacsignindex.bss` has a `PABR` magic header and lists the 12 zodiac IDs sequentially; see [zodiacsignindex_bss.md](zodiacsignindex_bss.md).
-- Variant 2 `step_indices` typically differ from variant 1, they represent an alternate drawing order. Variant 1 is usually the canonical forward order; variant 2 may reverse or reorder steps.
+- Variant 2 `step_indices` typically differ from variant 1; they are an alternate drawing order. Variant 1 is usually the canonical forward order; variant 2 may reverse or reorder steps.
 - Major 9 (Key): only `personality_type` 901 exists in `npcpersonality.dbss`, but `zodiacsignorder.dbss` defines both 901 and 902.

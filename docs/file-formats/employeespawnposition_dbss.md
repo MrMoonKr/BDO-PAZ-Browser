@@ -12,8 +12,6 @@ spawn position 41   Port Epheria   (-361,473, -8,000,  31,106)  facing (-0.71, 0
 spawn position 46   Iliya Island   (162,702, -4,856, 301,174)   facing ( 0.17, 0,  0.98)
 ```
 
----
-
 ## Companion Files
 
 | File                               | Required | Role                                                      |
@@ -25,8 +23,6 @@ Related but not read by the handler: `employeespawninfo.dbss` points at these ro
 
 All multi-byte values are little-endian.
 
----
-
 ## File Layout
 
 | Offset  | Type      | Field | Notes                                         |
@@ -35,8 +31,6 @@ All multi-byte values are little-endian.
 | `+0x04` | row[]     | rows  | `count` rows of 34 bytes                      |
 
 The rows fill the file exactly: 4 + 15 x 34 = 514 bytes on client 3458.
-
----
 
 ## Record Structure
 
@@ -55,8 +49,6 @@ The rows fill the file exactly: 4 + 15 x 34 = 514 bytes on client 3458.
 | `+0x20` | u16  | region_key         | Region the spot lies in, LOC type 17: `5` Velia, `120` Port Epheria, `182` Iliya Island         |
 
 `(dir_x, dir_y, dir_z)` is a unit vector in the horizontal plane on every row (`dir_x² + dir_z² = 1`, every angle a multiple of 5 degrees, such as `(-0.7071, 0, 0.7071)` and `(0.1736, 0, 0.9848)`), so it reads as the way the sailor faces. The positions are world coordinates in centimetres, like `teleport.dbss` and the waypoint files. Velia's five spots lie within 12 m of each other, Port Epheria's within 28 m and Iliya Island's within 106 m.
-
----
 
 ## employeespawnpositionoffset.dbss
 
@@ -77,8 +69,6 @@ Bare offset table into `employeespawnposition.dbss` (no PABR magic, no trailer).
 | `+0x08` | u32  | data_size          | Always 34                                                       |
 
 The rows are in file order, which is not key order (41, 1, 42, 2, 43, 3, 4, 5, 44, 45, 46 to 50). The parser reads the main file through these rows and checks that every row holds the key of the offset row that points at it.
-
----
 
 ## Suggested UI Layout
 
@@ -103,16 +93,12 @@ The rows are in file order, which is not key order (41, 1, 42, 2, 43, 3, 4, 5, 4
 | Data Offset    | num  | `data_offset`, as hex          |
 | Data Size      | num  | `data_size`                    |
 
----
-
 ## Notes
 
 - "Employee" in these file names means sailor: the client's sailor windows (`panel_window_sailormanager_all_*.luac`) work on `ToClient_getEmployeeWrapperByIndex`, `getEmployeeKey` and the `__eEmployeeAbility_*` ship stats, and the characters `employeespawninfo.dbss` places here (`59053` to `59072`) are all named Sailor in `characterstatic.dbss` with model `npc/employee_sailor`.
 - `employeespawninfo.dbss` rows (one per sailor character, keyed by a u16 character key) hold a u32 index, a u32 count and that many u32 spawn position keys. Examples: character `59061` lists `1` and `41` (Velia and Port Epheria), `59054` lists `46` (Iliya Island only), `59068` lists `44` and `50`. Every key 1 to 5 and 41 to 50 appears there; the file itself has no handler yet.
 - The spawn position keys are their own key space. They overlap employee name IDs in `employeename.dbss` (1 to 60) only by value; nothing links the two.
 - The three regions match the towns where sailors can be hired in game: Velia, Port Epheria and Iliya Island.
-
----
 
 ## Open Questions
 

@@ -10,8 +10,6 @@ Example:
 row 0 -> quest 8500 / 4 -> [LoML] Emma's Invitation
 ```
 
----
-
 ## File Layout
 
 All multi-byte values are little-endian.
@@ -50,8 +48,6 @@ Follows the last row.
 | `+0x04` | u32  | end_of_rows    | `156800` | Byte offset immediately after rows; `8 + count * 8` |
 | `+0x08` | u32  | reserved_b     | `0`      | Observed zero                                       |
 
----
-
 ## Record Structure
 
 ### Complete Quest Row (8 bytes, repeated `count` times)
@@ -63,8 +59,6 @@ Follows the last row.
 | `+0x04` | u16  | quest_id       | Sub quest key part        |
 | `+0x06` | u16  | unknown_b      | Not part of the quest key |
 
----
-
 ## Reference Rows
 
 | Row | unknown_a | Quest Chain ID | Quest ID | unknown_b | Example LOC Title             |
@@ -73,8 +67,6 @@ Follows the last row.
 | 1   | `59875`   | `8500`         | `5`      | `73`      | `[LoML] Time is Cruel`        |
 | 3   | `59875`   | `8501`         | `2`      | `1`       | LOC type 18 title when available |
 | 11  | `59875`   | `8502`         | `1`      | `8`       | LOC type 18 title when available |
-
----
 
 ## Suggested UI Layout
 
@@ -86,8 +78,6 @@ Follows the last row.
 | Unknown A | num  | Raw `unknown_a`                                                  |
 | Unknown B | num  | Raw `unknown_b`                                                  |
 
----
-
 ## Notes
 
 - Observed decompressed size is `156,812` bytes.
@@ -95,8 +85,6 @@ Follows the last row.
 - Trailer `end_of_rows` is `156,800` decimal, equal to `8 + count * 8`.
 - The `(quest_chain_id, quest_id)` pair resolves to the same 19,599 packed quest IDs as `allquestlist.bss`. The sets are identical, but row order is almost entirely different from `allquestlist.bss`.
 - `completequest.bss` and `acceptquest.bss` have the same size, header, row width, and trailer shape. Both use the middle two `u16` fields as the quest key, but the side fields differ.
-
----
 
 ## Open Questions
 

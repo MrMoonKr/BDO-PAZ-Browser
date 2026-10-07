@@ -13,8 +13,6 @@ objective: <악몽의 그림자> 기가고드 처치하기;
 icon: Icon/Quest/Hadum08.dds
 ```
 
----
-
 ## Companion Files
 
 | File                  | Required | Role                                                                 |
@@ -25,8 +23,6 @@ icon: Icon/Quest/Hadum08.dds
 | `journalquest.dbss`   | Optional | Adventure-journal books whose pages are quest IDs of this file       |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -41,8 +37,6 @@ All multi-byte values are little-endian.
 Records are stored back to back with no offset table and no padding. Record 0 starts at `+0x04`; every later record starts immediately after the previous record's 13-byte trailer. Record `i` belongs to packed quest ID `allquestlist[i]`.
 
 A sequential walk (read the strings, find the packed ID of `allquestlist[i]` right after the objective, then the ID echo and trailer) consumes every byte of the file: `19,327` of `19,327` records after the 2026-09-27 update, `18,988` of `18,988` before it and `19,599` of `19,599` fixture records, with the last record ending exactly at end of file. Record sizes, from the lead to the end of the trailer, range from `512` to `9,464` bytes (current file), `512` to `11,649` after the 2026-09-27 update and `512` to `8,818` (fixture). The first three fixture records start at `0x00000004`, `0x000005F8` and `0x00000936`.
-
----
 
 ## Record Structure
 
@@ -63,7 +57,7 @@ Strings are a u64 character count (equivalently a u32 count plus a u32 zero) fol
 | varies  | u64 + utf16le[n] | objective_text_kr | Korean objective text shown in the quest UI; line breaks are stored as `\n` (28 on client 3458) and decoded by the parser |
 | varies  | u32              | quest_category    | Formerly `link_type`; see Quest Category below                                          |
 
-**Part 2: fixed block**, offsets relative to `Q`, the position of `packed_quest_id`:
+**Part 2: fixed block** (offsets relative to `Q`, the position of `packed_quest_id`):
 
 | Offset     | Type          | Field              | Notes                                                                              |
 | ---------- | ------------- | ------------------ | ---------------------------------------------------------------------------------- |
@@ -149,8 +143,6 @@ I checked this against the [Garmoth](https://garmoth.com) gear planner (2026-09-
 
 Garmoth leaves out four journals that also grant stats, which is why its Inventory (4) and Weight (28) are lower: journal 2 Shakatu Merchants' Archive (Weight 2), 3 Storybook - Morning Bosses (Weight 10), 5 Crow Merchants' Records (Weight 8, Inventory 2, Enhancement Chance 5) and 9 Old Moon Logs (Weight 2, Valks limit 3). Garmoth calls `139191` "Mother's Warning"; its LOC type 18 title is "Tungrad School".
 
----
-
 ## Observed Records
 
 Fixture file (`PAZ-Parser/tests/fixtures/quest.dbss`):
@@ -160,8 +152,6 @@ Fixture file (`PAZ-Parser/tests/fixtures/quest.dbss`):
 | `0x00000004` | `125285`     | `1050655`       | `checkFieldType(hadumField);getLevel()>59;clearquest(2080,10);` | `killMonsterGroup(189,1);`                                           | `<악몽의 그림자> 기가고드 처치하기;`                            | `Icon/Quest/Hadum08.dds`           |
 | `0x000005F8` | `65536`      | `463223`        | `getLevel()>0;`                                                 | `gatheritem(16004,0,1);`                                             | `응축된 마력의 블랙스톤 제작하기;`                              | `Icon/Quest/GrowthPass_GUV_07.dds` |
 | `0x00000936` | `115546`     | `6751209`       | `getLevel()>30;<or>clearquest(654,4);`                          | `killmonster(20007,10); killmonster(20009,6); killmonster(24001,2);` | `임프 병사 처치하기;임프 요술사 처치하기;임프 방어탑 파괴하기;` | `Icon/Quest/Imp.dds`               |
-
----
 
 ## Localization
 
@@ -186,8 +176,6 @@ item LOC `str_type=0`. Previous research also matched `str_type=39`, but that
 type appears to be voice/dialogue text and can produce misleading preview
 titles/objectives.
 
----
-
 ## Suggested UI Layout
 
 | Column       | Type | Notes                                                       |
@@ -203,8 +191,6 @@ titles/objectives.
 | Objective    | text | Prefer LOC type 18 `str_id4=3`; fall back to inline Korean objective text |
 | Family Stat  | text | Non-`16` Family-stat unions of the counted reward entries   |
 
----
-
 ## Notes
 
 - "Current" counts in this doc are from the client before the 2026-09-27 update (`34,970,852` bytes, `18,988` records) unless marked. After it: `35,622,613` bytes, `19,327` records, 901 journal pages, 3 records without an icon; the walk still reads every record. Fixture: `36,525,439` bytes, `19,599` records.
@@ -218,8 +204,6 @@ titles/objectives.
 - No `questoffset.dbss` was found. `guildquestoffset.dbss` and `journalquestoffset.dbss` exist for related formats, but not for the main quest table.
 - Scripts use semicolon-separated calls and comparisons, `!` negation and markers such as `<or>`: `getLevel()>30`, `clearquest(group,id)`, `killmonster(id,count)`, `gatheritem(item_id,?,count)`, `meet(npc_id,count)`, `collectknowledge(id)`.
 - Journal-page records (`quest_category = 11`) all have `block_kind = 7`, zero `unknown_q08` and zero `unknown_q10`; the 91 pages with a Family stat use reward entry 0.
-
----
 
 ## Open Questions
 

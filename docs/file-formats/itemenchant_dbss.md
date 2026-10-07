@@ -5,7 +5,7 @@
 The per-item enchant table, and in practice the closest thing the client data has
 to a master item table. It holds one variable-length block per
 (item, enchant level) pair, keyed through a required offset companion. Each block
-carries the item's **icon path as an inline string**, which makes this file the
+carries the item's icon path as an inline string, which makes this file the
 authoritative item ID to icon mapping, the one thing that cannot be derived from
 an item ID alone. Items that place or summon something (furniture, fences,
 crops, pets) also name that character, which links them to
@@ -23,8 +23,6 @@ item 58011 ([Event] Fence)
   -> places character 2053 ([Event] Fence)
 ```
 
----
-
 ## Companion Files
 
 | File                      | Required | Role                                          |
@@ -34,8 +32,6 @@ item 58011 ([Event] Fence)
 | `skill.dbss`              | Optional | The buffs of `skill_key_1` and `skill_key_2`, through the `SKILL_BUFFS` lookup index |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -47,8 +43,6 @@ All multi-byte values are little-endian.
 Blocks are addressed only through the companion. The first block starts at byte
 `4`, and the last block ends exactly at end of file (203,540,909 bytes observed),
 so the block stream is gap-free. The 2026-09-27 client file is 203,937,007 bytes.
-
----
 
 ## `itemenchantoffset.dbss`
 
@@ -82,8 +76,6 @@ The same trailer shape used by
 | `+0x04` | u32  | end_of_rows    | 2,039,588 | Equals `8 + count × 12` (2,043,872 after 2026-09-27) |
 | `+0x08` | u32  | reserved_b     | 0         | Always zero                        |
 
----
-
 ## Key Packing
 
 ```text
@@ -116,8 +108,6 @@ Per-item maximum on the 2026-09-27 client, checked in game (2026-09-28):
 | 15  | 105    | Adventurer's Longsword (10073)            | +1 to +15                   |
 | 20  | 4,167  | Kzarka Gauntlet (11210), Blackstar Greatsword (731101) | +1 to +15, then PRI to PEN |
 | 25  | 167    | Tuvala Helmet (695105), Tuvala Noble Sword (695135) | +1 to +15, PRI to PEN, then VI to X |
-
----
 
 ## Block Structure
 
@@ -165,6 +155,8 @@ fields that are not yet decoded.
 | `+0xD0` | u32  | skill_key_2  | Second skill, used by composite meals; `0` when none          |
 | `+0xD4` | ...  | unknown      | Numeric fields up to the name: 16 or 21 bytes in most base blocks, 176 in 597 gear blocks, then a u32 that bdo-data-extractor calls the enchant key (0 in 40,025 base items, never the item ID); with the block's level it is the key of [enchantstaticstatus.dbss](enchantstaticstatus_dbss.md) |
 | varies  | ...  | name_kr      | Korean item name: u64 character count, then UTF-16LE text that ends where the icon's prefix starts. Present in all 70,284 base blocks (client 3458) |
+| varies  | ...  | strings      | One or two length-prefixed ASCII strings                     |
+| varies  | ...  | unknown  | Remaining enchant data                   |
 
 Checked on Balacs Lunchbox (`9359`): `item_type` 2, `grade` 3, `weight`
 1,000 (0.1 LT), `buy_price` 38,775, `sell_price` 1,551, and a non-zero
@@ -291,8 +283,6 @@ the counts are base items here.
 
 Values 11 to 20 also occur (1,092 items) and are unnamed. Every one of the
 3,597 `Installation` items and the 279 `Tent` items names a placed character.
-| varies  | ...  | strings      | One or two length-prefixed ASCII strings                     |
-| varies  | ...  | unknown  | Remaining enchant data                   |
 
 ### Placed or summoned character
 
@@ -321,7 +311,7 @@ Character `1` is named by 120 unrelated items, so there the value is not a link.
 | `+0x04` | u32    | zero   | Always 0 in observed data      |
 | `+0x08` | char[] | text   | ASCII, not null-terminated     |
 
-The string does **not** sit at a fixed block offset, 47 distinct offsets were
+The string does **not** sit at a fixed block offset: 47 distinct offsets were
 observed across a 400-block sample, so a parser must scan for the
 `(length, 0, ascii × length)` shape rather than seek a constant. The browser
 starts the scan at `+0xD4`, where the fixed fields end.
@@ -333,7 +323,7 @@ A block holds at most two strings:
 | first    | Icon path, relative to `ui_texture/icon/`                       |
 | second   | Optional `second_string` such as `ITEM_BIC_HIT_1`; absent in most blocks, meaning unconfirmed |
 
-**The first string is always the icon path.** In a 400-block sample the length
+The first string is always the icon path. In a 400-block sample the length
 prefix matched the string length 400 out of 400 times.
 
 ### Resolving the icon path
@@ -399,8 +389,6 @@ Earring x1`, `Exchange 20: Mark of Shadow x1`, `Exchange 100: Ogre Ring x1`.
 The English text is not in the item's LOC rows, so the client must build or
 translate it from somewhere else.
 
----
-
 ## Icon Coverage
 
 Measured against the 73,947 item IDs in `languagedata_en.loc` (`str_type=0`):
@@ -416,8 +404,6 @@ reaches only 14.9% of items, and indexing every ID-named icon under
 `ui_texture/icon` by basename reaches 28.8%. The icon path stored here is the
 only approach that covers items whose icon is named after a 3D asset
 (furniture) or keyed by a cash-product ID rather than the item ID.
-
----
 
 ## Suggested UI Layout
 
@@ -442,12 +428,10 @@ One row per item, read from its level-0 block. Higher levels only feed Max Level
 | Object        | text | LOC `str_type=6`, `str_id1=character_id`          |
 | Buffs         | list | Buffs of `skill_key_1`, then `skill_key_2` (`SKILL_BUFFS` lookup index), each once, with buff icon and the first line of its LOC type `5` text in its game colours; sorts by count |
 
----
-
 ## Notes
 
 - `itemenchantbackendtest.dbss` (73 MB) contains the identical set of 169,962
-  icon path references and 21,768 unique paths, it looks like a test copy and
+  icon path references and 21,768 unique paths; it looks like a test copy and
   adds nothing. `itemenchantbackend.dbss` (121 MB) contains no icon paths at all.
 - 17 `gamecommondata` tables store inline icon paths this way. After this file
   the largest are `cashproduct.dbss` (14,750 unique paths, keyed by cash product
@@ -462,8 +446,6 @@ One row per item, read from its level-0 block. Higher levels only feed Max Level
   already caches the entry list.
 - Blocks are contiguous and the companion is sorted by key, so a targeted lookup
   can read a single block by offset without parsing the whole file.
-
----
 
 ## Open Questions
 

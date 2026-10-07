@@ -15,8 +15,6 @@ entry 2, category 2 (Information), position 2
   icon   Combine/Icon/Combine_Title_Icon_00.dds, region (2, 457) to (57, 512)
 ```
 
----
-
 ## Companion Files
 
 | File                  | Required | Role                                                                     |
@@ -26,8 +24,6 @@ entry 2, category 2 (Information), position 2
 | `languagedata_en.loc` | Optional | Title text, LOC type 37 (`str_id1` = key hash, `str_id2` = sheet)        |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -46,8 +42,6 @@ Groups of entries instead of fixed rows, then the shared PABR string table
 The groups follow the `menu.bss` categories from Information (menu 2) on;
 the last group is empty. Recently Used (menu 1) has no group of its own, so
 group `i` holds the entries of menu `i + 2`.
-
----
 
 ## Record Structure
 
@@ -75,8 +69,6 @@ Fields are unaligned.
 159 strings on client 3458: the two sprite sheets of `menu.bss`, the sheet
 names `GAME` (91 entries) and `RESOURCE` (64), and one title key per entry.
 
----
-
 ## Suggested UI Layout
 
 | Column   | Type | Notes                                                                           |
@@ -88,8 +80,6 @@ names `GAME` (91 entries) and `RESOURCE` (64), and one title key per entry.
 | Title    | text | LOC type 37 of the title key (see [stringtable.bss](stringtable_bss.md)), else the key |
 
 `unknown_0c` and `unknown_14` stay on the record but out of the table.
-
----
 
 ## Notes
 
@@ -103,8 +93,6 @@ names `GAME` (91 entries) and `RESOURCE` (64), and one title key per entry.
   `IndexKind.SUBMENU_ICON` holds the sheet path and
   `IndexKind.SUBMENU_ICON_REGION` the `(x1, y1, x2, y2)` region, read through
   `icon_path()` and `icon_region()` with `IconKind.SUBMENU`.
-
----
 
 ## Open Questions
 

@@ -12,8 +12,6 @@ slot 1 -> packed_quest_id 138172 -> chain 7100, quest 2  -> quest.dbss record 1
 slot 2 -> packed_quest_id 196891 -> chain 283, quest 3   -> quest.dbss record 2
 ```
 
----
-
 ## Companion Files
 
 | File                  | Required | Role                                                                 |
@@ -26,8 +24,6 @@ slot 2 -> packed_quest_id 196891 -> chain 283, quest 3   -> quest.dbss record 2
 | `languagedata_en.loc` | Optional | Provides quest title/objective text for display via LOC type `18`    |
 
 All multi-byte values are little-endian.
-
----
 
 ## File Layout
 
@@ -54,8 +50,6 @@ Follows the last entry.
 | `+0x04` | u32  | end_of_entries | Byte offset immediately after entries, `8 + count × 4`             |
 | `+0x08` | u32  | reserved_b     | Observed `0`                                                       |
 
----
-
 ## Record Structure
 
 ### Quest List Entry (4 bytes)
@@ -71,8 +65,6 @@ quest_chain_id = packed_quest_id & 0xFFFF
 quest_id       = packed_quest_id >> 16
 ```
 
----
-
 ## Reference Rows
 
 Current client data (`files/allquestlist.bss`):
@@ -86,8 +78,6 @@ Current client data (`files/allquestlist.bss`):
 
 The older fixture starts with `1050655` (chain `2079`, quest `16`, `[Elvia Weekly] Gigagord`) and also ends with `181218`.
 
----
-
 ## Suggested UI Layout
 
 | Column  | Type | Notes                                                                 |
@@ -96,8 +86,6 @@ The older fixture starts with `1050655` (chain `2079`, quest `16`, `[Elvia Weekl
 | Sub ID  | num  | `packed_quest_id >> 16`; LOC type 18 `str_id2`                        |
 | Icon    | text | Quest icon resolved from `packed_quest_id` through the quest icon index |
 | Title   | text | Prefer LOC type 18 row with matching main/sub ID and `str_id4=0`, in its game colours |
-
----
 
 ## Notes
 
