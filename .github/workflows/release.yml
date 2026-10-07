@@ -1,0 +1,70 @@
+name: Release
+
+# main only moves with a merged release PR from staging, so every push here is
+# a release candidate. release_plan.py decides: app files changed since the
+# last release -> build and publish v<date>; only docs, tests or CI -> nothing.
+on:
+  push:
+    branches: [main]
+  # A rerun after a failure; it publishes nothing when HEAD is released already.
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build and publish
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The release tags and the history since the last one.
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: PAZ-Parser/requirements*.txt
+
+      - name: Plan
+        id: plan
+        shell: bash
+        run: python .github/scripts/release_plan.py --github-output "$GITHUB_OUTPUT" --notes-file notes.md
+
+      - name: Install dependencies
+        if: steps.plan.outputs.release == 'true'
+        run: python -m pip install -r PAZ-Parser/requirements-dev.txt -r PAZ-Parser/requirements-build.txt
+
+      - name: Pyright
+        if: steps.plan.outputs.release == 'true'
+        run: python -m pyright
+
+      # The runner has no client, so tests that need game files skip.
+      - name: Tests
+        if: steps.plan.outputs.release == 'true'
+        run: python -m pytest --clean
+
+      # build.py fails when the exe's handlers differ from the source's.
+      - name: Build
+        if: steps.plan.outputs.release == 'true'
+        run: python build.py --version ${{ steps.plan.outputs.version }}
+
+      - name: Publish
+        if: steps.plan.outputs.release == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.plan.outputs.version }}
+        run: |
+          gh release create "v$VERSION" \
+            "dist/BDO-PAZ-Browser-v$VERSION-windows.zip" \
+            "dist/BDO-PAZ-Browser-v$VERSION-windows.zip.sha256" \
+            --title "v$VERSION" \
+            --notes-file notes.md \
+            --target "$GITHUB_SHA"
