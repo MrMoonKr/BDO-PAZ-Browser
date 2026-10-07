@@ -414,7 +414,8 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
         show a dash.
         """
         from _common.lookup_index import IndexKind, clear_indexes, init_index  # noqa: PLC0415
-        from .bdo_lookup_indexes import build_indexes, index_fingerprint  # noqa: PLC0415
+        from _common.lookup_builders import build_indexes  # noqa: PLC0415
+        from .bdo_lookup_indexes import index_fingerprint  # noqa: PLC0415
 
         if self._cache_dir is None:
             return

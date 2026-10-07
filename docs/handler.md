@@ -1092,22 +1092,24 @@ two apart when it matters. Unit tests install an index with
 while the handler runs and removes afterwards.
 
 Every index is one `IndexSpec(kind, sources, build)` in
-`INDEX_SPECS` (`api/bdo_lookup_indexes.py`). `build` receives the payloads of
+`INDEX_SPECS` (`_common/lookup_builders.py`). `build` receives the payloads of
 `sources` as positional arguments, in the order listed, and returns
 `{entity_id: value}`. `build_indexes()` reads each source once, so specs that
 share a table reuse its payload; a spec with a missing source is skipped. Adding
-an index is one `IndexKind` member plus one spec.
+an index is one `IndexKind` member plus one spec, both on the handler side: the
+app core only calls `build_indexes()`, so a new index needs no core change.
 
 `Api._load_lookup_indexes()` installs every index at folder load. The app
 shows the tree before LOC and the indexes are in, and the calls that run a
 handler (`load_entry`, `get_parsed_page`, export, content search, icons) wait
 for both (`_wait_for_folder_text()`), so a handler never runs without them.
 Results are
-cached by `paz/bdo_index_cache.py` in `paz_browser_indexes.cache` next to the
-PAZ files, keyed by `IndexKind.value` (renaming a value orphans its cached data
+cached by `paz/bdo_index_cache.py` in `paz_browser_indexes.cache` in the
+client's cache folder, keyed by `IndexKind.value` (renaming a value orphans its cached data
 until the rebuild) and invalidated on the PAZ meta version or when the code that
-builds them changes. The cache stores `builder_fingerprint()`, a hash of
-`api/bdo_lookup_indexes.py` plus every project module it imports and the JSON
+builds them changes. The cache stores `builder_fingerprint()` (through
+`index_fingerprint()` in `api/bdo_lookup_indexes.py`), a hash of
+`_common/lookup_builders.py` plus every project module it imports and the JSON
 files beside them (`paz/source_fingerprint.py`), so editing a builder, a helper
 such as `_common/prefixed_string.py` or `_common/icon_overrides.json` rebuilds
 the indexes on the next launch. Keep the builder imports at the top of that

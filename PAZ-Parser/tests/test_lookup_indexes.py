@@ -4,7 +4,7 @@ import sys
 
 from paz.source_fingerprint import project_modules
 from _common.lookup_index import IndexKind
-from api.bdo_lookup_indexes import INDEX_SPECS, IndexSpec, build_indexes
+from _common.lookup_builders import INDEX_SPECS, IndexSpec, build_indexes
 
 _FENCE_CHARACTER = 2053
 _FENCE_ITEM = 58011
