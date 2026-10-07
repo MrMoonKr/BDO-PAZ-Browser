@@ -84,4 +84,6 @@ where `grade_map` is built from `petgradeoffset.dbss` as `{(species, variant): g
 
 ### `grade` value 6
 
-Values 1–5 map to the five fusion window grade titles, but value 6 is still unconfirmed: the Lua lists no sixth title, and only the 5 Mole records carry it. Requires cross-referencing against in-game upgrade UI or another binary file.
+Values 1–5 map to the five fusion window grade titles, but value 6 is still unconfirmed: the Lua lists no sixth title, and only the 5 Mole records carry it. They are the Pit-A-Pat Mole (item 47983, pets 55749 to 55752 and 56594).
+
+bdocodex (2026-10-07) shows the Pit-A-Pat Mole as Type: Special. Its pet type follows this field, since it shows Young Rauno (grade 4) as Event and Young Crimson Dragon (grade 5) as Special, but it could map 6 to Special by its own fallback. In game: does the pet exchange window show the Pit-A-Pat Mole as Special, and can it be exchanged with a Special pet?
