@@ -2,8 +2,17 @@ name: CI
 
 on:
   # Work is committed straight onto staging; releases are PRs into main.
+  # A push runs only when something that can change a result changed.
   push:
     branches: [staging]
+    paths:
+      - "PAZ-Parser/**"
+      - browser.py
+      - benchmark.py
+      - pytest.ini
+      - pyrightconfig.json
+      - .github/workflows/ci.yml
+  # No paths filter: main requires this check, and a skipped run never reports.
   pull_request:
     branches: [staging, main]
   workflow_dispatch:
