@@ -23,3 +23,7 @@ PAZ-Parser/tests/fixtures/*
 
 # Local benchmark results (machine-specific)
 bench-results/
+
+# PyInstaller output (browser.spec)
+/build/
+/dist/

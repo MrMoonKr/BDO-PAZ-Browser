@@ -514,6 +514,8 @@ _REGISTRY: dict[str, PreviewHandler] = {
 _BUILTIN_KEYS: frozenset[str] = frozenset(_REGISTRY)
 _PLUGIN_MODULE_NAMES: list[str] = []
 _PLUGIN_SYS_MODULES: set[str] = set()
+# Resolved folders already loaded, so a second entry point call is a no-op.
+_LOADED_PLUGIN_DIRS: set[str] = set()
 
 _hex_handler = HexHandler()
 _handler_lang = PreviewHandler.lang
@@ -620,15 +622,39 @@ def unique_format_keys(entries: list[PazEntry]) -> list[str]:
 
 # ── Plugin auto-loader ────────────────────────────────────────────────────────
 
+# The handlers that ship with the code. Importing this module loads none:
+# each entry point names the folder, so the exe can pick an updated handler
+# pack first.
+BUNDLED_HANDLERS_DIR = Path(__file__).parent / "handlers"
+
+
+def use_handlers_dir(handlers_dir: Path) -> None:
+    """Put `handlers_dir` first on the import path.
+
+    The core imports `_common` (`api/`, `cli/`, `bench/stages.py`), so an entry
+    point calls this before importing them: `bdo_app.py`, `benchmark.py`, and
+    `conftest.py` for the tests.
+    """
+    handlers_path = str(handlers_dir.resolve())
+    if handlers_path not in sys.path:
+        sys.path.insert(0, handlers_path)
+
+
 def load_plugins(handlers_dir: Path) -> None:
-    """Import every *.py file in handlers_dir that doesn't start with '_'."""
+    """Import every *.py file in handlers_dir that doesn't start with '_'.
+
+    Nothing is registered until an entry point calls this: `bdo_app.main()`,
+    `bench.cli.main()` and the test session in `conftest.py`. A second call
+    for the same folder does nothing; `reload_plugins()` imports them again.
+    """
     if not handlers_dir.is_dir():
         return
 
     handlers_path = str(handlers_dir.resolve())
-
-    if handlers_path not in sys.path:
-        sys.path.insert(0, handlers_path)
+    if handlers_path in _LOADED_PLUGIN_DIRS:
+        return
+    _LOADED_PLUGIN_DIRS.add(handlers_path)
+    use_handlers_dir(handlers_dir)
 
     before = set(sys.modules)
 
@@ -662,7 +688,5 @@ def reload_plugins(handlers_dir: Path) -> None:
         sys.modules.pop(name, None)
     _PLUGIN_SYS_MODULES.clear()
     _PLUGIN_MODULE_NAMES.clear()
+    _LOADED_PLUGIN_DIRS.clear()
     load_plugins(handlers_dir)
-
-
-load_plugins(Path(__file__).parent / "handlers")

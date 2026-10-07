@@ -10,6 +10,12 @@ from .case_input import CaseInput
 from .specs import TestSpec
 
 
+# An index, or a function that builds it when the case runs: an index built
+# from other fixtures can't load at import time, where a missing client
+# can't skip the test.
+IndexSource = Mapping[int, LookupValue] | Callable[[], Mapping[int, LookupValue]]
+
+
 @dataclass(frozen=True)
 class HandlerCase:
     handler_name: str
@@ -22,7 +28,7 @@ class HandlerCase:
     tests: list[TestSpec]
     record_mapper: Callable[[dict], dict] | None = None
     # Installed with init_index() while the handler runs, then removed.
-    lookup_indexes: Mapping[IndexKind, Mapping[int, LookupValue]] = field(default_factory=dict)
+    lookup_indexes: Mapping[IndexKind, IndexSource] = field(default_factory=dict)
 
 
 @dataclass

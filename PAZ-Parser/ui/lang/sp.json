@@ -146,6 +146,8 @@
     "showPaTagsHint": "Mostrar las etiquetas <PAColor> del texto del juego junto a sus colores",
     "handledOnly": "Mostrar solo tablas compatibles",
     "handledOnlyHint": "Limitar el árbol de archivos y las búsquedas a archivos con vista de tabla analizada",
+    "checkAppUpdates": "Buscar actualizaciones al iniciar",
+    "checkAppUpdatesHint": "Consultar en GitHub si hay una versión más reciente al iniciar. Actualizar siempre requiere un clic.",
     "recordsCache": "Caché de tablas",
     "recordsCacheHint": "Guardar en disco las tablas analizadas para reabrirlas sin volver a analizarlas",
     "recordsCacheOff": "Desactivada",
@@ -181,6 +183,9 @@
     "searching": "Buscando… {done}/{total} archivos escaneados, {matches} coincidencia(s) hasta ahora",
     "searchDone": "Búsqueda completada, {matches} archivo(s) coincidieron de {total} escaneados",
     "pluginsReloaded": "Plugins recargados.",
+    "reloadSourceOnly": "Recargar handlers solo es posible al ejecutar desde el código fuente.",
+    "updateDownloading": "Descargando v{version}: {mb} MB",
+    "updateInstalling": "Instalando v{version}, la aplicación se reinicia…",
     "found": "{cap}archivos encontrados que coinciden con \"{query}\"",
     "copiedRow": "Fila seleccionada copiada.",
     "searchError": "Error de búsqueda: {message}",
@@ -230,5 +235,17 @@
   "locWarning": {
     "missing": "No tienes {file} para {language}, así que solo la interfaz de la aplicación está en {language}. Los textos del juego en las tablas siguen en coreano.",
     "dismiss": "Ocultar"
+  },
+  "appUpdate": {
+    "available": "La versión {version} está disponible",
+    "dismiss": "Ocultar",
+    "title": "Actualizar a v{version}",
+    "current": "Tiene v{version}.",
+    "close": "Cerrar",
+    "openOnGitHub": "Abrir en GitHub",
+    "install": "Actualizar",
+    "failed": "La actualización falló: {message}",
+    "nothingToInstall": "No hay ninguna actualización para instalar.",
+    "otherInstances": "Cierre primero las demás ventanas y comandos de BDO PAZ Browser."
   }
 }

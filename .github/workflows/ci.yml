@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  # Work is committed straight onto staging; releases are PRs into main.
+  # A push runs only when something that can change a result changed.
+  push:
+    branches: [staging]
+    paths:
+      - "PAZ-Parser/**"
+      - browser.py
+      - benchmark.py
+      - pytest.ini
+      - pyrightconfig.json
+      - .github/workflows/ci.yml
+  # No paths filter: main requires this check, and a skipped run never reports.
+  pull_request:
+    branches: [staging, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    # Required by the main ruleset under this name.
+    name: Tests and pyright
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: PAZ-Parser/requirements*.txt
+
+      - name: Install dependencies
+        run: python -m pip install -r PAZ-Parser/requirements-dev.txt
+
+      - name: Pyright
+        run: python -m pyright
+
+      # The runner has no client, so tests that need game files skip.
+      - name: Tests
+        run: python -m pytest --clean

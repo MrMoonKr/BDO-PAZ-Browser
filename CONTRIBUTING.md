@@ -13,7 +13,7 @@ Thanks for helping out. BDO has hundreds of undocumented binary formats, so rese
 
 ## Setup
 
-You need Python 3.10+ and a local Black Desert Online install, since tests read their inputs from your PAZ folder.
+You need Python 3.10+ and a local Black Desert Online install, since tests read their inputs from your PAZ folder. Without one, the tests that need game files are skipped.
 
 ```bash
 python -m pip install -r PAZ-Parser/requirements-dev.txt
@@ -21,6 +21,15 @@ python browser.py
 ```
 
 Open your `Black Desert/Paz` folder once in the GUI, so the tests know where to fetch fixtures from.
+
+## Branches and Pull Requests
+
+- Branch from `staging` and open the pull request into `staging`, not `main`. `main` holds the released state and only moves with a release.
+- The pull request title is a [Conventional Commit](https://www.conventionalcommits.org/) subject (see Conventions). Pull requests are squash merged, so the title becomes the commit on `staging` and a line in the release notes.
+- Open unfinished work as a draft pull request.
+- Releases are pull requests from `staging` into `main`, opened by the maintainer.
+
+CI runs pyright and the tests on every pull request. Its runner has no game client, so it skips the tests that need game files; the full run is the local one below.
 
 ## Before Opening a Pull Request
 
@@ -44,7 +53,7 @@ Also check that:
 - **Tests survive game patches.** Assert structure and stable identity (schemas, ranges, known IDs), never row counts, positions or balance values that change with an update.
 - **Text columns** use the loaded LOC language first, then fall back to the inline Korean text.
 - **Small, focused files.** Split code by responsibility and reuse the shared helpers in `handlers/_common/` and `handlers/_dbss/common/` rather than copying them.
-- **Commit messages** follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `style:`. Keep the subject short and say what it adds or changes, e.g. `feat: add the buffsimply.bss handler and buff icons` or `feat: blizzardregioninfo and edaniaregioninfo tables`.
+- **Commit messages** follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `perf:`, `docs:`, `refactor:`, `test:`, `ci:`, `style:`. Release notes list `feat`, `fix`, `perf` and `refactor` commits that change the app or a handler. Keep the subject short and say what it adds or changes, e.g. `feat: add the buffsimply.bss handler and buff icons` or `feat: blizzardregioninfo and edaniaregioninfo tables`.
 
 ## Code of Conduct
 

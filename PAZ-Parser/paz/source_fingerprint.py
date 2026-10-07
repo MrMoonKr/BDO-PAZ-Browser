@@ -16,6 +16,8 @@ from pathlib import Path
 from types import ModuleType
 from typing import TypeVar
 
+from app_version import build_info
+
 # Top-level packages whose source can change what a cached value contains.
 # Standard library and third-party imports are left out: they change with the
 # interpreter, not with this project.
@@ -36,6 +38,10 @@ def source_fingerprint(roots: Iterable[object]) -> str:
     imports are followed transitively. The JSON files beside each module count
     too. Only file contents are hashed, with line endings normalised, never
     paths or times, so the value is stable across checkouts and machines.
+
+    In the exe, core modules (`paz`) sit in its archive without their source,
+    so the build ID (version and commit) stands for them: a new exe rebuilds
+    their caches. Handler pack modules are real files and stay hashed.
     """
     return source_fingerprints({None: roots})[None]
 
@@ -59,11 +65,22 @@ def _fingerprint(roots: Iterable[object], file_digest: Callable[[Path], bytes]) 
     digest = hashlib.sha256()
     for name in sorted(modules):
         digest.update(name.encode("utf-8"))
-        digest.update(file_digest(Path(inspect.getfile(modules[name]))))
+        digest.update(_module_digest(modules[name], file_digest))
     for path in _data_files(modules.values()):
         digest.update(path.name.encode("utf-8"))
         digest.update(file_digest(path))
     return digest.hexdigest()
+
+
+def _module_digest(module: ModuleType, file_digest: Callable[[Path], bytes]) -> bytes:
+    path = Path(inspect.getfile(module))
+    if path.is_file():
+        return file_digest(path)
+    info = build_info()
+    if info is None:
+        # From source every module has its file; a missing one is a real error.
+        raise FileNotFoundError(f"no source for {module.__name__} at {path}")
+    return hashlib.sha256(info.build_id.encode("utf-8")).digest()
 
 
 def project_modules(roots: list[ModuleType]) -> dict[str, ModuleType]:

@@ -4,14 +4,19 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from collections.abc import Collection
 from pathlib import Path
 
 import app_dirs
 from table_sort import TableSort
 
+from .config_migrations import VERSION_KEY, current_version, migrate, needs_migration
+
 # Where the config lived before the Data Folder; `bdo_app.main()` moves it over.
 LEGACY_CONFIG_FILE = Path(__file__).parent.parent / app_dirs.CONFIG_NAME
+# Next to the config: the last config that could not be read or migrated.
+BACKUP_NAME = "paz_config.backup.json"
 
 # {"buff.dbss": {"field": "duration_ms", "dir": "desc"}, ...}
 _TABLE_SORT_KEY = "table_sort"
@@ -23,11 +28,36 @@ def config_file() -> Path:
 
 
 def load_config() -> dict:
+    """The saved settings, brought to the current config version (`config_migrations.py`).
+
+    A config that isn't a JSON object, or can't be migrated, is renamed to
+    `paz_config.backup.json` and the app starts with default settings, so the
+    next save can't overwrite it. A migrated config is saved right away.
+    """
     path = config_file()
     try:
-        return json.loads(path.read_text()) if path.exists() else {}
-    except Exception:
+        text = path.read_text(encoding="utf-8")
+    except FileNotFoundError:
         return {}
+    except OSError:
+        logging.warning("Could not read the settings from %s", path, exc_info=True)
+        return {}
+
+    try:
+        cfg = json.loads(text)
+        if not isinstance(cfg, dict):
+            raise ValueError(f"the settings are a JSON {type(cfg).__name__}, not an object")
+        if not needs_migration(cfg):
+            return cfg
+        migrated = migrate(cfg)
+    except Exception:
+        # Any failure, a bug in a migration step included: the app must still start.
+        logging.warning("Could not read the settings in %s, starting with defaults", path, exc_info=True)
+        _back_up(path)
+        return {}
+
+    _write_config(path, migrated)
+    return migrated
 
 
 def show_pa_tags_setting(cfg: dict) -> bool:
@@ -38,6 +68,11 @@ def show_pa_tags_setting(cfg: dict) -> bool:
 def handled_only_setting(cfg: dict) -> bool:
     """The "Show only handled tables" setting; off unless saved as true."""
     return cfg.get("handled_only") is True
+
+
+def check_app_updates_setting(cfg: dict) -> bool:
+    """The exe's "Check for updates on start" setting; on unless saved as false."""
+    return cfg.get("check_app_updates") is not False
 
 
 # "Parsed table cache": never, when a table is opened, or every table in the background.
@@ -58,13 +93,27 @@ def dismissed_loc_warnings(cfg: dict) -> frozenset[str]:
 
 
 def save_config(updates: dict) -> None:
-    cfg = {**load_config(), **updates}
-    path = config_file()
+    # A config from a newer app keeps its own version and keys.
+    _write_config(config_file(), {VERSION_KEY: current_version(), **load_config(), **updates})
+
+
+def _write_config(path: Path, cfg: dict) -> None:
+    """Write through a temporary file, so a crash mid-write can't leave half a config."""
+    temp = path.with_name(f"{path.name}.tmp")
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(cfg, indent=2))
+        temp.write_text(json.dumps(cfg, indent=2), encoding="utf-8")
+        os.replace(temp, path)
     except OSError:
         logging.warning("Could not save the settings to %s", path, exc_info=True)
+
+
+def _back_up(path: Path) -> None:
+    """Rename an unreadable config to `paz_config.backup.json`, replacing an older backup."""
+    try:
+        os.replace(path, path.with_name(BACKUP_NAME))
+    except OSError:
+        logging.warning("Could not rename %s to %s", path, BACKUP_NAME, exc_info=True)
 
 
 def table_sort_file_key(internal_path: str) -> str:

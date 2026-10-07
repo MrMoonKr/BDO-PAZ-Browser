@@ -146,6 +146,8 @@
     "showPaTagsHint": "Afficher les balises <PAColor> du texte du jeu à côté de ses couleurs",
     "handledOnly": "Afficher uniquement les tables prises en charge",
     "handledOnlyHint": "Limiter l'arborescence et les recherches aux fichiers avec une vue de table analysée",
+    "checkAppUpdates": "Rechercher les mises à jour au démarrage",
+    "checkAppUpdatesHint": "Demander à GitHub s'il existe une version plus récente au démarrage. La mise à jour demande toujours un clic.",
     "recordsCache": "Cache des tables",
     "recordsCacheHint": "Garder les tables analysées sur le disque pour les rouvrir sans nouvelle analyse",
     "recordsCacheOff": "Désactivé",
@@ -181,6 +183,9 @@
     "searching": "Recherche… {done}/{total} fichiers analysés, {matches} correspondance(s) pour l'instant",
     "searchDone": "Recherche terminée, {matches} fichier(s) trouvé(s) sur {total} analysés",
     "pluginsReloaded": "Plugins rechargés.",
+    "reloadSourceOnly": "Le rechargement des handlers n'est possible qu'en lançant depuis le code source.",
+    "updateDownloading": "Téléchargement de v{version} : {mb} Mo",
+    "updateInstalling": "Installation de v{version}, l'application redémarre…",
     "found": "Trouvé {cap}fichiers correspondant à \"{query}\"",
     "copiedRow": "Ligne sélectionnée copiée.",
     "searchError": "Erreur de recherche : {message}",
@@ -230,5 +235,17 @@
   "locWarning": {
     "missing": "Il vous manque {file} pour {language} : seule l'interface de l'application est en {language}. Les textes du jeu dans les tableaux restent en coréen.",
     "dismiss": "Masquer"
+  },
+  "appUpdate": {
+    "available": "La version {version} est disponible",
+    "dismiss": "Masquer",
+    "title": "Mettre à jour vers v{version}",
+    "current": "Vous avez v{version}.",
+    "close": "Fermer",
+    "openOnGitHub": "Ouvrir sur GitHub",
+    "install": "Mettre à jour",
+    "failed": "Échec de la mise à jour : {message}",
+    "nothingToInstall": "Aucune mise à jour à installer.",
+    "otherInstances": "Fermez d'abord les autres fenêtres et commandes de BDO PAZ Browser."
   }
 }

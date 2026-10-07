@@ -9,7 +9,7 @@ import pytest
 from bdo_models import PazEntry
 from bdo_preview import get_handler
 from _bwp.waypoint.parser import Group, Route, is_waypoint_graph, neighbours, parse_waypoint_graph
-from tests.fixtures import FIXTURES_DIR, FixtureFetchError, fetch_fixtures
+from tests.fixtures import FIXTURES_DIR, fetch_missing
 from tests.framework import (
     DeclaredCountTest,
     HandlerCase,
@@ -134,13 +134,8 @@ _OLD_TEMPLATE_SIZES = {
 
 
 def _fixture_bytes(name: str) -> bytes:
-    path = FIXTURES_DIR / name
-    if not path.exists():
-        try:
-            fetch_fixtures([name])
-        except FixtureFetchError as ex:
-            pytest.fail(str(ex))
-    return path.read_bytes()
+    fetch_missing([name])
+    return (FIXTURES_DIR / name).read_bytes()
 
 
 @pytest.mark.parametrize("name", sorted(_OLD_TEMPLATE_SIZES))

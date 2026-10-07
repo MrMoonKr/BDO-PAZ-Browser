@@ -31,7 +31,7 @@ from weakref import WeakKeyDictionary
 
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler
-# After bdo_preview, which puts the handlers folder (and so _common) on the path.
+# The handlers folder the entry point put on the path (bdo_preview.use_handlers_dir).
 from _common.data_deps import INDEX_PREFIX, LOC, index_dep, note_read, recording
 from paz.bdo_records_cache import RecordsCache, RecordsStamp
 from paz.source_fingerprint import project_module_of, source_fingerprints

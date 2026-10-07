@@ -1,7 +1,9 @@
 """Where the app keeps its files: the Data Folder, with the config and the caches.
 
-The Data Folder is `%LOCALAPPDATA%\\BDO-PAZ-Browser`, or the folder picked in
-the settings. It holds `paz_config.json` and `cache\\`, with one cache
+The Data Folder is `%LOCALAPPDATA%\\BDO-PAZ-Browser` from source, `data\\` next
+to the exe in the Windows build (so the unzipped folder holds everything), or
+the folder picked in the settings. An exe whose folder isn't writable, such as
+one unzipped into Program Files, uses the `%LOCALAPPDATA%` folder too. It holds `paz_config.json` and `cache\\`, with one cache
 subfolder per client named after a hash of its PAZ path, so a test client
 keeps caches of its own.
 
@@ -26,13 +28,20 @@ import json
 import logging
 import os
 import shutil
+import sys
+import tempfile
 from collections.abc import Iterable
+from functools import cache
 from pathlib import Path
+
+from app_version import is_frozen
 
 APP_NAME = "BDO-PAZ-Browser"
 CONFIG_NAME = "paz_config.json"
 # In the default Data Folder: {"data_folder": "<picked folder>"}, only while one is picked.
 LOCATION_FILE = "location.json"
+# Next to the exe: the Data Folder of the Windows build.
+PORTABLE_FOLDER = "data"
 _CACHE_FOLDER = "cache"
 # In every client folder: the PAZ folder it belongs to, and proof the app made it.
 MARKER_FILE = "paz_folder.txt"
@@ -43,10 +52,34 @@ _CLIENT_ID_LENGTH = 16
 # ── Data Folder ──────────────────────────────────────────────────────────────
 
 def default_data_dir() -> Path:
+    """`data\\` next to the exe when it can write there, else `local_app_data_dir()`."""
+    portable = portable_data_dir() if is_frozen() else None
+    return portable if portable is not None else local_app_data_dir()
+
+
+def local_app_data_dir() -> Path:
     """`%LOCALAPPDATA%\\BDO-PAZ-Browser`: local to the machine, never roaming."""
     local = os.environ.get("LOCALAPPDATA")
     base = Path(local) if local else Path.home() / "AppData" / "Local"
     return base / APP_NAME
+
+
+@cache
+def portable_data_dir() -> Path | None:
+    """`data\\` next to the exe, created; None when the exe's folder can't be written.
+
+    Checked once per run by writing a file, since Windows folder permissions
+    (ACLs) don't show in `os.access()`.
+    """
+    folder = Path(sys.executable).parent / PORTABLE_FOLDER
+    try:
+        folder.mkdir(exist_ok=True)
+        with tempfile.TemporaryFile(dir=folder):
+            pass
+    except OSError:
+        logging.info("%s is not writable, using %s", folder, local_app_data_dir())
+        return None
+    return folder
 
 
 def picked_data_dir() -> Path | None:

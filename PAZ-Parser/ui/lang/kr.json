@@ -146,6 +146,8 @@
     "showPaTagsHint": "게임 텍스트의 <PAColor> 태그를 색상 옆에 표시합니다",
     "handledOnly": "지원되는 테이블만 표시",
     "handledOnlyHint": "파일 트리와 검색을 분석된 테이블 보기가 있는 파일로 제한합니다",
+    "checkAppUpdates": "시작할 때 업데이트 확인",
+    "checkAppUpdatesHint": "앱을 시작할 때 GitHub에서 새 버전을 확인합니다. 업데이트는 항상 클릭해야 진행됩니다.",
     "recordsCache": "테이블 캐시",
     "recordsCacheHint": "분석한 테이블을 디스크에 보관해 다시 분석하지 않고 엽니다",
     "recordsCacheOff": "끄기",
@@ -181,6 +183,9 @@
     "searching": "검색 중… {done}/{total}개 파일 스캔됨, 현재 {matches}개 일치",
     "searchDone": "검색 완료, {total}개 스캔 중 {matches}개 파일 일치",
     "pluginsReloaded": "플러그인을 다시 불러왔습니다.",
+    "reloadSourceOnly": "핸들러 다시 불러오기는 소스 코드로 실행할 때만 가능합니다.",
+    "updateDownloading": "v{version} 다운로드 중: {mb} MB",
+    "updateInstalling": "v{version} 설치 중, 앱이 다시 시작됩니다…",
     "found": "\"{query}\"와 일치하는 파일 {cap}개 발견",
     "copiedRow": "선택한 행을 복사했습니다.",
     "searchError": "검색 오류: {message}",
@@ -230,5 +235,17 @@
   "locWarning": {
     "missing": "{language}용 {file} 파일이 없어 앱 UI만 {language}(으)로 표시됩니다. 표의 게임 텍스트는 한국어로 남습니다.",
     "dismiss": "닫기"
+  },
+  "appUpdate": {
+    "available": "버전 {version}을(를) 사용할 수 있습니다",
+    "dismiss": "닫기",
+    "title": "v{version}(으)로 업데이트",
+    "current": "현재 버전은 v{version}입니다.",
+    "close": "닫기",
+    "openOnGitHub": "GitHub에서 열기",
+    "install": "업데이트",
+    "failed": "업데이트 실패: {message}",
+    "nothingToInstall": "설치할 업데이트가 없습니다.",
+    "otherInstances": "먼저 다른 BDO PAZ Browser 창과 명령을 닫으세요."
   }
 }

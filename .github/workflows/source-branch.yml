@@ -1,0 +1,28 @@
+name: Source branch
+
+# A release is a PR from staging into main. Rulesets can't restrict a PR's
+# source branch, so this check does, and the main ruleset requires it.
+on:
+  pull_request:
+    branches: [main]
+    # edited: rerun when a PR's base branch changes to main.
+    types: [opened, synchronize, reopened, edited]
+
+permissions: {}
+
+jobs:
+  source:
+    # Required by the main ruleset under this name.
+    name: Source is staging
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the source branch
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          REPO: ${{ github.repository }}
+        run: |
+          if [ "$HEAD_REF" != "staging" ] || [ "$HEAD_REPO" != "$REPO" ]; then
+            echo "::error::PRs into main come from staging in $REPO, not $HEAD_REPO:$HEAD_REF."
+            exit 1
+          fi

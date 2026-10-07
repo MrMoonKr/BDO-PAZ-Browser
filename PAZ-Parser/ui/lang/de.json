@@ -146,6 +146,8 @@
     "showPaTagsHint": "Die <PAColor>-Tags von Spieltext neben seinen Farben anzeigen",
     "handledOnly": "Nur unterstützte Tabellen anzeigen",
     "handledOnlyHint": "Dateibaum und Suchen auf Dateien mit ausgewerteter Tabellenansicht beschränken",
+    "checkAppUpdates": "Beim Start nach Updates suchen",
+    "checkAppUpdatesHint": "Beim Start bei GitHub nach einer neueren Version fragen. Aktualisiert wird nur auf Klick.",
     "recordsCache": "Tabellen-Cache",
     "recordsCacheHint": "Ausgewertete Tabellen auf der Festplatte behalten, damit sie ohne erneutes Auswerten öffnen",
     "recordsCacheOff": "Aus",
@@ -181,6 +183,9 @@
     "searching": "Suche… {done}/{total} Dateien gescannt, bisher {matches} Treffer",
     "searchDone": "Suche abgeschlossen, {matches} Datei(en) von {total} gescannten gefunden",
     "pluginsReloaded": "Plugins neu geladen.",
+    "reloadSourceOnly": "Handler neu laden geht nur beim Start aus dem Quellcode.",
+    "updateDownloading": "Lade v{version} herunter: {mb} MB",
+    "updateInstalling": "Installiere v{version}, die App startet neu…",
     "found": "{cap}Dateien passend zu \"{query}\" gefunden",
     "copiedRow": "Ausgewählte Zeile kopiert.",
     "searchError": "Suchfehler: {message}",
@@ -230,5 +235,17 @@
   "locWarning": {
     "missing": "Dir fehlt {file} für {language}, daher ist nur die Oberfläche der App auf {language}. Spieltexte in den Tabellen bleiben koreanisch.",
     "dismiss": "Ausblenden"
+  },
+  "appUpdate": {
+    "available": "Version {version} ist verfügbar",
+    "dismiss": "Ausblenden",
+    "title": "Auf v{version} aktualisieren",
+    "current": "Du hast v{version}.",
+    "close": "Schließen",
+    "openOnGitHub": "Auf GitHub öffnen",
+    "install": "Aktualisieren",
+    "failed": "Update fehlgeschlagen: {message}",
+    "nothingToInstall": "Kein Update zum Installieren.",
+    "otherInstances": "Schließe zuerst die anderen BDO PAZ Browser Fenster und Befehle."
   }
 }

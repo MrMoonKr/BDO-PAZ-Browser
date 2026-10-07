@@ -91,3 +91,31 @@ def test_line_endings_do_not_change_the_fingerprint(fake_builder) -> None:
     helper.write_bytes(source.replace(b"\n", b"\r\n"))
 
     assert builder_fingerprint([build]) == lf
+
+
+def test_a_module_without_source_counts_as_the_build(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """In the exe, core modules sit in its archive; the build ID stands for them."""
+    from types import ModuleType
+
+    from app_version import BuildInfo
+
+    archived = ModuleType("paz.archived")
+    archived.__file__ = str(tmp_path / "paz" / "archived.pyc")  # never written
+    builds = iter([BuildInfo("2026.10.07", "aaaaaaa"), BuildInfo("2026.10.12", "bbbbbbb")])
+
+    def digest() -> bytes:
+        monkeypatch.setattr(fingerprint_module, "build_info", lambda: next(builds))
+        return fingerprint_module._module_digest(archived, lambda path: b"unused")
+
+    assert digest() != digest()
+
+
+def test_a_module_without_source_is_an_error_from_source(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import ModuleType
+
+    missing = ModuleType("paz.missing")
+    missing.__file__ = str(tmp_path / "missing.py")
+    monkeypatch.setattr(fingerprint_module, "build_info", lambda: None)
+
+    with pytest.raises(FileNotFoundError):
+        fingerprint_module._module_digest(missing, lambda path: b"unused")

@@ -1,0 +1,73 @@
+/* ── App update banner and popup ──────────────────────────────────────────── */
+
+/* In the toolbar, left of the settings button; it takes over the auto margin
+   that pushes the settings button right. */
+.app-update {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 4px 2px 10px;
+  background: var(--accent-d);
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  font-size: 12px;
+}
+.app-update:not([hidden]) + #btn-settings {
+  margin-left: 0;
+}
+
+.app-update-open {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--fg-white);
+  font-size: 12px;
+  cursor: pointer;
+}
+.app-update-open:hover {
+  text-decoration: underline;
+}
+
+.app-update-close {
+  background: none;
+  border: none;
+  color: var(--fg-muted);
+  padding: 0 4px;
+  font-size: 11px;
+  line-height: 1;
+}
+.app-update-close:hover {
+  color: var(--fg-white);
+}
+
+.app-update-modal {
+  width: 520px;
+  max-height: 80vh;
+}
+
+.app-update-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  overflow-y: auto;
+  font-size: 12px;
+  color: var(--fg);
+}
+
+.app-update-notes h4 {
+  margin: 10px 0 4px;
+  font-size: 12px;
+  color: var(--fg-white);
+}
+.app-update-notes ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.app-update-notes li,
+.app-update-notes p {
+  margin: 2px 0;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}

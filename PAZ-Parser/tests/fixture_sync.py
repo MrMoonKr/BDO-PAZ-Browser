@@ -15,7 +15,7 @@ from pathlib import Path
 from paz.bdo_meta_reader import read_bdo_meta
 from paz.bdo_paz_extract import find_single_meta_file
 
-from .fixtures import FIXTURES_DIR, configured_paz_folder, fetch_fixtures, find_external_fixture
+from .fixtures import FIXTURES_DIR, fetch_fixtures, find_external_fixture, installed_paz_folder
 
 
 STAMP_FILE_NAME = ".client_stamp.json"
@@ -60,8 +60,8 @@ def sync_fixtures(force: bool, report: Callable[[str], None]) -> None:
 
 
 def read_installed_stamp() -> ClientStamp | None:
-    paz_folder = configured_paz_folder()
-    if paz_folder is None or not paz_folder.is_dir():
+    paz_folder = installed_paz_folder()
+    if paz_folder is None:
         return None
 
     try:

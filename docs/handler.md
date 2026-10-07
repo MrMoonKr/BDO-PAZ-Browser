@@ -4,7 +4,11 @@ This guide explains how custom preview handlers should be structured, loaded, an
 
 ## Loader Rules
 
-The browser loads handlers from the `handlers/` folder at startup.
+The browser loads handlers from the `handlers/` folder at startup. Importing
+`bdo_preview` registers nothing: each entry point calls
+`load_plugins(BUNDLED_HANDLERS_DIR)` (`bdo_app.main()`, `bench.cli.main()` and
+`pytest_sessionstart()` in `conftest.py`), so the Windows exe can pass an
+updated handler pack instead.
 
 Only files matching these rules are auto-loaded:
 
@@ -528,7 +532,12 @@ Each file is fetched into a staging folder and then replaces the cached copy,
 and the stamp is written only after every fetch succeeded. A failed fetch
 stops the run and keeps the old files and stamp, so the next run retries.
 Without a configured or reachable client the run uses the cached fixtures as
-they are and says so.
+they are and says so. A test whose fixtures are not cached is then skipped
+instead of failed (`fetch_missing()` in `tests/fixtures.py`), so CI, which has
+no client, runs only the tests that need no game files. With a client, a fetch
+that fails still fails the test. Load fixtures inside a test or fixture, never
+at import time: a skip at import time fails collection for every module that
+imports it.
 
 | Option                | Effect                                                          |
 |-----------------------|-----------------------------------------------------------------|
@@ -1063,7 +1072,10 @@ entry for the ID; render a dash in either case. `is_index_loaded()` tells the
 two apart when it matters. Unit tests install an index with
 `init_index(kind, mapping)` and drop it with `clear_indexes()`; a
 `HandlerCase` takes `lookup_indexes={kind: mapping}`, which the runner installs
-while the handler runs and removes afterwards.
+while the handler runs and removes afterwards. For an index built from other
+fixtures, pass a function that returns the mapping instead; the runner calls it
+when the case runs (see `_node_parent_index` in
+`plantexchangegroup/test_handler.py`).
 
 Every index is one `IndexSpec(kind, sources, build)` in
 `INDEX_SPECS` (`_common/lookup_builders.py`). `build` receives the payloads of
@@ -1579,6 +1591,29 @@ from _texture.some_internal_file import ...
 
 If something is shared across formats, move it to `_common/`.
 
+### Handler API
+
+Handlers will ship apart from the Windows exe as handler packs, so handler code
+may import only what every exe bundles. `handler_api.py` lists it:
+
+| List | Holds |
+|------|-------|
+| `CORE_MODULES` | `bdo_models`, `bdo_preview`, `record_fields`, `table_sort`, `ui_text` |
+| `STDLIB_MODULES` | the standard library modules handlers use today (`struct`, `dataclasses`, `re`, ...) |
+| `CORE_CALLED_COMMON` | the `_common` modules the core imports: `data_deps`, `html`, `loc`, `lookup_builders`, `lookup_index`, `pa_text` |
+
+`tests/test_handler_imports.py` fails when handler code (anything under
+`handlers/` but `test_*.py`) imports a module outside the first two lists, or
+when the core imports a `_common` module outside the third. Test modules may
+import anything, since packs ship without them.
+
+`HANDLER_API` in the same file is the version of that contract; an exe loads
+only a pack with the same number. Bump it only on a breaking change: a removed
+or renamed function, or a changed signature or return shape, in a
+`CORE_MODULES` module or a `CORE_CALLED_COMMON` module. Adding a module to an
+allowlist is a bump too, since an older exe lacks it. Adding a function or a
+handler is not.
+
 ## Required `__init__.py`
 
 Every package folder should contain `__init__.py`.
@@ -1598,20 +1633,12 @@ This keeps imports predictable when handlers are loaded dynamically.
 
 ## Loader Requirement
 
-The plugin loader should add `handlers/` to `sys.path` before importing plugins.
-
-```python
-handlers_path = str(handlers_dir.resolve())
-
-if handlers_path not in sys.path:
-    sys.path.insert(0, handlers_path)
-```
-
-Without this, imports like this may fail:
-
-```python
-from _dbss.registration import register_dbss_handlers
-```
+The handlers folder has to be on `sys.path` before anything imports from it:
+plugins import `_dbss.registration` and the like, and the core imports
+`_common` (see Handler API). `use_handlers_dir()` in `bdo_preview.py` puts it
+first on the path, and the entry points call it before importing the core:
+`bdo_app.py` at the top, `benchmark.py` before `bench.cli`, and `conftest.py`
+for the tests. `load_plugins()` calls it as well.
 
 ## Naming Conventions
 
@@ -1671,7 +1698,7 @@ Raise only for actual programming errors.
 14. Keep raw hex switching in the frontend, not the handler.
 15. Move reusable logic to `_common/` when another format needs it.
 
-> **Tip:** Press **Ctrl+R** in the GUI to reload all handlers without restarting the app. Changes to any file under `handlers/`, including private packages like `_dbss/`, take effect immediately. If a file is open on the Parsed tab, the preview re-renders automatically.
+> **Tip:** Press **Ctrl+R** in the GUI to reload all handlers without restarting the app. Changes to any file under `handlers/`, including private packages like `_dbss/`, take effect immediately. If a file is open on the Parsed tab, the preview re-renders automatically. Write and reload handlers in the source version: the Windows exe runs its bundled handlers and answers Ctrl+R with "Handler reload is only available when running from source".
 
 ## Minimal New Format Example
 

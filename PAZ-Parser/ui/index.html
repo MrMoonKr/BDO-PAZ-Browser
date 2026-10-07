@@ -11,6 +11,10 @@
     <div id="toolbar">
       <button id="btn-open" onclick="app.openFolder()" data-i18n="toolbar.openFolder">📂 Open PAZ Folder</button>
       <span id="folder-path" class="muted" data-i18n="toolbar.noFolderSelected">No folder selected</span>
+      <div id="app-update" class="app-update" role="status" hidden>
+        <button id="app-update-text" class="app-update-open" onclick="app.openAppUpdate()"></button>
+        <button class="app-update-close" onclick="app.dismissAppUpdate()" data-i18n-title="appUpdate.dismiss" title="Dismiss">✕</button>
+      </div>
       <button id="btn-settings" onclick="app.openSettings()" data-i18n-title="toolbar.settings" title="Settings">⚙️</button>
     </div>
     <div class="sep-h"></div>
@@ -140,6 +144,11 @@
             <input id="settings-handled-only" type="checkbox" />
             <span data-i18n="settings.handledOnly">Show only handled tables</span>
           </label>
+          <!-- Only in the exe: from source, git pull updates. -->
+          <label id="settings-check-app-updates-row" class="settings-check" data-i18n-title="settings.checkAppUpdatesHint" title="Ask GitHub for a newer release when the app starts. Updating always takes a click." hidden>
+            <input id="settings-check-app-updates" type="checkbox" />
+            <span data-i18n="settings.checkAppUpdates">Check for updates on start</span>
+          </label>
           <label class="settings-label" for="settings-data-folder" data-i18n="settings.dataFolder">Data Folder</label>
           <div class="settings-path-row">
             <!-- Empty for the default folder, which get_settings() puts in the placeholder. -->
@@ -191,6 +200,23 @@
     <div id="loc-warning" class="loc-warning" role="status" hidden>
       <span id="loc-warning-text"></span>
       <button class="loc-warning-close" onclick="app.dismissLocWarning()" data-i18n-title="locWarning.dismiss" title="Dismiss">✕</button>
+    </div>
+
+    <div id="app-update-overlay" class="settings-overlay" hidden>
+      <div class="settings-modal app-update-modal" role="dialog" aria-labelledby="app-update-title">
+        <div class="settings-header">
+          <span id="app-update-title"></span>
+          <button class="settings-close" onclick="app.closeAppUpdate()" data-i18n-title="appUpdate.close" title="Close">✕</button>
+        </div>
+        <div class="app-update-body">
+          <div id="app-update-current" class="settings-unit"></div>
+          <div id="app-update-notes" class="app-update-notes"></div>
+        </div>
+        <div class="settings-footer">
+          <button onclick="app.openAppUpdatePage()" data-i18n="appUpdate.openOnGitHub">Open on GitHub</button>
+          <button id="app-update-install" class="btn-primary" onclick="app.installAppUpdate()" data-i18n="appUpdate.install">Update</button>
+        </div>
+      </div>
     </div>
 
     <script type="module" src="app.js"></script>

@@ -31,7 +31,7 @@ from app_dirs import (
     set_picked_data_dir,
 )
 from bdo_preview import PreviewHandler, get_handler, has_parsed_view, parsed_handlers, set_records_source
-# After bdo_preview, which puts the handlers folder (and so _common) on the path.
+# The handlers folder the entry point put on the path (bdo_preview.use_handlers_dir).
 from _common.loc import init_loc
 from paz import bdo_cache, bdo_index_cache, bdo_records_cache, bdo_thumbnail_cache
 from paz.bdo_cache import save_cache
