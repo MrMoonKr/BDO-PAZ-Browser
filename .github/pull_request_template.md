@@ -13,6 +13,7 @@
 
 ## Checklist
 
+- [ ] The pull request targets `staging`, and its title is a Conventional Commit subject (`feat: ...`, `fix: ...`)
 - [ ] `python -m pytest --clean` passes (skip for docs-only changes)
 - [ ] `python -m pyright` passes with no errors (skip for docs-only changes)
 - [ ] Docs are updated to match the change
