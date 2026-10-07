@@ -2,47 +2,41 @@
 
 > **Work in progress.** Format coverage is incomplete and the API may change. Contributions and corrections are welcome.
 
-A Python tool for browsing, extracting, and previewing files from **Black Desert Online**'s `.paz` game archives, with a plugin system for parsing BDO-specific binary formats.
+A Python tool for browsing, extracting, and previewing files from Black Desert Online's `.paz` game archives, with a plugin system for parsing BDO-specific binary formats.
 
 ![BDO PAZ Browser](docs/assets/screenshot.png)
 
----
-
 ## Features
 
-- **GUI browser**, tree-view file explorer for the full PAZ archive, with live search and file preview
-- **CLI extraction**, extract files by name or glob pattern without opening the GUI
-- **File preview**, text, hex dump, DDS images, and parsed binary tables for known formats
-- **Paged preview**, large files (hex and parsed tabs) are paged; navigate with Prev/Next without loading the full DOM
-- **Sortable tables**, click a column header to sort the whole parsed table, not just the page on screen; a table opens sorted by its first column, highest first, until you click another sort, which is remembered per file
-- **Tab search**, Ctrl+F inline search within hex (byte offset) and parsed (record) tabs; string and hex-pattern modes
-- **Export**, save the current file as raw binary (hex tab) or CSV (parsed tab) via the Entry Details panel
-- **Game text colours**, LOC text shows the colours of its `<PAColor>` tags, as in game; the **Show game text tags** setting (off by default) also shows the tags themselves
-- **Handled tables only**, the **Show only handled tables** setting (off by default) limits the file tree, file search, content search and folder extraction to files with a parsed table view, plus the LOC file
-- **Languages**, the language setting picks both the UI text and the LOC file the tables read game text from (`ads/languagedata_<code>.loc`), which also sits at the top of the file tree and follows a language switch. A client ships only its region's LOC files; when the picked language's file is missing, a corner warning says only the UI is in that language and the tables show their Korean text. Dismissing it keeps it closed for that language, and the settings still mark the language with a ⚠ icon
-- **Plugin system**, add handlers for new binary formats by dropping a file into `handlers/`
-- **Caching**, PAZ index is parsed once and cached; subsequent launches load instantly
-- **Parsed table cache**, parsed tables are kept on disk next to the PAZ files, so a big table reopens in a fraction of its parse time (`detail_dialog.dbss` 1.3 s to 0.25 s, `itemenchant.dbss` with its default sort 2.1 s to 0.5 s). The **Parsed Table Cache** setting picks Off, Cache tables when opened (default) or Cache all tables in the background, which parses every table A to Z while the app is idle; the status bar shows the table it is on, how far the pass is, and when it waits for you. A table stays cached across a patch that leaves it, its companions and the LOC text or lookup indexes it reads unchanged. **Delete all caches** in the settings removes the parsed table, icon thumbnail and lookup index caches; the PAZ index cache stays, since rebuilding it takes over a minute. In the background mode, the pass then waits for the next start instead of filling the cache again right away
-
----
+- **GUI browser**: tree-view file explorer for the full PAZ archive, with live search and file preview
+- **CLI extraction**: extract files by name or glob pattern without opening the GUI
+- **File preview**: text, hex dump, DDS images, and parsed binary tables for known formats
+- **Paged preview**: large files (hex and parsed tabs) are paged; navigate with Prev/Next without loading the full DOM
+- **Sortable tables**: click a column header to sort the whole parsed table, not just the page on screen; a table opens sorted by its first column, highest first, until you click another sort, which is remembered per file
+- **Tab search**: Ctrl+F inline search within hex (byte offset) and parsed (record) tabs; string and hex-pattern modes
+- **Export**: save the current file as raw binary (hex tab) or CSV (parsed tab) via the Entry Details panel
+- **Game text colours**: LOC text shows the colours of its `<PAColor>` tags, as in game; the **Show game text tags** setting (off by default) also shows the tags themselves
+- **Handled tables only**: the **Show only handled tables** setting (off by default) limits the file tree, file search, content search and folder extraction to files with a parsed table view, plus the LOC file
+- **Languages**: the language setting picks both the UI text and the LOC file the tables read game text from (`ads/languagedata_<code>.loc`), which also sits at the top of the file tree and follows a language switch. A client ships only its region's LOC files; when the picked language's file is missing, a corner warning says only the UI is in that language and the tables show their Korean text. Dismissing it keeps it closed for that language, and the settings still mark the language with a ⚠ icon
+- **Plugin system**: add handlers for new binary formats by dropping a file into `handlers/`
+- **Caching**: the PAZ index is parsed once and cached; later launches read it from the cache
+- **Parsed table cache**: parsed tables are kept on disk next to the PAZ files, so a big table reopens in a fraction of its parse time (`detail_dialog.dbss` 1.3 s to 0.25 s, `itemenchant.dbss` with its default sort 2.1 s to 0.5 s). The **Parsed Table Cache** setting picks Off, Cache tables when opened (default) or Cache all tables in the background, which parses every table A to Z while the app is idle; the status bar shows the table it is on, how far the pass is, and when it waits for you. A table stays cached across a patch that leaves it, its companions and the LOC text or lookup indexes it reads unchanged. **Delete all caches** in the settings removes the parsed table, icon thumbnail and lookup index caches; the PAZ index cache stays, since rebuilding it takes over a minute. In the background mode, the pass then waits for the next start instead of filling the cache again right away
 
 ## Contributing Format Coverage
 
-BDO has hundreds of undocumented binary formats, contributions and corrections are welcome.
+BDO has hundreds of undocumented binary formats. Contributions and corrections are welcome.
 
-**Reverse engineer a new format**, open a new issue using the [file format template](../../issues/new?template=file-format.yml) and title it `filename.ext` (e.g. `yachtdicepreset.dbss` or `.pac`).
+**Reverse engineer a new format**: open a new issue using the [file format template](../../issues/new?template=file-format.yml) and title it `filename.ext` (e.g. `yachtdicepreset.dbss` or `.pac`).
 
-**Improve existing docs**, the format docs in [`docs/file-formats/`](docs/file-formats/) are not all complete. Each doc has an **Open Questions** section listing specific unknowns, if you can answer any of them, feel free to update the doc directly.
+**Improve existing docs**: the format docs in [`docs/file-formats/`](docs/file-formats/) are not all complete. Each doc has an **Open Questions** section listing specific unknowns. If you can answer any of them, update the doc directly.
 
-**Translate the UI**, UI strings live in [`PAZ-Parser/ui/lang/`](PAZ-Parser/ui/lang/) as small JSON files, one per language. Missing keys fall back to English automatically, so partial translations are fine. See [`TRANSLATING.md`](PAZ-Parser/ui/lang/TRANSLATING.md) for instructions.
+**Translate the UI**: UI strings live in [`PAZ-Parser/ui/lang/`](PAZ-Parser/ui/lang/) as small JSON files, one per language. Missing keys fall back to English automatically, so partial translations are fine. See [`TRANSLATING.md`](PAZ-Parser/ui/lang/TRANSLATING.md) for instructions.
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) for setup, the checks to run before a pull request, and project conventions.
 
----
-
 ## Writing a Preview Handler
 
-Drop a `.py` file (not starting with `_`) into `handlers/`, it is auto-loaded at startup.
+Drop a `.py` file (not starting with `_`) into `handlers/`. It is auto-loaded at startup.
 
 All parsed-view handlers must implement two methods:
 
@@ -77,8 +71,6 @@ See [docs/handler.md](docs/handler.md) for the full guide, including companion f
 
 > **Tip:** Press **Ctrl+R** in the GUI to reload all handlers without restarting the app. If you have a file open on the Parsed tab, the preview re-renders automatically with the updated handler.
 
----
-
 ## Supported Formats
 
 - Handler Supported 41/403 .bss formats.
@@ -89,14 +81,12 @@ See [docs/handler.md](docs/handler.md) for the full guide, including companion f
 
 See [docs/documented-formats.md](docs/documented-formats.md) for the full table.
 
----
-
 ## Requirements
 
 - Python 3.10+
-- [pywebview](https://pywebview.flowrl.com/), GUI shell
-- [numpy](https://numpy.org/), for ICE decryption
-- [Pillow](https://python-pillow.org/), optional, for DDS image preview
+- [pywebview](https://pywebview.flowrl.com/) for the GUI shell
+- [numpy](https://numpy.org/) for ICE decryption
+- [Pillow](https://python-pillow.org/) for DDS image preview (optional)
 
 ```
 pip install pywebview numpy
@@ -108,8 +98,6 @@ Or install from the provided requirements file:
 ```
 pip install -r PAZ-Parser/requirements.txt
 ```
-
----
 
 ## Testing
 
@@ -142,8 +130,6 @@ python -m pyright
 ```
 
 Run both the tests and pyright before committing a Python change; both should pass with no errors.
-
----
 
 ## Benchmarking
 
@@ -223,8 +209,6 @@ shares a run with the timings. `profile` slows every call too; use it to find
 hot functions, and `run` for numbers. Its `--save` file opens in snakeviz or
 `pstats`.
 
----
-
 ## Usage
 
 ### GUI
@@ -233,7 +217,7 @@ hot functions, and `run` for numbers. Its `--save` file opens in snakeviz or
 python browser.py
 ```
 
-On first launch, click **Open Folder** and select your BDO PAZ directory (typically `Black Desert/Paz`). The index is parsed and cached, subsequent launches load from cache automatically.
+On first launch, click **Open Folder** and select your BDO PAZ directory (typically `Black Desert/Paz`). The index is parsed and cached, and later launches load it from the cache.
 
 ### CLI
 
@@ -288,8 +272,6 @@ The CLI always shows game text tags, whatever the GUI setting: `--render`
 draws them next to the colours, and `--records` lists the tagged text in the
 fields starting with `_` (`_description_pa` next to the plain `description`).
 CSV leaves those fields out, like the app's export.
-
----
 
 ## Project Structure
 
@@ -389,8 +371,6 @@ docs/
 ├── style-guide.md          # UI color palette and component reference
 └── file-formats/           # Per-format binary layout documentation
 ```
-
----
 
 ## Disclaimer
 

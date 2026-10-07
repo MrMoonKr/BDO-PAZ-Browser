@@ -44,7 +44,7 @@ Also check that:
 - **Tests survive game patches.** Assert structure and stable identity (schemas, ranges, known IDs), never row counts, positions or balance values that change with an update.
 - **Text columns** use the loaded LOC language first, then fall back to the inline Korean text.
 - **Small, focused files.** Split code by responsibility and reuse the shared helpers in `handlers/_common/` and `handlers/_dbss/common/` rather than copying them.
-- **Commit messages** follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `style:`. Keep the subject short and in the imperative, e.g. `feat: add the buffsimply.bss handler and buff icons`.
+- **Commit messages** follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `style:`. Keep the subject short and say what it adds or changes, e.g. `feat: add the buffsimply.bss handler and buff icons` or `feat: blizzardregioninfo and edaniaregioninfo tables`.
 
 ## Code of Conduct
 
