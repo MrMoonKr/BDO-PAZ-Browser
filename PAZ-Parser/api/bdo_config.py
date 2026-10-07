@@ -1,22 +1,31 @@
-"""User config in `paz_config.json`: settings and per-file table sorts."""
+"""User config in `paz_config.json` in the Data Folder: settings and per-file table sorts."""
 
 from __future__ import annotations
 
 import json
+import logging
 from collections.abc import Collection
 from pathlib import Path
 
+import app_dirs
 from table_sort import TableSort
 
-CONFIG_FILE = Path(__file__).parent.parent / "paz_config.json"
+# Where the config lived before the Data Folder; `bdo_app.main()` moves it over.
+LEGACY_CONFIG_FILE = Path(__file__).parent.parent / app_dirs.CONFIG_NAME
 
 # {"buff.dbss": {"field": "duration_ms", "dir": "desc"}, ...}
 _TABLE_SORT_KEY = "table_sort"
 
 
+def config_file() -> Path:
+    """`paz_config.json` in the Data Folder in use (`app_dirs.py`)."""
+    return app_dirs.config_file()
+
+
 def load_config() -> dict:
+    path = config_file()
     try:
-        return json.loads(CONFIG_FILE.read_text()) if CONFIG_FILE.exists() else {}
+        return json.loads(path.read_text()) if path.exists() else {}
     except Exception:
         return {}
 
@@ -50,10 +59,12 @@ def dismissed_loc_warnings(cfg: dict) -> frozenset[str]:
 
 def save_config(updates: dict) -> None:
     cfg = {**load_config(), **updates}
+    path = config_file()
     try:
-        CONFIG_FILE.write_text(json.dumps(cfg, indent=2))
-    except Exception:
-        pass
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(cfg, indent=2))
+    except OSError:
+        logging.warning("Could not save the settings to %s", path, exc_info=True)
 
 
 def table_sort_file_key(internal_path: str) -> str:

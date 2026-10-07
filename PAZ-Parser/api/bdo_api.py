@@ -10,6 +10,7 @@ from pathlib import Path
 
 import webview
 
+from app_dirs import data_dir, default_data_dir, is_same_folder, picked_data_dir
 from .bdo_api_caches import CacheMixin
 from .bdo_config import (
     RECORDS_CACHE_MODES,
@@ -53,6 +54,25 @@ def _table_row_height(value: object) -> int:
     return max(_MIN_TABLE_ROW_HEIGHT, min(_MAX_TABLE_ROW_HEIGHT, height))
 
 
+def _data_folder(text: str) -> str | None:
+    """`text` as the "Data Folder" setting ("" for the default), or None when it cannot be used.
+
+    The folder is created here, so a path that cannot be created is refused
+    before anything is saved.
+    """
+    folder = text.strip()
+    if not folder:
+        return ""
+    path = Path(folder)
+    if not path.is_absolute():
+        return None
+    try:
+        path.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        return None
+    return str(path)
+
+
 class Api(PreviewMixin, SearchMixin, CacheMixin):
     """Backend the UI calls through pywebview; the CLI loads folders through it too."""
 
@@ -64,6 +84,11 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
     @property
     def paz_root(self) -> Path | None:
         return self._paz_root
+
+    @property
+    def cache_dir(self) -> Path | None:
+        """The cache folder of the loaded PAZ folder."""
+        return self._cache_dir
 
     def set_window(self, window: webview.Window) -> None:
         self._window = window
@@ -112,6 +137,7 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
 
     def get_settings(self) -> dict:
         cfg = load_config()
+        picked = picked_data_dir()
         return {
             "paz_path": cfg.get("last_folder", ""),
             "language": cfg.get("language", "en"),
@@ -119,6 +145,8 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
             "show_pa_tags": show_pa_tags_setting(cfg),
             "handled_only": handled_only_setting(cfg),
             "records_cache": records_cache_setting(cfg),
+            "data_folder": str(picked or ""),
+            "default_data_folder": str(default_data_dir()),
             "cache_bytes": self._cache_size(),
             "languages": [{"code": language.code, "name": language.name} for language in UI_LANGUAGES],
             "missing_loc": self._missing_loc_files(),
@@ -159,13 +187,26 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
         show_pa_tags: bool = False,
         handled_only: bool = False,
         records_cache: str = "",
+        data_folder: str = "",
     ) -> dict:
         self._wait_for_folder_text()
         if language not in UI_LANGUAGE_CODES:
             return {"ok": False, "error": ui_text("errors.invalidLanguage", language=language)}
+        new_data_folder = _data_folder(data_folder)
+        if new_data_folder is None:
+            return {"ok": False, "error": ui_text("errors.invalidDataFolder", folder=data_folder)}
         if records_cache not in RECORDS_CACHE_MODES:
             records_cache = records_cache_setting(load_config())
         old_cfg = load_config()
+        # First, so the settings below are saved in the new folder.
+        old_data_dir = data_dir()
+        new_data_dir = Path(new_data_folder) if new_data_folder else default_data_dir()
+        cache_errors: list[str] = []
+        if not is_same_folder(old_data_dir, new_data_dir):
+            try:
+                cache_errors = self._move_data_dir(old_data_dir, new_data_dir)
+            except OSError as ex:
+                return {"ok": False, "error": ui_text("errors.invalidDataFolder", folder=f"{data_folder} ({ex})")}
         row_height = _table_row_height(table_row_height)
         save_config({
             "last_folder": paz_path,
@@ -192,7 +233,12 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
             self._open_records_cache()
         elif is_new_language:
             self._refresh_records_cache()
-        return {"ok": True, "table_row_height": row_height, "loc_file": self._loc_file_name()}
+        return {
+            "ok": True,
+            "table_row_height": row_height,
+            "loc_file": self._loc_file_name(),
+            "cache_error": "; ".join(cache_errors),
+        }
 
     def _loc_file_name(self) -> str | None:
         """The LOC file the tree root shows, or None when none is loaded."""
@@ -285,6 +331,8 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
         """
         self._close_records_cache()
         self._paz_root = paz_root
+        self._open_cache_dir(paz_root)
+        assert self._cache_dir is not None
         clear_payload_cache()
         # The slots hold the old folder's payloads, parsed with its LOC and indexes.
         self._recent_tables.clear()
@@ -292,14 +340,14 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
         current_version = read_meta_version(meta_path)
         self._meta_version = current_version
         self._set_archive_ids(read_bdo_meta(meta_path))
-        cached = load_cache(paz_root)
+        cached = load_cache(self._cache_dir)
 
         if cached and cached[0] == current_version:
             _, entries = cached
             msg = {"key": "status.loadedFromCache", "args": {"count": f"{len(entries):,}", "version": current_version}}
         else:
             entries = parse(meta_path)
-            save_cache(paz_root, current_version, entries)
+            save_cache(self._cache_dir, current_version, entries)
             msg = {"key": "status.parsedAndCached", "args": {"count": f"{len(entries):,}", "version": current_version}}
 
         self._entries = entries
@@ -308,7 +356,7 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
         self._icon_entry_cache.clear()
         self._icon_data_url_cache.clear()
         self._icon_preview_images.clear()
-        self._open_thumbnail_cache(paz_root, current_version)
+        self._open_thumbnail_cache(self._cache_dir, current_version)
         self._tree_data = build_tree(entries)
         self._handled_view = None
         self._disk_companions = {}
@@ -333,10 +381,9 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
         if cache_records:
             self._open_records_cache()
 
-    def _open_thumbnail_cache(self, paz_root: Path, meta_version: int) -> None:
-        if self._thumbnail_cache is not None:
-            self._thumbnail_cache.close()
-        self._thumbnail_cache = ThumbnailCache(paz_root, meta_version)
+    def _open_thumbnail_cache(self, cache_dir: Path, meta_version: int) -> None:
+        self._close_thumbnail_cache()
+        self._thumbnail_cache = ThumbnailCache(cache_dir, meta_version)
 
     def _parse_with_ticker(self, meta_path: Path) -> list[PazEntry]:
         """Parse the meta file while pushing the elapsed time to the status bar."""
@@ -369,7 +416,7 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
         from _common.lookup_index import IndexKind, clear_indexes, init_index  # noqa: PLC0415
         from .bdo_lookup_indexes import build_indexes, index_fingerprint  # noqa: PLC0415
 
-        if not self._paz_root:
+        if self._cache_dir is None:
             return
 
         clear_indexes()
@@ -377,7 +424,7 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
         by_value = {kind.value: kind for kind in IndexKind}
         fingerprint = index_fingerprint()
 
-        cached = load_index_cache(self._paz_root, fingerprint)
+        cached = load_index_cache(self._cache_dir, fingerprint)
         if cached and cached.version == version:
             loaded = cached
         else:
@@ -395,13 +442,13 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
             loaded = IndexCacheData(version, indexes, index_digests(indexes))
             if indexes:
                 try:
-                    save_index_cache(self._paz_root, fingerprint, loaded)
+                    save_index_cache(self._cache_dir, fingerprint, loaded)
                 except Exception:
                     # Not fatal: the indexes are installed below, only the next
                     # launch has to build them again.
                     logging.warning(
                         "Could not write the lookup index cache in %s",
-                        self._paz_root,
+                        self._cache_dir,
                         exc_info=True,
                     )
 

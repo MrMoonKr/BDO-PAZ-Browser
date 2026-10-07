@@ -1,4 +1,4 @@
-"""Disk cache for parsed table records and their sort orders, next to the PAZ entry cache.
+"""Disk cache for parsed table records and their sort orders, beside the PAZ entry cache.
 
 Parsing a big table costs up to a second (`itemenchant.dbss`, `detail_dialog.dbss`)
 while unpickling its records takes about a fifth of that. One row per table
@@ -91,12 +91,12 @@ class CachedRecords:
 class RecordsCache:
     """Pickled `get_records()` results and their sort orders, for one PAZ folder."""
 
-    def __init__(self, paz_root: Path) -> None:
+    def __init__(self, cache_dir: Path) -> None:
         self._lock = threading.Lock()
         self._conn: sqlite3.Connection | None = None
         self.error = ""
         try:
-            self._conn = self._open(paz_root / CACHE_FILE)
+            self._conn = self._open(cache_dir / CACHE_FILE)
         except sqlite3.Error as ex:
             self._disable(ex)
 

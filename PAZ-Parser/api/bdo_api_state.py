@@ -32,6 +32,8 @@ class ApiState:
         self._server = server
         self._window: webview.Window | None = None
         self._paz_root: Path | None = None
+        # The loaded folder's cache folder (`app_dirs.client_cache_dir`).
+        self._cache_dir: Path | None = None
         self._entries: list[PazEntry] = []
         self._entry_map: dict[str, PazEntry] = {}
         # `fold_entry_map(_entry_map)`, for `_entry_ignoring_case()`.

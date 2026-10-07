@@ -32,15 +32,6 @@ def test_cache_from_before_fingerprints_is_ignored(tmp_path: Path) -> None:
     assert load_index_cache(tmp_path, "abc") is None
 
 
-def test_saving_removes_the_legacy_icon_cache(tmp_path: Path) -> None:
-    legacy = tmp_path / index_cache.LEGACY_CACHE_FILE
-    legacy.write_bytes(b"old")
-
-    save_index_cache(tmp_path, "abc", _DATA)
-
-    assert not legacy.exists()
-
-
 def test_digests_change_only_with_the_index_content() -> None:
     changed = {**_INDEXES, "character_item": {2053: 58012}}
 

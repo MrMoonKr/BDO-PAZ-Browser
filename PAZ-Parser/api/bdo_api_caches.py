@@ -1,4 +1,9 @@
-"""The disk caches next to the PAZ files: the parsed records cache and "delete all".
+"""The disk caches: their folder, the parsed records cache and "delete all".
+
+Each PAZ folder has its own cache folder in the Data Folder's `cache` folder
+(`app_dirs.py`). Changing the "Data Folder" setting copies the config over,
+deletes the caches in the old folder and starts the loaded folder's caches in
+the new one.
 
 The "Parsed table cache" setting picks how records are cached:
 
@@ -15,10 +20,21 @@ import time
 from pathlib import Path
 
 from bdo_models import MetaFile, PazEntry
+from app_dirs import (
+    cache_root,
+    client_cache_dir,
+    copy_config,
+    data_dir,
+    default_data_dir,
+    move_out_of_game_folder,
+    remove_cache_root,
+    set_picked_data_dir,
+)
 from bdo_preview import PreviewHandler, get_handler, has_parsed_view, parsed_handlers, set_records_source
 # After bdo_preview, which puts the handlers folder (and so _common) on the path.
 from _common.loc import init_loc
-from paz import bdo_index_cache, bdo_records_cache, bdo_thumbnail_cache
+from paz import bdo_cache, bdo_index_cache, bdo_records_cache, bdo_thumbnail_cache
+from paz.bdo_cache import save_cache
 from paz.bdo_payload_reader import read_entry_payload
 from paz.bdo_records_cache import RecordsCache
 from paz.bdo_thumbnail_cache import ThumbnailCache
@@ -35,19 +51,21 @@ from .bdo_tree import handled_entries
 _IDLE_AFTER_S = 2.0
 
 
-def cache_files(paz_root: Path) -> list[Path]:
-    """The cache files "Delete all caches" removes, next to the PAZ files.
+# What "Delete all caches" removes. The PAZ index cache (`bdo_cache.py`) is
+# kept: rebuilding it reads every archive header again, over a minute, and
+# only a patch makes it stale.
+_DELETABLE_CACHE_FILES = (
+    bdo_index_cache.CACHE_FILE,
+    bdo_thumbnail_cache.CACHE_FILE,
+    bdo_records_cache.CACHE_FILE,
+)
+# Every file of a client's cache folder.
+CACHE_FILES = (bdo_cache.CACHE_FILE, *_DELETABLE_CACHE_FILES)
 
-    The PAZ index cache (`bdo_cache.py`) is kept: rebuilding it reads every
-    archive header again, over a minute, and only a patch makes it stale.
-    """
-    names = (
-        bdo_index_cache.CACHE_FILE,
-        bdo_index_cache.LEGACY_CACHE_FILE,
-        bdo_thumbnail_cache.CACHE_FILE,
-        bdo_records_cache.CACHE_FILE,
-    )
-    return [paz_root / name for name in names]
+
+def cache_files(cache_dir: Path) -> list[Path]:
+    """The cache files "Delete all caches" removes from `cache_dir`."""
+    return [cache_dir / name for name in _DELETABLE_CACHE_FILES]
 
 
 class CacheMixin(ApiState):
@@ -77,6 +95,61 @@ class CacheMixin(ApiState):
         if self._data_digests.generation != generation:
             self._recent_tables.clear()
 
+    # ── Cache folder ─────────────────────────────────────────────────────────
+
+    def _open_cache_dir(self, paz_root: Path) -> None:
+        """Point the caches at the cache folder of `paz_root`, moving old ones out of the game folder.
+
+        A Data Folder whose cache folder cannot be created, such as a
+        read-only one, falls back to the default for this session.
+        """
+        try:
+            cache_dir = client_cache_dir(cache_root(data_dir()), paz_root)
+        except OSError:
+            logging.warning("Cannot use the Data Folder for caches, using the default one", exc_info=True)
+            cache_dir = client_cache_dir(cache_root(default_data_dir()), paz_root)
+        move_out_of_game_folder(paz_root, cache_dir, CACHE_FILES, (bdo_index_cache.LEGACY_CACHE_FILE,))
+        self._cache_dir = cache_dir
+
+    def _move_data_dir(self, old: Path, new: Path) -> list[str]:
+        """Switch the Data Folder from `old` to `new`: copy the config, delete `old`'s caches.
+
+        The config is copied over any config already in `new`; the one in
+        `old` stays. Raises OSError, before anything changed, when the config
+        cannot be copied.
+
+        The loaded folder's entry list is saved again from memory, so the next
+        start skips the minute-long index rebuild. The thumbnail and records
+        caches start empty (the "all" mode fills the records again) and the
+        lookup indexes are built on the next start. Other clients' caches in
+        `old` are deleted too and rebuilt when their folder loads. Returns one
+        message per old cache file that could not be deleted.
+        """
+        copy_config(old, new)
+        set_picked_data_dir(new)
+        self._close_records_cache()
+        self._close_thumbnail_cache()
+        errors = remove_cache_root(cache_root(old), CACHE_FILES)
+        self._cache_dir = None
+        if self._paz_root is None or self._meta_version is None:
+            return errors
+
+        self._open_cache_dir(self._paz_root)
+        assert self._cache_dir is not None
+        try:
+            save_cache(self._cache_dir, self._meta_version, self._entries)
+        except OSError:
+            # Not fatal: the next start parses the meta file again.
+            logging.warning("Could not write the PAZ index cache in %s", self._cache_dir, exc_info=True)
+        self._thumbnail_cache = ThumbnailCache(self._cache_dir, self._meta_version)
+        self._open_records_cache()
+        return errors
+
+    def _close_thumbnail_cache(self) -> None:
+        if self._thumbnail_cache is not None:
+            self._thumbnail_cache.close()
+            self._thumbnail_cache = None
+
     # ── Records cache lifecycle ──────────────────────────────────────────────
 
     def _open_records_cache(self, *, fill: bool = True) -> None:
@@ -87,11 +160,11 @@ class CacheMixin(ApiState):
         """
         self._close_records_cache()
         mode = records_cache_setting(load_config())
-        if mode == "off" or self._paz_root is None:
+        if mode == "off" or self._cache_dir is None:
             return
 
         store = RecordStore(
-            RecordsCache(self._paz_root),
+            RecordsCache(self._cache_dir),
             self._data_digests,
             self._paz_identity,
             self.get_entry,
@@ -186,9 +259,9 @@ class CacheMixin(ApiState):
 
     def _cache_size(self) -> int:
         """Bytes the `cache_files()` of the loaded folder take on disk."""
-        if self._paz_root is None:
+        if self._cache_dir is None:
             return 0
-        return sum(path.stat().st_size for path in cache_files(self._paz_root) if path.is_file())
+        return sum(path.stat().st_size for path in cache_files(self._cache_dir) if path.is_file())
 
     def delete_caches(self) -> dict:
         """Delete the `cache_files()` of the loaded folder.
@@ -199,18 +272,16 @@ class CacheMixin(ApiState):
         so deleting is not undone straight away.
         """
         self._wait_for_folder_text()
-        if self._paz_root is None:
+        if self._cache_dir is None:
             return {"ok": False, "error": ui_text("errors.noFolderLoaded")}
 
         was_filling = self._records_prefill is not None
         self._close_records_cache()
-        if self._thumbnail_cache is not None:
-            self._thumbnail_cache.close()
-            self._thumbnail_cache = None
+        self._close_thumbnail_cache()
 
         freed = 0
         errors: list[str] = []
-        for path in cache_files(self._paz_root):
+        for path in cache_files(self._cache_dir):
             try:
                 size = path.stat().st_size
                 path.unlink()
@@ -221,7 +292,7 @@ class CacheMixin(ApiState):
                 errors.append(f"{path.name}: {ex}")
 
         if self._meta_version is not None:
-            self._thumbnail_cache = ThumbnailCache(self._paz_root, self._meta_version)
+            self._thumbnail_cache = ThumbnailCache(self._cache_dir, self._meta_version)
         self._open_records_cache(fill=False)
         if was_filling:
             # The stopped pass leaves its last progress on the status line.

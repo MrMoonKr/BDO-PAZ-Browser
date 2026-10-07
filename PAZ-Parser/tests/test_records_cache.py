@@ -553,6 +553,7 @@ def test_deleting_the_caches_does_not_restart_the_background_pass(
     monkeypatch.setattr(caches, "records_cache_setting", lambda cfg: "all")
     api = Api()
     api._paz_root = tmp_path
+    api._cache_dir = tmp_path
     api._folder_status = {"key": "status.loadedFromCache", "args": {}}
     api._records_prefill = _RunningPass()  # type: ignore[assignment]
     pushed: list[dict] = []

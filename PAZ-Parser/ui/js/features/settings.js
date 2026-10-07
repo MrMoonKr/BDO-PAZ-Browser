@@ -10,6 +10,8 @@ export const settingsMethods = {
   // The handled-only and language settings as the modal opened, to spot a change on save.
   _savedHandledOnly: false,
   _savedLanguage: "en",
+  // The "Data Folder" setting as the modal opened; "" is the default folder.
+  _savedDataFolder: "",
   // UI language code -> the LOC file this client lacks for it.
   _missingLoc: {},
   // True while save_settings() runs; the modal stays open and cannot close.
@@ -25,6 +27,10 @@ export const settingsMethods = {
     document.getElementById("settings-show-pa-tags").checked = s.show_pa_tags === true;
     document.getElementById("settings-handled-only").checked = s.handled_only === true;
     document.getElementById("settings-records-cache").value = s.records_cache ?? "open";
+    const dataFolder = document.getElementById("settings-data-folder");
+    dataFolder.value = s.data_folder ?? "";
+    dataFolder.placeholder = s.default_data_folder ?? "";
+    this._savedDataFolder = dataFolder.value;
     this._showCacheSize(s.cache_bytes ?? 0);
     this._savedHandledOnly = s.handled_only === true;
     this._savedLanguage = s.language ?? "en";
@@ -63,9 +69,17 @@ export const settingsMethods = {
   },
 
   async browseSettingsPazFolder() {
+    await this._browseInto("settings-paz-path");
+  },
+
+  async browseSettingsDataFolder() {
+    await this._browseInto("settings-data-folder");
+  },
+
+  async _browseInto(inputId) {
     const result = await window.pywebview.api.browse_folder();
     if (result?.ok && result.path) {
-      document.getElementById("settings-paz-path").value = result.path;
+      document.getElementById(inputId).value = result.path;
     }
   },
 
@@ -76,18 +90,25 @@ export const settingsMethods = {
     const showPaTags = document.getElementById("settings-show-pa-tags").checked;
     const handledOnly = document.getElementById("settings-handled-only").checked;
     const recordsCache = document.getElementById("settings-records-cache").value;
+    const dataFolder = document.getElementById("settings-data-folder").value.trim();
     if (this._isSavingSettings) return;
+    // A new data folder deletes the caches in the old one.
+    if (dataFolder !== this._savedDataFolder && !window.confirm(t("settings.dataFolderConfirm"))) return;
     // A new language rebuilds the game text index, which takes a few seconds.
     this._showSettingsSaving(true);
     let result;
     try {
       result = await window.pywebview.api.save_settings(
-        pazPath, language, tableRowHeight, showPaTags, handledOnly, recordsCache,
+        pazPath, language, tableRowHeight, showPaTags, handledOnly, recordsCache, dataFolder,
       );
     } finally {
       this._showSettingsSaving(false);
     }
-    if (!result?.ok) return;
+    if (!result?.ok) {
+      if (result?.error) this.showError(result.error);
+      return;
+    }
+    if (result.cache_error) this.showError(t("settings.cachesDeleteFailed", { message: result.cache_error }));
     this._applyTableRowHeight(result.table_row_height ?? tableRowHeight);
     this.closeSettings();
     await loadLang(language);

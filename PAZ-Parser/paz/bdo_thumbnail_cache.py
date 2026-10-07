@@ -1,4 +1,4 @@
-"""Disk cache for icon cell thumbnails, next to the PAZ entry cache.
+"""Disk cache for icon cell thumbnails, beside the PAZ entry cache.
 
 A thumbnail of a large texture costs seconds: the 14 MB journal artwork of
 `questjournalvideoinfo.bss` takes about 4.5 s just to decrypt and decompress.
@@ -32,12 +32,12 @@ _SCHEMA = (
 class ThumbnailCache:
     """Thumbnail data URLs by normalized icon path, for one client version."""
 
-    def __init__(self, paz_root: Path, meta_version: int) -> None:
+    def __init__(self, cache_dir: Path, meta_version: int) -> None:
         self._lock = threading.Lock()
         self._conn: sqlite3.Connection | None = None
         self.error = ""
         try:
-            self._conn = self._open(paz_root / CACHE_FILE, str(meta_version))
+            self._conn = self._open(cache_dir / CACHE_FILE, str(meta_version))
         except sqlite3.Error as ex:
             self._disable(ex)
 

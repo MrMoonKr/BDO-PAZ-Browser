@@ -1,4 +1,4 @@
-"""The PAZ index cache: every entry of the client, saved next to the PAZ files.
+"""The PAZ index cache: every entry of the client, saved in its cache folder (`app_dirs.py`).
 
 Saved as columns (the archive names once, then one column per field) rather
 than as pickled `PazEntry` objects. Loading builds the entries in C through
@@ -35,9 +35,9 @@ def read_meta_version(meta_path: Path) -> int:
     return struct.unpack("<I", data)[0]
 
 
-def load_cache(paz_root: Path) -> tuple[int, list[PazEntry]] | None:
+def load_cache(cache_dir: Path) -> tuple[int, list[PazEntry]] | None:
     """(meta version, entries) from the cache, or None when it is missing or unreadable."""
-    cache_path = paz_root / CACHE_FILE
+    cache_path = cache_dir / CACHE_FILE
     if not cache_path.exists():
         return None
     try:
@@ -48,8 +48,8 @@ def load_cache(paz_root: Path) -> tuple[int, list[PazEntry]] | None:
         return None
 
 
-def save_cache(paz_root: Path, version: int, entries: list[PazEntry]) -> None:
-    cache_path = paz_root / CACHE_FILE
+def save_cache(cache_dir: Path, version: int, entries: list[PazEntry]) -> None:
+    cache_path = cache_dir / CACHE_FILE
     with cache_path.open("wb") as f:
         pickle.dump(_columns(version, entries), f, protocol=pickle.HIGHEST_PROTOCOL)
 

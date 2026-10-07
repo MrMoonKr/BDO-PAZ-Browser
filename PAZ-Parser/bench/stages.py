@@ -192,9 +192,11 @@ def load_folder_workload(paz_folder: str | None) -> Workload:
     """The folder's PAZ index cache, which must match the client already."""
     api = _open_api(paz_folder)
     paz_root = _paz_root(api)
-    cache_path = paz_root / CACHE_FILE
+    if api.cache_dir is None:
+        raise CliError("the PAZ folder did not load.")
+    cache_path = api.cache_dir / CACHE_FILE
     if not cache_path.is_file():
-        raise CliError(f"no {CACHE_FILE} in {paz_root}; open the folder once first.")
+        raise CliError(f"no {CACHE_FILE} in {api.cache_dir}; open the folder once first.")
 
     info = FixtureInfo(
         name=CACHE_FILE,

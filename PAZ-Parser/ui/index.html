@@ -140,6 +140,12 @@
             <input id="settings-handled-only" type="checkbox" />
             <span data-i18n="settings.handledOnly">Show only handled tables</span>
           </label>
+          <label class="settings-label" for="settings-data-folder" data-i18n="settings.dataFolder">Data Folder</label>
+          <div class="settings-path-row">
+            <!-- Empty for the default folder, which get_settings() puts in the placeholder. -->
+            <input id="settings-data-folder" type="text" spellcheck="false" data-i18n-title="settings.dataFolderHint" title="Where settings and caches are kept, with one cache folder per PAZ folder. Leave empty for the default." />
+            <button onclick="app.browseSettingsDataFolder()" data-i18n-title="settings.browse" title="Browse">…</button>
+          </div>
           <label class="settings-label" for="settings-records-cache" data-i18n="settings.recordsCache">Parsed Table Cache</label>
           <select id="settings-records-cache" data-i18n-title="settings.recordsCacheHint" title="Keep parsed tables on disk so they reopen without parsing again">
             <option value="off" data-i18n="settings.recordsCacheOff">Off</option>

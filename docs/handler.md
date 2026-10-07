@@ -551,7 +551,8 @@ they are and says so.
 Do not re-pin expected values to make a refreshed run pass; a failure after a
 refresh means the parser or the test assumed something a patch can change.
 
-The app must have a saved PAZ folder in `PAZ-Parser/paz_config.json`. Open a PAZ
+The app must have a saved PAZ folder in `paz_config.json` in its data folder
+(`%LOCALAPPDATA%\BDO-PAZ-Browser` unless picked in the settings). Open a PAZ
 folder once in the GUI if test fixture fetching fails.
 
 Run all unit tests with:
@@ -665,8 +666,8 @@ outlives these rules.
 
 ### Parsed Table Cache
 
-The app saves what `get_records()` returns in `paz_browser_records.sqlite` next to the
-PAZ files (`paz/bdo_records_cache.py`, keys in `api/bdo_records_store.py`), and
+The app saves what `get_records()` returns in `paz_browser_records.sqlite` in the
+client's cache folder (`app_dirs.py`, `paz/bdo_records_cache.py`, keys in `api/bdo_records_store.py`), and
 `all_records()` serves it on the next open. The CLI and the benchmark never use it. A
 row is reused only while all of these match:
 
@@ -1327,8 +1328,8 @@ straight into an image, because Pillow's own decoder takes seconds on the
 full-size art some tables use as icons (the 2560 x 1440 journal artwork).
 Thumbnails are built one at a time, since each JS call runs on its own thread
 and a screen of large textures would otherwise starve the window thread, and
-each finished one is stored in `paz_browser_thumbnails.sqlite` next to the PAZ
-files (`paz/bdo_thumbnail_cache.py`), cleared when the meta version changes. A
+each finished one is stored in `paz_browser_thumbnails.sqlite` in the client's
+cache folder (`paz/bdo_thumbnail_cache.py`), cleared when the meta version changes. A
 large texture therefore costs its read (about 1 s for a 14 MB file, mostly
 decompression) once per client version, not once per session.
 

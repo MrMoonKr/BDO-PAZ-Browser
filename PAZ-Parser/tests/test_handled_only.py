@@ -24,7 +24,7 @@ _PATHS = (_HANDLED_TABLE, _HANDLED_WAYPOINT, _UNHANDLED_TABLE, _TEXTURE)
 @pytest.fixture
 def config_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     path = tmp_path / "paz_config.json"
-    monkeypatch.setattr(bdo_config, "CONFIG_FILE", path)
+    monkeypatch.setattr(bdo_config, "config_file", lambda: path)
     return path
 
 

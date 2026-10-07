@@ -10,6 +10,8 @@ from pathlib import Path
 
 import pytest
 
+from app_dirs import CONFIG_NAME, config_file
+
 from .models import HandlerCase
 
 
@@ -118,8 +120,14 @@ def copy_external_fixture(fixture_name: str, output_dir: Path) -> bool:
 
 
 def configured_paz_folder() -> Path | None:
-    """The PAZ folder last opened in the GUI, from `paz_config.json`."""
-    config_path = PAZ_PARSER_DIR / "paz_config.json"
+    """The PAZ folder last opened in the GUI, from `paz_config.json` in the Data Folder.
+
+    Before the app first ran with the Data Folder, the config still sits in
+    `PAZ-Parser/`; it is read there, not moved, since moving is the app's job.
+    """
+    config_path = config_file()
+    if not config_path.is_file():
+        config_path = PAZ_PARSER_DIR / CONFIG_NAME
     try:
         last_folder = json.loads(config_path.read_text()).get("last_folder", "")
     except (OSError, ValueError):

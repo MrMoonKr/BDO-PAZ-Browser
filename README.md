@@ -19,8 +19,9 @@ A Python tool for browsing, extracting, and previewing files from Black Desert O
 - **Handled tables only**: the **Show only handled tables** setting (off by default) limits the file tree, file search, content search and folder extraction to files with a parsed table view, plus the LOC file
 - **Languages**: the language setting picks both the UI text and the LOC file the tables read game text from (`ads/languagedata_<code>.loc`), which also sits at the top of the file tree and follows a language switch. A client ships only its region's LOC files; when the picked language's file is missing, a corner warning says only the UI is in that language and the tables show their Korean text. Dismissing it keeps it closed for that language, and the settings still mark the language with a ⚠ icon
 - **Plugin system**: add handlers for new binary formats by dropping a file into `handlers/`
-- **Caching**: the PAZ index is parsed once and cached; later launches read it from the cache
-- **Parsed table cache**: parsed tables are kept on disk next to the PAZ files, so a big table reopens in a fraction of its parse time (`detail_dialog.dbss` 1.3 s to 0.25 s, `itemenchant.dbss` with its default sort 2.1 s to 0.5 s). The **Parsed Table Cache** setting picks Off, Cache tables when opened (default) or Cache all tables in the background, which parses every table A to Z while the app is idle; the status bar shows the table it is on, how far the pass is, and when it waits for you. A table stays cached across a patch that leaves it, its companions and the LOC text or lookup indexes it reads unchanged. **Delete all caches** in the settings removes the parsed table, icon thumbnail and lookup index caches; the PAZ index cache stays, since rebuilding it takes over a minute. In the background mode, the pass then waits for the next start instead of filling the cache again right away
+- **Caching**: the PAZ index is parsed once and cached; later launches read it from the cache. Every cache lives outside the game folder, in the `cache` folder of the data folder with one subfolder per PAZ folder, so a test client keeps its own. Caches an older version left next to the PAZ files move over on the next start
+- **Data folder**: settings (`paz_config.json`) and caches live in `%LOCALAPPDATA%\BDO-PAZ-Browser`. The **Data Folder** setting picks another folder: the settings are copied there (replacing any already in it, the old copy stays), the caches in the old folder are deleted, and the loaded client's PAZ index is saved again in the new one. A picked folder that is gone, such as an unplugged drive, is replaced by the default until it is back. Settings an older version kept next to the code move over on the next start
+- **Parsed table cache**: parsed tables are kept on disk, so a big table reopens in a fraction of its parse time (`detail_dialog.dbss` 1.3 s to 0.25 s, `itemenchant.dbss` with its default sort 2.1 s to 0.5 s). The **Parsed Table Cache** setting picks Off, Cache tables when opened (default) or Cache all tables in the background, which parses every table A to Z while the app is idle; the status bar shows the table it is on, how far the pass is, and when it waits for you. A table stays cached across a patch that leaves it, its companions and the LOC text or lookup indexes it reads unchanged. **Delete all caches** in the settings removes the parsed table, icon thumbnail and lookup index caches; the PAZ index cache stays, since rebuilding it takes over a minute. In the background mode, the pass then waits for the next start instead of filling the cache again right away
 
 ## Contributing Format Coverage
 
@@ -277,6 +278,7 @@ CSV leaves those fields out, like the app's export.
 
 ```
 PAZ-Parser/
+├── app_dirs.py             # Data folder: config, its location pointer, cache folder per PAZ folder
 ├── bdo_app.py              # Entry point, GUI launch + CLI argument parsing
 ├── bdo_models.py           # Data models (shared by all handlers)
 ├── bdo_preview.py          # Preview handler registry + built-in handlers
@@ -312,7 +314,7 @@ PAZ-Parser/
 │   ├── bdo_languages.py    # The 13 game languages, their LOC files and UI support
 │   ├── bdo_icon_images.py  # Icon thumbnails, the icon popup image and sprite crops
 │   ├── bdo_api_preview.py  # Preview assembly and entry loading (PreviewMixin)
-│   ├── bdo_api_caches.py   # Parsed table cache modes, Delete all caches (CacheMixin)
+│   ├── bdo_api_caches.py   # Cache folder, parsed table cache modes, Delete all caches (CacheMixin)
 │   ├── bdo_records_store.py# Parsed table cache keys and dependency digests
 │   ├── bdo_records_prefill.py# Background pass that caches every table
 │   ├── bdo_recent_tables.py# Which handlers keep their parsed tables in memory
@@ -325,8 +327,8 @@ PAZ-Parser/
 │   ├── bdo_payload_cache.py# LRU payload cache
 │   ├── bdo_payload_reader.py# Payload decompression + ICE decryption
 │   ├── source_fingerprint.py# Code hash that invalidates the disk caches
-│   ├── bdo_thumbnail_cache.py# Icon thumbnail cache (SQLite, next to the PAZ files)
-│   ├── bdo_records_cache.py# Parsed table cache (SQLite, next to the PAZ files)
+│   ├── bdo_thumbnail_cache.py# Icon thumbnail cache (SQLite, in the cache folder)
+│   ├── bdo_records_cache.py# Parsed table cache (SQLite, in the cache folder)
 │   ├── bdo_paz_extract.py  # File extraction logic
 │   └── bdo_paz_reader.py   # PAZ archive parser
 │

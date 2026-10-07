@@ -10,6 +10,8 @@ sys.path.insert(0, str(Path(__file__).parent))
 import webview
 
 from api.bdo_api import Api
+from api.bdo_config import LEGACY_CONFIG_FILE
+from app_dirs import adopt_legacy_config
 from cli.files import run_extract, run_list
 from cli.formats import run_formats
 from cli.index import run_index
@@ -26,6 +28,7 @@ def main() -> None:
     parser = _build_parser()
     args = parser.parse_args()
     _check_options(parser, args)
+    adopt_legacy_config(LEGACY_CONFIG_FILE)
 
     command = _command(args)
     if command is None:

@@ -1,7 +1,7 @@
 """Disk cache for the lookup indexes.
 
 Building an index means decompressing its source table, 194 MB for
-`itemenchant.dbss`, so the result is cached next to the PAZ entry cache and
+`itemenchant.dbss`, so the result is cached beside the PAZ entry cache and
 invalidated on the same meta version. Mirrors `bdo_cache.py`. Values are pickled,
 so an index may hold icon paths, linked IDs or tuples of IDs.
 
@@ -26,8 +26,8 @@ from pathlib import Path
 from .source_fingerprint import source_fingerprint
 
 CACHE_FILE = "paz_browser_indexes.cache"
-# Written before the icon indexes became general lookup indexes; removed on the
-# first save so it does not linger next to the PAZ files.
+# Written next to the PAZ files before the icon indexes became general lookup
+# indexes; deleted from there when a folder loads.
 LEGACY_CACHE_FILE = "paz_browser_icons.cache"
 
 # Values match `LookupValue` in handlers/_common/lookup_index.py.
@@ -45,9 +45,9 @@ class IndexCacheData:
     digests: Mapping[str, str]
 
 
-def load_index_cache(paz_root: Path, fingerprint: str) -> IndexCacheData | None:
+def load_index_cache(cache_dir: Path, fingerprint: str) -> IndexCacheData | None:
     """The cached indexes, or None when absent, unreadable or stale."""
-    cache_path = paz_root / CACHE_FILE
+    cache_path = cache_dir / CACHE_FILE
     if not cache_path.exists():
         return None
     try:
@@ -60,8 +60,8 @@ def load_index_cache(paz_root: Path, fingerprint: str) -> IndexCacheData | None:
         return None
 
 
-def save_index_cache(paz_root: Path, fingerprint: str, data: IndexCacheData) -> None:
-    cache_path = paz_root / CACHE_FILE
+def save_index_cache(cache_dir: Path, fingerprint: str, data: IndexCacheData) -> None:
+    cache_path = cache_dir / CACHE_FILE
     with cache_path.open("wb") as f:
         pickle.dump(
             {
@@ -73,7 +73,6 @@ def save_index_cache(paz_root: Path, fingerprint: str, data: IndexCacheData) -> 
             f,
             protocol=pickle.HIGHEST_PROTOCOL,
         )
-    (paz_root / LEGACY_CACHE_FILE).unlink(missing_ok=True)
 
 
 def index_digests(indexes: CachedIndexes) -> dict[str, str]:
