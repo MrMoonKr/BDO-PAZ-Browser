@@ -143,6 +143,12 @@ GRADE_CASE = HandlerCase(
             value=15878,
             expected={"variant": 6, "species": 62, "grade": 2, "grade_name": "Rare"},
         ),
+        # Kuku: grade 4 is the fusion window's Event title, not a second Rare.
+        TargetTest(
+            col="key",
+            value=5377,
+            expected={"variant": 1, "species": 21, "grade": 4, "grade_name": "Event"},
+        ),
     ],
 )
 

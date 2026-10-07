@@ -13,9 +13,9 @@
   },
   "grades": {
     "5": "Spécial",
-    "4": "Rare",
+    "4": "Événement",
     "3": "Premium",
-    "2": "Rare",
+    "2": "Limité",
     "1": "Classique"
   },
   "offsetColumns": {

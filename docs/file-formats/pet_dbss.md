@@ -134,7 +134,7 @@ The parser reads `data_size` and the padding as one u32 (`parse_bare_offset_rows
 | Max Level      | num  | `max_level` (10 for normal, 20/30/50 for Airiss)                                                       |
 | Acquire Type   | num  | `acquire_type_id` → `petequipskillaquire.dbss`                                                         |
 | Equip Skill ID | num  | `equip_skill_id`                                                                                       |
-| Grade          | text | Optional `petgrade.dbss` join on `(species, variant)`: 1 Classic, 2 Rare, 3 Premium, 4 Rare, 5 Special |
+| Grade          | text | Optional `petgrade.dbss` join on `(species, variant)`: 1 Classic, 2 Rare, 3 Premium, 4 Event, 5 Special |
 
 Rows are sorted by `pet_id` ascending for stable browsing.
 
