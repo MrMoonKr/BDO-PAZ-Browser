@@ -1,3 +1,6 @@
 -r requirements.txt
-pytest>=8.0
-pyright>=1.1.414
+# Optional at runtime, installed here so pyright resolves the DDS preview imports.
+pillow>=10.0
+# Exact versions, so a new pytest or pyright release can't change a CI result.
+pytest==9.0.3
+pyright==1.1.414

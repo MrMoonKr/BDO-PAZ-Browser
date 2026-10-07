@@ -48,7 +48,11 @@ def pytest_collection_finish(session: pytest.Session) -> None:
 
         from tests.framework import run_case
 
-        result = run_case(replace(case, tests=[]))
+        try:
+            result = run_case(replace(case, tests=[]))
+        except pytest.skip.Exception:
+            # No client: the module's own result fixture skips its tests.
+            continue
         setattr(module, "_HANDLER_RESULT", result)
 
         if reporter is not None:

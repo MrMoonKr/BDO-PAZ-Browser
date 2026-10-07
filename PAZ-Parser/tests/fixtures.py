@@ -28,12 +28,7 @@ class FixtureFetchError(Exception):
 
 def ensure_fixtures(case: HandlerCase) -> dict[str, Path]:
     fixture_paths = resolve_fixture_paths(case)
-    missing = [name for name, path in fixture_paths.items() if not path.exists()]
-    if missing:
-        try:
-            fetch_fixtures(missing)
-        except FixtureFetchError as ex:
-            pytest.fail(str(ex))
+    fetch_missing(list(fixture_paths))
 
     missing = [name for name, path in fixture_paths.items() if not path.exists()]
     if missing:
@@ -64,6 +59,23 @@ def resolve_fixture_paths(case: HandlerCase) -> dict[str, Path]:
     if case.loc_file is not None:
         paths[str(case.loc_file)] = FIXTURES_DIR / case.loc_file
     return paths
+
+
+def fetch_missing(fixture_names: list[str]) -> None:
+    """Fetch the fixtures that aren't cached yet.
+
+    Skips the calling test when no client is installed, as in CI, and fails
+    it when the installed client can't supply them.
+    """
+    missing = [name for name in fixture_names if not (FIXTURES_DIR / name).exists()]
+    if not missing:
+        return
+    if installed_paz_folder() is None:
+        pytest.skip(f"no client installed to fetch {', '.join(missing)}")
+    try:
+        fetch_fixtures(missing)
+    except FixtureFetchError as ex:
+        pytest.fail(str(ex))
 
 
 def fetch_fixtures(fixture_names: list[str]) -> None:
@@ -134,6 +146,12 @@ def configured_paz_folder() -> Path | None:
         return None
 
     return Path(last_folder) if last_folder else None
+
+
+def installed_paz_folder() -> Path | None:
+    """The configured PAZ folder while it exists; None without a client, as in CI."""
+    paz_folder = configured_paz_folder()
+    return paz_folder if paz_folder is not None and paz_folder.is_dir() else None
 
 
 def find_external_fixture(fixture_name: str) -> Path | None:

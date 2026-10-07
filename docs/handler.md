@@ -528,7 +528,12 @@ Each file is fetched into a staging folder and then replaces the cached copy,
 and the stamp is written only after every fetch succeeded. A failed fetch
 stops the run and keeps the old files and stamp, so the next run retries.
 Without a configured or reachable client the run uses the cached fixtures as
-they are and says so.
+they are and says so. A test whose fixtures are not cached is then skipped
+instead of failed (`fetch_missing()` in `tests/fixtures.py`), so CI, which has
+no client, runs only the tests that need no game files. With a client, a fetch
+that fails still fails the test. Load fixtures inside a test or fixture, never
+at import time: a skip at import time fails collection for every module that
+imports it.
 
 | Option                | Effect                                                          |
 |-----------------------|-----------------------------------------------------------------|
@@ -1063,7 +1068,10 @@ entry for the ID; render a dash in either case. `is_index_loaded()` tells the
 two apart when it matters. Unit tests install an index with
 `init_index(kind, mapping)` and drop it with `clear_indexes()`; a
 `HandlerCase` takes `lookup_indexes={kind: mapping}`, which the runner installs
-while the handler runs and removes afterwards.
+while the handler runs and removes afterwards. For an index built from other
+fixtures, pass a function that returns the mapping instead; the runner calls it
+when the case runs (see `_node_parent_index` in
+`plantexchangegroup/test_handler.py`).
 
 Every index is one `IndexSpec(kind, sources, build)` in
 `INDEX_SPECS` (`_common/lookup_builders.py`). `build` receives the payloads of

@@ -9,12 +9,12 @@ from time import perf_counter
 from bdo_models import PazEntry
 from bdo_preview import PreviewHandler, get_handler
 
-from _common.lookup_index import IndexKind, LookupValue, init_index
+from _common.lookup_index import IndexKind, init_index
 
 from .case_input import CaseInput
 from .fixtures import ensure_fixtures
 from .loc_counter import LOC_STATE_NAMES, null_loc_counter, patch_loc_counter, reset_loc
-from .models import HandlerCase, HandlerResult
+from .models import HandlerCase, HandlerResult, IndexSource
 
 
 @dataclass(frozen=True)
@@ -76,12 +76,10 @@ def load_case(case: HandlerCase) -> LoadedCase:
 
 
 @contextmanager
-def _installed_indexes(
-    indexes: Mapping[IndexKind, Mapping[int, LookupValue]],
-) -> Iterator[None]:
+def _installed_indexes(indexes: Mapping[IndexKind, IndexSource]) -> Iterator[None]:
     """Install the case's lookup indexes for the duration of the block."""
-    for kind, mapping in indexes.items():
-        init_index(kind, mapping)
+    for kind, source in indexes.items():
+        init_index(kind, source() if callable(source) else source)
     try:
         yield
     finally:

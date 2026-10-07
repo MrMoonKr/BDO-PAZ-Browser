@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  # Work is committed straight onto staging; releases are PRs into main.
+  push:
+    branches: [staging]
+  pull_request:
+    branches: [staging, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    # Required by the staging and main rulesets under this name.
+    name: Tests and pyright
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: PAZ-Parser/requirements*.txt
+
+      - name: Install dependencies
+        run: python -m pip install -r PAZ-Parser/requirements-dev.txt
+
+      - name: Pyright
+        run: python -m pyright
+
+      # The runner has no client, so tests that need game files skip.
+      - name: Tests
+        run: python -m pytest --clean

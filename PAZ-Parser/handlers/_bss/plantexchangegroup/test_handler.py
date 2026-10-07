@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from functools import cache
 from typing import Any
 
 import pytest
@@ -33,12 +34,11 @@ _LUMBERING_KEY = 1928
 _LUMBERING_ITEMS = (4611, 5005, 5014)
 
 
+@cache
 def _node_parent_index() -> dict[int, int]:
     """`NODE_PARENT` built from the installed tables, the way the app builds it."""
     return build_node_parent_index(load_binary_fixture("exploration.bss"), load_binary_fixture(_WORLDMAP_FILE))
 
-
-_NODE_PARENTS = _node_parent_index()
 
 CASE = HandlerCase(
     handler_name="plantexchangegroup.bss",
@@ -50,7 +50,7 @@ CASE = HandlerCase(
     internal_path="gamecommondata/binary/plantexchangegroup.bss",
     lookup_indexes={
         IndexKind.PRODUCTION_ITEMS: {_LUMBERING_KEY: _LUMBERING_ITEMS},
-        IndexKind.NODE_PARENT: _NODE_PARENTS,
+        IndexKind.NODE_PARENT: _node_parent_index,
     },
     tests=[
         SchemaTest(
@@ -112,7 +112,8 @@ def test_every_zone_has_a_node_parent(plantexchangegroup_result: HandlerResult) 
     """The English names rest on this: every production zone is a sub-node with a parent."""
     source = plantexchangegroup_result.source
     zones = parse_plantzone_records(source.file("plantzone.dbss"), source.file("plantzoneoffset.dbss"))
-    assert [zone["record_id"] for zone in zones if zone["record_id"] not in _NODE_PARENTS] == []
+    node_parents = _node_parent_index()
+    assert [zone["record_id"] for zone in zones if zone["record_id"] not in node_parents] == []
 
 
 def test_name_is_english_or_the_korean_label(plantexchangegroup_result: HandlerResult) -> None:
