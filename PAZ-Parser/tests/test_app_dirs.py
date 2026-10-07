@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import os
+import sys
+from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
@@ -11,6 +13,7 @@ from app_dirs import (
     CONFIG_NAME,
     LOCATION_FILE,
     MARKER_FILE,
+    PORTABLE_FOLDER,
     adopt_legacy_config,
     cache_root,
     client_cache_dir,
@@ -22,6 +25,7 @@ from app_dirs import (
     is_same_folder,
     move_out_of_game_folder,
     picked_data_dir,
+    portable_data_dir,
     remove_cache_root,
     set_picked_data_dir,
 )
@@ -43,6 +47,31 @@ def test_the_default_data_folder_is_under_local_app_data(local_app_data: Path) -
     assert data_dir() == default_data_dir()
     assert config_file() == default_data_dir() / CONFIG_NAME
     assert picked_data_dir() is None
+
+
+@pytest.fixture
+def frozen_exe(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+    """Run as the Windows build, from an exe in `tmp_path/app`; returns the exe's folder."""
+    app = tmp_path / "app"
+    app.mkdir()
+    monkeypatch.setattr(sys, "frozen", True, raising=False)
+    monkeypatch.setattr(sys, "executable", str(app / "BDO-PAZ-Browser.exe"))
+    portable_data_dir.cache_clear()
+    yield app
+    portable_data_dir.cache_clear()
+
+
+def test_the_exe_keeps_its_data_folder_next_to_it(frozen_exe: Path, local_app_data: Path) -> None:
+    assert default_data_dir() == frozen_exe / PORTABLE_FOLDER
+    assert (frozen_exe / PORTABLE_FOLDER).is_dir()
+    assert config_file() == frozen_exe / PORTABLE_FOLDER / CONFIG_NAME
+
+
+def test_an_exe_that_cannot_write_its_folder_uses_local_app_data(frozen_exe: Path, local_app_data: Path) -> None:
+    # A file where the folder should be: creating it fails like a read-only folder does.
+    (frozen_exe / PORTABLE_FOLDER).write_text("", encoding="utf-8")
+
+    assert default_data_dir() == local_app_data / APP_NAME
 
 
 def test_a_picked_folder_is_used_while_it_exists(tmp_path: Path, local_app_data: Path) -> None:

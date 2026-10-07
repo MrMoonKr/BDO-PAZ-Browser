@@ -1,9 +1,9 @@
-"""`browser.py --formats`: which file formats have a handler."""
+"""`browser.py --formats` and `--handlers`: which file formats have a handler."""
 from __future__ import annotations
 
 import argparse
 
-from bdo_preview import _BUILTIN_KEYS, _REGISTRY, unique_format_keys
+from bdo_preview import _BUILTIN_KEYS, _REGISTRY, get_binary_handlers, unique_format_keys
 
 from .errors import CliError
 from .session import open_session
@@ -87,6 +87,17 @@ _FORMATS_IGNORE: frozenset[str] = frozenset({
     ".treelist2",
     ".vnl",
 })
+
+
+def run_handlers(args: argparse.Namespace) -> int:
+    """Every registered handler key, one per line; needs no PAZ folder.
+
+    The release workflow compares the exe's list with the source's, so a
+    handler that fails to import in the exe stops the release.
+    """
+    for key in get_binary_handlers():
+        print(key)
+    return 0
 
 
 def run_formats(args: argparse.Namespace) -> int:

@@ -1698,7 +1698,7 @@ Raise only for actual programming errors.
 14. Keep raw hex switching in the frontend, not the handler.
 15. Move reusable logic to `_common/` when another format needs it.
 
-> **Tip:** Press **Ctrl+R** in the GUI to reload all handlers without restarting the app. Changes to any file under `handlers/`, including private packages like `_dbss/`, take effect immediately. If a file is open on the Parsed tab, the preview re-renders automatically.
+> **Tip:** Press **Ctrl+R** in the GUI to reload all handlers without restarting the app. Changes to any file under `handlers/`, including private packages like `_dbss/`, take effect immediately. If a file is open on the Parsed tab, the preview re-renders automatically. Write and reload handlers in the source version: the Windows exe runs its bundled handlers and answers Ctrl+R with "Handler reload is only available when running from source".
 
 ## Minimal New Format Example
 

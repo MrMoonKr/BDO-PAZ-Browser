@@ -20,7 +20,7 @@ A Python tool for browsing, extracting, and previewing files from Black Desert O
 - **Languages**: the language setting picks both the UI text and the LOC file the tables read game text from (`ads/languagedata_<code>.loc`), which also sits at the top of the file tree and follows a language switch. A client ships only its region's LOC files; when the picked language's file is missing, a corner warning says only the UI is in that language and the tables show their Korean text. Dismissing it keeps it closed for that language, and the settings still mark the language with a ⚠ icon
 - **Plugin system**: add handlers for new binary formats by dropping a file into `handlers/`
 - **Caching**: the PAZ index is parsed once and cached; later launches read it from the cache. Every cache lives outside the game folder, in the `cache` folder of the data folder with one subfolder per PAZ folder, so a test client keeps its own. Caches an older version left next to the PAZ files move over on the next start
-- **Data folder**: settings (`paz_config.json`) and caches live in `%LOCALAPPDATA%\BDO-PAZ-Browser`. The **Data Folder** setting picks another folder: the settings are copied there (replacing any already in it, the old copy stays), the caches in the old folder are deleted, and the loaded client's PAZ index is saved again in the new one. A picked folder that is gone, such as an unplugged drive, is replaced by the default until it is back. Settings an older version kept next to the code move over on the next start. The settings file carries a `config_version`: a newer app updates older settings on load, settings it can't read are renamed to `paz_config.backup.json` and the app starts with defaults, and an older app reads newer settings as they are and keeps their keys
+- **Data folder**: settings (`paz_config.json`) and caches live in `%LOCALAPPDATA%\BDO-PAZ-Browser` when running from source, and in `data\` next to the exe in the Windows build, so the unzipped folder holds everything (an exe folder that can't be written, such as one in Program Files, falls back to `%LOCALAPPDATA%`). The **Data Folder** setting picks another folder: the settings are copied there (replacing any already in it, the old copy stays), the caches in the old folder are deleted, and the loaded client's PAZ index is saved again in the new one. A picked folder that is gone, such as an unplugged drive, is replaced by the default until it is back. Settings an older version kept next to the code move over on the next start. The settings file carries a `config_version`: a newer app updates older settings on load, settings it can't read are renamed to `paz_config.backup.json` and the app starts with defaults, and an older app reads newer settings as they are and keeps their keys
 - **Parsed table cache**: parsed tables are kept on disk, so a big table reopens in a fraction of its parse time (`detail_dialog.dbss` 1.3 s to 0.25 s, `itemenchant.dbss` with its default sort 2.1 s to 0.5 s). The **Parsed Table Cache** setting picks Off, Cache tables when opened (default) or Cache all tables in the background, which parses every table A to Z while the app is idle; the status bar shows the table it is on, how far the pass is, and when it waits for you. A table stays cached across a patch that leaves it, its companions and the LOC text or lookup indexes it reads unchanged. **Delete all caches** in the settings removes the parsed table, icon thumbnail and lookup index caches; the PAZ index cache stays, since rebuilding it takes over a minute. In the background mode, the pass then waits for the next start instead of filling the cache again right away
 
 ## Contributing Format Coverage
@@ -207,6 +207,26 @@ shares a run with the timings. `profile` slows every call too; use it to find
 hot functions, and `run` for numbers. Its `--save` file opens in snakeviz or
 `pstats`.
 
+## Building the Windows Exe
+
+The Windows build is a folder with `BDO-PAZ-Browser.exe` (the GUI),
+`bdo-paz-cli.exe` (the same commands as `browser.py`, with console output) and
+the `_internal` folder they share. To build it yourself, on Windows:
+
+```bash
+python -m pip install -r PAZ-Parser/requirements-build.txt
+python build.py
+```
+
+`build.py` runs PyInstaller with `browser.spec` into `dist/BDO-PAZ-Browser/`,
+checks that `bdo-paz-cli.exe --handlers` lists the same handlers as
+`python browser.py --handlers`, and writes
+`dist/BDO-PAZ-Browser-v<version>-windows.zip` with a `.sha256` file. The
+version is today's date unless `--version 2026.10.12` sets it; `--no-zip`
+stops after the checked folder. The handlers are copied in as plain files
+under `_internal/handlers`, without their tests. Adding or changing handlers
+needs the source version: the exe has no handler reload (Ctrl+R).
+
 ## Usage
 
 ### GUI
@@ -236,6 +256,9 @@ python browser.py --records languagedata_en.loc --where "text*=Adventure's Boon"
 
 # One parsed page as a standalone HTML file with the app's CSS and icons
 python browser.py --render buffsimply.bss --page 2 > page.html
+
+# Every registered handler key; needs no PAZ folder
+python browser.py --handlers
 
 # Lookup indexes: every kind with its size, all entries of one kind, or one ID
 python browser.py --index
@@ -276,11 +299,13 @@ CSV leaves those fields out, like the app's export.
 ```
 PAZ-Parser/
 ├── app_dirs.py             # Data folder: config, its location pointer, cache folder per PAZ folder
+├── app_version.py          # Exe version and commit from build_info.json; none from source
 ├── bdo_app.py              # Entry point, GUI launch + CLI argument parsing
 ├── bdo_models.py           # Data models (shared by all handlers)
 ├── bdo_preview.py          # Preview handler registry + built-in handlers
 ├── bdo_server.py           # Local HTTP server for stream preview
 ├── conftest.py             # pytest setup and handler test summary output
+├── handler_api.py          # HANDLER_API and what handler code may import
 ├── record_export.py        # Records as CSV (GUI export and --records --csv)
 ├── ui_text.py              # UI text for Python-built messages, from ui/lang/*.json
 │
@@ -288,7 +313,7 @@ PAZ-Parser/
 │   ├── session.py          # Loads the PAZ folder headless through Api
 │   ├── parsed_file.py      # Resolves a file name to handler, payload, companions
 │   ├── files.py            # --list, --file
-│   ├── formats.py          # --formats
+│   ├── formats.py          # --formats, --handlers
 │   ├── records.py          # --records (record_filter.py, record_output.py)
 │   ├── render.py           # --render
 │   └── index.py            # --index
@@ -315,7 +340,8 @@ PAZ-Parser/
 │   ├── bdo_records_store.py# Parsed table cache keys and dependency digests
 │   ├── bdo_records_prefill.py# Background pass that caches every table
 │   ├── bdo_recent_tables.py# Which handlers keep their parsed tables in memory
-│   └── bdo_api_search.py   # File content search, single-file and cross-file (SearchMixin)
+│   ├── bdo_api_search.py   # File content search, single-file and cross-file (SearchMixin)
+│   └── config_migrations.py# paz_config.json versions and the steps between them
 │
 ├── paz/                    # PAZ archive reading and caching
 │   ├── bdo_cache.py        # PAZ index cache
@@ -369,6 +395,11 @@ docs/
 ├── handler.md              # Guide for writing preview handlers
 ├── style-guide.md          # UI color palette and component reference
 └── file-formats/           # Per-format binary layout documentation
+
+browser.py                  # Starts the app: GUI, or a CLI command
+benchmark.py                # Decode benchmarks (see Benchmarking)
+build.py                    # Windows build (see Building the Windows Exe)
+browser.spec                # PyInstaller spec that build.py runs
 ```
 
 ## Disclaimer

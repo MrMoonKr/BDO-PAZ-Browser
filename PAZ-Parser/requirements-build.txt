@@ -1,0 +1,4 @@
+-r requirements.txt
+# Optional at runtime, bundled so the exe has the DDS image preview.
+pillow>=10.0
+pyinstaller==6.22.3

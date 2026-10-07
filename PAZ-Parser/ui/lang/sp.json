@@ -181,6 +181,7 @@
     "searching": "Buscando… {done}/{total} archivos escaneados, {matches} coincidencia(s) hasta ahora",
     "searchDone": "Búsqueda completada, {matches} archivo(s) coincidieron de {total} escaneados",
     "pluginsReloaded": "Plugins recargados.",
+    "reloadSourceOnly": "Recargar handlers solo es posible al ejecutar desde el código fuente.",
     "found": "{cap}archivos encontrados que coinciden con \"{query}\"",
     "copiedRow": "Fila seleccionada copiada.",
     "searchError": "Error de búsqueda: {message}",

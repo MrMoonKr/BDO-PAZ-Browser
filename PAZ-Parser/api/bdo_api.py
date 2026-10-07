@@ -11,6 +11,7 @@ from pathlib import Path
 import webview
 
 from app_dirs import data_dir, default_data_dir, is_same_folder, picked_data_dir
+from app_version import is_frozen
 from .bdo_api_caches import CacheMixin
 from .bdo_config import (
     RECORDS_CACHE_MODES,
@@ -683,6 +684,10 @@ class Api(PreviewMixin, SearchMixin, CacheMixin):
 
     def reload_plugins(self) -> None:
         import bdo_preview
+        if is_frozen():
+            # The exe runs a managed handler pack; editing handlers is a from-source thing.
+            self._push_status({"key": "status.reloadSourceOnly"})
+            return
         # The old handler instances leave the registry; let go of what they parsed.
         self._recent_tables.clear()
         bdo_preview.reload_plugins(bdo_preview.BUNDLED_HANDLERS_DIR)

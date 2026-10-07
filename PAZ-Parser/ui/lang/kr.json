@@ -181,6 +181,7 @@
     "searching": "검색 중… {done}/{total}개 파일 스캔됨, 현재 {matches}개 일치",
     "searchDone": "검색 완료, {total}개 스캔 중 {matches}개 파일 일치",
     "pluginsReloaded": "플러그인을 다시 불러왔습니다.",
+    "reloadSourceOnly": "핸들러 다시 불러오기는 소스 코드로 실행할 때만 가능합니다.",
     "found": "\"{query}\"와 일치하는 파일 {cap}개 발견",
     "copiedRow": "선택한 행을 복사했습니다.",
     "searchError": "검색 오류: {message}",

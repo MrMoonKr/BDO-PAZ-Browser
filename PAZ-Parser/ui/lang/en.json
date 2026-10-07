@@ -181,6 +181,7 @@
     "searching": "Searching… {done}/{total} files scanned, {matches} match(es) so far",
     "searchDone": "Search complete, {matches} file(s) matched out of {total} scanned",
     "pluginsReloaded": "Plugins reloaded.",
+    "reloadSourceOnly": "Handler reload is only available when running from source.",
     "found": "Found {cap}files matching \"{query}\"",
     "copiedRow": "Copied selected row.",
     "searchError": "Search error: {message}",

@@ -19,7 +19,7 @@ from api.bdo_api import Api
 from api.bdo_config import LEGACY_CONFIG_FILE
 from app_dirs import adopt_legacy_config
 from cli.files import run_extract, run_list
-from cli.formats import run_formats
+from cli.formats import run_formats, run_handlers
 from cli.index import run_index
 from cli.records import run_records
 from cli.render import run_render
@@ -65,6 +65,7 @@ def _build_parser() -> argparse.ArgumentParser:
     commands.add_argument("--file", metavar="PATTERN", help="File name or glob pattern to extract, e.g. title.dbss or *title*.dbss")
     commands.add_argument("--list", metavar="PATTERN", help="List matching file paths without extracting, e.g. title*.dbss")
     commands.add_argument("--formats", action="store_true", help="Show supported file formats and exit")
+    commands.add_argument("--handlers", action="store_true", help="List every registered handler key; needs no PAZ folder")
     commands.add_argument("--records", metavar="FILE", help="Print the parsed records of one file, e.g. buffsimply.bss")
     commands.add_argument("--render", metavar="FILE", help="Write one parsed page of FILE as standalone HTML to stdout")
     commands.add_argument(
@@ -108,6 +109,8 @@ def _command(args: argparse.Namespace) -> Callable[[argparse.Namespace], int] | 
         return run_list
     if args.formats:
         return run_formats
+    if args.handlers:
+        return run_handlers
     if args.records:
         return run_records
     if args.render:

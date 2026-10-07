@@ -181,6 +181,7 @@
     "searching": "Recherche… {done}/{total} fichiers analysés, {matches} correspondance(s) pour l'instant",
     "searchDone": "Recherche terminée, {matches} fichier(s) trouvé(s) sur {total} analysés",
     "pluginsReloaded": "Plugins rechargés.",
+    "reloadSourceOnly": "Le rechargement des handlers n'est possible qu'en lançant depuis le code source.",
     "found": "Trouvé {cap}fichiers correspondant à \"{query}\"",
     "copiedRow": "Ligne sélectionnée copiée.",
     "searchError": "Erreur de recherche : {message}",

@@ -181,6 +181,7 @@
     "searching": "Suche… {done}/{total} Dateien gescannt, bisher {matches} Treffer",
     "searchDone": "Suche abgeschlossen, {matches} Datei(en) von {total} gescannten gefunden",
     "pluginsReloaded": "Plugins neu geladen.",
+    "reloadSourceOnly": "Handler neu laden geht nur beim Start aus dem Quellcode.",
     "found": "{cap}Dateien passend zu \"{query}\" gefunden",
     "copiedRow": "Ausgewählte Zeile kopiert.",
     "searchError": "Suchfehler: {message}",
