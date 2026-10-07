@@ -17,13 +17,13 @@ concurrency:
 
 jobs:
   checks:
-    # Required by the staging and main rulesets under this name.
+    # Required by the main ruleset under this name.
     name: Tests and pyright
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
