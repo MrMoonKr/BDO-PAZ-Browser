@@ -31,10 +31,10 @@ body:
     validations:
       required: false
   - type: input
-    id: commit
+    id: version
     attributes:
-      label: Commit
-      description: Output of `git rev-parse --short HEAD`.
+      label: Version (release or commit)
+      description: The release, e.g. `v2026.10.12` (in the zip's name, or from `bdo-paz-cli.exe --check-app-update`), or from source the output of `git rev-parse --short HEAD`.
     validations:
       required: false
   - type: input

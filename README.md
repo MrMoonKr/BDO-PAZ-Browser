@@ -6,6 +6,27 @@ A Python tool for browsing, extracting, and previewing files from Black Desert O
 
 ![BDO PAZ Browser](docs/assets/screenshot.png)
 
+## Download
+
+For Windows 10 and 11: download `BDO-PAZ-Browser-v<version>-windows.zip` from the
+[latest release](../../releases/latest), unzip it into a folder you can write
+to, and run `BDO-PAZ-Browser.exe`. The zip holds `BDO-PAZ-Browser.exe`,
+`bdo-paz-cli.exe` (the command-line version, see [CLI](#cli)) and the
+`_internal` folder both need.
+
+- The exe is not code-signed, so SmartScreen warns on the first start: click
+  **More info**, then **Run anyway**. Each release has a `.sha256` file to check
+  the download with `certutil -hashfile <zip> SHA256`.
+- The window uses Microsoft Edge WebView2, which Windows 10 and 11 already have.
+- Settings and caches go into a `data` folder next to the exe, so moving or
+  deleting the folder takes them along. A folder the exe can't write to, such as
+  one in Program Files, uses `%LOCALAPPDATA%\BDO-PAZ-Browser` instead.
+- A newer release shows up as a green notice next to the settings button;
+  **Update** installs it in a few seconds and keeps `data`. From the command line:
+  `bdo-paz-cli.exe --update-app`.
+
+To run from source or write handlers, see [Requirements](#requirements).
+
 ## Features
 
 - **GUI browser**: tree-view file explorer for the full PAZ archive, with live search and file preview
