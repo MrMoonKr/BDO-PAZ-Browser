@@ -20,6 +20,23 @@
     "map": "Karte",
     "files": "Dateien"
   },
+  "map": {
+    "noFolder": "Öffne einen PAZ-Ordner, um die Weltkarte zu sehen.",
+    "noTiles": "Dieser Client hat keine Radarbilder, aus denen die Weltkarte erstellt werden kann.",
+    "promptTitle": "Weltkarte erstellen",
+    "promptText": "Die Kartenansicht zeigt Kacheln aus den Radarbildern dieses Clients: {tiles} Kacheln, etwa {size} auf der Festplatte. Das Erstellen dauert eine Weile; die Dateiansicht bleibt nutzbar. OK schaltet \"Karte aktuell halten\" in den Einstellungen ein, womit die Karte nach einem Spielpatch neu erstellt wird.",
+    "build": "OK",
+    "progressTitle": "Weltkarte wird erstellt",
+    "progressStarting": "Wird gestartet…",
+    "progressZoom": "Zoomstufe {zoom} (Schritt {step} von {steps})",
+    "progressTiles": "{done} / {total} Kacheln · {percent} %",
+    "failed": "Die letzte Erstellung ist fehlgeschlagen: {message}",
+    "coords": "X {x} · Z {z}",
+    "pinTypes": {
+      "player": "Spieler",
+      "marker": "Markierung"
+    }
+  },
   "sidebar": {
     "filterFiles": "Dateien filtern…",
     "searchInFiles": "In allen Dateien suchen",
@@ -181,8 +198,10 @@
     "recordsCacheOff": "Aus",
     "recordsCacheOpen": "Tabellen beim Öffnen speichern",
     "recordsCacheAll": "Alle Tabellen im Hintergrund speichern",
+    "keepMapUpdated": "Karte aktuell halten",
+    "keepMapUpdatedHint": "Die Kacheln der Kartenansicht im Hintergrund neu erstellen, wenn ein Spielpatch den Client ändert",
     "deleteCaches": "Alle Caches löschen",
-    "deleteCachesConfirm": "Tabellen-, Symbol- und Nachschlage-Index-Caches dieses PAZ-Ordners löschen?\n\nTabellen werden neu ausgewertet, Symbole neu dekodiert, und der nächste Start erstellt die Nachschlage-Indizes neu. Der PAZ-Index-Cache bleibt erhalten.",
+    "deleteCachesConfirm": "Tabellen-, Symbol- und Nachschlage-Index-Caches dieses PAZ-Ordners löschen?\n\nTabellen werden neu ausgewertet, Symbole neu dekodiert, und der nächste Start erstellt die Nachschlage-Indizes neu. Der PAZ-Index-Cache bleibt erhalten.\n\nDie Kartenkacheln werden ebenfalls gelöscht; die Kartenansicht erstellt sie neu.",
     "dataFolder": "Datenordner",
     "dataFolderHint": "Wo Einstellungen und Caches liegen, mit einem Cache-Ordner pro PAZ-Ordner. Leer lassen für den Standardordner.",
     "dataFolderConfirm": "Den neuen Datenordner verwenden?\n\nDie Einstellungen werden dorthin kopiert und ersetzen dort vorhandene Einstellungen. Die Caches im alten Ordner werden gelöscht; der PAZ-Index des geladenen Ordners wird neu gespeichert, Tabellen, Symbole und Nachschlage-Indizes werden bei Bedarf neu erstellt.",

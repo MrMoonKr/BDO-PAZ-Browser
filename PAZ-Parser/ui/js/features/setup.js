@@ -75,7 +75,8 @@ export const setupMethods = {
     document.addEventListener("keydown", (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f") {
         e.preventDefault();
-        this.openTabSearch();
+        // The find bar belongs to the Files view's preview.
+        if (this._isFilesView()) this.openTabSearch();
         return;
       }
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "r") {

@@ -46,6 +46,7 @@ export const folderMethods = {
       content.innerHTML = `<div class="placeholder">${this._esc(t("preview.selectFile"))}</div>`;
     }
     this._loadTreeRoot();
+    this._resetMapView();
     this.checkLocWarning();
   },
 };

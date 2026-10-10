@@ -28,7 +28,7 @@ body {
   font-size: 22px;
 }
 
-/* The views: icon-only tabs, then Files with its label. */
+/* The views: icon-only tabs, Files after the separator. */
 #view-rail {
   display: flex;
   align-items: center;
@@ -63,10 +63,8 @@ body {
 }
 .view-tab.active,
 .view-tab.active:hover {
-  padding: 0 14px 0 10px;
   background: var(--color-accent-soft);
   color: var(--color-accent);
-  font-weight: 500;
 }
 .view-rail-sep {
   width: 1px;

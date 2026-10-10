@@ -46,6 +46,8 @@ To run from source or write handlers, see [Requirements](#requirements).
 ## Features
 
 - Tree view of every file in the PAZ archives, with live name search, content search and a preview panel.
+- A Map view next to Files in the toolbar: the world map in Leaflet, built from the client's radar images (`ui_texture/new_ui_common_forlua/widget/rader/minimap_data_pack/rader_X_Y.dds`, one 128 px image per 12,800-unit sector). The first open asks to build the map tiles into the cache folder: on client 3464, 9,802 JPEG tiles over zoom 1 to 7, 216 MB, 13 s with 8 worker processes. Sectors without a radar image, and 2,803 sectors of placeholder art listed in `world_map.py` (client 3464), get one of 12 open sea images picked at random. The map uses world units, so the readout under the cursor shows the game's X and Z.
+- Map pins from other programs while the app runs: a local HTTP API with a `player` pin (one at a time) and `marker` pins at world positions. See [Map API](docs/map-api.md).
 - Previews for text, hex dumps, DDS images and the parsed tables of the formats in [Supported Formats](#supported-formats). Hex and table tabs are paged, so a large file opens without loading every row.
 - Text files show numbered lines, their encoding (UTF-8 or CP949) and line ending, with a Wrap lines toggle. Images show their size, and for DDS the format and mip count (`DXT5 · 11 mips`), with Fit, 100% and 200% zoom, three backgrounds and the color of the pixel under the cursor. Both have a Hex tab next to them.
 - Parsed tables sort on any column across all pages. A table opens sorted by its first column, highest first, and remembers another sort per file.
@@ -310,8 +312,13 @@ table A to Z while the app is idle, and the status bar shows the table it is
 on and how far the pass is. A table stays cached across a patch that leaves
 it, its companions and the LOC text or lookup indexes it reads unchanged.
 **Delete all caches** removes the parsed table, icon thumbnail and lookup
-index caches; the PAZ index cache stays, since rebuilding it takes over a
-minute.
+index caches and the map tiles; the PAZ index cache stays, since rebuilding it
+takes over a minute.
+
+**Keep map updated** is turned on by the Map view's first build. With it on,
+a folder load whose client has no finished map (after a game patch) builds
+the tiles again in the background, and the old client's tiles are deleted
+once the new ones are in place.
 
 `paz_config.json` carries a `config_version`. A newer app updates older
 settings on load; settings it can't read are renamed to
@@ -357,6 +364,13 @@ bdo-paz-cli.exe --update-handlers --records buffsimply.bss
 python browser.py --index
 python browser.py --index knowledge_characters --limit 20
 python browser.py --index buff_icon --id 48724
+
+# The Map view's world map as files; --dir is required. Tiles go to
+# <dir>/world_map_tiles (every zoom, or only --zoom), the image to
+# <dir>/world_map_z<zoom>.jpg (zoom 5 by default; zoom 7 is 31,872 x 27,648 px on client 3464)
+python browser.py --map-tiles --dir ./out
+python browser.py --map-tiles --dir ./out --zoom 7
+python browser.py --map-image --dir ./out --zoom 4
 ```
 
 If `--paz-folder` is omitted, the CLI reuses the last folder opened in the GUI.
@@ -397,7 +411,12 @@ PAZ-Parser/
 ├── bdo_models.py           # Data models (shared by all handlers)
 ├── bdo_preview.py          # Preview handler registry + built-in handlers
 ├── preview_views.py        # Text and image view markup, DDS header facts
-├── bdo_server.py           # Local HTTP server for stream preview
+├── bdo_server.py           # Local HTTP server: stream preview, map tiles, map API
+├── world_map.py            # Map tile grid: radar sectors, tile pyramid, sea fillers
+├── world_map_build.py      # Map tile build in a process pool, into the cache folder
+├── world_map_export.py     # Map tiles and single map images for --map-tiles / --map-image
+├── map_pins.py             # Map pins: types, validation, the session's pin store
+├── map_api.py              # The map API routes on the local server (docs/map-api.md)
 ├── conftest.py             # pytest setup and handler test summary output
 ├── handler_api.py          # HANDLER_API and what handler code may import
 ├── record_export.py        # Records as CSV (GUI export and --records --csv)
@@ -445,6 +464,7 @@ PAZ-Parser/
 │   ├── bdo_api_search.py   # File content search, single-file and cross-file (SearchMixin)
 │   ├── bdo_api_updates.py  # The update banner check and one-click install (UpdateMixin)
 │   ├── bdo_api_handler_updates.py# Handler pack update on start, Check now, restart, versions
+│   ├── bdo_api_world_map.py# Map view state, build prompt, background builds (WorldMapMixin)
 │   └── config_migrations.py# paz_config.json versions and the steps between them
 │
 ├── paz/                    # PAZ archive reading and caching
@@ -476,6 +496,7 @@ PAZ-Parser/
 │   ├── style.css           # CSS entry point, imports css/ modules
 │   ├── css/                # Per-component stylesheets (numbered load order)
 │   ├── fonts/              # IBM Plex woff2 files and their OFL licence
+│   ├── vendor/leaflet/     # Leaflet 1.9.4 (map view) and its BSD-2 licence
 │   └── js/
 │       ├── core/           # Shared state, helpers and the icon sprite
 │       └── features/       # Feature modules (tree, search, extraction, …)

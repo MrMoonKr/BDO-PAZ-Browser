@@ -20,6 +20,23 @@
     "map": "월드맵",
     "files": "파일"
   },
+  "map": {
+    "noFolder": "월드맵을 보려면 PAZ 폴더를 여세요.",
+    "noTiles": "이 클라이언트에는 월드맵을 만들 레이더 이미지가 없습니다.",
+    "promptTitle": "월드맵 만들기",
+    "promptText": "월드맵 보기는 이 클라이언트의 레이더 이미지로 만든 타일을 표시합니다: 타일 {tiles}개, 디스크 약 {size}. 만드는 데 시간이 걸리며, 그동안 파일 보기는 계속 쓸 수 있습니다. 확인을 누르면 설정의 \"맵 최신 상태 유지\"가 켜지고, 게임 패치 후 맵을 다시 만듭니다.",
+    "build": "확인",
+    "progressTitle": "월드맵 만드는 중",
+    "progressStarting": "시작하는 중…",
+    "progressZoom": "확대 단계 {zoom} ({steps}단계 중 {step}단계)",
+    "progressTiles": "타일 {done} / {total} · {percent}%",
+    "failed": "마지막 빌드에 실패했습니다: {message}",
+    "coords": "X {x} · Z {z}",
+    "pinTypes": {
+      "player": "플레이어",
+      "marker": "표시"
+    }
+  },
   "sidebar": {
     "filterFiles": "파일 필터…",
     "searchInFiles": "모든 파일에서 검색",
@@ -181,8 +198,10 @@
     "recordsCacheOff": "끄기",
     "recordsCacheOpen": "열 때 테이블 캐시",
     "recordsCacheAll": "백그라운드에서 모든 테이블 캐시",
+    "keepMapUpdated": "맵 최신 상태 유지",
+    "keepMapUpdatedHint": "게임 패치로 클라이언트가 바뀌면 월드맵 보기의 타일을 백그라운드에서 다시 만듭니다",
     "deleteCaches": "모든 캐시 삭제",
-    "deleteCachesConfirm": "이 PAZ 폴더의 테이블, 아이콘, 조회 인덱스 캐시를 삭제할까요?\n\n테이블은 다시 분석되고 아이콘은 다시 디코딩되며, 다음 시작 시 조회 인덱스를 다시 만듭니다. PAZ 인덱스 캐시는 유지됩니다.",
+    "deleteCachesConfirm": "이 PAZ 폴더의 테이블, 아이콘, 조회 인덱스 캐시를 삭제할까요?\n\n테이블은 다시 분석되고 아이콘은 다시 디코딩되며, 다음 시작 시 조회 인덱스를 다시 만듭니다. PAZ 인덱스 캐시는 유지됩니다.\n\n맵 타일도 삭제되며, 월드맵 보기에서 다시 만듭니다.",
     "dataFolder": "데이터 폴더",
     "dataFolderHint": "설정과 캐시를 보관할 위치이며 PAZ 폴더마다 캐시 폴더를 하나씩 만듭니다. 비워 두면 기본 위치를 사용합니다.",
     "dataFolderConfirm": "새 데이터 폴더를 사용할까요?\n\n설정이 그곳으로 복사되어 이미 있는 설정을 대체합니다. 이전 폴더의 캐시는 삭제되며, 불러온 폴더의 PAZ 인덱스는 다시 저장되고 테이블, 아이콘, 조회 인덱스는 필요할 때 다시 만듭니다.",

@@ -20,6 +20,23 @@
     "map": "Mapa",
     "files": "Archivos"
   },
+  "map": {
+    "noFolder": "Abre una carpeta PAZ para ver el mapa del mundo.",
+    "noTiles": "Este cliente no tiene imágenes de radar con las que crear el mapa del mundo.",
+    "promptTitle": "Crear el mapa del mundo",
+    "promptText": "La vista Mapa muestra teselas creadas a partir de las imágenes de radar de este cliente: {tiles} teselas, unos {size} en disco. Crearlas lleva un rato; la vista Archivos sigue disponible. OK activa \"Mantener el mapa actualizado\" en los ajustes, que vuelve a crear el mapa tras un parche del juego.",
+    "build": "OK",
+    "progressTitle": "Creando el mapa del mundo",
+    "progressStarting": "Iniciando…",
+    "progressZoom": "Nivel de zoom {zoom} (paso {step} de {steps})",
+    "progressTiles": "{done} / {total} teselas · {percent} %",
+    "failed": "La última creación falló: {message}",
+    "coords": "X {x} · Z {z}",
+    "pinTypes": {
+      "player": "Jugador",
+      "marker": "Marcador"
+    }
+  },
   "sidebar": {
     "filterFiles": "Filtrar archivos…",
     "searchInFiles": "Buscar en todos los archivos",
@@ -181,8 +198,10 @@
     "recordsCacheOff": "Desactivada",
     "recordsCacheOpen": "Guardar las tablas al abrirlas",
     "recordsCacheAll": "Guardar todas las tablas en segundo plano",
+    "keepMapUpdated": "Mantener el mapa actualizado",
+    "keepMapUpdatedHint": "Volver a crear las teselas de la vista Mapa en segundo plano cuando un parche del juego cambia el cliente",
     "deleteCaches": "Borrar todas las cachés",
-    "deleteCachesConfirm": "¿Borrar las cachés de tablas, iconos e índices de búsqueda de esta carpeta PAZ?\n\nLas tablas se analizarán de nuevo, los iconos se decodificarán de nuevo y el próximo inicio reconstruirá los índices de búsqueda. La caché del índice PAZ se conserva.",
+    "deleteCachesConfirm": "¿Borrar las cachés de tablas, iconos e índices de búsqueda de esta carpeta PAZ?\n\nLas tablas se analizarán de nuevo, los iconos se decodificarán de nuevo y el próximo inicio reconstruirá los índices de búsqueda. La caché del índice PAZ se conserva.\n\nTambién se borran las teselas del mapa; la vista Mapa las vuelve a crear.",
     "dataFolder": "Carpeta de datos",
     "dataFolderHint": "Dónde se guardan los ajustes y las cachés, con una carpeta de caché por carpeta PAZ. Déjalo vacío para usar la ubicación predeterminada.",
     "dataFolderConfirm": "¿Usar la nueva carpeta de datos?\n\nTus ajustes se copian allí y reemplazan los que ya haya. Las cachés de la carpeta anterior se borran; el índice PAZ de la carpeta cargada se guarda de nuevo, y las tablas, los iconos y los índices de búsqueda se reconstruyen cuando hace falta.",

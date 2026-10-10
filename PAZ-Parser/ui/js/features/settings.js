@@ -32,6 +32,7 @@ export const settingsMethods = {
     document.getElementById("settings-update-handlers").checked = s.update_handlers !== false;
     document.getElementById("settings-handlers-result").textContent = "";
     document.getElementById("settings-records-cache").value = s.records_cache ?? "open";
+    document.getElementById("settings-keep-map-updated").checked = s.keep_map_updated === true;
     const dataFolder = document.getElementById("settings-data-folder");
     dataFolder.value = s.data_folder ?? "";
     dataFolder.placeholder = s.default_data_folder ?? "";
@@ -104,6 +105,7 @@ export const settingsMethods = {
     const checkAppUpdates = document.getElementById("settings-check-app-updates").checked;
     const updateHandlers = document.getElementById("settings-update-handlers").checked;
     const recordsCache = document.getElementById("settings-records-cache").value;
+    const keepMapUpdated = document.getElementById("settings-keep-map-updated").checked;
     const dataFolder = document.getElementById("settings-data-folder").value.trim();
     if (this._isSavingSettings) return;
     // A new data folder deletes the caches in the old one.
@@ -114,7 +116,7 @@ export const settingsMethods = {
     try {
       result = await window.pywebview.api.save_settings(
         pazPath, language, tableRowHeight, showPaTags, handledOnly, recordsCache, dataFolder, checkAppUpdates,
-        updateHandlers,
+        updateHandlers, keepMapUpdated,
       );
     } finally {
       this._showSettingsSaving(false);
@@ -180,6 +182,8 @@ export const settingsMethods = {
       size.textContent = result?.ok
         ? t("settings.cachesDeleted", { size: this._fmtBytes(result.freed ?? 0) })
         : t("settings.cachesDeleteFailed", { message: result?.error ?? "" });
+      // The map tiles went with the caches.
+      this._resetMapView();
     } finally {
       button.disabled = false;
     }

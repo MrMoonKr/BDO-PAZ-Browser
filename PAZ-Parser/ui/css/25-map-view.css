@@ -1,0 +1,90 @@
+/* ── Map view ─────────────────────────────────────────────────────────────── */
+
+#map-view {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  background: var(--color-bg);
+}
+
+/* Leaflet's container. Past the map's edge it shows the tiles' sea colour
+   (world_map.py, SEA_COLOR). */
+.map-canvas {
+  flex: 1;
+  background: rgb(30, 54, 56);
+  font-family: var(--font-sans);
+}
+
+.map-message {
+  margin: auto;
+}
+
+/* The build prompt and the build's progress: the first-run card, centred. */
+.map-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(520px, calc(100% - 32px));
+  margin: 0;
+  transform: translate(-50%, -50%);
+}
+.first-run .map-error {
+  color: var(--color-danger);
+}
+
+.map-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--color-line);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.map-progress-fill {
+  width: 0;
+  height: 100%;
+  background: var(--color-accent);
+  transition: width 0.15s;
+}
+
+/* World X and Z under the cursor, over Leaflet's panes (z-index 400 to 800). */
+.map-coords {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 1000;
+  padding: 4px 10px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text-2);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  pointer-events: none;
+}
+
+/* Leaflet's zoom buttons in the app's colours. */
+.map-canvas .leaflet-bar {
+  border: 1px solid var(--color-line);
+  box-shadow: none;
+}
+.map-canvas .leaflet-bar a {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-bottom-color: var(--color-line);
+}
+.map-canvas .leaflet-bar a:hover {
+  background: var(--color-hover);
+}
+
+/* Map API pins (map-view.js): a dot centred on the world position. */
+.map-pin {
+  border: 2px solid var(--color-text-strong);
+  border-radius: 50%;
+  background: var(--color-data);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.45);
+}
+.map-pin-player {
+  background: var(--color-accent);
+  box-shadow: 0 0 0 4px var(--color-accent-soft), 0 0 0 2px rgba(0, 0, 0, 0.45);
+}

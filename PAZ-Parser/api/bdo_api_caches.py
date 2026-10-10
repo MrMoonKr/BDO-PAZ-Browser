@@ -40,6 +40,7 @@ from paz.bdo_records_cache import RecordsCache
 from paz.bdo_thumbnail_cache import ThumbnailCache
 from table_sort import TableSort
 from ui_text import ui_text
+from world_map_build import MAP_FOLDER
 
 from .bdo_api_state import ApiState
 from .bdo_config import load_config, peek_table_sort, records_cache_setting, table_sort_file_key
@@ -129,7 +130,8 @@ class CacheMixin(ApiState):
         set_picked_data_dir(new)
         self._close_records_cache()
         self._close_thumbnail_cache()
-        errors = remove_cache_root(cache_root(old), CACHE_FILES)
+        self._stop_map_build()
+        errors = remove_cache_root(cache_root(old), CACHE_FILES, (MAP_FOLDER,))
         self._cache_dir = None
         if self._paz_root is None or self._meta_version is None:
             return errors
@@ -258,15 +260,16 @@ class CacheMixin(ApiState):
     # ── Settings ─────────────────────────────────────────────────────────────
 
     def _cache_size(self) -> int:
-        """Bytes the `cache_files()` of the loaded folder take on disk."""
+        """Bytes the `cache_files()` and the world map of the loaded folder take on disk."""
         if self._cache_dir is None:
             return 0
-        return sum(path.stat().st_size for path in cache_files(self._cache_dir) if path.is_file())
+        files = sum(path.stat().st_size for path in cache_files(self._cache_dir) if path.is_file())
+        return files + self._world_map_bytes()
 
     def delete_caches(self) -> dict:
-        """Delete the `cache_files()` of the loaded folder.
+        """Delete the `cache_files()` and the world map of the loaded folder.
 
-        What is loaded stays loaded. The thumbnail and records caches reopen
+        What is loaded stays loaded; a running map build stops. The thumbnail and records caches reopen
         empty; the lookup indexes are rebuilt on the next launch. The "all"
         mode's background pass does not start again until the next launch,
         so deleting is not undone straight away.
@@ -290,6 +293,10 @@ class CacheMixin(ApiState):
                 continue
             except OSError as ex:
                 errors.append(f"{path.name}: {ex}")
+
+        map_freed, map_errors = self._delete_world_map()
+        freed += map_freed
+        errors.extend(map_errors)
 
         if self._meta_version is not None:
             self._thumbnail_cache = ThumbnailCache(self._cache_dir, self._meta_version)

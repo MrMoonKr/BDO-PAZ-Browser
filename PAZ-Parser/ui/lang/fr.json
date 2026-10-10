@@ -20,6 +20,23 @@
     "map": "Carte",
     "files": "Fichiers"
   },
+  "map": {
+    "noFolder": "Ouvrez un dossier PAZ pour voir la carte du monde.",
+    "noTiles": "Ce client n'a pas d'images radar pour construire la carte du monde.",
+    "promptTitle": "Construire la carte du monde",
+    "promptText": "La vue Carte affiche des tuiles construites à partir des images radar de ce client : {tiles} tuiles, environ {size} sur le disque. La construction prend un moment ; la vue Fichiers reste utilisable. OK active \"Maintenir la carte à jour\" dans les paramètres, qui reconstruit la carte après un patch du jeu.",
+    "build": "OK",
+    "progressTitle": "Construction de la carte du monde",
+    "progressStarting": "Démarrage…",
+    "progressZoom": "Niveau de zoom {zoom} (étape {step} sur {steps})",
+    "progressTiles": "{done} / {total} tuiles · {percent} %",
+    "failed": "La dernière construction a échoué : {message}",
+    "coords": "X {x} · Z {z}",
+    "pinTypes": {
+      "player": "Joueur",
+      "marker": "Repère"
+    }
+  },
   "sidebar": {
     "filterFiles": "Filtrer les fichiers…",
     "searchInFiles": "Rechercher dans tous les fichiers",
@@ -181,8 +198,10 @@
     "recordsCacheOff": "Désactivé",
     "recordsCacheOpen": "Mettre en cache les tables à l'ouverture",
     "recordsCacheAll": "Mettre en cache toutes les tables en arrière-plan",
+    "keepMapUpdated": "Maintenir la carte à jour",
+    "keepMapUpdatedHint": "Reconstruire les tuiles de la vue Carte en arrière-plan quand un patch du jeu modifie le client",
     "deleteCaches": "Supprimer tous les caches",
-    "deleteCachesConfirm": "Supprimer les caches des tables, des icônes et des index de recherche de ce dossier PAZ ?\n\nLes tables seront analysées à nouveau, les icônes décodées à nouveau, et le prochain démarrage reconstruira les index de recherche. Le cache de l'index PAZ est conservé.",
+    "deleteCachesConfirm": "Supprimer les caches des tables, des icônes et des index de recherche de ce dossier PAZ ?\n\nLes tables seront analysées à nouveau, les icônes décodées à nouveau, et le prochain démarrage reconstruira les index de recherche. Le cache de l'index PAZ est conservé.\n\nLes tuiles de la carte sont aussi supprimées ; la vue Carte les reconstruit.",
     "dataFolder": "Dossier de données",
     "dataFolderHint": "Emplacement des paramètres et des caches, avec un dossier de cache par dossier PAZ. Laisser vide pour l'emplacement par défaut.",
     "dataFolderConfirm": "Utiliser le nouveau dossier de données ?\n\nVos paramètres y sont copiés et remplacent ceux qui s'y trouvent déjà. Les caches de l'ancien dossier sont supprimés ; l'index PAZ du dossier chargé est enregistré à nouveau, et les tables, les icônes et les index de recherche sont reconstruits au besoin.",

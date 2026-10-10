@@ -25,11 +25,13 @@ from .bdo_config import (
     save_config,
     show_pa_tags_setting,
     update_handlers_setting,
+    keep_map_updated_setting,
 )
 from .bdo_languages import UI_LANGUAGE_CODES, UI_LANGUAGES, game_language, loc_path, missing_loc_file
 from .bdo_api_helpers import _DISK_VIRTUAL_PREFIX, FOLDER_ICON, _file_icon, _norm, fold_entry_map, path_matcher
 from .bdo_api_preview import PreviewMixin
 from .bdo_api_search import SearchMixin
+from .bdo_api_world_map import WorldMapMixin
 from .bdo_tree import build_tree, collect_entries, count_entries, find_node, handled_entries
 from paz.bdo_cache import load_cache, read_meta_version, save_cache
 from paz.bdo_thumbnail_cache import ThumbnailCache
@@ -78,7 +80,7 @@ def _data_folder(text: str) -> str | None:
     return str(path)
 
 
-class Api(PreviewMixin, SearchMixin, CacheMixin, UpdateMixin, HandlerUpdateMixin):
+class Api(PreviewMixin, SearchMixin, CacheMixin, UpdateMixin, HandlerUpdateMixin, WorldMapMixin):
     """Backend the UI calls through pywebview; the CLI loads folders through it too."""
 
     @property
@@ -157,6 +159,7 @@ class Api(PreviewMixin, SearchMixin, CacheMixin, UpdateMixin, HandlerUpdateMixin
             "missing_loc": self._missing_loc_files(),
             "check_app_updates": check_app_updates_setting(cfg),
             "update_handlers": update_handlers_setting(cfg),
+            "keep_map_updated": keep_map_updated_setting(cfg),
             # None from source: the settings hide the update checks then.
             "app_version": info.version if (info := build_info()) is not None else None,
         }
@@ -199,6 +202,7 @@ class Api(PreviewMixin, SearchMixin, CacheMixin, UpdateMixin, HandlerUpdateMixin
         data_folder: str = "",
         check_app_updates: bool = True,
         update_handlers: bool = True,
+        keep_map_updated: bool = False,
     ) -> dict:
         self._wait_for_folder_text()
         if language not in UI_LANGUAGE_CODES:
@@ -228,6 +232,7 @@ class Api(PreviewMixin, SearchMixin, CacheMixin, UpdateMixin, HandlerUpdateMixin
             "records_cache": records_cache,
             "check_app_updates": check_app_updates is not False,
             "update_handlers": update_handlers is not False,
+            "keep_map_updated": keep_map_updated is True,
         })
         set_show_pa_tags(show_pa_tags is True)
         self._handled_only = handled_only is True
@@ -246,6 +251,9 @@ class Api(PreviewMixin, SearchMixin, CacheMixin, UpdateMixin, HandlerUpdateMixin
             self._open_records_cache()
         elif is_new_language:
             self._refresh_records_cache()
+        if keep_map_updated is True and not keep_map_updated_setting(old_cfg) and not is_new_folder:
+            # A new folder starts its own build once loaded (`_keep_map_updated`).
+            self._start_map_build()
         return {
             "ok": True,
             "table_row_height": row_height,
@@ -301,6 +309,7 @@ class Api(PreviewMixin, SearchMixin, CacheMixin, UpdateMixin, HandlerUpdateMixin
                 self._push_js("app.onFolderLoaded()")
                 self._load_folder_text(msg, loc_raw, load_loc=True, load_indexes=True, cache_records=True)
                 self._push_status(msg)
+                self._keep_map_updated()
             except Exception as ex:
                 self._push_status({"key": "status.error", "args": {"message": str(ex)}})
                 self._push_js(f"app.showError({json.dumps(str(ex))})")
@@ -373,6 +382,7 @@ class Api(PreviewMixin, SearchMixin, CacheMixin, UpdateMixin, HandlerUpdateMixin
         self._tree_data = build_tree(entries)
         self._handled_view = None
         self._disk_companions = {}
+        self._clear_world_map()
         loc_raw = self._read_loc(load_config().get("language", "en")) if read_loc else None
         return msg, loc_raw
 
