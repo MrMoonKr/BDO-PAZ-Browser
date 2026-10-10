@@ -6,9 +6,36 @@
     "notes": "Fehlende Schlüssel greifen automatisch auf en.json zurück."
   },
   "toolbar": {
-    "openFolder": "📂 PAZ-Ordner öffnen",
+    "openFolder": "PAZ-Ordner öffnen",
     "noFolderSelected": "Kein Ordner ausgewählt",
     "settings": "Einstellungen"
+  },
+  "views": {
+    "label": "Ansichten",
+    "items": "Gegenstände",
+    "quests": "Quests",
+    "knowledge": "Wissen",
+    "npcs": "NPCs",
+    "recipes": "Rezepte",
+    "map": "Karte",
+    "files": "Dateien"
+  },
+  "map": {
+    "noFolder": "Öffne einen PAZ-Ordner, um die Weltkarte zu sehen.",
+    "noTiles": "Dieser Client hat keine Radarbilder, aus denen die Weltkarte erstellt werden kann.",
+    "promptTitle": "Weltkarte erstellen",
+    "promptText": "Die Kartenansicht zeigt Kacheln aus den Radarbildern dieses Clients: {tiles} Kacheln, etwa {size} auf der Festplatte. Das Erstellen dauert eine Weile; die Dateiansicht bleibt nutzbar. OK schaltet \"Karte aktuell halten\" in den Einstellungen ein, womit die Karte nach einem Spielpatch neu erstellt wird.",
+    "build": "OK",
+    "progressTitle": "Weltkarte wird erstellt",
+    "progressStarting": "Wird gestartet…",
+    "progressZoom": "Zoomstufe {zoom} (Schritt {step} von {steps})",
+    "progressTiles": "{done} / {total} Kacheln · {percent} %",
+    "failed": "Die letzte Erstellung ist fehlgeschlagen: {message}",
+    "coords": "X {x} · Z {z}",
+    "pinTypes": {
+      "player": "Spieler",
+      "marker": "Markierung"
+    }
   },
   "sidebar": {
     "filterFiles": "Dateien filtern…",
@@ -20,7 +47,7 @@
     "modeHex": "Hex",
     "pattern": "Muster…",
     "search": "Suchen",
-    "cancel": "✕ Abbrechen",
+    "cancel": "Abbrechen",
     "in": "In:",
     "noMatches": "Keine Treffer gefunden.",
     "matchOne": "1 Treffer",
@@ -28,13 +55,15 @@
   },
   "details": {
     "title": "Eintragsdetails",
-    "export": "⬇ Exportieren",
+    "export": "Exportieren",
+    "exportRaw": "Rohdatei",
+    "exportCsv": "Tabelle als CSV",
     "noFileSelected": "Keine Datei ausgewählt",
-    "archive": "📦  Archiv",
-    "path": "📍  Pfad",
-    "compressed": "🗜  Komprimiert",
-    "uncompressed": "📄  Unkomprimiert",
-    "offset": "#  Offset"
+    "archive": "Archiv",
+    "path": "Pfad",
+    "compressed": "Komprimiert",
+    "uncompressed": "Unkomprimiert",
+    "offset": "Offset"
   },
   "preview": {
     "title": "Vorschau",
@@ -47,7 +76,20 @@
     "renderError": "Darstellungsfehler: {message}",
     "parseError": "Auswertungsfehler: {message}",
     "truncated": "… gekürzt, die ersten {shown} KB von {total} KB werden angezeigt",
-    "pillowMissing": "Pillow ist nicht installiert, pip install pillow"
+    "pillowMissing": "Pillow ist nicht installiert, pip install pillow",
+    "tabImage": "Bild",
+    "lineOne": "{count} Zeile",
+    "lineMany": "{count} Zeilen",
+    "wrapLines": "Zeilen umbrechen",
+    "zoom": "Zoom",
+    "zoomFit": "Einpassen",
+    "background": "Hintergrund",
+    "bgChecker": "Schachbrett",
+    "bgDark": "Dunkel",
+    "bgLight": "Hell",
+    "mipOne": "{count} Mip",
+    "mipMany": "{count} Mips",
+    "alpha": "Alpha {value}"
   },
   "loc": {
     "showing": "{first}–{last} von {total} Texten",
@@ -57,8 +99,7 @@
       "str_id2": "Id2",
       "str_id3": "Id3",
       "str_id4": "Id4",
-      "str_type": "Typ (Zahl)",
-      "str_type_text": "Typ (Text)",
+      "type": "Typ",
       "text": "Text"
     },
     "types": {
@@ -122,14 +163,15 @@
     "position": "{index} von {count}"
   },
   "pageBar": {
-    "prev": "◀ Zurück",
-    "next": "Weiter ▶"
+    "prev": "Zurück",
+    "next": "Weiter",
+    "rows": "Zeilen {first}–{last} von {total}"
   },
   "bottomBar": {
     "output": "Ausgabe",
     "extractDestination": "Extraktionsziel…",
-    "extractSelected": "⬇ Auswahl extrahieren",
-    "extractFolder": "📁 Ordner extrahieren",
+    "extractSelected": "Auswahl extrahieren",
+    "extractFolder": "Ordner extrahieren",
     "browse": "Durchsuchen",
     "fileOne": "{count} Datei",
     "fileMany": "{count} Dateien",
@@ -156,8 +198,10 @@
     "recordsCacheOff": "Aus",
     "recordsCacheOpen": "Tabellen beim Öffnen speichern",
     "recordsCacheAll": "Alle Tabellen im Hintergrund speichern",
+    "keepMapUpdated": "Karte aktuell halten",
+    "keepMapUpdatedHint": "Die Kacheln der Kartenansicht im Hintergrund neu erstellen, wenn ein Spielpatch den Client ändert",
     "deleteCaches": "Alle Caches löschen",
-    "deleteCachesConfirm": "Tabellen-, Symbol- und Nachschlage-Index-Caches dieses PAZ-Ordners löschen?\n\nTabellen werden neu ausgewertet, Symbole neu dekodiert, und der nächste Start erstellt die Nachschlage-Indizes neu. Der PAZ-Index-Cache bleibt erhalten.",
+    "deleteCachesConfirm": "Tabellen-, Symbol- und Nachschlage-Index-Caches dieses PAZ-Ordners löschen?\n\nTabellen werden neu ausgewertet, Symbole neu dekodiert, und der nächste Start erstellt die Nachschlage-Indizes neu. Der PAZ-Index-Cache bleibt erhalten.\n\nDie Kartenkacheln werden ebenfalls gelöscht; die Kartenansicht erstellt sie neu.",
     "dataFolder": "Datenordner",
     "dataFolderHint": "Wo Einstellungen und Caches liegen, mit einem Cache-Ordner pro PAZ-Ordner. Leer lassen für den Standardordner.",
     "dataFolderConfirm": "Den neuen Datenordner verwenden?\n\nDie Einstellungen werden dorthin kopiert und ersetzen dort vorhandene Einstellungen. Die Caches im alten Ordner werden gelöscht; der PAZ-Index des geladenen Ordners wird neu gespeichert, Tabellen, Symbole und Nachschlage-Indizes werden bei Bedarf neu erstellt.",
@@ -169,7 +213,14 @@
     "saving": "Wird gespeichert…",
     "browse": "Durchsuchen",
     "pixels": "px",
-    "close": "Schließen"
+    "close": "Schließen",
+    "sectionGameFiles": "Spieldateien",
+    "sectionTables": "Tabellen",
+    "sectionUpdates": "Updates",
+    "sectionData": "Daten und Cache",
+    "locMissing": "LOC fehlt",
+    "rowHeightDown": "Kleinere Zeilen",
+    "rowHeightUp": "Höhere Zeilen"
   },
   "tree": {
     "loading": "Laden..."
@@ -182,7 +233,7 @@
     "error": "Fehler: {message}",
     "indexFailed": "Nachschlage-Indizes konnten nicht erstellt werden, einige Symbole und Verknüpfungen fehlen: {message}",
     "extracting": "Extrahiere… {done}/{total}, {extracted} ok  {skipped} übersprungen  {failed} fehlgeschlagen",
-    "extractDone": "✓  Fertig, {extracted} extrahiert, {skipped} übersprungen, {failed} fehlgeschlagen.",
+    "extractDone": "Fertig, {extracted} extrahiert, {skipped} übersprungen, {failed} fehlgeschlagen.",
     "searching": "Suche… {done}/{total} Dateien gescannt, bisher {matches} Treffer",
     "searchDone": "Suche abgeschlossen, {matches} Datei(en) von {total} gescannten gefunden",
     "pluginsReloaded": "Plugins neu geladen.",
@@ -197,6 +248,9 @@
     "cachingTablesPaused": "Speichern der Tabellen pausiert, solange die App beschäftigt ist ({done}/{total})",
     "openFolder": "Öffne einen PAZ-Ordner, um zu beginnen.",
     "exportFailed": "Export fehlgeschlagen: {message}"
+  },
+  "firstRun": {
+    "body": "Wähle den Ordner Paz in deiner Black-Desert-Installation. Beim ersten Laden wird jeder Archivindex gelesen und zwischengespeichert; spätere Starts laden aus dem Cache."
   },
   "iconPreview": {
     "title": "Symbol",
@@ -237,7 +291,9 @@
   },
   "locWarning": {
     "missing": "Dir fehlt {file} für {language}, daher ist nur die Oberfläche der App auf {language}. Spieltexte in den Tabellen bleiben koreanisch.",
-    "dismiss": "Ausblenden"
+    "dismiss": "Ausblenden",
+    "title": "Spieltexte bleiben Koreanisch",
+    "openSettings": "Sprache in den Einstellungen ändern"
   },
   "appUpdate": {
     "available": "Version {version} ist verfügbar",

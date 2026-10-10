@@ -23,6 +23,7 @@ export const initMethods = {
     this._setupIconPreview();
     this._setupEscapeClear();
     this._setupImageZoom();
+    this._setupPreviewViews();
     this._initTabSearch();
     this._initGlobalSearch();
     this._setupAppUpdate();
@@ -37,6 +38,8 @@ export const initMethods = {
       this._showFolderPath(last.path);
       await this._showTreeLoading();
       window.pywebview.api.open_folder_path(last.path);
+    } else {
+      this._showFirstRun();
     }
   },
 };

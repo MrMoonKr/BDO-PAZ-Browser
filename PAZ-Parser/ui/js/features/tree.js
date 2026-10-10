@@ -1,6 +1,7 @@
 "use strict";
 
 import { t } from "../core/i18n.js";
+import { iconElement } from "../core/icons.js";
 
 export const treeMethods = {
   // Also runs when the filter box is cleared, so it must not disable the
@@ -13,7 +14,7 @@ export const treeMethods = {
     document.getElementById("search").value = "";
     const tree = document.getElementById("tree");
     tree.innerHTML = "";
-    tree.appendChild(this._buildTreeLoadingNode());
+    tree.appendChild(this._buildTreeRootLoading());
     try {
       await this._nextPaint();
       const children = await window.pywebview.api.get_children("");
@@ -37,6 +38,28 @@ export const treeMethods = {
     document.getElementById("btn-content-search").disabled = !isEnabled;
   },
 
+  // A text view searches its own lines, in string mode; an image view has nothing to find.
+  _syncViewSearchBar() {
+    const isText = !!document.querySelector("#preview-content .text-lines");
+    this.showTabSearchBar(isText);
+    if (isText) this._syncSearchBarToTab("parsed");
+  },
+
+  // The whole tree is loading: the spinner row, then grey rows where names will be.
+  _buildTreeRootLoading() {
+    const rows = document.createDocumentFragment();
+    rows.appendChild(this._buildTreeLoadingNode());
+    const widths = [62, 48, 70, 55, 40, 66, 58, 45, 72, 50, 61, 38];
+    for (const width of widths) {
+      const row = document.createElement("li");
+      row.className = "tree-node tree-skeleton";
+      row.setAttribute("aria-hidden", "true");
+      row.innerHTML = `<span class="tree-label"><span class="skeleton-icon"></span><span class="skeleton-bar" style="width:${width}%"></span></span>`;
+      rows.appendChild(row);
+    }
+    return rows;
+  },
+
   _buildTreeLoadingNode() {
     const loading = document.createElement("li");
     loading.className = "tree-node loading";
@@ -50,7 +73,7 @@ export const treeMethods = {
     this._setSearchEnabled(false);
     const tree = document.getElementById("tree");
     tree.innerHTML = "";
-    tree.appendChild(this._buildTreeLoadingNode());
+    tree.appendChild(this._buildTreeRootLoading());
     return this._nextPaint();
   },
 
@@ -62,6 +85,7 @@ export const treeMethods = {
     const li = document.createElement("li");
     li.className = `tree-node tree-${item.type}`;
     li.dataset.id = item.id;
+    li.dataset.icon = item.icon;
     // A rebuilt tree (settings saved, folder expanded again) keeps the selection marked.
     if (item.id === this._selectedPath) li.classList.add("selected");
 
@@ -69,16 +93,10 @@ export const treeMethods = {
     label.className = "tree-label";
 
     if (item.type === "dir") {
-      const arrow = document.createElement("span");
-      arrow.className = "tree-arrow";
-      arrow.textContent = "▶";
-      label.appendChild(arrow);
+      label.appendChild(iconElement("chevron-right", "icon tree-arrow"));
     }
 
-    const icon = document.createElement("span");
-    icon.className = "tree-icon";
-    icon.textContent = item.icon;
-    label.appendChild(icon);
+    label.appendChild(iconElement(item.icon, "icon tree-icon"));
 
     const name = document.createElement("span");
     name.className = "tree-name";
@@ -88,7 +106,7 @@ export const treeMethods = {
     if (item.type === "dir") {
       const count = document.createElement("span");
       count.className = "tree-count";
-      count.textContent = `(${(item.count || 0).toLocaleString()})`;
+      count.textContent = (item.count || 0).toLocaleString();
       label.appendChild(count);
     }
 
@@ -166,11 +184,17 @@ export const treeMethods = {
     this._cancelParsedPageRequest();
     this._isAltView = false;
     this._tabLabels = null;
+    this._canExportCsv = false;
+    this._isPlainView = false;
+    this._recordCount = null;
+    this._byteCount = null;
+    this.closeExportMenu();
 
-    document.getElementById("preview-title").textContent = `${icon}  ${name}`;
+    document.getElementById("preview-title").replaceChildren(iconElement(icon), document.createTextNode(name));
     this.showHandlerVersion(name);
     document.getElementById("preview-content").innerHTML = `<div class="placeholder preview-loading"><span class="loading-spinner" aria-hidden="true"></span><span>${t("preview.loading")}</span></div>`;
     document.getElementById("preview-tabs").hidden = true;
+    document.getElementById("preview-tabs").classList.remove("view-first");
     document.getElementById("btn-export").hidden = true;
     this._setPageBar(null);
     window.appProfile?.record("_selectFile.setup", performance.now() - setupStart);
@@ -197,6 +221,10 @@ export const treeMethods = {
       this._parsedSort = result.sort ?? null;
       this._isAltView = !!result.tab_labels;
       this._tabLabels = result.tab_labels || null;
+      this._recordCount = result.record_count ?? null;
+      this._byteCount = result.byte_count ?? null;
+      // Text/Rendered views have no records to write as CSV.
+      this._canExportCsv = !!result.has_parsed && !this._isAltView;
 
       const tabs = document.getElementById("preview-tabs");
       const content = document.getElementById("preview-content");
@@ -217,6 +245,7 @@ export const treeMethods = {
         tabs.hidden = false;
         tabs.querySelectorAll(".tab-btn").forEach((btn) => {
           btn.classList.toggle("active", btn.dataset.tab === "hex");
+          btn.setAttribute("aria-selected", String(btn.dataset.tab === "hex"));
         });
         content.innerHTML = this._hexHtml;
         this._setPageBar(this._hexTotalPages > 1 ? this._buildPageBar("hex", 0, this._hexTotalPages) : null);
@@ -224,6 +253,23 @@ export const treeMethods = {
         if (this._isAltView) {
           document.getElementById("tab-search-mode-hex").hidden = true;
         }
+      } else if (result.view_label && result.html) {
+        // A text or image view: its own tab first, Hex next to it. The find
+        // bar searches bytes, so it shows on the Hex tab only.
+        this._isPlainView = true;
+        this._parsedHtml = result.html;
+        this._activeTab = "parsed";
+        parsedTabBtn.textContent = result.view_label;
+        tabs.classList.add("view-first");
+        tabs.hidden = false;
+        tabs.querySelectorAll(".tab-btn").forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.tab === "parsed");
+          btn.setAttribute("aria-selected", String(btn.dataset.tab === "parsed"));
+        });
+        content.innerHTML = result.html;
+        this._initPreviewView(content);
+        this._setPageBar(null);
+        this._syncViewSearchBar();
       } else {
         tabs.hidden = true;
         this.showTabSearchBar(!result.stream);
@@ -247,14 +293,6 @@ export const treeMethods = {
     }
   },
 
-  async exportFile() {
-    if (!this._selectedPath) return;
-    const result = await window.pywebview.api.export_file(this._selectedPath, this._activeTab);
-    if (result?.error) {
-      this.setStatus({ key: "status.exportFailed", args: { message: result.error } });
-    }
-  },
-
   switchTab(tab) {
     if (this._hexHtml === null) return;
     this._activeTab = tab;
@@ -262,6 +300,7 @@ export const treeMethods = {
     this._resetTabSearch();
     document.getElementById("preview-tabs").querySelectorAll(".tab-btn").forEach((btn) => {
       btn.classList.toggle("active", btn.dataset.tab === tab);
+      btn.setAttribute("aria-selected", String(btn.dataset.tab === tab));
     });
     const content = document.getElementById("preview-content");
     if (tab === "hex") {
@@ -272,6 +311,12 @@ export const treeMethods = {
       if (this._isAltView) {
         document.getElementById("tab-search-mode-hex").hidden = true;
       }
+      if (this._isPlainView) this.showTabSearchBar(true);
+    } else if (this._isPlainView) {
+      content.innerHTML = this._parsedHtml || "";
+      this._initPreviewView(content);
+      this._setPageBar(null);
+      this._syncViewSearchBar();
     } else {
       content.innerHTML = this._parsedHtml || "";
       this._initTableSort(content);

@@ -1,25 +1,15 @@
 /* ── Dividers ─────────────────────────────────────────────────────────────── */
 
+/* 5px to grab, drawn as a 1px line that turns accent while hovered or dragged. */
 #v-divider {
-  width: 4px;
-  background: var(--border);
+  width: 5px;
+  margin: 0 -2px;
+  z-index: 1;
+  background: linear-gradient(to right, transparent 2px, var(--color-line) 2px 3px, transparent 3px);
   cursor: col-resize;
   flex-shrink: 0;
-  transition: background 0.15s;
 }
 #v-divider:hover,
 #v-divider.dragging {
-  background: var(--border3);
-}
-
-#h-divider {
-  height: 4px;
-  background: var(--border);
-  cursor: row-resize;
-  flex-shrink: 0;
-  transition: background 0.15s;
-}
-#h-divider:hover,
-#h-divider.dragging {
-  background: var(--border3);
+  background: linear-gradient(to right, transparent 1px, var(--color-accent) 1px 4px, transparent 4px);
 }

@@ -2,14 +2,20 @@ from __future__ import annotations
 
 import asyncio
 import base64
+import json
+import os
 import secrets
 import threading
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Protocol
 
 from aiohttp import web
 
 from bdo_models import PazEntry
+from map_api import add_map_api
+from map_pins import PinStore
+from world_map_build import tile_file
 
 
 class StreamReader(Protocol):
@@ -17,6 +23,16 @@ class StreamReader(Protocol):
     def is_streamable(self, internal_path: str) -> bool: ...
     def get_stream_mime_type(self, internal_path: str) -> str: ...
     def read_entry(self, internal_path: str) -> bytes: ...
+
+
+@dataclass(frozen=True)
+class _MapTiles:
+    folder: Path
+    version: int
+
+
+# Map tiles are named by client version, so one never changes under its URL.
+_TILE_CACHE_CONTROL = "max-age=31536000, immutable"
 
 
 @dataclass(frozen=True)
@@ -30,6 +46,10 @@ class LocalServer:
         self.port = 0
         self.token = secrets.token_urlsafe(24)
         self._reader: StreamReader | None = None
+        # The built world map the Map view shows (`serve_map`), or None.
+        self._map_tiles: _MapTiles | None = None
+        # The pins of the map API (`map_api.py`), set by the app.
+        self._pins: PinStore | None = None
         self._loop: asyncio.AbstractEventLoop | None = None
         self._runner: web.AppRunner | None = None
         self._thread: threading.Thread | None = None
@@ -39,6 +59,26 @@ class LocalServer:
 
     def set_reader(self, reader: StreamReader) -> None:
         self._reader = reader
+
+    def set_pin_store(self, pins: PinStore) -> None:
+        self._pins = pins
+
+    def write_info(self, path: Path) -> None:
+        """Write the port and token to `path` (`app_dirs.server_info_file`) for other programs."""
+        info = {"base_url": f"http://127.0.0.1:{self.port}", "port": self.port, "token": self.token, "pid": os.getpid()}
+        path.parent.mkdir(parents=True, exist_ok=True)
+        temp = path.with_name(f"{path.name}.tmp")
+        temp.write_text(json.dumps(info, indent=2), encoding="utf-8")
+        os.replace(temp, path)
+
+    def remove_info(self, path: Path) -> None:
+        """Delete `path` if this server wrote it; a newer app instance may own it by now."""
+        try:
+            info = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return
+        if isinstance(info, dict) and info.get("token") == self.token:
+            path.unlink(missing_ok=True)
 
     def start(self) -> None:
         if self._thread is not None:
@@ -63,6 +103,15 @@ class LocalServer:
         encoded = base64.urlsafe_b64encode(internal_path.encode("utf-8")).decode("ascii")
         return f"http://127.0.0.1:{self.port}/stream?path={encoded}&t={self.token}"
 
+    def serve_map(self, folder: Path | None, version: int) -> str:
+        """Serve the map tiles in `folder` (`<zoom>/<x>/<y>.jpg`), or none when None.
+
+        Returns the Leaflet tile URL template; the client version in it keeps
+        the page from showing an older client's tile.
+        """
+        self._map_tiles = None if folder is None else _MapTiles(folder=folder, version=version)
+        return f"http://127.0.0.1:{self.port}/map/{version}/{{z}}/{{x}}/{{y}}.jpg?t={self.token}"
+
     def _run(self) -> None:
         loop = asyncio.new_event_loop()
         self._loop = loop
@@ -82,6 +131,8 @@ class LocalServer:
     async def _startup(self) -> None:
         app = web.Application()
         app.router.add_get("/stream", self._handle_stream)
+        app.router.add_get(r"/map/{version:\d+}/{zoom:\d+}/{x:-?\d+}/{y:-?\d+}.jpg", self._handle_map_tile)
+        add_map_api(app, self.token, lambda: self._pins)
         self._runner = web.AppRunner(app)
         await self._runner.setup()
         site = web.TCPSite(self._runner, "127.0.0.1", 0)
@@ -125,6 +176,20 @@ class LocalServer:
         headers["Content-Range"] = f"bytes {byte_range.start}-{byte_range.end}/{len(data)}"
         headers["Content-Length"] = str(len(chunk))
         return web.Response(status=206, body=chunk, headers=headers)
+
+    async def _handle_map_tile(self, request: web.Request) -> web.StreamResponse:
+        if request.query.get("t") != self.token:
+            raise web.HTTPForbidden(text="Invalid stream token")
+        tiles = self._map_tiles
+        match = request.match_info
+        if tiles is None or int(match["version"]) != tiles.version:
+            raise web.HTTPNotFound(text="No map for this client")
+        # The route only matches whole numbers, so the path stays inside the folder.
+        # A tile without radar images under it gets one of its zoom's sea tiles.
+        path = tile_file(tiles.folder, int(match["zoom"]), (int(match["x"]), int(match["y"])))
+        if path is None:
+            raise web.HTTPNotFound(text="No tile")
+        return web.FileResponse(path, headers={"Cache-Control": _TILE_CACHE_CONTROL})
 
     @staticmethod
     def _decode_path(value: str) -> str:

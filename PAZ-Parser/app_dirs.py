@@ -45,6 +45,8 @@ PORTABLE_FOLDER = "data"
 _CACHE_FOLDER = "cache"
 # In every client folder: the PAZ folder it belongs to, and proof the app made it.
 MARKER_FILE = "paz_folder.txt"
+# While the app runs: its local server's port and token (`server_info_file`).
+SERVER_INFO_FILE = "local_server.json"
 # Hex digits of the path hash that name a client folder.
 _CLIENT_ID_LENGTH = 16
 
@@ -62,6 +64,15 @@ def local_app_data_dir() -> Path:
     local = os.environ.get("LOCALAPPDATA")
     base = Path(local) if local else Path.home() / "AppData" / "Local"
     return base / APP_NAME
+
+
+def server_info_file() -> Path:
+    """`local_server.json` of the running app, always in `local_app_data_dir()`.
+
+    Not in the Data Folder, which can be anywhere, so other programs know
+    where to look for the local server's port and token.
+    """
+    return local_app_data_dir() / SERVER_INFO_FILE
 
 
 @cache
@@ -233,20 +244,29 @@ def _move_unless_open(old: Path, new: Path) -> None:
         raise
 
 
-def remove_cache_root(cache_root: Path, names: Iterable[str]) -> list[str]:
+def remove_cache_root(cache_root: Path, names: Iterable[str], folders: Iterable[str] = ()) -> list[str]:
     """Delete the client folders the app made under `cache_root`, then the root if empty.
 
-    Deletes `names` and the marker in every folder that has a marker, and the
-    folder once nothing else is left in it. Other files and folders are kept.
-    Returns one message per file that could not be deleted.
+    Deletes the files `names`, the subfolders `folders` with what is in them,
+    and the marker in every folder that has a marker, and the folder once
+    nothing else is left in it. Other files and folders are kept. Returns one
+    message per file or subfolder that could not be deleted.
     """
     if not cache_root.is_dir():
         return []
     names = tuple(names)
+    folders = tuple(folders)
     errors: list[str] = []
     for folder in cache_root.iterdir():
         if not (folder / MARKER_FILE).is_file():
             continue
+        for name in folders:
+            try:
+                shutil.rmtree(folder / name)
+            except FileNotFoundError:
+                pass
+            except OSError as ex:
+                errors.append(f"{folder.name}/{name}: {ex}")
         # The marker goes last, so a folder that kept a file is found again next time.
         for name in (*names, MARKER_FILE):
             try:

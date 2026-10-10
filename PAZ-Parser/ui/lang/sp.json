@@ -6,9 +6,36 @@
     "notes": "Las claves que faltan usan en.json automáticamente."
   },
   "toolbar": {
-    "openFolder": "📂 Abrir carpeta PAZ",
+    "openFolder": "Abrir carpeta PAZ",
     "noFolderSelected": "No se ha seleccionado ninguna carpeta",
     "settings": "Ajustes"
+  },
+  "views": {
+    "label": "Vistas",
+    "items": "Objetos",
+    "quests": "Misiones",
+    "knowledge": "Conocimientos",
+    "npcs": "PNJ",
+    "recipes": "Recetas",
+    "map": "Mapa",
+    "files": "Archivos"
+  },
+  "map": {
+    "noFolder": "Abre una carpeta PAZ para ver el mapa del mundo.",
+    "noTiles": "Este cliente no tiene imágenes de radar con las que crear el mapa del mundo.",
+    "promptTitle": "Crear el mapa del mundo",
+    "promptText": "La vista Mapa muestra teselas creadas a partir de las imágenes de radar de este cliente: {tiles} teselas, unos {size} en disco. Crearlas lleva un rato; la vista Archivos sigue disponible. OK activa \"Mantener el mapa actualizado\" en los ajustes, que vuelve a crear el mapa tras un parche del juego.",
+    "build": "OK",
+    "progressTitle": "Creando el mapa del mundo",
+    "progressStarting": "Iniciando…",
+    "progressZoom": "Nivel de zoom {zoom} (paso {step} de {steps})",
+    "progressTiles": "{done} / {total} teselas · {percent} %",
+    "failed": "La última creación falló: {message}",
+    "coords": "X {x} · Z {z}",
+    "pinTypes": {
+      "player": "Jugador",
+      "marker": "Marcador"
+    }
   },
   "sidebar": {
     "filterFiles": "Filtrar archivos…",
@@ -20,7 +47,7 @@
     "modeHex": "Hex",
     "pattern": "Patrón…",
     "search": "Buscar",
-    "cancel": "✕ Cancelar",
+    "cancel": "Cancelar",
     "in": "En:",
     "noMatches": "No se encontraron coincidencias.",
     "matchOne": "1 coincidencia",
@@ -28,13 +55,15 @@
   },
   "details": {
     "title": "Detalles de la entrada",
-    "export": "⬇ Exportar",
+    "export": "Exportar",
+    "exportRaw": "Archivo sin procesar",
+    "exportCsv": "Tabla como CSV",
     "noFileSelected": "No se ha seleccionado ningún archivo",
-    "archive": "📦  Archivo",
-    "path": "📍  Ruta",
-    "compressed": "🗜  Comprimido",
-    "uncompressed": "📄  Sin comprimir",
-    "offset": "#  Desplazamiento"
+    "archive": "Archivo",
+    "path": "Ruta",
+    "compressed": "Comprimido",
+    "uncompressed": "Sin comprimir",
+    "offset": "Desplazamiento"
   },
   "preview": {
     "title": "Vista previa",
@@ -47,7 +76,20 @@
     "renderError": "Error al mostrar: {message}",
     "parseError": "Error de análisis: {message}",
     "truncated": "… recortado, se muestran los primeros {shown} KB de {total} KB",
-    "pillowMissing": "Pillow no está instalado, pip install pillow"
+    "pillowMissing": "Pillow no está instalado, pip install pillow",
+    "tabImage": "Imagen",
+    "lineOne": "{count} línea",
+    "lineMany": "{count} líneas",
+    "wrapLines": "Ajustar líneas",
+    "zoom": "Zoom",
+    "zoomFit": "Ajustar",
+    "background": "Fondo",
+    "bgChecker": "Cuadros",
+    "bgDark": "Oscuro",
+    "bgLight": "Claro",
+    "mipOne": "{count} mip",
+    "mipMany": "{count} mips",
+    "alpha": "alfa {value}"
   },
   "loc": {
     "showing": "Mostrando {first}–{last} de {total} textos",
@@ -57,8 +99,7 @@
       "str_id2": "Id2",
       "str_id3": "Id3",
       "str_id4": "Id4",
-      "str_type": "Tipo (número)",
-      "str_type_text": "Tipo (texto)",
+      "type": "Tipo",
       "text": "Texto"
     },
     "types": {
@@ -122,14 +163,15 @@
     "position": "{index} de {count}"
   },
   "pageBar": {
-    "prev": "◀ Anterior",
-    "next": "Siguiente ▶"
+    "prev": "Anterior",
+    "next": "Siguiente",
+    "rows": "Filas {first}–{last} de {total}"
   },
   "bottomBar": {
     "output": "Salida",
     "extractDestination": "Destino de extracción…",
-    "extractSelected": "⬇ Extraer seleccionados",
-    "extractFolder": "📁 Extraer carpeta",
+    "extractSelected": "Extraer seleccionados",
+    "extractFolder": "Extraer carpeta",
     "browse": "Examinar",
     "fileOne": "{count} archivo",
     "fileMany": "{count} archivos",
@@ -156,8 +198,10 @@
     "recordsCacheOff": "Desactivada",
     "recordsCacheOpen": "Guardar las tablas al abrirlas",
     "recordsCacheAll": "Guardar todas las tablas en segundo plano",
+    "keepMapUpdated": "Mantener el mapa actualizado",
+    "keepMapUpdatedHint": "Volver a crear las teselas de la vista Mapa en segundo plano cuando un parche del juego cambia el cliente",
     "deleteCaches": "Borrar todas las cachés",
-    "deleteCachesConfirm": "¿Borrar las cachés de tablas, iconos e índices de búsqueda de esta carpeta PAZ?\n\nLas tablas se analizarán de nuevo, los iconos se decodificarán de nuevo y el próximo inicio reconstruirá los índices de búsqueda. La caché del índice PAZ se conserva.",
+    "deleteCachesConfirm": "¿Borrar las cachés de tablas, iconos e índices de búsqueda de esta carpeta PAZ?\n\nLas tablas se analizarán de nuevo, los iconos se decodificarán de nuevo y el próximo inicio reconstruirá los índices de búsqueda. La caché del índice PAZ se conserva.\n\nTambién se borran las teselas del mapa; la vista Mapa las vuelve a crear.",
     "dataFolder": "Carpeta de datos",
     "dataFolderHint": "Dónde se guardan los ajustes y las cachés, con una carpeta de caché por carpeta PAZ. Déjalo vacío para usar la ubicación predeterminada.",
     "dataFolderConfirm": "¿Usar la nueva carpeta de datos?\n\nTus ajustes se copian allí y reemplazan los que ya haya. Las cachés de la carpeta anterior se borran; el índice PAZ de la carpeta cargada se guarda de nuevo, y las tablas, los iconos y los índices de búsqueda se reconstruyen cuando hace falta.",
@@ -169,7 +213,14 @@
     "saving": "Guardando…",
     "browse": "Examinar",
     "pixels": "px",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "sectionGameFiles": "Archivos del juego",
+    "sectionTables": "Tablas",
+    "sectionUpdates": "Actualizaciones",
+    "sectionData": "Datos y caché",
+    "locMissing": "Falta el LOC",
+    "rowHeightDown": "Filas más pequeñas",
+    "rowHeightUp": "Filas más altas"
   },
   "tree": {
     "loading": "Cargando..."
@@ -182,7 +233,7 @@
     "error": "Error: {message}",
     "indexFailed": "No se pudieron crear los índices de búsqueda, faltan algunos iconos y enlaces: {message}",
     "extracting": "Extrayendo… {done}/{total}, {extracted} ok  {skipped} omitidos  {failed} fallidos",
-    "extractDone": "✓  Listo, {extracted} extraídos, {skipped} omitidos, {failed} fallidos.",
+    "extractDone": "Listo, {extracted} extraídos, {skipped} omitidos, {failed} fallidos.",
     "searching": "Buscando… {done}/{total} archivos escaneados, {matches} coincidencia(s) hasta ahora",
     "searchDone": "Búsqueda completada, {matches} archivo(s) coincidieron de {total} escaneados",
     "pluginsReloaded": "Plugins recargados.",
@@ -197,6 +248,9 @@
     "cachingTablesPaused": "Caché de tablas en pausa mientras la aplicación está ocupada ({done}/{total})",
     "openFolder": "Abre una carpeta PAZ para empezar.",
     "exportFailed": "Error al exportar: {message}"
+  },
+  "firstRun": {
+    "body": "Elige la carpeta Paz de tu instalación de Black Desert. La primera carga lee cada índice de archivo y lo guarda en caché; los siguientes inicios cargan desde la caché."
   },
   "iconPreview": {
     "title": "Icono",
@@ -237,7 +291,9 @@
   },
   "locWarning": {
     "missing": "No tienes {file} para {language}, así que solo la interfaz de la aplicación está en {language}. Los textos del juego en las tablas siguen en coreano.",
-    "dismiss": "Ocultar"
+    "dismiss": "Ocultar",
+    "title": "El texto del juego sigue en coreano",
+    "openSettings": "Cambiar el idioma en Ajustes"
   },
   "appUpdate": {
     "available": "La versión {version} está disponible",

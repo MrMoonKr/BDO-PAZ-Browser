@@ -244,6 +244,19 @@ def test_removing_a_root_deletes_only_marked_client_folders(tmp_path: Path) -> N
     assert (foreign / "a.cache").read_bytes() == b"keep"
 
 
+def test_removing_a_root_deletes_the_named_subfolders_of_client_folders(tmp_path: Path) -> None:
+    root = tmp_path / "cache"
+    client = client_cache_dir(root, tmp_path / "Paz")
+    tiles = client / "map" / "3464" / "7"
+    tiles.mkdir(parents=True)
+    (tiles / "0.jpg").write_bytes(b"x")
+
+    errors = remove_cache_root(root, _NAMES, ("map",))
+
+    assert errors == []
+    assert not client.exists()
+
+
 def test_a_client_folder_with_other_files_is_kept_without_its_caches(tmp_path: Path) -> None:
     root = tmp_path / "cache"
     client = client_cache_dir(root, tmp_path / "Paz")

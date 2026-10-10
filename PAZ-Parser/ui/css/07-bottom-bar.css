@@ -1,21 +1,24 @@
 /* ── Bottom bar ───────────────────────────────────────────────────────────── */
 
 #bottom-bar {
-  background: var(--surface);
-  padding: 6px 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 16px 10px;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-line);
   flex-shrink: 0;
 }
 
 #status-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 6px;
+  gap: 12px;
 }
 
 #status-text {
-  color: var(--fg-dim);
-  font-size: 11px;
+  color: var(--color-text-2);
+  font-size: 12px;
   flex: 1;
   white-space: nowrap;
   overflow: hidden;
@@ -23,27 +26,28 @@
 }
 
 #progress-wrap {
-  flex: 0 0 200px;
+  flex: 0 0 160px;
 }
 
 /* `app version v2026.10.07 · buffsimply.bss 2026.10.12`, for bug reports. */
 #app-version {
-  color: var(--fg-muted);
+  color: var(--color-text-3);
   font-size: 11px;
-  font-family: Consolas, monospace;
+  font-family: var(--font-mono);
   white-space: nowrap;
 }
 
 #progress-bar {
-  height: 3px;
-  background: var(--surface2);
+  height: 4px;
+  background: var(--color-line);
   border-radius: 2px;
   overflow: hidden;
 }
 
 #progress-fill {
   height: 100%;
-  background: var(--accent);
+  background: var(--color-accent);
+  border-radius: 2px;
   width: 0%;
   transition: width 0.1s;
 }
@@ -51,34 +55,26 @@
 #extract-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
-#extract-row label {
-  color: var(--fg-dim);
-  font-size: 11px;
-  white-space: nowrap;
-}
-
-#extract-badge {
-  color: var(--cyan);
-  font-size: 11px;
-  font-family: Consolas, monospace;
-  white-space: nowrap;
-  margin-left: 4px;
-}
-
-#output-path {
+.output-box {
   flex: 1;
-  background: var(--surface2);
-  border: 1px solid var(--border2);
-  color: var(--fg);
-  font-size: 11px;
-  padding: 3px 7px;
-  border-radius: 3px;
-  outline: none;
-  font-family: Consolas, monospace;
 }
-#output-path:focus {
-  border-color: var(--border3);
+#output-path {
+  font-family: var(--font-mono);
+}
+
+/* "3 files · 1.2 MB", the Ctrl+click selection. */
+#extract-badge {
+  color: var(--color-data);
+  font-size: 11px;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+#extract-row > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }

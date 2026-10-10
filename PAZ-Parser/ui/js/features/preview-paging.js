@@ -1,6 +1,8 @@
 "use strict";
 
 import { t } from "../core/i18n.js";
+import { iconElement } from "../core/icons.js";
+import { HEX_BYTES_PER_PAGE, PARSED_PER_PAGE } from "../core/paging.js";
 
 export const previewPagingMethods = {
   _setPageBar(bar) {
@@ -14,9 +16,13 @@ export const previewPagingMethods = {
     bar.className = "page-bar";
     bar.dataset.kind = kind;
 
+    const range = document.createElement("span");
+    range.className = "page-range";
+    range.textContent = this._pageRangeText(kind, page);
+
     const prev = document.createElement("button");
-    prev.className = "page-btn";
-    prev.textContent = t("pageBar.prev");
+    prev.className = "page-btn with-icon";
+    prev.append(iconElement("chevron-left"), t("pageBar.prev"));
     prev.disabled = page === 0;
     prev.onclick = () => kind === "hex" ? this._gotoHexPage(page - 1) : this._gotoParsedPage(page - 1);
 
@@ -25,13 +31,31 @@ export const previewPagingMethods = {
     label.textContent = `${page + 1} / ${total}`;
 
     const next = document.createElement("button");
-    next.className = "page-btn";
-    next.textContent = t("pageBar.next");
+    next.className = "page-btn with-icon";
+    next.append(t("pageBar.next"), iconElement("chevron-right"));
     next.disabled = page >= total - 1;
     next.onclick = () => kind === "hex" ? this._gotoHexPage(page + 1) : this._gotoParsedPage(page + 1);
 
-    bar.append(prev, label, next);
+    bar.append(range, prev, label, next);
     return bar;
+  },
+
+  // "Rows 1–500 of 12,605" for a table, the page's byte offsets for hex.
+  _pageRangeText(kind, page) {
+    if (kind === "parsed") {
+      const total = this._recordCount;
+      if (total == null) return "";
+      const first = page * PARSED_PER_PAGE + 1;
+      const last = Math.min((page + 1) * PARSED_PER_PAGE, total);
+      return t("pageBar.rows", {
+        first: first.toLocaleString(), last: last.toLocaleString(), total: total.toLocaleString(),
+      });
+    }
+    const size = this._byteCount;
+    if (size == null) return "";
+    const offset = (n) => `0x${n.toString(16).toUpperCase().padStart(8, "0")}`;
+    const start = page * HEX_BYTES_PER_PAGE;
+    return `${offset(start)} – ${offset(Math.min(start + HEX_BYTES_PER_PAGE, size) - 1)}`;
   },
 
   _scrollPreviewToTop() {

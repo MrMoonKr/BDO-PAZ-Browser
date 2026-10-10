@@ -1,6 +1,7 @@
 "use strict";
 
 import { t } from "../core/i18n.js";
+import { iconElement } from "../core/icons.js";
 
 // Module-level state
 let _gsMode = "string";
@@ -28,7 +29,8 @@ export const globalSearchMethods = {
     const btn = document.getElementById("btn-content-search");
     const hidden = bar.hidden;
     bar.hidden = !hidden;
-    btn.classList.toggle("active", !hidden ? false : true);
+    btn.classList.toggle("active", hidden);
+    btn.setAttribute("aria-expanded", String(hidden));
     if (!hidden) {
       // closing, restore tree if we were showing results
       if (this._inGlobalSearch) this._exitGlobalSearchResults();
@@ -40,7 +42,9 @@ export const globalSearchMethods = {
   _closeGlobalSearch() {
     const bar = document.getElementById("content-search-bar");
     bar.hidden = true;
-    document.getElementById("btn-content-search").classList.remove("active");
+    const btn = document.getElementById("btn-content-search");
+    btn.classList.remove("active");
+    btn.setAttribute("aria-expanded", "false");
     if (this._inGlobalSearch) this._exitGlobalSearchResults();
   },
 
@@ -107,7 +111,7 @@ export const globalSearchMethods = {
     if (this._inGlobalSearch && !tree.children.length) {
       const li = document.createElement("li");
       li.className = "tree-node";
-      li.style.cssText = "padding:8px 12px;color:var(--fg-muted);font-size:12px";
+      li.style.cssText = "padding:8px 12px;color:var(--color-text-2);font-size:12px";
       li.textContent = t("contentSearch.noMatches");
       tree.appendChild(li);
     }
@@ -123,10 +127,9 @@ export const globalSearchMethods = {
     for (const item of items) {
       const li = document.createElement("li");
       li.className = "tree-node tree-file csb-result";
+      li.dataset.icon = item.icon;
 
-      const icon  = document.createElement("span");
-      icon.className = "tree-icon";
-      icon.textContent = item.icon;
+      const icon  = iconElement(item.icon, "icon tree-icon");
 
       const name  = document.createElement("span");
       name.className = "csb-result-name";

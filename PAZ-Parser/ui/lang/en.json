@@ -6,9 +6,36 @@
     "notes": "This is the source language. All other files fall back to these strings for missing keys."
   },
   "toolbar": {
-    "openFolder": "📂 Open PAZ Folder",
+    "openFolder": "Open PAZ Folder",
     "noFolderSelected": "No folder selected",
     "settings": "Settings"
+  },
+  "views": {
+    "label": "Views",
+    "items": "Items",
+    "quests": "Quests",
+    "knowledge": "Knowledge",
+    "npcs": "NPCs",
+    "recipes": "Recipes",
+    "map": "Map",
+    "files": "Files"
+  },
+  "map": {
+    "noFolder": "Open a PAZ folder to see the world map.",
+    "noTiles": "This client has no radar images to build the world map from.",
+    "promptTitle": "Build the World Map",
+    "promptText": "The Map view shows tiles built from this client's radar images: {tiles} tiles, about {size} on disk. Building them takes a while; the Files view stays usable. OK turns on \"Keep map updated\" in the settings, which builds the map again after a game patch.",
+    "build": "OK",
+    "progressTitle": "Building the World Map",
+    "progressStarting": "Starting…",
+    "progressZoom": "Zoom level {zoom} (step {step} of {steps})",
+    "progressTiles": "{done} / {total} tiles · {percent}%",
+    "failed": "The last build failed: {message}",
+    "coords": "X {x} · Z {z}",
+    "pinTypes": {
+      "player": "Player",
+      "marker": "Marker"
+    }
   },
   "sidebar": {
     "filterFiles": "Filter files…",
@@ -20,7 +47,7 @@
     "modeHex": "Hex",
     "pattern": "Pattern…",
     "search": "Search",
-    "cancel": "✕ Cancel",
+    "cancel": "Cancel",
     "in": "In:",
     "noMatches": "No matches found.",
     "matchOne": "1 match",
@@ -28,13 +55,15 @@
   },
   "details": {
     "title": "Entry Details",
-    "export": "⬇ Export",
+    "export": "Export",
+    "exportRaw": "Raw file",
+    "exportCsv": "Table as CSV",
     "noFileSelected": "No file selected",
-    "archive": "📦  Archive",
-    "path": "📍  Path",
-    "compressed": "🗜  Compressed",
-    "uncompressed": "📄  Uncompressed",
-    "offset": "#  Offset"
+    "archive": "Archive",
+    "path": "Path",
+    "compressed": "Compressed",
+    "uncompressed": "Uncompressed",
+    "offset": "Offset"
   },
   "preview": {
     "title": "Preview",
@@ -47,7 +76,20 @@
     "renderError": "Render error: {message}",
     "parseError": "Parse error: {message}",
     "truncated": "… truncated, showing first {shown} KB of {total} KB",
-    "pillowMissing": "Pillow not installed, pip install pillow"
+    "pillowMissing": "Pillow not installed, pip install pillow",
+    "tabImage": "Image",
+    "lineOne": "{count} line",
+    "lineMany": "{count} lines",
+    "wrapLines": "Wrap lines",
+    "zoom": "Zoom",
+    "zoomFit": "Fit",
+    "background": "Background",
+    "bgChecker": "Checker",
+    "bgDark": "Dark",
+    "bgLight": "Light",
+    "mipOne": "{count} mip",
+    "mipMany": "{count} mips",
+    "alpha": "alpha {value}"
   },
   "loc": {
     "showing": "Showing {first}–{last} of {total} strings",
@@ -57,8 +99,7 @@
       "str_id2": "Id2",
       "str_id3": "Id3",
       "str_id4": "Id4",
-      "str_type": "Type (number)",
-      "str_type_text": "Type (text)",
+      "type": "Type",
       "text": "Text"
     },
     "types": {
@@ -122,14 +163,15 @@
     "position": "{index} of {count}"
   },
   "pageBar": {
-    "prev": "◀ Prev",
-    "next": "Next ▶"
+    "prev": "Prev",
+    "next": "Next",
+    "rows": "Rows {first}–{last} of {total}"
   },
   "bottomBar": {
     "output": "Output",
     "extractDestination": "Extract destination…",
-    "extractSelected": "⬇ Extract Selected",
-    "extractFolder": "📁 Extract Folder",
+    "extractSelected": "Extract Selected",
+    "extractFolder": "Extract Folder",
     "browse": "Browse",
     "fileOne": "{count} file",
     "fileMany": "{count} files",
@@ -156,8 +198,10 @@
     "recordsCacheOff": "Off",
     "recordsCacheOpen": "Cache tables when opened",
     "recordsCacheAll": "Cache all tables in the background",
+    "keepMapUpdated": "Keep map updated",
+    "keepMapUpdatedHint": "Build the Map view's tiles again in the background when a game patch changes the client",
     "deleteCaches": "Delete all caches",
-    "deleteCachesConfirm": "Delete the parsed table, icon and lookup index caches of this PAZ folder?\n\nTables parse again, icons decode again, and the next start builds the lookup indexes again. The PAZ index cache is kept.",
+    "deleteCachesConfirm": "Delete the parsed table, icon and lookup index caches of this PAZ folder?\n\nTables parse again, icons decode again, and the next start builds the lookup indexes again. The PAZ index cache is kept.\n\nThe map tiles are deleted too; the Map view builds them again.",
     "dataFolder": "Data Folder",
     "dataFolderHint": "Where settings and caches are kept, with one cache folder per PAZ folder. Leave empty for the default.",
     "dataFolderConfirm": "Use the new data folder?\n\nYour settings are copied there and replace any settings already in it. The caches in the old folder are deleted; the PAZ index of the loaded folder is saved again, and tables, icons and lookup indexes are built again when needed.",
@@ -169,7 +213,14 @@
     "saving": "Saving…",
     "browse": "Browse",
     "pixels": "px",
-    "close": "Close"
+    "close": "Close",
+    "sectionGameFiles": "Game files",
+    "sectionTables": "Tables",
+    "sectionUpdates": "Updates",
+    "sectionData": "Data and cache",
+    "locMissing": "LOC missing",
+    "rowHeightDown": "Smaller rows",
+    "rowHeightUp": "Taller rows"
   },
   "tree": {
     "loading": "Loading..."
@@ -182,7 +233,7 @@
     "error": "Error: {message}",
     "indexFailed": "Lookup indexes could not be built, some icons and links are missing: {message}",
     "extracting": "Extracting… {done}/{total}, {extracted} ok  {skipped} skipped  {failed} failed",
-    "extractDone": "✓  Done, {extracted} extracted, {skipped} skipped, {failed} failed.",
+    "extractDone": "Done, {extracted} extracted, {skipped} skipped, {failed} failed.",
     "searching": "Searching… {done}/{total} files scanned, {matches} match(es) so far",
     "searchDone": "Search complete, {matches} file(s) matched out of {total} scanned",
     "pluginsReloaded": "Plugins reloaded.",
@@ -197,6 +248,9 @@
     "cachingTablesPaused": "Caching parsed tables paused while the app is busy ({done}/{total})",
     "openFolder": "Open a PAZ folder to begin.",
     "exportFailed": "Export failed: {message}"
+  },
+  "firstRun": {
+    "body": "Pick the Paz folder inside your Black Desert install. The first load reads every archive index and caches it; later starts load from the cache."
   },
   "iconPreview": {
     "title": "Icon",
@@ -237,7 +291,9 @@
   },
   "locWarning": {
     "missing": "You don't have {file} for {language}, so only the app's UI is in {language}. Game text in the tables stays Korean.",
-    "dismiss": "Dismiss"
+    "dismiss": "Dismiss",
+    "title": "Game text stays Korean",
+    "openSettings": "Change the language in Settings"
   },
   "appUpdate": {
     "available": "Version {version} is available",

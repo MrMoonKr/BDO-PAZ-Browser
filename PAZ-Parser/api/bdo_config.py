@@ -75,6 +75,11 @@ def check_app_updates_setting(cfg: dict) -> bool:
     return cfg.get("check_app_updates") is not False
 
 
+def keep_map_updated_setting(cfg: dict) -> bool:
+    """The "Keep map updated" setting; off until the Map view's first build turns it on."""
+    return cfg.get("keep_map_updated") is True
+
+
 def update_handlers_setting(cfg: dict) -> bool:
     """The exe's "Update handlers on start" setting; on unless saved as false."""
     return cfg.get("update_handlers") is not False

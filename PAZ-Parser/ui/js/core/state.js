@@ -22,4 +22,14 @@ export const app = {
   _parsedSort: null,
   // Bumped per parsed page request so late responses can be dropped.
   _parsedPageSeq: 0,
+  // The open view of the toolbar rail (views.js).
+  _activeView: "files",
+  // Map view (map-view.js): the Leaflet map once the tiles are built, and a
+  // counter that a folder load or a pushed state bumps, so a late
+  // get_world_map() answer is dropped.
+  _leafletMap: null,
+  _mapSeq: 0,
+  // The map API's pins (map_pins.py) and the Leaflet layer that draws them.
+  _mapPins: [],
+  _mapPinLayer: null,
 };

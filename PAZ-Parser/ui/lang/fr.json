@@ -6,9 +6,36 @@
     "notes": "Les clés manquantes utilisent automatiquement en.json."
   },
   "toolbar": {
-    "openFolder": "📂 Ouvrir le dossier PAZ",
+    "openFolder": "Ouvrir le dossier PAZ",
     "noFolderSelected": "Aucun dossier sélectionné",
     "settings": "Paramètres"
+  },
+  "views": {
+    "label": "Vues",
+    "items": "Objets",
+    "quests": "Quêtes",
+    "knowledge": "Connaissances",
+    "npcs": "PNJ",
+    "recipes": "Recettes",
+    "map": "Carte",
+    "files": "Fichiers"
+  },
+  "map": {
+    "noFolder": "Ouvrez un dossier PAZ pour voir la carte du monde.",
+    "noTiles": "Ce client n'a pas d'images radar pour construire la carte du monde.",
+    "promptTitle": "Construire la carte du monde",
+    "promptText": "La vue Carte affiche des tuiles construites à partir des images radar de ce client : {tiles} tuiles, environ {size} sur le disque. La construction prend un moment ; la vue Fichiers reste utilisable. OK active \"Maintenir la carte à jour\" dans les paramètres, qui reconstruit la carte après un patch du jeu.",
+    "build": "OK",
+    "progressTitle": "Construction de la carte du monde",
+    "progressStarting": "Démarrage…",
+    "progressZoom": "Niveau de zoom {zoom} (étape {step} sur {steps})",
+    "progressTiles": "{done} / {total} tuiles · {percent} %",
+    "failed": "La dernière construction a échoué : {message}",
+    "coords": "X {x} · Z {z}",
+    "pinTypes": {
+      "player": "Joueur",
+      "marker": "Repère"
+    }
   },
   "sidebar": {
     "filterFiles": "Filtrer les fichiers…",
@@ -20,7 +47,7 @@
     "modeHex": "Hex",
     "pattern": "Motif…",
     "search": "Rechercher",
-    "cancel": "✕ Annuler",
+    "cancel": "Annuler",
     "in": "Dans :",
     "noMatches": "Aucun résultat trouvé.",
     "matchOne": "1 résultat",
@@ -28,13 +55,15 @@
   },
   "details": {
     "title": "Détails de l'entrée",
-    "export": "⬇ Exporter",
+    "export": "Exporter",
+    "exportRaw": "Fichier brut",
+    "exportCsv": "Tableau en CSV",
     "noFileSelected": "Aucun fichier sélectionné",
-    "archive": "📦  Archive",
-    "path": "📍  Chemin",
-    "compressed": "🗜  Compressé",
-    "uncompressed": "📄  Décompressé",
-    "offset": "#  Décalage"
+    "archive": "Archive",
+    "path": "Chemin",
+    "compressed": "Compressé",
+    "uncompressed": "Décompressé",
+    "offset": "Décalage"
   },
   "preview": {
     "title": "Aperçu",
@@ -47,7 +76,20 @@
     "renderError": "Erreur d'affichage : {message}",
     "parseError": "Erreur d'analyse : {message}",
     "truncated": "… tronqué, affichage des {shown} premiers Ko sur {total} Ko",
-    "pillowMissing": "Pillow n'est pas installé, pip install pillow"
+    "pillowMissing": "Pillow n'est pas installé, pip install pillow",
+    "tabImage": "Image",
+    "lineOne": "{count} ligne",
+    "lineMany": "{count} lignes",
+    "wrapLines": "Retour à la ligne",
+    "zoom": "Zoom",
+    "zoomFit": "Ajuster",
+    "background": "Arrière-plan",
+    "bgChecker": "Damier",
+    "bgDark": "Sombre",
+    "bgLight": "Clair",
+    "mipOne": "{count} mip",
+    "mipMany": "{count} mips",
+    "alpha": "alpha {value}"
   },
   "loc": {
     "showing": "{first}–{last} sur {total} textes",
@@ -57,8 +99,7 @@
       "str_id2": "Id2",
       "str_id3": "Id3",
       "str_id4": "Id4",
-      "str_type": "Type (nombre)",
-      "str_type_text": "Type (texte)",
+      "type": "Type",
       "text": "Texte"
     },
     "types": {
@@ -122,14 +163,15 @@
     "position": "{index} sur {count}"
   },
   "pageBar": {
-    "prev": "◀ Préc.",
-    "next": "Suiv. ▶"
+    "prev": "Préc.",
+    "next": "Suiv.",
+    "rows": "Lignes {first} à {last} sur {total}"
   },
   "bottomBar": {
     "output": "Sortie",
     "extractDestination": "Destination d'extraction…",
-    "extractSelected": "⬇ Extraire la sélection",
-    "extractFolder": "📁 Extraire le dossier",
+    "extractSelected": "Extraire la sélection",
+    "extractFolder": "Extraire le dossier",
     "browse": "Parcourir",
     "fileOne": "{count} fichier",
     "fileMany": "{count} fichiers",
@@ -156,8 +198,10 @@
     "recordsCacheOff": "Désactivé",
     "recordsCacheOpen": "Mettre en cache les tables à l'ouverture",
     "recordsCacheAll": "Mettre en cache toutes les tables en arrière-plan",
+    "keepMapUpdated": "Maintenir la carte à jour",
+    "keepMapUpdatedHint": "Reconstruire les tuiles de la vue Carte en arrière-plan quand un patch du jeu modifie le client",
     "deleteCaches": "Supprimer tous les caches",
-    "deleteCachesConfirm": "Supprimer les caches des tables, des icônes et des index de recherche de ce dossier PAZ ?\n\nLes tables seront analysées à nouveau, les icônes décodées à nouveau, et le prochain démarrage reconstruira les index de recherche. Le cache de l'index PAZ est conservé.",
+    "deleteCachesConfirm": "Supprimer les caches des tables, des icônes et des index de recherche de ce dossier PAZ ?\n\nLes tables seront analysées à nouveau, les icônes décodées à nouveau, et le prochain démarrage reconstruira les index de recherche. Le cache de l'index PAZ est conservé.\n\nLes tuiles de la carte sont aussi supprimées ; la vue Carte les reconstruit.",
     "dataFolder": "Dossier de données",
     "dataFolderHint": "Emplacement des paramètres et des caches, avec un dossier de cache par dossier PAZ. Laisser vide pour l'emplacement par défaut.",
     "dataFolderConfirm": "Utiliser le nouveau dossier de données ?\n\nVos paramètres y sont copiés et remplacent ceux qui s'y trouvent déjà. Les caches de l'ancien dossier sont supprimés ; l'index PAZ du dossier chargé est enregistré à nouveau, et les tables, les icônes et les index de recherche sont reconstruits au besoin.",
@@ -169,7 +213,14 @@
     "saving": "Enregistrement…",
     "browse": "Parcourir",
     "pixels": "px",
-    "close": "Fermer"
+    "close": "Fermer",
+    "sectionGameFiles": "Fichiers du jeu",
+    "sectionTables": "Tableaux",
+    "sectionUpdates": "Mises à jour",
+    "sectionData": "Données et cache",
+    "locMissing": "LOC manquant",
+    "rowHeightDown": "Lignes plus petites",
+    "rowHeightUp": "Lignes plus hautes"
   },
   "tree": {
     "loading": "Chargement..."
@@ -182,7 +233,7 @@
     "error": "Erreur : {message}",
     "indexFailed": "Impossible de créer les index de recherche, certaines icônes et certains liens manquent : {message}",
     "extracting": "Extraction… {done}/{total}, {extracted} ok  {skipped} ignorés  {failed} échoués",
-    "extractDone": "✓  Terminé, {extracted} extraits, {skipped} ignorés, {failed} échoués.",
+    "extractDone": "Terminé, {extracted} extraits, {skipped} ignorés, {failed} échoués.",
     "searching": "Recherche… {done}/{total} fichiers analysés, {matches} correspondance(s) pour l'instant",
     "searchDone": "Recherche terminée, {matches} fichier(s) trouvé(s) sur {total} analysés",
     "pluginsReloaded": "Plugins rechargés.",
@@ -197,6 +248,9 @@
     "cachingTablesPaused": "Mise en cache des tables en pause pendant que l'application est occupée ({done}/{total})",
     "openFolder": "Ouvrez un dossier PAZ pour commencer.",
     "exportFailed": "Échec de l'export : {message}"
+  },
+  "firstRun": {
+    "body": "Choisissez le dossier Paz de votre installation de Black Desert. Le premier chargement lit chaque index d'archive et le met en cache ; les démarrages suivants chargent depuis le cache."
   },
   "iconPreview": {
     "title": "Icône",
@@ -237,7 +291,9 @@
   },
   "locWarning": {
     "missing": "Il vous manque {file} pour {language} : seule l'interface de l'application est en {language}. Les textes du jeu dans les tableaux restent en coréen.",
-    "dismiss": "Masquer"
+    "dismiss": "Masquer",
+    "title": "Les textes du jeu restent en coréen",
+    "openSettings": "Changer la langue dans les paramètres"
   },
   "appUpdate": {
     "available": "La version {version} est disponible",

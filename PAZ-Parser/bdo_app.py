@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import logging
 import subprocess
 import sys
 import threading
@@ -20,13 +21,15 @@ import webview
 
 from api.bdo_api import Api
 from api.bdo_config import LEGACY_CONFIG_FILE
-from app_dirs import adopt_legacy_config
+from app_dirs import adopt_legacy_config, server_info_file
 from cli.files import run_extract, run_list
 from cli.formats import run_formats, run_handlers
 from cli.index import run_index
 from cli.records import run_records
 from cli.render import run_render
 from cli.update import run_check_app_update, run_update_app, update_handlers
+from cli.world_map import DEFAULT_IMAGE_ZOOM, run_map_image, run_map_tiles
+from world_map import MAX_ZOOM, MIN_ZOOM
 from cli.stdio import close_stdout_quietly, configure_logging, is_closed_pipe, use_utf8_stdio
 
 # Options that only mean something with one command, checked in _check_options.
@@ -100,6 +103,14 @@ def _build_parser() -> argparse.ArgumentParser:
         "--index", metavar="KIND", nargs="?", const="",
         help="Print a lookup index, e.g. character_item; without KIND, list every kind",
     )
+    commands.add_argument(
+        "--map-tiles", action="store_true",
+        help="Write the Map view's tiles to --dir, every zoom or only --zoom",
+    )
+    commands.add_argument(
+        "--map-image", action="store_true",
+        help=f"Write the whole world map as one image to --dir, at --zoom (default {DEFAULT_IMAGE_ZOOM})",
+    )
     commands.add_argument("--check-app-update", action="store_true", help="Print this version and the newest release")
     commands.add_argument(
         "--update-app", metavar="ZIP", nargs="?", const="",
@@ -111,6 +122,11 @@ def _build_parser() -> argparse.ArgumentParser:
     )
 
     parser.add_argument("--output", metavar="DIR", help="Output directory for --file (default: current working directory)")
+    parser.add_argument("--dir", metavar="DIR", help="--map-tiles / --map-image: output directory (required)")
+    parser.add_argument(
+        "--zoom", metavar="N", type=_map_zoom,
+        help=f"--map-tiles / --map-image: zoom level {MIN_ZOOM} to {MAX_ZOOM}, {MAX_ZOOM} is the radar images' full size",
+    )
     parser.add_argument(
         "--where", metavar="EXPR", action="append", default=[],
         help="--records filter: field=value, field=a..b or field*=text; repeat to combine",
@@ -132,6 +148,13 @@ def _build_parser() -> argparse.ArgumentParser:
     # Passed by the update helper (updates/install.py) when it restarts the GUI.
     parser.add_argument("--after-update", action="store_true", help=argparse.SUPPRESS)
     return parser
+
+
+def _map_zoom(text: str) -> int:
+    value = int(text)
+    if not MIN_ZOOM <= value <= MAX_ZOOM:
+        raise argparse.ArgumentTypeError(f"must be {MIN_ZOOM} to {MAX_ZOOM}")
+    return value
 
 
 def _positive_int(text: str) -> int:
@@ -156,6 +179,10 @@ def _command(args: argparse.Namespace) -> Callable[[argparse.Namespace], int] | 
         return run_render
     if args.index is not None:
         return run_index
+    if args.map_tiles:
+        return run_map_tiles
+    if args.map_image:
+        return run_map_image
     if args.check_app_update:
         return run_check_app_update
     if args.update_app is not None:
@@ -185,32 +212,21 @@ def _check_options(parser: argparse.ArgumentParser, args: argparse.Namespace) ->
         parser.error("--id needs an index kind, e.g. --index character_item --id 40024")
     if args.output and not args.file:
         parser.error("--output needs --file")
+    is_map = args.map_tiles or args.map_image
+    if is_map and not args.dir:
+        parser.error("--map-tiles and --map-image need --dir")
+    for name in ("dir", "zoom"):
+        if getattr(args, name) is not None and not is_map:
+            parser.error(f"--{name} needs --map-tiles or --map-image")
 
 def _set_app_user_model_id() -> None:
     import ctypes
     app_id = "bdo.paz.browser"
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
 
-def _apply_window_icon(window) -> None:
-    try:
-        import ctypes
-        icon_path = str(Path(__file__).parent / "ui" / "favicon.ico")
-        LR_LOADFROMFILE = 0x0010
-        LR_DEFAULTSIZE  = 0x0040
-        IMAGE_ICON      = 1
-        WM_SETICON      = 0x0080
-        hicon = ctypes.windll.user32.LoadImageW(
-            None, icon_path, IMAGE_ICON, 0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE
-        )
-        if not hicon:
-            return
-        hwnd = getattr(window, "native_handle", None) or \
-               ctypes.windll.user32.FindWindowW(None, "BDO PAZ Browser")
-        if hwnd:
-            ctypes.windll.user32.SendMessageW(hwnd, WM_SETICON, 1, hicon)  # ICON_BIG
-            ctypes.windll.user32.SendMessageW(hwnd, WM_SETICON, 0, hicon)  # ICON_SMALL
-    except Exception:
-        pass
+# The window and taskbar icon; from source the process is python.exe, whose
+# icon pywebview would use otherwise.
+_WINDOW_ICON = Path(__file__).parent / "ui" / "favicon.ico"
 
 
 # How long the window stays on top after an update restart.
@@ -239,23 +255,32 @@ def _launch_gui(profile: bool = False, after_update: bool = False) -> None:
     server.start()
     api = Api(profile=profile, server=server)
     server.set_reader(api)
+    server.set_pin_store(api.map_pins)
+    info_file = server_info_file()
+    try:
+        server.write_info(info_file)
+    except OSError:
+        # Not fatal: only programs that call the map API need it.
+        logging.warning("Could not write %s", info_file, exc_info=True)
     window = webview.create_window(
         title="BDO PAZ Browser",
         url=url,
         js_api=api,
+        # Opens maximized; width and height are the size it restores down to.
         width=1280,
         height=800,
+        maximized=True,
         min_size=(900, 560),
-        background_color="#1a1a1a",
+        background_color="#121316",  # --color-bg in ui/css/00-reset-root.css
     )
     if window is not None:
         api.set_window(window)
-        window.events.shown += lambda: _apply_window_icon(window)
         if after_update:
             window.events.shown += lambda: _bring_to_front(window)
     try:
-        webview.start(debug=profile)
+        webview.start(debug=profile, icon=str(_WINDOW_ICON))
     finally:
+        server.remove_info(info_file)
         server.stop()
 
 

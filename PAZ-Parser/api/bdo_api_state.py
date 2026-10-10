@@ -16,6 +16,9 @@ from paz.bdo_thumbnail_cache import ThumbnailCache
 from table_sort import TableSort
 
 from updates.releases import Release
+from map_pins import Pin, PinStore
+from world_map import Sector
+from world_map_build import BuildProgress
 
 from .bdo_recent_tables import RecentTables
 from .bdo_records_prefill import RecordsPrefill
@@ -87,6 +90,17 @@ class ApiState:
         self._folder_text_ready = threading.Event()
         self._folder_text_ready.set()
         self._folder_load_lock = threading.Lock()
+        # The Map view's tiles (`WorldMapMixin`): the radar images of the
+        # loaded folder, the running build's stop flag (None when none runs),
+        # its last progress and the error of the last failed build.
+        self._map_lock = threading.Lock()
+        self._map_sectors: dict[Sector, PazEntry] | None = None
+        self._map_stop: threading.Event | None = None
+        self._map_progress: BuildProgress | None = None
+        self._map_error: str | None = None
+        # The map API's pins (`map_pins.py`); the page redraws on every change.
+        self._map_pins = PinStore()
+        self._map_pins.subscribe(self._push_map_pins)
 
     def _wait_for_folder_text(self) -> None:
         """Block until the loaded folder's LOC and lookup indexes are in.
@@ -132,6 +146,9 @@ class ApiState:
             except Exception:
                 pass
 
+    def _push_map_pins(self, pins: tuple[Pin, ...]) -> None:
+        self._push_js(f"app.onMapPinsChanged({json.dumps([pin.to_dict() for pin in pins])})")
+
     def _push_status(self, msg: str | dict, progress: tuple[int, int] | None = None) -> None:
         data: dict = msg if isinstance(msg, dict) else {"message": msg}
         self._status = dict(data)
@@ -147,6 +164,13 @@ class ApiState:
         def stream_url(self, internal_path: str) -> str: ...
 
         def _visible_entries(self) -> list[PazEntry]: ...
+
+        # Implemented on WorldMapMixin; the cache code stops and deletes the map.
+        def _stop_map_build(self) -> None: ...
+
+        def _world_map_bytes(self) -> int: ...
+
+        def _delete_world_map(self) -> tuple[int, list[str]]: ...
 
         def _load_companions_parallel(
             self, handler: PreviewHandler, entry: PazEntry
